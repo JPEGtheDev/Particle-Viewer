@@ -14,7 +14,7 @@ before_install:
   - echo $LANG
   - echo $LC_ALL
   - if [ $TRAVIS_OS_NAME == linux ]; then 
-    hg --help 
+    hg --help;
    fi
     
   - if [ $TRAVIS_OS_NAME == osx ]; then 
