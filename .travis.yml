@@ -28,7 +28,9 @@ before_install:
     
     fi
 
-script: gcc ./main.cpp -o ./build/viewer  -lSDL2 -lGLEW -I. -g -O0 -Wall
+script:
+  - ls;
+  - gcc ./main.cpp -o ./build/viewer  -lSDL2 -lGLEW -I. -g -O0 -Wall;
 after_success:
   - echo "SUCCESS!!!"
 after_failure:
