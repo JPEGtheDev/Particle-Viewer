@@ -1,8 +1,14 @@
 # Particle-Viewer 
+<style>
+.site-main table.no-border td {
+    border: none;
+}
+</style>
+
 <h3>Build Status:</h3>
-<table border="0">
+<table class="no-border">
   <tr>
-    <td><h4>Travis-CI:<h4></td>
+    <td>Travis-CI:</td>
      <td><img src=https://travis-ci.org/JPEGtheDev/Particle-Viewer.svg?branch=master></td>
   </tr>
 </table>
