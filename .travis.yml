@@ -7,7 +7,6 @@ compiler:
 addons:
   apt:
     packages:
-    - hg
     - libglew-dev
 
 before_install:
@@ -20,7 +19,8 @@ before_install:
     cd build;
     ../configure;
     make;
-    make install;
+    ls -all;
+    #make install;
    fi
     
   - if [ $TRAVIS_OS_NAME == osx ]; then 
