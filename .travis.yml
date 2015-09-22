@@ -8,8 +8,8 @@ before_install:
   - echo $LC_ALL
   - if [ $TRAVIS_OS_NAME == linux ]; 
     then sudo apt-get update && sudo apt-get install -y libglew-dev; 
-    wget http://archive.ubuntu.com/ubuntu/pool/universe/libs/libsdl2/libsdl2-dev_2.0.2+dfsg1-6ubuntu2_amd64.deb
-    sudo dpkg -i libsdl2-dev_2.0.2+dfsg1-6ubuntu2_amd64.deb
+    wget http://archive.ubuntu.com/ubuntu/pool/universe/libs/libsdl2/libsdl2-dev_2.0.2+dfsg1-6ubuntu2_amd64.deb;
+    sudo dpkg -i libsdl2-dev_2.0.2+dfsg1-6ubuntu2_amd64.deb;
     fi
     
   - if [ $TRAVIS_OS_NAME == osx ]; 
