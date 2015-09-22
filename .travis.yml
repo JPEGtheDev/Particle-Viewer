@@ -20,6 +20,7 @@ before_install:
     ../configure;
     make;
     sudo make install;
+    cd ~/Particle-Viewer;
    fi
     
   - if [ $TRAVIS_OS_NAME == osx ]; then 
