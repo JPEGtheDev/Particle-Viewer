@@ -1,10 +1,4 @@
 # Particle-Viewer 
-<style>
-.site-main table.no-border td {
-    border: none;
-}
-</style>
-
 <h3>Build Status:</h3>
 <table class="no-border">
   <tr>
