@@ -1,5 +1,5 @@
 language: cpp
-sudo: false
+sudo: required
 
 compiler:
   - gcc
@@ -19,7 +19,7 @@ before_install:
     cd build;
     ../configure;
     make;
-    ls;
+    sudo make install;
    fi
     
   - if [ $TRAVIS_OS_NAME == osx ]; then 
