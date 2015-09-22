@@ -28,7 +28,7 @@ before_install:
     
     fi
 
-script: echo "Build Complete"
+script: gcc ./main.cpp -o ./build/viewer  -lSDL2 -lGLEW -I. -g -O0 -Wall
 after_success:
   - echo "SUCCESS!!!"
 after_failure:
