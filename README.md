@@ -1,5 +1,12 @@
 # Particle-Viewer 
-<h4>Travis-CI:<h4><img src=https://travis-ci.org/JPEGtheDev/Particle-Viewer.svg?branch=master>
+<h3>Build Status:</h3>
+<table border="0">
+  <tr>
+    <td><h4>Travis-CI:<h4></td>
+     <td><img src=https://travis-ci.org/JPEGtheDev/Particle-Viewer.svg?branch=master></td>
+  </tr>
+</table>
+<hr>
 <h3>TL;DR:</h3> 
 <p>
   A viewer for N-Body simulations.
