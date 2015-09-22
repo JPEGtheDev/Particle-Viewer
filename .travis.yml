@@ -30,7 +30,7 @@ before_install:
 
 script:
   - ls;
-  - gcc ./main.cpp -o ./build/viewer  -lSDL2 -lGLEW -I. -g -O0 -Wall;
+  - gcc ./src/main.cpp -o ./build/viewer  -lSDL2 -lGLEW -I. -g -O0 -Wall;
 after_success:
   - echo "SUCCESS!!!"
 after_failure:
