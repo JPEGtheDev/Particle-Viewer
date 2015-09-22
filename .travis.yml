@@ -15,8 +15,7 @@ before_script:
   #- if [ $TRAVIS_OS_NAME == linux ]; then travis_retry ./configure --llvm-config llvm-config-3.4; fi
   #- if [ $TRAVIS_OS_NAME == osx ]; then travis_retry ./configure; fi
 
-script: 
-
+script: echo "yay"
 after_success:
   #- if [ $TRAVIS_BRANCH == $TRAVIS_TAG ]; ; fi
 
