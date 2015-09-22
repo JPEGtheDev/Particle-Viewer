@@ -19,7 +19,7 @@ before_install:
     cd build;
     ../configure;
     make;
-    ls --all;
+    ls;
     #make install;
    fi
     
