@@ -14,7 +14,13 @@ before_install:
   - echo $LANG
   - echo $LC_ALL
   - if [ $TRAVIS_OS_NAME == linux ]; then 
-    hg --help;
+    hg clone https://hg.libsdl.org/SDL SDL;
+    cd SDL;
+    mkdir build;
+    cd build;
+    ../configure;
+    make;
+    make install;
    fi
     
   - if [ $TRAVIS_OS_NAME == osx ]; then 
