@@ -1,13 +1,23 @@
 language: cpp
+
 sudo: required
 
+os:
+  - linux
+  - osx
 compiler:
   - gcc
   
 addons:
   apt:
+    sources:
+      - ubuntu-toolchain-r-test
     packages:
-    - libglew-dev
+      - libglew-dev
+      - gcc-4.9
+      - g++-4.9
+      - clang
+      - valgrind
 
 before_install:
   - echo $LANG
@@ -30,20 +40,20 @@ before_install:
     fi
 
 script:
-  - ls;
   - gcc ./src/main.cpp -o ./bin/viewer  -lSDL2 -lGLEW -I. -g -O0 -Wall;
+
 after_success:
   - echo "SUCCESS!!!"
+
 after_failure:
   - echo "FAILURE"
 
 branches:
-  only:
+  whitelist:
     - master
 
 notifications:
   email: true
+  
 
-os:
-  - linux
-  - osx
+
