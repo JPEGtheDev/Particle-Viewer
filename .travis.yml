@@ -13,7 +13,7 @@ before_install:
   - echo $LANG
   - echo $LC_ALL
   - if [ $TRAVIS_OS_NAME == linux ]; then 
-    ls;
+    echo pwd;
     hg clone https://hg.libsdl.org/SDL SDL;
     cd SDL;
     mkdir build;
@@ -32,7 +32,7 @@ before_install:
 
 script:
   - ls;
-  - gcc ./src/main.cpp -o ./build/viewer  -lSDL2 -lGLEW -I. -g -O0 -Wall;
+  - gcc ./src/main.cpp -o ./bin/viewer  -lSDL2 -lGLEW -I. -g -O0 -Wall;
 after_success:
   - echo "SUCCESS!!!"
 after_failure:
