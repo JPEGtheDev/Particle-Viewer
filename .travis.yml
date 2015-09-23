@@ -13,7 +13,6 @@ before_install:
   - echo $LANG
   - echo $LC_ALL
   - if [ $TRAVIS_OS_NAME == linux ]; then 
-    pwd;
     hg clone https://hg.libsdl.org/SDL SDL;
     cd SDL;
     mkdir build;
@@ -21,7 +20,7 @@ before_install:
     ../configure;
     make;
     sudo make install;
-    cd ~/Particle-Viewer;
+    cd /home/travis/build/JPEGtheDev/Particle-Viewer;
    fi
     
   - if [ $TRAVIS_OS_NAME == osx ]; then 
