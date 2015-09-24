@@ -22,8 +22,8 @@ addons:
 before_install:
   - echo $LANG
   - echo $LC_ALL
-  - if [ $TRAVIS_OS_NAME == linux ]; then 
-      
+  - if [ $TRAVIS_OS_NAME == linus ]; then 
+      sh ./scripts/linuxPre.sh;
     fi
     
   - if [ $TRAVIS_OS_NAME == osx ]; then 
