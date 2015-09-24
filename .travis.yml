@@ -27,14 +27,17 @@ before_install:
     fi
     
   - if [ $TRAVIS_OS_NAME == osx ]; then 
-  
-    brew update && brew install sdl2 glew; 
-    
+      brew update && brew install sdl2 glew; 
     fi
 
 script:
-  - sh ./scripts/g++Build.sh
-
+  - if [ $TRAVIS_OS_NAME == osx ]; then 
+      sh ./scripts/g++OSXBuild.sh
+    fi
+  - if [ $TRAVIS_OS_NAME == linux ]; then 
+      sh ./scripts/g++LinuxBuild.sh;
+    fi
+    
 after_success:
   - echo "SUCCESS!!!"
 
