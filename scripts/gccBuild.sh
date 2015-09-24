@@ -1,4 +1,4 @@
 #!/usr/bin/env sh
 #gcc build script
-gcc ./src/main.cpp -o ./bin/viewer -lGLEW -I. -g -O0 -Wall ./SDL/build/build/libSDL2main.a;
+g++ ./src/main.cpp -std=c++14 -o ./bin/viewer -ldl -pthread  -I. -g -O0  ./src/deps/lib/libSDL2.a ./src/deps/lib/libSDL2main.a  -lGLEW;
 ./bin/viewer

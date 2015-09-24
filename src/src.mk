@@ -13,7 +13,7 @@ CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=Jonathan Petz
-Date                   :=23/09/15
+Date                   :=24/09/15
 CodeLitePath           :="/home/JPEG/.codelite"
 LinkerName             :=/usr/lib64/ccache/x86_64-redhat-linux-g++
 SharedObjectLinkerName :=/usr/lib64/ccache/x86_64-redhat-linux-g++ -shared -fPIC
@@ -35,13 +35,13 @@ PreprocessOnlySwitch   :=-E
 ObjectsFileList        :="src.txt"
 PCHCompileFlags        :=
 MakeDirCommand         :=mkdir -p
-LinkOptions            :=  
+LinkOptions            :=   ./deps/lib/libSDL2main.a  ./deps/lib/libSDL2.a
 IncludePath            :=  $(IncludeSwitch). $(IncludeSwitch). 
 IncludePCH             := 
 RcIncludePath          := 
-Libs                   := $(LibrarySwitch)SDL2 $(LibrarySwitch)GLEW 
-ArLibs                 :=  "SDL2" "GLEW" 
-LibPath                := $(LibraryPathSwitch). 
+Libs                   := $(LibrarySwitch)GLEW $(LibrarySwitch)dl $(LibrarySwitch)pthread 
+ArLibs                 :=  "GLEW" "dl" "pthread" 
+LibPath                := $(LibraryPathSwitch). $(LibraryPathSwitch)./deps/lib 
 
 ##
 ## Common variables
