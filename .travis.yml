@@ -32,7 +32,7 @@ before_install:
 
 script:
   - if [ $TRAVIS_OS_NAME == osx ]; then 
-      sh ./scripts/g++OSXBuild.sh
+      sh ./scripts/g++OSXBuild.sh;
     fi
   - if [ $TRAVIS_OS_NAME == linux ]; then 
       sh ./scripts/g++LinuxBuild.sh;
