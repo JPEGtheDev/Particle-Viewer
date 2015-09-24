@@ -1,11 +1,8 @@
 # Particle-Viewer 
 <h3>Build Status:</h3>
-<table class="no-border">
-  <tr>
-    <td>Travis-CI:</td>
-     <td><img src=https://travis-ci.org/JPEGtheDev/Particle-Viewer.svg?branch=master></td>
-  </tr>
-</table>
+Travis-CI:
+   [![Build Status](https://travis-ci.org/JPEGtheDev/Particle-Viewer.svg?branch=master)](https://travis-ci.org/JPEGtheDev/Particle-Viewer)
+    
 <hr>
 <h3>TL;DR:</h3> 
 <p>
