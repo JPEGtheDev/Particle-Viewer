@@ -33,7 +33,7 @@ before_install:
     fi
 
 script:
-  - sh ./scripts/gccBuild.sh
+  - sh ./scripts/g++Build.sh
 
 after_success:
   - echo "SUCCESS!!!"
