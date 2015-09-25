@@ -3,7 +3,7 @@
     cd SDL;
     mkdir build;
     cd build;
-    ../configure;
+    ../configure --prefix=./SDL2_Build;
+    pwd;
     make;
-    sudo make install;
     cd /home/travis/build/JPEGtheDev/Particle-Viewer;
