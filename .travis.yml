@@ -22,7 +22,6 @@ addons:
 cache:
   directories:
     - /home/travis/build/JPEGtheDev/SDL2_Build
-    - /home/travis/build/JPEGtheDev/Particle-Viewer/SDL
     
 before_install:
   - echo $LANG
