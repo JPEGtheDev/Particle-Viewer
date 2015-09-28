@@ -19,6 +19,10 @@ addons:
       - clang
       - valgrind
 
+cache:
+  directories:
+    - /home/travis/build/JPEGtheDev/SDL2_Build
+    
 before_install:
   - echo $LANG
   - echo $LC_ALL
