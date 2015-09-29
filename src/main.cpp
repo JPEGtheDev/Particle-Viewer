@@ -1,4 +1,4 @@
-#include <SDL2/SDL.h>
+#include <aSDL2/SDL.h>
 #include <GL/glew.h>
 #include <iostream>
 int main(int argc, char **argv)
