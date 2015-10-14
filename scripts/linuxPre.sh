@@ -23,3 +23,20 @@ if [ ! "$(ls -A /home/travis/build/JPEGtheDev/glm)" ]; then
 	make install;
 	cd /home/travis/build/JPEGtheDev/Particle-Viewer;
 fi
+
+if [ ! "$(ls -A /home/travis/build/JPEGtheDev/assimp)" ]; then
+	
+	cd /home/travis/build/JPEGtheDev/;
+	mkdir assBuild;
+	cd assBuild;
+	git clone https://github.com/assimp/assimp.git;
+	cd assimp;
+	cmake -G 'Unix Makefiles' -DCMAKE_INSTALL_PREFIX=/home/travis/build/JPEGtheDev/assimp .;
+	make;
+	make install;
+	cd /home/travis/build/JPEGtheDev/Particle-Viewer;
+fi
+
+
+
+
