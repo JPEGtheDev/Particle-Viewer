@@ -30,6 +30,7 @@ Travis-CI:
     <li>OpenGL</li>
     <li>GLU</li>
     <li>GLEW</li>
+    <li>GLM</li>
   </ul>
 </p>
 
