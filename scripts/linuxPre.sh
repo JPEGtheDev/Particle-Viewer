@@ -16,5 +16,8 @@ if [ ! "$(ls -A /home/travis/build/JPEGtheDev/glm)" ]; then
 	
 	cd /home/travis/build/JPEGtheDev/;
 	git clone https://github.com/g-truc/glm.git;
+	cd glm;
+	cmake .;
+	make install;
 	cd /home/travis/build/JPEGtheDev/Particle-Viewer;
 fi
