@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
+#include <glm/glm.hpp>
 #include <iostream>
 int main(int argc, char **argv)
 {
