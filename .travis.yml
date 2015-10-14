@@ -32,7 +32,7 @@ before_install:
     fi
     
   - if [ $TRAVIS_OS_NAME == osx ]; then 
-      brew update && brew install sdl2 glew;
+      brew update && brew install sdl2 glew glm;
       sh ./scripts/osxPre.sh;
     fi
 
