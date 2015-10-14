@@ -24,8 +24,8 @@ addons:
       name: "JPEGtheDev/Particle-Viewer"
       description: "<Your project description here>"
     notification_email: jpegthedev@gmail.com
-    build_command_prepend: "<Your build preprocessing command here>"
-    build_command:   "<Your build command here>"
+    build_command_prepend: "./scripts/linuxPre.sh"
+    build_command:   "./scripts/g++LinuxBuild.sh"
     branch_pattern: coverity_scan
 cache:
   directories:
