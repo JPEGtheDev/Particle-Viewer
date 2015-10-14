@@ -39,8 +39,8 @@ LinkOptions            :=
 IncludePath            :=  $(IncludeSwitch). $(IncludeSwitch). 
 IncludePCH             := 
 RcIncludePath          := 
-Libs                   := $(LibrarySwitch)GLEW $(LibrarySwitch)SDL2 
-ArLibs                 :=  "GLEW" "SDL2" 
+Libs                   := $(LibrarySwitch)GLEW $(LibrarySwitch)SDL2 $(LibrarySwitch)assimp 
+ArLibs                 :=  "GLEW" "SDL2" "assimp" 
 LibPath                := $(LibraryPathSwitch). 
 
 ##
