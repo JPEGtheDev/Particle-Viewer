@@ -23,6 +23,7 @@ cache:
   directories:
     - /home/travis/build/JPEGtheDev/SDL2_Build
     - /home/travis/build/JPEGtheDev/glm
+    - /User/travis/build/JPEGtheDev/glm
     
 before_install:
   - echo $LANG
@@ -32,7 +33,7 @@ before_install:
     fi
     
   - if [ $TRAVIS_OS_NAME == osx ]; then 
-      brew update && brew install sdl2 glew glm;
+      brew update && brew install sdl2 glew;
       sh ./scripts/osxPre.sh;
     fi
 
