@@ -1,6 +1,6 @@
-if [ ! "$(ls -A /User/travis/build/JPEGtheDev/glm)" ]; then
+if [ ! "$(ls -A /Users/travis/build/JPEGtheDev/glm)" ]; then
 	pwd;
-	cd /User/travis/build/JPEGtheDev/;
+	cd /Users/travis/build/JPEGtheDev/;
 	git clone https://github.com/g-truc/glm.git;
-	cd /User/travis/build/JPEGtheDev/Particle-Viewer;
+	cd /Users/travis/build/JPEGtheDev/Particle-Viewer;
 fi
