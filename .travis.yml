@@ -23,7 +23,6 @@ cache:
   directories:
     - /home/travis/build/JPEGtheDev/SDL2_Build
     - /home/travis/build/JPEGtheDev/glm
-    - /User/travis/build/JPEGtheDev/glm
     
 before_install:
   - echo $LANG
