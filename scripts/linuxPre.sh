@@ -19,5 +19,5 @@ if [ ! "$(ls -A /home/travis/build/JPEGtheDev/glm)" ]; then
 	cd glm;
 	cmake .;
 	make;
-	
+	cd /home/travis/build/JPEGtheDev/Particle-Viewer;
 fi
