@@ -26,11 +26,11 @@ Travis-CI:
 <h3>Currently Used Libraries:</h3>
 <p>
   <ul>
-    <li>SDL2</li>
-    <li>OpenGL</li>
-    <li>GLU</li>
-    <li>GLEW</li>
-    <li>GLM</li>
+    <li><a href="https://www.libsdl.org/">SDL2</a></li>
+    <li><a href="https://www.opengl.org/">OpenGL</a></li>
+    <li><a href="http://glew.sourceforge.net/">GLEW</a></li>
+    <li><a href="http://glm.g-truc.net/0.9.7/index.html">GLM</a></li>
+    <li><a href="http://assimp.sourceforge.net/">assimp</a></li>
   </ul>
 </p>
 
