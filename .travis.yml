@@ -19,6 +19,7 @@ addons:
       - clang
       - valgrind
 	  - cmake
+
   coverity_scan:
     project:
       name: "JPEGtheDev/Particle-Viewer"
