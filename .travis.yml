@@ -18,7 +18,7 @@ addons:
       - g++-4.9
       - clang
       - valgrind
-      - cmake-2.8.12
+      - cmake-3
       - gdb
       - llvm-3.0-dev
       
