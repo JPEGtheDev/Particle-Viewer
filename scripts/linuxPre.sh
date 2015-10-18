@@ -36,7 +36,17 @@ if [ ! "$(ls -A /home/travis/build/JPEGtheDev/assimp)" ]; then
 	make install;
 	cd /home/travis/build/JPEGtheDev/Particle-Viewer;
 fi
-cmake -version;
+if [ ! "$(ls -A /home/travis/build/JPEGtheDev/cmake)" ]; then
+	
+	cd /home/travis/build/JPEGtheDev/;
+	mkdir cmakeBuild;
+	cd cmakeBuild;
+	wget "https://cmake.org/files/v3.3/cmake-3.3.2-Linux-x86_64.sh";
+	sh ./cmake-3.3.2-Linux-x86_64.sh --prefix=/home/travis/build/JPEGtheDev/cmake --exclude-subdir;
+	cd /home/travis/build/JPEGtheDev/Particle-Viewer;
+fi
+
+/home/travis/build/JPEGtheDev/cmake/bin/cmake -version;
 
 
 
