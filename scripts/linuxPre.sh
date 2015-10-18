@@ -36,7 +36,7 @@ if [ ! "$(ls -A /home/travis/build/JPEGtheDev/assimp)" ]; then
 	make install;
 	cd /home/travis/build/JPEGtheDev/Particle-Viewer;
 fi
-cmake -v;
+cmake -version;
 
 
 
