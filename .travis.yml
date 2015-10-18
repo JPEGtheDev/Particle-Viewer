@@ -18,7 +18,10 @@ addons:
       - g++-4.9
       - clang
       - valgrind
-      - cmake
+      - cmake-2.8.12
+      - gdb
+      - llvm-3.0-dev
+      
   coverity_scan:
     project:
       name: "JPEGtheDev/Particle-Viewer"
