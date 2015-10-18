@@ -9,7 +9,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 if(NOT ${TravisCI_enable})
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -march=native")
 else()
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -march=native -lSDL2")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -march=native -lSDL2 -I/home/travis/build/JPEGtheDev/SDL2_Build/include")
 	MESSAGE("You are building for Travis-CI, this is not really recommended unless this is for testing / if you are using Travis-CI")
 endif(NOT ${TravisCI_enable})
 
