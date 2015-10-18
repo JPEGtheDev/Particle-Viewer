@@ -1,8 +1,18 @@
 cmake_minimum_required (VERSION 2.6)
 project (Particle-Viewer)
 
+
+set(TravisCI_enable OFF)
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -march=native")
+
+if(NOT ${TravisCI_enable})
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -march=native")
+else()
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -march=native -lSDL2")
+	MESSAGE("You are building for Travis-CI, this is not really recommended unless this is for testing / if you are using Travis-CI")
+endif(NOT ${TravisCI_enable})
+
 find_package(GLM REQUIRED)
 find_package(SDL2 REQUIRED)
 
