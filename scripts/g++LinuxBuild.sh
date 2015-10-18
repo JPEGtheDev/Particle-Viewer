@@ -2,6 +2,6 @@
 #gcc build script
 mkdir build;
 cd build;
-cmake .. -DGLM_INCLUDE_DIR=/home/travis/build/JPEGtheDev/glm/ -DSDL2_INCLUDE_DIRS=/home/travis/build/JPEGtheDev/SDL2_Build -SDL2_LIBRARIES=/home/travis/build/JPEGtheDev/SDL2_Build;
+cmake .. -DGLM_INCLUDE_DIR=/home/travis/build/JPEGtheDev/glm/ -DSDL2_INCLUDE_DIR=/home/travis/build/JPEGtheDev/SDL2_Build -SDL2_LIBRARY=/home/travis/build/JPEGtheDev/SDL2_Build;
 make;
 #g++ ./src/main.cpp -o ./bin/viewer -I. -g -O0  -L/home/travis/build/JPEGtheDev/SDL2_Build/lib/ -L/home/travis/build/JPEGtheDev/assimp/lib -I/home/travis/build/JPEGtheDev/SDL2_Build/include -I/home/travis/build/JPEGtheDev/glm/include  -I/home/travis/build/JPEGtheDev/assimp/include -lGLEW -lSDL2 -lassimp;
