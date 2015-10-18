@@ -34,7 +34,7 @@ cache:
     - /home/travis/build/JPEGtheDev/SDL2_Build
     - /home/travis/build/JPEGtheDev/glm
     - /home/travis/build/JPEGtheDev/assimp
-    
+    - /home/travis/build/JPEGtheDev/cmake
     
 before_install:
   - echo $LANG
