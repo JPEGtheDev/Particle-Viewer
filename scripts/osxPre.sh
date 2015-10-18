@@ -1,1 +1,1 @@
-brew update && brew install sdl2 glew glm cmake assimp;
+brew update && brew install sdl2 glew glm assimp;
