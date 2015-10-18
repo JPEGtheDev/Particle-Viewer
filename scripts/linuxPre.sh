@@ -47,6 +47,6 @@ if [ ! "$(ls -A /home/travis/build/JPEGtheDev/cmake)" ]; then
 fi
 
 /home/travis/build/JPEGtheDev/cmake/bin/cmake -version;
-
-
+gcc --version;
+g++ --version;
 
