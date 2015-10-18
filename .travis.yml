@@ -14,8 +14,8 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - libglew-dev
-      - gcc-4.9
-      - g++-4.9
+      - gcc
+      - g++
       - clang
       - valgrind
       - gdb
