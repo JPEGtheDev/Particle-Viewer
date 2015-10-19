@@ -27,7 +27,7 @@ if [ ! "$(ls -A /home/travis/build/JPEGtheDev/glm)" ]; then
 	if [ "$(id -u)" != "0" ]; then
 	cmake -DCMAKE_INSTALL_PREFIX=/home/travis/build/JPEGtheDev/glm .;
 	else
-	cmake;
+	cmake .;
 	fi
 	make install;
 	cd /home/travis/build/JPEGtheDev/Particle-Viewer;
