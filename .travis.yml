@@ -6,8 +6,15 @@ os:
   - linux
   - osx
 compiler:
-  - gcc-4.9
+  - gcc
+  - clang
   
+env:
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   #   via the "travis encrypt" command using the project repo's public key
+   - secure: "flFt5aekg/6F5kn5i6j5dOeezwlbd8b56RgAReHYQH9zAtAIMqLlGx3F9khql4kLI7LP4X68mTrmIhOPtx0DRsFh249w3kgdrDSBYpM0WbMPRj9gDtHOUhhDZ3OPY46bNox6+7AIiPjBFxUxm1eibb9pwmZjRBUSzzCB/Lm7xTvsd7Ax7L/2Z+fFCa8JCslMCjUzmV5upS4fRCb64+XNmSRUaWXz+WP5a7bT9Dw8YjG25VQ7STqWbs9fYvw9n0bacKRfmvHxMpWXJo+v6VP0wRAXaDM+xSZYsMzVWv3gbkF+wXr37eClGHLdvwAzeXZtOD9d/UlCo3Sufm7fA3XGEqC+HqBvtnLvulUQnWvSfBZ5b6Ob/VUFqASixjyvwMnTBlyvCBC4qw2clk5DzIFrJvnyFcgOYfxS4V10MuKcgQSHf1i542beyE9M/sJbQ3Lp+qKM3CNaA/ueClViTuJ9WO8Hu8ORKwQWP7wrb+gX/hfyyQedaWf4pvnd5wWuzIoxahXwqgM3uO1M+ZPnTWKlMLXjKqJB6zRTSNOakzuH/I3h7UhD4YKLWNgo/RbVMaSZVTeYDBuFWqIiWBQQj7AnyMk+y6cJTX8QyO5g6XUFPwjqRclLzGvH1a3tc5p0g/bnOhpEKiLyDd4P56m3HqxmhYs+5YC38CukPJX/MAEHIAw="
+
 addons:
   apt:
     sources:
@@ -20,7 +27,15 @@ addons:
       - valgrind
       - gdb
       - llvm-3.0-dev
-      
+  coverity_scan:
+    project:
+      name: "JPEGtheDev/Particle-Viewer"
+      description: "<Your project description here>"
+    notification_email: jpegthedev@gmail.com
+    build_command_prepend: "./scripts/linuxPre.sh"
+    build_command:   "./scripts/g++LinuxBuild"
+    branch_pattern: master
+
 cache:
   directories:
     - /home/travis/build/JPEGtheDev/SDL2_Build
