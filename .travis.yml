@@ -1,13 +1,12 @@
 language: cpp
 
-sudo: required
+sudo: false
 
 os:
   - linux
   - osx
 compiler:
   - gcc
-  - clang
   
 env:
   global:
@@ -49,7 +48,7 @@ before_install:
   - echo $LANG
   - echo $LC_ALL
   - if [ $TRAVIS_OS_NAME == linux ]; then 
-      sudo sh ./scripts/linuxPre.sh;
+      sh ./scripts/linuxPre.sh;
     fi
     
   - if [ $TRAVIS_OS_NAME == osx ]; then 
