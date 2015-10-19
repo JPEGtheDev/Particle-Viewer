@@ -45,4 +45,4 @@ if [ ! "$(ls -A /home/travis/build/JPEGtheDev/cmake)" ]; then
 	sh ./cmake-3.3.2-Linux-x86_64.sh --prefix=/home/travis/build/JPEGtheDev/cmake --exclude-subdir;
 	cd /home/travis/build/JPEGtheDev/Particle-Viewer;
 fi
-ls /home/travis/build/JPEGtheDev/SDL2_Build/include
+ls /home/travis/build/JPEGtheDev/SDL2_Build/include/SDL2
