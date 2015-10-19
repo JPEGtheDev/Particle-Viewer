@@ -1,6 +1,6 @@
 language: cpp
 
-sudo: false
+sudo: require
 
 os:
   - linux
@@ -49,7 +49,7 @@ before_install:
   - echo $LANG
   - echo $LC_ALL
   - if [ $TRAVIS_OS_NAME == linux ]; then 
-      sh ./scripts/linuxPre.sh;
+      sudo sh ./scripts/linuxPre.sh;
     fi
     
   - if [ $TRAVIS_OS_NAME == osx ]; then 
