@@ -15,7 +15,7 @@ endif(NOT ${TravisCI_enable})
 
 find_package(GLM REQUIRED)
 find_package(SDL2 REQUIRED)
-
+find_package(LibRocket REQUIRED)
 add_executable(Viewer
   src/glad/glad.c
   src/main.cpp
