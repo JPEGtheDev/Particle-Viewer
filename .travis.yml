@@ -1,6 +1,6 @@
 language: cpp
 
-sudo: require
+sudo: required
 
 os:
   - linux
