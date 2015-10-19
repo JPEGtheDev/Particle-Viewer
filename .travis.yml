@@ -21,14 +21,6 @@ addons:
       - gdb
       - llvm-3.0-dev
       
-  coverity_scan:
-    project:
-      name: "JPEGtheDev/Particle-Viewer"
-      description: "<Your project description here>"
-    notification_email: jpegthedev@gmail.com
-    build_command_prepend: "./scripts/linuxPre.sh"
-    build_command:   "./scripts/g++LinuxBuild.sh"
-    branch_pattern: coverity_scan
 cache:
   directories:
     - /home/travis/build/JPEGtheDev/SDL2_Build
@@ -66,16 +58,9 @@ after_failure:
 branches:
   whitelist:
     - master
-    - biicode
 
 notifications:
   email: true
-  
-env:
-  global:
-   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
-   #   via the "travis encrypt" command using the project repo's public key
-   - secure: "vKUWYIslorKo9cxI5OBmWjCvZKmjYOfacx1imQAKmyhwprbQZSqOFQAXxwEtng1YD9ttSG4SvsY/nXXv3yZLlKgQaTNTqCGyht0vMnmmNHiek5y/B4YqWmmDV4dC/vA/pV2ViH9eOTxJE+34DBHyfyXSiQuA7NisbfP58u5SH2Tla+26NkeVlQcL+NwTpbvOKW3Oc83HdARLceiXd6sRc877J9zheU6yLM7Lmki/J/kV72Ksg584YUruU0HQEbEvT48P4kqw0zoDTuOuc6wobPlyAkR1jcYWJyAu7iM5Iy4FOkv1eJN1jdEsKe85WpzappIeIfvxlks2GWDftBNC+iOy8hKVLJYYpkeAdD0Ox8KxG5lcTDJLOZQrj0GeYeiJ54s1992mqdOakftq4BEMNaPDbC4psd0iTxe1CkLDgbK0E81QcpDdhPbLt5xfY6MgC/lKmyjfRbyvqpCRoEZiA28iYCn2MGN7hm6KEYqp1zeITdpkRsWkoIcLuuFvmqKd+WhOXAJMxuINgZ2pGr0tkQVPMZmvepSATz9D+7yHswKZblnrfocsy0ENITbvUqvuOOOaBi5oIm/XFqiI/n/SyGW2y7IDpR2Pcw8uxJXji81AF9xbchOrtKU/IMijP4HLrZPaeGELXsy8qntGjODp6O4YA/VW3OlNO3pbAWxJtiQ="
 
 
 
