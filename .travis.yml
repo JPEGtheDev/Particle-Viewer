@@ -41,7 +41,7 @@ cache:
     - /home/travis/build/JPEGtheDev/glm
     - /home/travis/build/JPEGtheDev/assimp
     - /home/travis/build/JPEGtheDev/cmake
-					- /home/travis/build/JPEGtheDev/libRocket
+    - /home/travis/build/JPEGtheDev/libRocket
     
 before_install:
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.9"; fi
