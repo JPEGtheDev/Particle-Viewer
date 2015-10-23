@@ -1,5 +1,5 @@
 brew update && brew install sdl2 glew glm assimp boost-python;
-if [ ! "$(ls -A /home/travis/build/JPEGtheDev/libRocket)" ]; then
+if [ ! "$(ls -A /Users/travis/build/JPEGtheDev/libRocket)" ]; then
 	cd /Users/travis/build/JPEGtheDev/;
 	mkdir rocketBuild;
 	cd rocketBuild;
