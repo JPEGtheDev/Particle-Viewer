@@ -68,7 +68,7 @@ if [ ! "$(ls -A /home/travis/build/JPEGtheDev/libRocket)" ]; then
 	mkdir rocketBuild;
 	cd rocketBuild;
 	git clone https://github.com/libRocket/libRocket.git;
-	cd libRocket;
+	cd libRocket/Build;
 	cmake -DCMAKE_INSTALL_PREFIX=/home/travis/build/JPEGtheDev/libRocket .;
 	make;
 	make install;
