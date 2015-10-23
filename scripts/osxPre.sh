@@ -7,7 +7,7 @@ if [ ! "$(ls -A /home/travis/build/JPEGtheDev/libRocket)" ]; then
 	cd libRocket
 	#sh ./Dependencies/osx-depends.sh;
 	cd Build;
-	cmake -DCMAKE_INSTALL_PREFIX=/home/travis/build/JPEGtheDev/libRocket .;
+	ccmake -DCMAKE_INSTALL_PREFIX=/Users/travis/build/JPEGtheDev/libRocket .;
 	make;
 	make install;
 	cd /Users/travis/build/JPEGtheDev/Particle-Viewer;
