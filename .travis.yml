@@ -42,7 +42,7 @@ cache:
     - /home/travis/build/JPEGtheDev/assimp
     - /home/travis/build/JPEGtheDev/cmake
     - /home/travis/build/JPEGtheDev/libRocket
-    - /Users/travis/build/JPEGtheDev/libRocket
+    - libRocketOSX
     
 before_install:
 
