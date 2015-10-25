@@ -5,8 +5,7 @@ if [ ! "$(ls -A /Users/travis/build/JPEGtheDev/libRocket)" ]; then
 	mkdir rocketBuild;
 	cd rocketBuild;
 	git clone https://github.com/libRocket/libRocket.git;
-	cd libRocket
-	cd Build;
+	cd libRocket/Build;
 	cmake .;
 	make;
 	sudo make install;
