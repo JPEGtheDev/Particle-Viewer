@@ -12,6 +12,7 @@ if [ ! "$(ls -A /Users/travis/build/JPEGtheDev/libRocket)" ]; then
 	cd libRocket
 	#sh ./Dependencies/osx-depends.sh;
 	cd Build;
+	cmake -LAH
 	cmake .;
 	make;
 	sudo make install;
