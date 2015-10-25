@@ -7,8 +7,8 @@ if [ ! "$(ls -A /Users/travis/build/JPEGtheDev/libRocket)" ]; then
 	cd libRocket
 	#sh ./Dependencies/osx-depends.sh;
 	cd Build;
-	cmake .;
-	sudo make;
+	cmake . -DCMAKE_OSX_ARCHITECTURES=X86_64;
+	make;
 	sudo make install;
 	cd /Users/travis/build/JPEGtheDev/Particle-Viewer;
 fi
