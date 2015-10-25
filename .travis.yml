@@ -44,11 +44,12 @@ cache:
     - /home/travis/build/JPEGtheDev/libRocket
     
 before_install:
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.9"; fi
-  - if [ "$CC" = "gcc" ]; then export CC="gcc-4.9"; fi
+
   - echo $LANG
   - echo $LC_ALL
   - if [ $TRAVIS_OS_NAME == linux ]; then 
+      if [ "$CXX" = "g++" ]; then export CXX="g++-4.9"; fi;
+      if [ "$CC" = "gcc" ]; then export CC="gcc-4.9"; fi;
       sh ./scripts/linuxPre.sh;
     fi
     
