@@ -1,34 +1,4 @@
-//Universal Includes
-#include <iostream>
-
-//Generally Accepted Includes
-#include <SDL2/SDL.h>
-#include "glad/glad.h"
-#include <glm/glm.hpp>
-
-//OS Specific Includes
-
-
-//Asset Importer Includes
-#include <assimp/cimport.h>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-
-static void sdl_die(const char * message); //finds SDL errors / kills the app if something doesn't init properly
-void init_screen(const char * caption); //initializes the screen / window / context
-void manageFPS(uint32_t &ticks, uint32_t &lastticks); //limits FPS to 60
-void beforeDraw(); //the generic clear screen and other stuff before anything else has to be done
-void drawFunct(); //Draws stuff to the screen
-void readInput(SDL_Event &event); //takes in all input
-
-static const int SCREEN_FULLSCREEN = 0;
-static const int SCREEN_WIDTH  = 1024;
-static const int SCREEN_HEIGHT = 768;
-static SDL_Window *window = NULL;
-static SDL_GLContext maincontext;
-
-bool quit = false;
-uint32_t ticks,lastticks=0;
+#include "clutter.hpp"
 
 int main() 
 {
@@ -48,7 +18,7 @@ int main()
 void beforeDraw()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    manageFPS(ticks,lastticks);
+  manageFPS(ticks,lastticks);
     
 }
 
@@ -71,11 +41,11 @@ void readInput(SDL_Event &event)
 void manageFPS(uint32_t &ticks, uint32_t &lastticks)
 {
 	ticks = SDL_GetTicks();
-    if ( ((ticks*10-lastticks*10)) < 167 )
-    {
-    	SDL_Delay( (167-((ticks*10-lastticks*10)))/10 );
-    } 
-    lastticks = SDL_GetTicks();
+  if ( ((ticks*10-lastticks*10)) < 167 )
+  {
+    SDL_Delay( (167-((ticks*10-lastticks*10)))/10 );
+  } 
+  lastticks = SDL_GetTicks();
 }
 
 static void sdl_die(const char * message) 
@@ -86,7 +56,7 @@ static void sdl_die(const char * message)
  
 void init_screen(const char * title) 
 {
-  // Initialize SDL 
+  // Init SDL 
   if (SDL_Init(SDL_INIT_VIDEO) < 0) sdl_die("SDL Initialize Failed!");
   atexit (SDL_Quit);
   
