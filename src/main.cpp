@@ -5,7 +5,11 @@ int main()
   init_screen("Particle-Viewer");
   SDL_Event event;
   ticks = SDL_GetTicks();
-
+  TwInit(TW_OPENGL_CORE, NULL);
+  TwWindowSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+  TwBar *myBar;
+  myBar = TwNewBar("NameOfMyTweakBar");
+  TwAddVarRW(myBar, "NameOfMyVariable", TW_TYPE_BOOLCPP, &quit, "");
   while (!quit) 
   {
   	readInput(event);
@@ -13,6 +17,7 @@ int main()
     drawFunct();
     SDL_GL_SwapWindow(window); // should almost always be last
   }
+  TwTerminate();
 }
 
 void beforeDraw()
@@ -25,17 +30,19 @@ void beforeDraw()
 void drawFunct()
 {
 	//render here
+
+   TwDraw();
 }
 
 void readInput(SDL_Event &event)
 {
 	while (SDL_PollEvent(&event)) 
+  {
+    if (event.type == SDL_QUIT) 
     {
-      if (event.type == SDL_QUIT) 
-      {
-        quit = true;
-      }
+      quit = true;
     }
+  }
 }
 
 void manageFPS(uint32_t &ticks, uint32_t &lastticks)
