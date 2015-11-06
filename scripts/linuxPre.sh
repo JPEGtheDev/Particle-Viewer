@@ -33,24 +33,6 @@ if [ ! "$(ls -A /home/travis/build/JPEGtheDev/glm)" ]; then
 	cd /home/travis/build/JPEGtheDev/Particle-Viewer;
 fi
 
-if [ ! "$(ls -A /home/travis/build/JPEGtheDev/assimp)" ]; then
-	
-	cd /home/travis/build/JPEGtheDev/;
-	mkdir assBuild;
-	cd assBuild;
-	git clone https://github.com/assimp/assimp.git;
-	cd assimp;
-	cd glm;
-	if [ "$(id -u)" != "0" ]; then
-	cmake -G 'Unix Makefiles' -DCMAKE_INSTALL_PREFIX=/home/travis/build/JPEGtheDev/assimp .;
-	else
-	cmake -G 'Unix Makefiles' .;
-	fi
-
-	make;
-	make install;
-	cd /home/travis/build/JPEGtheDev/Particle-Viewer;
-fi
 if [ ! "$(ls -A /home/travis/build/JPEGtheDev/cmake)" ]; then
 	
 	cd /home/travis/build/JPEGtheDev/;
@@ -60,17 +42,5 @@ if [ ! "$(ls -A /home/travis/build/JPEGtheDev/cmake)" ]; then
 	mkdir /home/travis/build/JPEGtheDev/cmake;
 	chmod 777 -R /home/travis/build/JPEGtheDev/cmake;
 	sh ./cmake-3.3.2-Linux-x86_64.sh --prefix=/home/travis/build/JPEGtheDev/cmake --exclude-subdir;
-	cd /home/travis/build/JPEGtheDev/Particle-Viewer;
-fi
-
-if [ ! "$(ls -A /home/travis/build/JPEGtheDev/libRocket)" ]; then
-	cd /home/travis/build/JPEGtheDev/;
-	mkdir rocketBuild;
-	cd rocketBuild;
-	git clone https://github.com/libRocket/libRocket.git;
-	cd libRocket/Build;
-	cmake -DCMAKE_INSTALL_PREFIX=/home/travis/build/JPEGtheDev/libRocket .;
-	make;
-	make install;
 	cd /home/travis/build/JPEGtheDev/Particle-Viewer;
 fi

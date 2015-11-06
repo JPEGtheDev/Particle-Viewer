@@ -1,12 +1,14 @@
 //includes
 		#include <iostream>
-
-	//Generally Accepted Includes
-		#include <SDL2/SDL.h>
 		#include "glad/glad.h"
 		#include <glm/glm.hpp>
 	//Windows Includes
-	
+	#ifdef _WIN32
+		#include <windows.h>
+		#include<SDL.h>
+	#else //Includes for Linux and OSX
+		#include <SDL2/SDL.h>
+	#endif
 //end includes
 
 

@@ -30,7 +30,6 @@ Travis-CI:
     <li><a href="https://www.opengl.org/">OpenGL</a></li>
     <li><a href="https://github.com/Dav1dde/glad">GLAD</a></li>
     <li><a href="http://glm.g-truc.net/0.9.7/index.html">GLM</a></li>
-    <li><a href="http://assimp.sourceforge.net/">assimp</a></li>
   </ul>
 </p>
 

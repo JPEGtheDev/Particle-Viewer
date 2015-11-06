@@ -1,6 +1,6 @@
 #include "clutter.hpp"
 
-int main() 
+int main(int argc, char* argv[])
 {
   init_screen("Particle-Viewer");
   SDL_Event event;
@@ -12,6 +12,7 @@ int main()
     drawFunct();
     SDL_GL_SwapWindow(window);
   }
+  return 0;
 }
 
 void beforeDraw()
