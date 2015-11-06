@@ -5,7 +5,6 @@
 		#include <SDL2/SDL.h>
 		#include "glad/glad.h"
 		#include <glm/glm.hpp>
-		#include <AntTweakBar.h>
 	//Windows Includes
 	
 //end includes
