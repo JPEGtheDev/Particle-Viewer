@@ -1,1 +1,1 @@
-brew update && brew install sdl2 glew glm boost;
+brew update && brew install sdl2 glew glm;
