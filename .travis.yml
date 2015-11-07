@@ -26,7 +26,6 @@ addons:
       - valgrind
       - gdb
       - llvm-3.0-dev
-      - libsoil-dev
   coverity_scan:
     project:
       name: "JPEGtheDev/Particle-Viewer"
@@ -42,8 +41,6 @@ cache:
     - /home/travis/build/JPEGtheDev/glm
     - /home/travis/build/JPEGtheDev/assimp
     - /home/travis/build/JPEGtheDev/cmake
-    - /home/travis/build/JPEGtheDev/libRocket
-    - libRocketOSX
     
 before_install:
 
