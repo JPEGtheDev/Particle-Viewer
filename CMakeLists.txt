@@ -12,6 +12,9 @@ add_executable(Viewer
   src/glad/glad.c
   src/main.cpp
   src/clutter.hpp
+  src/shader.hpp
+  src/shader.cpp
+  src/stb/stb_image.h
 )
 target_link_libraries(Viewer ${CMAKE_DL_LIBS})
 

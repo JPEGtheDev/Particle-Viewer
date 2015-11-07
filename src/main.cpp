@@ -5,6 +5,9 @@ int main(int argc, char* argv[])
   init_screen("Particle-Viewer");
   SDL_Event event;
   ticks = SDL_GetTicks();
+  gladLoadGLLoader(SDL_GL_GetProcAddress);
+  setupGLStuff();
+  
   while (!quit) 
   {
   	readInput(event);
@@ -12,6 +15,7 @@ int main(int argc, char* argv[])
     drawFunct();
     SDL_GL_SwapWindow(window);
   }
+  cleanup();
   return 0;
 }
 
@@ -24,7 +28,46 @@ void beforeDraw()
 
 void drawFunct()
 {
-	//render here
+
+  shader.Use();
+  
+  glm::mat4 view;
+        glm::mat4 projection;
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        projection = glm::perspective(45.0f, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 100.0f);
+        // Get their uniform location
+        GLint modelLoc = glGetUniformLocation(shader.Program, "model");
+        GLint viewLoc = glGetUniformLocation(shader.Program, "view");
+        GLint projLoc = glGetUniformLocation(shader.Program, "projection");
+        // Pass the matrices to the shader
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        // Note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
+        glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+        glBindVertexArray(VAO);
+        for (GLuint i = 0; i < 10; i++)
+        {
+            // Calculate the model matrix for each object and pass it to shader before drawing
+            glm::mat4 model;
+            model = glm::translate(model, cubePositions[i]);
+            GLfloat angle = 20.0f * i;
+            model = glm::rotate(model, angle, glm::vec3(1.0f, 0.3f, 0.5f));
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
+
+
+
+
+
+
+
+
+  glBindVertexArray(VAO);
+
+
+  glBindVertexArray(0);
 }
 
 void readInput(SDL_Event &event)
@@ -87,4 +130,35 @@ void init_screen(const char * title)
   SDL_GetWindowSize(window, &w, &h);
   glViewport(0, 0, w, h);
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+}
+
+void setupGLStuff() 
+{
+  glEnable(GL_DEPTH_TEST);
+  shader = Shader("../src/shaders/vertex.vs","../src/shaders/fragment.frag");
+  glGenVertexArrays(1, &VAO);
+  glGenBuffers(1, &VBO);
+  glGenBuffers(1, &EBO);
+
+  glBindVertexArray(VAO);
+
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+  glEnableVertexAttribArray(0);
+  // TexCoord attribute
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+  glEnableVertexAttribArray(2);
+
+  glBindVertexArray(0);
+}
+void cleanup()
+{
+  glDeleteVertexArrays(1, &VAO);
+  glDeleteBuffers(1, &VBO);
+  glDeleteBuffers(1, &EBO);
 }
