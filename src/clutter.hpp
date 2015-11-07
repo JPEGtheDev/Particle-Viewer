@@ -5,6 +5,7 @@
 	#include <glm/gtc/type_ptr.hpp>
 	#include "glad/glad.h"
 	#include "shader.hpp"
+    #include "camera.hpp"
 	#define STB_IMAGE_IMPLEMENTATION
 	#include "stb/stb_image.h"
 	
@@ -20,12 +21,12 @@
 //function prototypes
 	static void sdl_die(const char * message); 				//finds SDL errors / kills the app if something doesn't init properly
 	void init_screen(const char * caption);					//initializes the screen / window / context
-	void manageFPS(uint32_t &ticks, uint32_t &lastticks);	//limits FPS to 60
+	void manageFPS(uint32_t &ticks, uint32_t &lastticks);	//limits FPS to 60 and update deltaTime
 	void beforeDraw(); 										//the generic clear screen and other stuff before anything else has to be done
 	void drawFunct(); 										//Draws stuff to the screen
 	void readInput(SDL_Event &event); 						//takes in all input
 	void setupGLStuff();									//sets up the VAOs and the VBOs
-	void cleanup();											//destroy it all with fire									
+	void cleanup();											//destroy it all with fire				
 //end function prototypes
 
 //variables
@@ -100,4 +101,8 @@
         glm::vec3( 1.5f,  0.2f, -1.5f),
         glm::vec3(-1.3f,  1.0f, -1.5f)
     };
+    Camera cam = Camera();
+
+    GLfloat deltaTime = 0.0f;
+    GLfloat lastFrame = 0.0f;
 //end variables

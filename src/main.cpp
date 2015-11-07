@@ -28,34 +28,41 @@ void beforeDraw()
 
 void drawFunct()
 {
-
+  updateDeltaTime();
+  cam.update(deltaTime);
   shader.Use();
   
+  
+
+
+
+
   glm::mat4 view;
-        glm::mat4 projection;
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-        projection = glm::perspective(45.0f, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 100.0f);
-        // Get their uniform location
-        GLint modelLoc = glGetUniformLocation(shader.Program, "model");
-        GLint viewLoc = glGetUniformLocation(shader.Program, "view");
-        GLint projLoc = glGetUniformLocation(shader.Program, "projection");
-        // Pass the matrices to the shader
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-        // Note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
-        glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+  glm::mat4 projection;
 
-        glBindVertexArray(VAO);
-        for (GLuint i = 0; i < 10; i++)
-        {
-            // Calculate the model matrix for each object and pass it to shader before drawing
-            glm::mat4 model;
-            model = glm::translate(model, cubePositions[i]);
-            GLfloat angle = 20.0f * i;
-            model = glm::rotate(model, angle, glm::vec3(1.0f, 0.3f, 0.5f));
-            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+  view = cam.setupCam();
+  projection = glm::perspective(45.0f, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 100.0f);
 
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
+  GLint modelLoc = glGetUniformLocation(shader.Program, "model");
+  GLint viewLoc = glGetUniformLocation(shader.Program, "view");
+  GLint projLoc = glGetUniformLocation(shader.Program, "projection");
+
+  glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+  glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+  glBindVertexArray(VAO);
+  
+  for (GLuint i = 0; i < 10; i++)
+  {
+      // Calculate the model matrix for each object and pass it to shader before drawing
+      glm::mat4 model;
+      model = glm::translate(model, cubePositions[i]);
+      GLfloat angle = 20.0f * i;
+      model = glm::rotate(model, angle, glm::vec3(1.0f, 0.3f, 0.5f));
+      glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+      glDrawArrays(GL_TRIANGLES, 0, 36);
+  }
 
 
 
@@ -72,11 +79,53 @@ void drawFunct()
 
 void readInput(SDL_Event &event)
 {
+  const Uint8 *keystate = SDL_GetKeyboardState(NULL);
+
+  if(keystate[SDL_SCANCODE_W])
+  {
+    cam.moveForward();
+  }
+  if(keystate[SDL_SCANCODE_S])
+  {
+    cam.moveBackward();
+  }
+  if(keystate[SDL_SCANCODE_A])
+  {
+    cam.moveLeft();
+  }
+  if(keystate[SDL_SCANCODE_D])
+  {
+    cam.moveRight();
+  }
+  if(keystate[SDL_SCANCODE_I])
+  {
+    cam.lookUp();
+  }
+  if(keystate[SDL_SCANCODE_K])
+  {
+    cam.lookDown();
+  }
+  if(keystate[SDL_SCANCODE_J])
+  {
+    cam.lookLeft();
+  }
+  if(keystate[SDL_SCANCODE_L])
+  {
+    cam.lookRight();
+  }
+
 	while (SDL_PollEvent(&event)) 
   {
     if (event.type == SDL_QUIT) 
     {
       quit = true;
+    }
+    else if(event.type == SDL_KEYDOWN)
+    {
+      if(event.key.keysym.sym == SDLK_ESCAPE)
+      {
+        quit = true;
+      }
     }
   }
 }
@@ -84,11 +133,13 @@ void readInput(SDL_Event &event)
 void manageFPS(uint32_t &ticks, uint32_t &lastticks)
 {
 	ticks = SDL_GetTicks();
+  deltaTime = ticks - lastticks;
   if ( ((ticks*10-lastticks*10)) < 167 )
   {
     SDL_Delay( (167-((ticks*10-lastticks*10)))/10 );
   } 
   lastticks = SDL_GetTicks();
+
 }
 
 static void sdl_die(const char * message) 
