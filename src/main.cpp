@@ -28,7 +28,6 @@ void beforeDraw()
 
 void drawFunct()
 {
-  updateDeltaTime();
   cam.update(deltaTime);
   shader.Use();
   

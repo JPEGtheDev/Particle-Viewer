@@ -6,9 +6,8 @@
 	#include "glad/glad.h"
 	#include "shader.hpp"
     #include "camera.hpp"
-	#define STB_IMAGE_IMPLEMENTATION
-	#include "stb/stb_image.h"
-	
+	#include "mesh.hpp"
+    #include "model.hpp"
 	#ifdef _WIN32 //Windows Includes
 		#include <windows.h>
 		#include <SDL.h>
