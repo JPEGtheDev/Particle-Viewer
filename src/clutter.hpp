@@ -7,7 +7,6 @@
 	#include "shader.hpp"
     #include "camera.hpp"
 	#include "mesh.hpp"
-    #include "model.hpp"
 	#ifdef _WIN32 //Windows Includes
 		#include <windows.h>
 		#include <SDL.h>
@@ -25,7 +24,8 @@
 	void drawFunct(); 										//Draws stuff to the screen
 	void readInput(SDL_Event &event); 						//takes in all input
 	void setupGLStuff();									//sets up the VAOs and the VBOs
-	void cleanup();											//destroy it all with fire				
+	void cleanup();											//destroy it all with fire
+    void setupObjects();			
 //end function prototypes
 
 //variables
@@ -37,71 +37,25 @@
 	static bool quit = false;
 	static uint32_t ticks,lastticks= 0;
 
-	GLfloat vertices[] = {
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-    };
-	GLuint indices[] = 
-	{  // Note that we start from 0!
-        0, 1, 3, // First Triangle
-        1, 2, 3  // Second Triangle
-    };
     GLuint VBO, VAO, EBO;
     Shader shader;
     GLuint transformLoc;
-    glm::vec3 cubePositions[] = {
-        glm::vec3( 0.0f,  0.0f,  0.0f),
-        glm::vec3( 2.0f,  5.0f, -15.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f),
-        glm::vec3(-3.8f, -2.0f, -12.3f),
-        glm::vec3( 2.4f, -0.4f, -3.5f),
-        glm::vec3(-1.7f,  3.0f, -7.5f),
-        glm::vec3( 1.3f, -2.0f, -2.5f),
-        glm::vec3( 1.5f,  2.0f, -2.5f),
-        glm::vec3( 1.5f,  0.2f, -1.5f),
-        glm::vec3(-1.3f,  1.0f, -1.5f)
-    };
     Camera cam = Camera();
 
     GLfloat deltaTime = 0.0f;
     GLfloat lastFrame = 0.0f;
+    glm::mat4 view;
+    glm::mat4 projection;
+    GLuint quadVAO, quadVBO;
+    GLfloat quadVertices[] = 
+    {
+        // Positions   // Colors
+        -0.05f,  0.05f,  1.0f, 0.0f, 0.0f,
+         0.05f, -0.05f,  0.0f, 1.0f, 0.0f,
+        -0.05f, -0.05f,  0.0f, 0.0f, 1.0f,
+
+        -0.05f,  0.05f,  1.0f, 0.0f, 0.0f,
+         0.05f, -0.05f,  0.0f, 1.0f, 0.0f,   
+         0.05f,  0.05f,  0.0f, 1.0f, 1.0f                   
+    };
 //end variables

@@ -21,59 +21,43 @@ int main(int argc, char* argv[])
 
 void beforeDraw()
 {
+
+  cam.update(deltaTime);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   manageFPS(ticks,lastticks);
-    
+  shader.Use();
+  view = cam.setupCam();
+  //update positions
+
+  
 }
+glm::mat4* modelMatrices = new glm::mat4[10];
+
+
+// void setupObjects()
+// {
+//   for (int i = 0; i < 10; i++)
+//   {
+//     glm::mat4 model;
+//     model = glm::translate(model, cubePositions[i]);
+//     modelMatrices[i] = model;
+//   }
+// }
 
 void drawFunct()
 {
-  cam.update(deltaTime);
-  shader.Use();
-  
-  
-
-
-
-
-  glm::mat4 view;
-  glm::mat4 projection;
-
-  view = cam.setupCam();
-  projection = glm::perspective(45.0f, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 100.0f);
-
   GLint modelLoc = glGetUniformLocation(shader.Program, "model");
   GLint viewLoc = glGetUniformLocation(shader.Program, "view");
   GLint projLoc = glGetUniformLocation(shader.Program, "projection");
 
   glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
   glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
-  glBindVertexArray(VAO);
-  
-  for (GLuint i = 0; i < 10; i++)
-  {
-      // Calculate the model matrix for each object and pass it to shader before drawing
-      glm::mat4 model;
-      model = glm::translate(model, cubePositions[i]);
-      GLfloat angle = 20.0f * i;
-      model = glm::rotate(model, angle, glm::vec3(1.0f, 0.3f, 0.5f));
-      glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-
-      glDrawArrays(GL_TRIANGLES, 0, 36);
-  }
-
-
-
-
-
-
-
-
   glBindVertexArray(VAO);
 
-
+  glBindVertexArray(quadVAO);
+  glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 100);
   glBindVertexArray(0);
+
 }
 
 void readInput(SDL_Event &event)
@@ -182,30 +166,57 @@ void init_screen(const char * title)
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
+glm::vec3 translations[100];
+
 void setupGLStuff() 
 {
+  GLfloat offset = 0.1f;
+  int index = 0;
+  for(GLint y = -10; y < 10; y += 2)
+    {
+        for(GLint x = -10; x < 10; x += 2)
+        {
+            glm::vec3 translation;
+            translation.x = (GLfloat)x / 10.0f + offset;
+            translation.y = (GLfloat)y / 10.0f + offset;
+            translation.z = (GLfloat)y * (GLfloat)x / 10.0f;
+            translations[index++] = translation;
+        }
+    }
+
   glEnable(GL_DEPTH_TEST);
   shader = Shader("../src/shaders/vertex.vs","../src/shaders/fragment.frag");
-  glGenVertexArrays(1, &VAO);
-  glGenBuffers(1, &VBO);
-  glGenBuffers(1, &EBO);
+  projection = glm::perspective(45.0f, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 100.0f);
 
-  glBindVertexArray(VAO);
+  
+  GLuint instanceVBO;
+  glGenBuffers(1, &instanceVBO);
+  glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 100, &translations[0], GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+  glGenVertexArrays(1, &quadVAO);
+  glGenBuffers(1, &quadVBO);
+  glBindVertexArray(quadVAO);
+  glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
   glEnableVertexAttribArray(0);
-  // TexCoord attribute
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(2 * sizeof(GLfloat)));
+  // Also set instance data
   glEnableVertexAttribArray(2);
-
+  glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0); 
+  glVertexAttribDivisor(2, 1); // Tell OpenGL this is an instanced vertex attribute.
   glBindVertexArray(0);
+
+
+
+
 }
+
 void cleanup()
 {
   glDeleteVertexArrays(1, &VAO);

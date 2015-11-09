@@ -5,7 +5,6 @@
 #include <sstream>
 #include <iostream>
 #include <vector>
-#include <assimp/Importer.hpp>  
 using namespace std;
 // GL Includes
 #include "glad/glad.h"
@@ -23,7 +22,7 @@ struct Vertex
 struct Texture {
     GLuint id;
     string type;
-    aiString path;
+    string path;
 };
 
 class Mesh {
