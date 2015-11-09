@@ -16,8 +16,6 @@ add_executable(Viewer
   src/stb/stb_image.h
   src/camera.hpp
   src/camera.cpp
-  src/mesh.hpp
-  src/mesh.cpp
 )
 target_link_libraries(Viewer ${CMAKE_DL_LIBS})
 

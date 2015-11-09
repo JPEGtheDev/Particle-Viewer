@@ -6,7 +6,6 @@
 	#include "glad/glad.h"
 	#include "shader.hpp"
     #include "camera.hpp"
-	#include "mesh.hpp"
 	#ifdef _WIN32 //Windows Includes
 		#include <windows.h>
 		#include <SDL.h>
@@ -29,13 +28,13 @@
 //end function prototypes
 
 //variables
-	static const int SCREEN_FULLSCREEN = 0;
-	static const int SCREEN_WIDTH  = 1024;
-	static const int SCREEN_HEIGHT = 768;
-	static SDL_Window *window = NULL;
-	static SDL_GLContext maincontext;
-	static bool quit = false;
-	static uint32_t ticks,lastticks= 0;
+	const int SCREEN_FULLSCREEN = 0;
+	const int SCREEN_WIDTH  = 1024;
+	const int SCREEN_HEIGHT = 768;
+	SDL_Window *window = NULL;
+	SDL_GLContext maincontext;
+	bool quit = false;
+	uint32_t ticks,lastticks= 0;
 
     GLuint VBO, VAO, EBO;
     Shader shader;
@@ -47,6 +46,7 @@
     glm::mat4 view;
     glm::mat4 projection;
     GLuint quadVAO, quadVBO;
+    GLuint instanceVBO;
     GLfloat quadVertices[] = 
     {
         // Positions   // Colors
