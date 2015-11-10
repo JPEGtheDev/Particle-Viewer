@@ -44,7 +44,8 @@ void setupRender()
             glm::vec3 translation;
             translation.x = (GLfloat)x / 10.0f + offset;
             translation.y = (GLfloat)y / 10.0f + offset;
-            translation.z = (GLfloat)y * (GLfloat)x * deltaTime / 100000.0f;
+            GLfloat z = SDL_GetTicks();
+            translation.z = (GLfloat)y * (GLfloat)x * sin(glm::radians(z)) / 100000.0f;
             //std::cout << deltaTime << std::endl;
             translations[index++] = translation;
         }
