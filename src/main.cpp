@@ -32,19 +32,19 @@ void beforeDraw()
   
 }
 
-glm::vec3 translations[10000];
+glm::vec3 translations[1000000];
 void setupRender()
 {
   GLfloat offset = 0.1f;
   int index = 0;
-  for(GLint y = -100; y < 100; y += 2)
+  for(GLint y = -1000; y < 1000; y += 2)
     {
-        for(GLint x = -100; x < 100; x += 2)
+        for(GLint x = -1000; x < 1000; x += 2)
         {
             glm::vec3 translation;
             translation.x = (GLfloat)x / 10.0f + offset;
             translation.y = (GLfloat)y / 10.0f + offset;
-            translation.z = (GLfloat)y * (GLfloat)x * deltaTime / 10000.0f;
+            translation.z = (GLfloat)y * (GLfloat)x * deltaTime / 100000.0f;
             //std::cout << deltaTime << std::endl;
             translations[index++] = translation;
         }
@@ -53,7 +53,7 @@ void setupRender()
 
       glGenBuffers(1, &instanceVBO);
       glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-      glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 10000, &translations[0],  GL_STATIC_DRAW);
+      glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 1000000, &translations[0],  GL_STATIC_DRAW);
       glBindBuffer(GL_ARRAY_BUFFER, 0);
 
       glBindVertexArray(quadVAO);
@@ -69,7 +69,7 @@ void drawFunct()
   glUniformMatrix4fv(glGetUniformLocation(shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
   glUniformMatrix4fv(glGetUniformLocation(shader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
   glBindVertexArray(quadVAO);
-  glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 10000);
+  glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 1000000);
   glBindVertexArray(0);
   glDeleteBuffers(1, &instanceVBO);
 }
@@ -187,10 +187,10 @@ void setupGLStuff()
   
   glEnable(GL_DEPTH_TEST);
   shader = Shader("../src/shaders/vertex.vs","../src/shaders/fragment.frag");
-  projection = glm::perspective(45.0f, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 100.0f);
+  projection = glm::perspective(45.0f, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 1000.0f);
   glGenBuffers(1, &instanceVBO);
   glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 10000, &translations[0],  GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 1000000, &translations[0],  GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
   glGenVertexArrays(1, &quadVAO);
