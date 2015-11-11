@@ -1,6 +1,5 @@
 #include "shader.hpp"
 
-
 Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
 {
     // 1. Retrieve the vertex/fragment source code from filePath

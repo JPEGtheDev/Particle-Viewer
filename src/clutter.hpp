@@ -6,6 +6,7 @@
 	#include "glad/glad.h"
 	#include "shader.hpp"
     #include "camera.hpp"
+    #include "untitled.h"
 	#ifdef _WIN32 //Windows Includes
 		#include <windows.h>
 		#include <SDL.h>
@@ -36,26 +37,14 @@
 	bool quit = false;
 	uint32_t ticks,lastticks= 0;
 
-    GLuint VBO, VAO, EBO;
     Shader shader;
     GLuint transformLoc;
     Camera cam = Camera();
-
+    int n = 20000;
     GLfloat deltaTime = 0.0f;
     GLfloat lastFrame = 0.0f;
     glm::mat4 view;
     glm::mat4 projection;
     GLuint quadVAO, quadVBO;
     GLuint instanceVBO;
-    GLfloat quadVertices[] = 
-    {
-        // Positions   // Colors
-        -0.05f,  0.05f,  1.0f, 0.0f, 0.0f,
-         0.05f, -0.05f,  0.0f, 1.0f, 0.0f,
-        -0.05f, -0.05f,  0.0f, 0.0f, 1.0f,
-
-        -0.05f,  0.05f,  1.0f, 0.0f, 0.0f,
-         0.05f, -0.05f,  0.0f, 1.0f, 0.0f,   
-         0.05f,  0.05f,  0.0f, 1.0f, 1.0f                   
-    };
 //end variables
