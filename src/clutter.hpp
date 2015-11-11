@@ -30,8 +30,8 @@
 
 //variables
 	const int SCREEN_FULLSCREEN = 0;
-	const int SCREEN_WIDTH  = 1024;
-	const int SCREEN_HEIGHT = 768;
+	const int SCREEN_WIDTH  = 1280;
+	const int SCREEN_HEIGHT = 720;
 	SDL_Window *window = NULL;
 	SDL_GLContext maincontext;
 	bool quit = false;
@@ -40,7 +40,8 @@
     Shader shader;
     GLuint transformLoc;
     Camera cam = Camera();
-    int n = 20000;
+    int n = 195112;
+    int defN = 195112;
     GLfloat deltaTime = 0.0f;
     GLfloat lastFrame = 0.0f;
     glm::mat4 view;

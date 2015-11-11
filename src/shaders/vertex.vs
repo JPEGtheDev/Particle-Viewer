@@ -10,5 +10,6 @@ void main()
 {
 
     gl_Position = projection * view * vec4(position + offset, 1.0f);
-    fColor = vec3(1,0,1);
+
+    fColor = vec3( gl_InstanceID%58 / 58.0f, gl_InstanceID%3364/3364.0f, gl_InstanceID%195112/195112.0f);
 }

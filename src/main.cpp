@@ -27,7 +27,6 @@ void beforeDraw()
   manageFPS(ticks,lastticks);
   shader.Use();
   view = cam.setupCam();
-  //update positions
 
   
 }
@@ -36,12 +35,9 @@ glm::vec3 *translations = (glm::vec3*) malloc(sizeof(glm::vec3) * n);
 
 void defaultCube()
 {
-  int z = cbrt(n);
-  int a = ceil(z),b = pow(a,2),c = pow(a,3);
   for(int i =0; i < n; i++)
   {
-    translations[i] = glm::vec3 (i%a,i %b/a,i %c/b);
-    //dld[i].id = 4012;
+    translations[i] = glm::vec3 (i%58,i%3364/58.0f,i %195112/3364.0f);
   }
 }
 
@@ -68,7 +64,6 @@ void drawFunct()
   glUniformMatrix4fv(glGetUniformLocation(shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
   glUniformMatrix4fv(glGetUniformLocation(shader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
   glBindVertexArray(quadVAO);
-  //glDrawElementsInstanced( GL_TRIANGLES, 2304, GL_UNSIGNED_INT, 0, 1);
   glDrawArraysInstanced(GL_TRIANGLES, 0, 2304, n);
   glBindVertexArray(0);
   glDeleteBuffers(1, &instanceVBO);
