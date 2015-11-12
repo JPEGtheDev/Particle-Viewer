@@ -32,7 +32,13 @@ Travis-CI:
     <li><a href="http://glm.g-truc.net/0.9.7/index.html">GLM</a></li>
   </ul>
 </p>
-
+<hr>
+<h3>Utilities Used:</h3>
+<p>
+	<ul>
+		<li><a href="https://github.com/HBehrens/obj2opengl">obj2opengl</a></li>
+	</ul>
+</p>
 <hr>
 
 <h3>Why this is under a MIT license:</h3>

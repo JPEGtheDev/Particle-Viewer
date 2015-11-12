@@ -6,7 +6,7 @@
 	#include "glad/glad.h"
 	#include "shader.hpp"
     #include "camera.hpp"
-    #include "untitled.h"
+    #include "models/lowResSphere.h"
 	#ifdef _WIN32 //Windows Includes
 		#include <windows.h>
 		#include <SDL.h>

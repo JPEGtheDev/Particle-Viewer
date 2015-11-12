@@ -64,7 +64,7 @@ void drawFunct()
   glUniformMatrix4fv(glGetUniformLocation(shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
   glUniformMatrix4fv(glGetUniformLocation(shader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
   glBindVertexArray(quadVAO);
-  glDrawArraysInstanced(GL_TRIANGLES, 0, 2304, n);
+  glDrawArraysInstanced(GL_TRIANGLES, 0, lowResSphereNumVerts, n);
   glBindVertexArray(0);
   glDeleteBuffers(1, &instanceVBO);
 }
@@ -192,7 +192,7 @@ void setupGLStuff()
   glGenBuffers(1, &quadVBO);
   glBindVertexArray(quadVAO);
   glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(untitledVerts), untitledVerts, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(lowResSphereVerts), lowResSphereVerts, GL_STATIC_DRAW);
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
   glEnableVertexAttribArray(1);
