@@ -40,8 +40,8 @@
     Shader shader;
     GLuint transformLoc;
     Camera cam = Camera();
-    int n = 195112;
-    int defN = 195112;
+    int n = 27000;
+    int defN = 27000;
     GLfloat deltaTime = 0.0f;
     GLfloat lastFrame = 0.0f;
     glm::mat4 view;

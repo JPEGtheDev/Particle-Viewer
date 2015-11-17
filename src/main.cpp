@@ -37,7 +37,7 @@ void defaultCube()
 {
   for(int i =0; i < n; i++)
   {
-    translations[i] = glm::vec3 (i%58,i%3364/58.0f,i %195112/3364.0f);
+    translations[i] = glm::vec3 (i%30,i%900/30.0f,i %27000/900.0f);
   }
 }
 
@@ -151,9 +151,11 @@ void init_screen(const char * title)
   
   //set base GL stuff
   SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+  
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
   //creates the window
