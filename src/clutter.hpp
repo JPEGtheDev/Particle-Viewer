@@ -48,4 +48,10 @@
     glm::mat4 projection;
     GLuint quadVAO, quadVBO;
     GLuint instanceVBO;
+    std::string vertexShader =
+    #include "shaders/vertex.vs"
+    ;
+    std::string fragmentShader =
+    #include "shaders/fragment.frag"
+    ;
 //end variables

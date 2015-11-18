@@ -183,7 +183,7 @@ void setupGLStuff()
  
   defaultCube();
   glEnable(GL_DEPTH_TEST);
-  shader = Shader("../src/shaders/vertex.vs","../src/shaders/fragment.frag");
+  shader = Shader(vertexShader.c_str(),fragmentShader.c_str());
   projection = glm::perspective(45.0f, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 1000.0f);
   glGenBuffers(1, &instanceVBO);
   glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);

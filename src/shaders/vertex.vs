@@ -1,3 +1,4 @@
+R"(
 #version 330 core
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec3 offset;
@@ -13,3 +14,4 @@ void main()
 
     fColor = vec3( gl_InstanceID%30 /30.0f, gl_InstanceID%900/900.0f, gl_InstanceID%27000/27000.0f);
 }
+)"

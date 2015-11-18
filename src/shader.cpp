@@ -1,38 +1,7 @@
 #include "shader.hpp"
 
-Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
+Shader::Shader(const GLchar* vShaderCode, const GLchar* fShaderCode)
 {
-    // 1. Retrieve the vertex/fragment source code from filePath
-    std::string vertexCode;
-    std::string fragmentCode;
-    std::ifstream vShaderFile;
-    std::ifstream fShaderFile;
-    // ensures ifstream objects can throw exceptions:
-    vShaderFile.exceptions (std::ifstream::badbit);
-    fShaderFile.exceptions (std::ifstream::badbit);
-    try
-    {
-        // Open files
-        vShaderFile.open(vertexPath);
-        fShaderFile.open(fragmentPath);
-        std::stringstream vShaderStream, fShaderStream;
-        // Read file's buffer contents into streams
-        vShaderStream << vShaderFile.rdbuf();
-        fShaderStream << fShaderFile.rdbuf();
-        // close file handlers
-        vShaderFile.close();
-        fShaderFile.close();
-        // Convert stream into string
-        vertexCode = vShaderStream.str();
-        fragmentCode = fShaderStream.str();
-    }
-    catch (std::ifstream::failure e)
-    {
-        std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
-    }
-    const GLchar* vShaderCode = vertexCode.c_str();
-    const GLchar * fShaderCode = fragmentCode.c_str();
-    // 2. Compile shaders
     GLuint vertex, fragment;
     GLint success;
     GLchar infoLog[512];
