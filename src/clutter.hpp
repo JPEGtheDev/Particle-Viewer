@@ -35,9 +35,11 @@
 	SDL_Window *window = NULL;
 	SDL_GLContext maincontext;
 	bool quit = false;
+	bool highRes = true;
 	uint32_t ticks,lastticks= 0;
 
-    Shader shader;
+    Shader highResShader;
+    Shader lowResShader;
     GLuint transformLoc;
     Camera cam = Camera();
     int n = 27000;
@@ -48,10 +50,17 @@
     glm::mat4 projection;
     GLuint quadVAO, quadVBO;
     GLuint instanceVBO;
-    std::string vertexShader =
-    #include "shaders/vertex.vs"
+    std::string highResVertexShader =
+    #include "shaders/highResVertex.vs"
     ;
-    std::string fragmentShader =
-    #include "shaders/fragment.frag"
+    std::string highResFragmentShader =
+    #include "shaders/highResFragment.frag"
     ;
+    std::string lowResVertexShader =
+    #include "shaders/lowResVertex.vs"
+    ;
+    std::string lowResFragmentShader =
+    #include "shaders/lowResFragment.frag"
+    ;
+
 //end variables

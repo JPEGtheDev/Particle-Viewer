@@ -25,8 +25,17 @@ void beforeDraw()
   cam.update(deltaTime);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   manageFPS(ticks,lastticks);
-  shader.Use();
   view = cam.setupCam();
+  if(highRes)
+  {
+    highResShader.Use();
+  }
+  else
+  {
+
+    lowResShader.Use();
+  }
+  
 
   
 }
@@ -61,10 +70,21 @@ void drawFunct()
 {
   
   setupRender();
-  glUniformMatrix4fv(glGetUniformLocation(shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
-  glUniformMatrix4fv(glGetUniformLocation(shader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+  
   glBindVertexArray(quadVAO);
-  glDrawArraysInstanced(GL_TRIANGLES, 0, lowResSphereNumVerts, n);
+  
+  if(highRes)
+  {
+    glUniformMatrix4fv(glGetUniformLocation(highResShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(highResShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+    glDrawArraysInstanced(GL_TRIANGLES, 0, lowResSphereNumVerts, n);
+  }
+  else
+  {
+    glUniformMatrix4fv(glGetUniformLocation(lowResShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(lowResShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+    glDrawArrays(GL_POINTS,0,n);
+  }
   glBindVertexArray(0);
   glDeleteBuffers(1, &instanceVBO);
 }
@@ -117,6 +137,10 @@ void readInput(SDL_Event &event)
       if(event.key.keysym.sym == SDLK_ESCAPE)
       {
         quit = true;
+      }
+      if(event.key.keysym.sym == SDLK_t)
+      {
+        highRes = !highRes;
       }
     }
   }
@@ -183,7 +207,8 @@ void setupGLStuff()
  
   defaultCube();
   glEnable(GL_DEPTH_TEST);
-  shader = Shader(vertexShader.c_str(),fragmentShader.c_str());
+  highResShader = Shader(highResVertexShader.c_str(),highResFragmentShader.c_str());
+  lowResShader = Shader(lowResVertexShader.c_str(),lowResFragmentShader.c_str());
   projection = glm::perspective(45.0f, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 1000.0f);
   glGenBuffers(1, &instanceVBO);
   glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
