@@ -73,7 +73,7 @@ void drawFunct()
   {
     glUniformMatrix4fv(glGetUniformLocation(lowResShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(glGetUniformLocation(lowResShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-    glDrawArrays(GL_POINTS,0,n);
+    glDrawArraysInstanced(GL_POINTS,0,1,n);
   }
   glBindVertexArray(0);
   glDeleteBuffers(1, &instanceVBO);

@@ -10,7 +10,7 @@ uniform mat4 view;
 void main()
 {
 
-    gl_Position = projection * view * vec4(position + offset, 1.0f);
+    gl_Position = projection * view * vec4(offset, 1.0f);
 
     fColor = vec3( gl_InstanceID%30 /30.0f, gl_InstanceID%900/900.0f, gl_InstanceID%27000/27000.0f);
 }
