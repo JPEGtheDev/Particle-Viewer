@@ -17,22 +17,6 @@ if [ ! "$(ls -A /home/travis/build/JPEGtheDev/SDL2_Build)" ]; then
 	cd /home/travis/build/JPEGtheDev/Particle-Viewer;
 fi
 
-if [ ! "$(ls -A /home/travis/build/JPEGtheDev/glm)" ]; then
-	
-	cd /home/travis/build/JPEGtheDev/;
-	mkdir glmBuild;
-	cd glmBuild;
-	git clone https://github.com/g-truc/glm.git;
-	cd glm;
-	if [ "$(id -u)" != "0" ]; then
-	cmake -DCMAKE_INSTALL_PREFIX=/home/travis/build/JPEGtheDev/glm .;
-	else
-	cmake .;
-	fi
-	make install;
-	cd /home/travis/build/JPEGtheDev/Particle-Viewer;
-fi
-
 if [ ! "$(ls -A /home/travis/build/JPEGtheDev/cmake)" ]; then
 	
 	cd /home/travis/build/JPEGtheDev/;
