@@ -18,7 +18,6 @@ target_include_directories(Viewer PUBLIC
   ${SDL2_INCLUDE_DIR}
 )
 
-
 target_link_libraries(Viewer
   ${SDL2_LIBRARY}
 )

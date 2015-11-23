@@ -25,42 +25,97 @@
 	void readInput(SDL_Event &event); 						//takes in all input
 	void setupGLStuff();									//sets up the VAOs and the VBOs
 	void cleanup();											//destroy it all with fire
-    void setupObjects();			
+    void setupRender();										//Updates the VBOs for position changes
+
 //end function prototypes
 
 //variables
-	const int SCREEN_FULLSCREEN = 0;
-	const int SCREEN_WIDTH  = 1280;
-	const int SCREEN_HEIGHT = 720;
+	const int SCREEN_FULLSCREEN = 0, SCREEN_WIDTH  = 1280, SCREEN_HEIGHT = 720;
+
+	bool quit = false, highRes = true;
+    int n = 27000, defN = 27000;
+    
+    GLuint quadVAO, quadVBO, instanceVBO;
+
+    uint32_t ticks,lastticks = 0;
+    GLfloat deltaTime = 0.0f, lastFrame = 0.0f;
+
 	SDL_Window *window = NULL;
 	SDL_GLContext maincontext;
-	bool quit = false;
-	bool highRes = true;
-	uint32_t ticks,lastticks= 0;
 
-    Shader highResShader;
-    Shader lowResShader;
-    GLuint transformLoc;
+    Shader highResShader, lowResShader;
+   
     Camera cam = Camera();
-    int n = 27000;
-    int defN = 27000;
-    GLfloat deltaTime = 0.0f;
-    GLfloat lastFrame = 0.0f;
-    glm::mat4 view;
-    glm::mat4 projection;
-    GLuint quadVAO, quadVBO;
-    GLuint instanceVBO;
+
+    glm::mat4 view, projection;
+    glm::vec3 *translations = (glm::vec3*) malloc(sizeof(glm::vec3) * n);
+    
     std::string highResVertexShader =
     #include "shaders/highResVertex.vs"
-    ;
-    std::string highResFragmentShader =
+    ,
+    highResFragmentShader =
     #include "shaders/highResFragment.frag"
     ;
     std::string lowResVertexShader =
     #include "shaders/lowResVertex.vs"
-    ;
-    std::string lowResFragmentShader =
+    ,
+    lowResFragmentShader =
     #include "shaders/lowResFragment.frag"
     ;
-
 //end variables
+
+//functions that should not be changed
+    void manageFPS(uint32_t &ticks, uint32_t &lastticks)
+	{
+		ticks = SDL_GetTicks();
+	  deltaTime = ticks - lastticks;
+	  if ( ((ticks*10-lastticks*10)) < 167 )
+	  {
+	    SDL_Delay( (167-((ticks*10-lastticks*10)))/10 );
+	  } 
+	  lastticks = SDL_GetTicks();
+	}
+
+	static void sdl_die(const char * message) 
+	{
+	  fprintf(stderr, "%s: %s\n", message, SDL_GetError());
+	  exit(2);
+	}
+
+	void init_screen(const char * title) 
+	{
+	  // Init SDL 
+	  if (SDL_Init(SDL_INIT_VIDEO) < 0) sdl_die("SDL Initialize Failed!");
+	  atexit (SDL_Quit);
+	  
+	  //loads base GL Libs
+	  SDL_GL_LoadLibrary(NULL);
+	  
+	  //set base GL stuff
+	  SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+	  
+	  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+	  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+	  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+
+	  //creates the window
+	  window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_OPENGL);
+	  if (window == NULL) sdl_die("Failed to create window!");
+
+	  //creates the main GL context
+	  maincontext = SDL_GL_CreateContext(window);
+	  if (maincontext == NULL) sdl_die("Failed to create an OpenGL context!");
+
+	  gladLoadGLLoader(SDL_GL_GetProcAddress);
+
+	  // Use v-sync
+	  SDL_GL_SetSwapInterval(1);
+
+	  int w,h;
+	  SDL_GetWindowSize(window, &w, &h);
+	  glViewport(0, 0, w, h);
+	  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	}
+//functions
