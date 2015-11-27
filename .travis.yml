@@ -49,15 +49,15 @@ before_install:
     fi
     
   - if [ $TRAVIS_OS_NAME == osx ]; then 
-      sh ./scripts/osxPre.sh;
+      sh ./scripts/OSXPre.sh;
     fi
 
 script:
   - if [ $TRAVIS_OS_NAME == osx ]; then 
-      sh ./scripts/g++OSXBuild.sh;
+      sh ./scripts/OSXBuild.sh;
     fi
   - if [ $TRAVIS_OS_NAME == linux ]; then 
-      sh ./scripts/g++LinuxBuild.sh;
+      sh ./scripts/linuxBuild.sh;
     fi
     
 after_success:
