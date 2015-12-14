@@ -6,8 +6,9 @@ int main(int argc, char* argv[])
   SDL_Event event;
   ticks = SDL_GetTicks();
   gladLoadGLLoader(SDL_GL_GetProcAddress);
+  part = new Particle();
   setupGLStuff();
-
+  
   while (!quit) 
   {
   	readInput(event);
@@ -34,49 +35,24 @@ void beforeDraw()
     lowResShader.Use();
   }
 }
-
-void defaultCube()
-{
-  for(int i =0; i < n; i++)
-  {
-    translations[i] = glm::vec3 (i%30,i%900/30.0f,i %27000/900.0f);
-  }
-}
-
-void setupRender()
-{
-      glGenBuffers(1, &instanceVBO);
-      glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-      glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * n, &translations[0],  GL_STATIC_DRAW);
-      glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-      glBindVertexArray(quadVAO);
-      glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-      glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-      glBindBuffer(GL_ARRAY_BUFFER, 0); 
-      glBindVertexArray(0);
-}
-
 void drawFunct()
 {
   
-  setupRender();
+  part->pushVBO();
   glBindVertexArray(quadVAO);
-  
   if(highRes)
   {
     glUniformMatrix4fv(glGetUniformLocation(highResShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(glGetUniformLocation(highResShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-    glDrawArraysInstanced(GL_TRIANGLES, 0, lowResSphereNumVerts, n);
+    glDrawArraysInstanced(GL_TRIANGLES, 0, lowResSphereNumVerts, part->n);
   }
   else
   {
     glUniformMatrix4fv(glGetUniformLocation(lowResShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(glGetUniformLocation(lowResShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-    glDrawArraysInstanced(GL_POINTS,0,1,n);
+    glDrawArraysInstanced(GL_POINTS,0,1,part->n);
   }
   glBindVertexArray(0);
-  glDeleteBuffers(1, &instanceVBO);
 }
 
 void readInput(SDL_Event &event)
@@ -138,15 +114,10 @@ void readInput(SDL_Event &event)
 
 void setupGLStuff() 
 {
-  defaultCube();
   glEnable(GL_DEPTH_TEST);
   highResShader = Shader(highResVertexShader.c_str(),highResFragmentShader.c_str());
   lowResShader = Shader(lowResVertexShader.c_str(),lowResFragmentShader.c_str());
   projection = glm::perspective(45.0f, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 1000.0f);
-  glGenBuffers(1, &instanceVBO);
-  glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * n, &translations[0],  GL_STATIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
 
   glGenVertexArrays(1, &quadVAO);
   glGenBuffers(1, &quadVBO);
@@ -156,15 +127,11 @@ void setupGLStuff()
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
   glEnableVertexAttribArray(1);
-
-  glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-  glBindBuffer(GL_ARRAY_BUFFER, 0); 
-  glVertexAttribDivisor(1, 1); // Tell OpenGL this is an instanced vertex attribute.
+  part->setUpInstanceArray();
   glBindVertexArray(0);
 }
 
 void cleanup()
 {
-
+  delete part;
 }

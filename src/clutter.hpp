@@ -8,6 +8,7 @@
     #include "camera.hpp"
     #include "models/lowResSphere.h"
 	#include "tinyFileDialogs/tinyfiledialogs.h"
+	#include "particle.hpp"
 	#ifdef _WIN32 //Windows Includes
 		#include <windows.h>
 		#include <SDL.h>
@@ -34,9 +35,7 @@
 	const int SCREEN_FULLSCREEN = 0, SCREEN_WIDTH  = 1280, SCREEN_HEIGHT = 720;
 
 	bool quit = false, highRes = true;
-    int n = 27000, defN = 27000;
-    
-    GLuint quadVAO, quadVBO, instanceVBO;
+    GLuint quadVAO, quadVBO;
 
     uint32_t ticks,lastticks = 0;
     GLfloat deltaTime = 0.0f, lastFrame = 0.0f;
@@ -47,9 +46,9 @@
     Shader highResShader, lowResShader;
    
     Camera cam = Camera();
-
+    Particle* part;
+    
     glm::mat4 view, projection;
-    glm::vec3 *translations = (glm::vec3*) malloc(sizeof(glm::vec3) * n);
     
     std::string highResVertexShader =
     #include "shaders/highResVertex.vs"

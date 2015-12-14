@@ -10,9 +10,10 @@ file(GLOB srcHPP src/*.hpp)
 find_package(SDL2 REQUIRED)
 add_executable(Viewer
   ${GLAD}
+  ${DIALOG}
   ${srcCPP}
   ${srcHPP}
-  ${DIALOG}
+
 )
 target_link_libraries(Viewer ${CMAKE_DL_LIBS})
 
