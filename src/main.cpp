@@ -7,7 +7,7 @@ int main(int argc, char* argv[])
   ticks = SDL_GetTicks();
   gladLoadGLLoader(SDL_GL_GetProcAddress);
   setupGLStuff();
-  
+
   while (!quit) 
   {
   	readInput(event);

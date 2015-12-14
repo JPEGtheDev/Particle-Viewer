@@ -7,6 +7,7 @@
 	#include "shader.hpp"
     #include "camera.hpp"
     #include "models/lowResSphere.h"
+	#include "tinyFileDialogs/tinyfiledialogs.h"
 	#ifdef _WIN32 //Windows Includes
 		#include <windows.h>
 		#include <SDL.h>
