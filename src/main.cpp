@@ -115,6 +115,7 @@ void readInput(SDL_Event &event)
 void setupGLStuff() 
 {
   glEnable(GL_DEPTH_TEST);
+  glEnable( GL_PROGRAM_POINT_SIZE );
   highResShader = Shader(highResVertexShader.c_str(),highResFragmentShader.c_str());
   lowResShader = Shader(lowResVertexShader.c_str(),lowResFragmentShader.c_str());
   projection = glm::perspective(45.0f, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 1000.0f);
