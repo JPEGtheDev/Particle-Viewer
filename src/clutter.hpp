@@ -36,7 +36,7 @@
 //variables
 	const int SCREEN_FULLSCREEN = 0, SCREEN_WIDTH  = 1280, SCREEN_HEIGHT = 720;
 
-	bool quit = false, highRes = true;
+	bool quit = false, highRes = false;
     GLuint quadVAO, quadVBO;
 
     uint32_t ticks,lastticks = 0;

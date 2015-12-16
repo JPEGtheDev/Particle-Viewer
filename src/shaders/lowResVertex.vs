@@ -17,7 +17,7 @@ void main()
     gl_Position = projection * view * vec4(offset, 1.0f);
     float dist = length(gl_Position);
 	gl_PointSize = 100.0f * (7.25f / dist); //radius * scale
-    fColor = vec3( gl_InstanceID%30 /30.0f, gl_InstanceID%900/900.0f, gl_InstanceID%27000/27000.0f);
+    fColor = vec3( gl_InstanceID%100 /100.0f, gl_InstanceID%10000/10000.0f, gl_InstanceID%1000000/1000000.0f);
     lightDir = lightDirection;
 }
 )"
