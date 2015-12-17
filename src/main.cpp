@@ -8,7 +8,6 @@ int main(int argc, char* argv[])
   gladLoadGLLoader(SDL_GL_GetProcAddress);
   part = new Particle();
   setupGLStuff();
-
   while (!quit) 
   {
   	readInput(event);

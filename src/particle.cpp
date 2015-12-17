@@ -2,12 +2,12 @@
 
 Particle::Particle()
 {
-    n = 1000000;
+    n = 64000;
     translations = new glm::vec3 [n];
 
     for(int i =0; i < n; i++)
     {
-        translations[i] = glm::vec3 (i%100,i%10000/100.0f,i %1000000/10000.0f);
+        translations[i] = glm::vec3 (i%40 *.75,i%1600/40.0f * .75,i %64000/1600.0f *.75);
     }
     setUpInstanceBuffer();
 }
