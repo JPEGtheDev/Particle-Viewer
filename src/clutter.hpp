@@ -6,7 +6,6 @@
 	#include "glad/glad.h"
 	#include "shader.hpp"
     #include "camera.hpp"
-    #include "models/lowResSphere.h"
 	#include "tinyFileDialogs/tinyfiledialogs.h"
 	#include "particle.hpp"
 	#include <ft2build.h>
@@ -37,7 +36,7 @@
 	const int SCREEN_FULLSCREEN = 0, SCREEN_WIDTH  = 1280, SCREEN_HEIGHT = 720;
 
 	bool quit = false, highRes = false;
-    GLuint quadVAO, quadVBO;
+    GLuint circleVAO, circleVBO;
 
     uint32_t ticks,lastticks = 0;
     GLfloat deltaTime = 0.0f, lastFrame = 0.0f;
@@ -45,24 +44,18 @@
 	SDL_Window *window = NULL;
 	SDL_GLContext maincontext;
 
-    Shader highResShader, lowResShader;
+    Shader sphereShader;
    
     Camera cam = Camera();
     Particle* part;
     
     glm::mat4 view, projection;
     
-    std::string highResVertexShader =
-    #include "shaders/highResVertex.vs"
+    std::string sphereVertexShader =
+    #include "shaders/sphereVertex.vs"
     ,
-    highResFragmentShader =
-    #include "shaders/highResFragment.frag"
-    ;
-    std::string lowResVertexShader =
-    #include "shaders/lowResVertex.vs"
-    ,
-    lowResFragmentShader =
-    #include "shaders/lowResFragment.frag"
+    sphereFragmentShader =
+    #include "shaders/sphereFragment.frag"
     ;
 //end variables
 

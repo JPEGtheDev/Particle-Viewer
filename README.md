@@ -30,14 +30,14 @@ Travis-CI:
     <li><a href="https://www.opengl.org/">OpenGL</a></li>
     <li><a href="https://github.com/Dav1dde/glad">GLAD</a></li>
     <li><a href="http://glm.g-truc.net/0.9.7/index.html">GLM</a></li>
-    <li><a href="http://sourceforge.net/projects/tinyfiledialogs/">tiny file dialogs</a></li>
+    <li><a href="http://sourceforge.net/projects/tinyfiledialogs/">tiny file dialogs</a></li> <!--eww sourceforge... I can understand if they use SVN, but come on -->
   </ul>
 </p>
 <hr>
 <h3>Utilities Used:</h3>
 <p>
 	<ul>
-		<li><a href="https://github.com/HBehrens/obj2opengl">obj2opengl</a></li>
+		<li><a href="https://cmake.org/">cmake</a></li>
 	</ul>
 </p>
 <hr>

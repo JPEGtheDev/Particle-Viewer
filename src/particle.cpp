@@ -35,9 +35,9 @@ void Particle::setUpInstanceBuffer()
 void Particle::setUpInstanceArray()
 {
     glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
     glBindBuffer(GL_ARRAY_BUFFER, 0); 
-    glVertexAttribDivisor(1, 1); // Tell OpenGL this is an instanced vertex attribute.
+    glVertexAttribDivisor(0, 1); // Tell OpenGL this is an instanced vertex attribute.
 
 }
 //code to update N
