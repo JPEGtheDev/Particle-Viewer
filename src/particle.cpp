@@ -21,6 +21,7 @@ Particle::Particle(long N, glm::vec4* trans)
 Particle::~Particle()
 {
     delete[] translations;
+    delete[] velocities;
 }
 void Particle::changeTranslations(long N, glm::vec4 *newTrans)
 {
@@ -28,7 +29,11 @@ void Particle::changeTranslations(long N, glm::vec4 *newTrans)
     {
         delete[] translations;
         n = N;
-        translations = newTrans;
+        translations = new glm::vec4[N];
+        for(int i = 0; i < n ;i++)
+        {
+            translations[i] = newTrans[i];
+        }
         setUpInstanceBuffer();
         return;
     }
@@ -39,23 +44,29 @@ void Particle::changeVelocities(glm::vec4 *newVel)
     if(newVel)
     {
         delete[] velocities;
-        velocities = newVel;
+        velocities = new glm::vec4[n];
+        for(int i = 0; i < n ;i++)
+        {
+            velocities[i] = newVel[i];
+        }
         return;
     }
     std::cout << "Error Loading New Velocities" << std::endl;
 }
 void Particle::pushVBO()
 {
+    //glGenBuffers(1, &instanceVBO);
     glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * n, &translations[0],  GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * n, &translations[0],  GL_DYNAMIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void Particle::setUpInstanceBuffer()
 {
+    glDeleteBuffers(1, &instanceVBO);
     glGenBuffers(1, &instanceVBO);
     glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * n, &translations[0],  GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * n, &translations[0],  GL_DYNAMIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 

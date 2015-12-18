@@ -7,16 +7,19 @@ int main(int argc, char* argv[])
 	ticks = SDL_GetTicks();
 	gladLoadGLLoader(SDL_GL_GetProcAddress);
 	part = new Particle();
-	set->readPosVelFile(part,false); //loads the file
-	
-
+	set->readPosVelFile(20,part,false); //loads the file
+	int curFrame = 0;
 	setupGLStuff();
 	while (!quit) 
 	{
+		set->readPosVelFile(curFrame,part,false);
 		readInput(event);
 		beforeDraw();
 		drawFunct();
 		SDL_GL_SwapWindow(window);
+		curFrame++;
+		curFrame = curFrame % set->frames;
+		//std::cout << curFrame << std::endl;
 	}
 	cleanup();
 	return 0;
@@ -28,6 +31,7 @@ void beforeDraw()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	manageFPS(ticks,lastticks);
 	view = cam.setupCam();
+
 	
 }
 void drawFunct()
@@ -35,11 +39,14 @@ void drawFunct()
 	sphereShader.Use();
 	part->pushVBO();
 	glBindVertexArray(circleVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, part->instanceVBO);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glUniformMatrix4fv(glGetUniformLocation(sphereShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
 	glUniformMatrix4fv(glGetUniformLocation(sphereShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 	glDrawArraysInstanced(GL_POINTS,0,1,part->n);
 	glBindVertexArray(0);
-
+	
 	//draw other stuff
 }
 
@@ -106,11 +113,12 @@ void setupGLStuff()
 	glEnable( GL_PROGRAM_POINT_SIZE );
 	sphereShader = Shader(sphereVertexShader.c_str(),sphereFragmentShader.c_str());							//creates the shader to be used on the spheres
 	projection = glm::perspective(45.0f, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 1000.0f);	//basically tells the camera how to look
-
+	
 	glGenVertexArrays(1, &circleVAO);
 	glGenBuffers(1, &circleVBO);
 	glBindVertexArray(circleVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, circleVBO);
+	
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
 	part->setUpInstanceArray();

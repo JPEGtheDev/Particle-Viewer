@@ -9,10 +9,13 @@ SettingsIO::SettingsIO()
 
 SettingsIO::SettingsIO(const char* posName, const char* statsName)
 {
-	this->PosAndVelFile = fopen(posName, "r");
+	this->posName = posName;
+	this->statsName = statsName;
+	//this->PosAndVelFile = fopen(posName, "r");
 	ifstream data;
 	string name;
 	string blank;
+	
 	data.open(statsName);
 	if(data.is_open())
 	{
@@ -143,33 +146,51 @@ SettingsIO::SettingsIO(const char* posName, const char* statsName)
 		data >> this->Pi;
 	}
 	data.close();
+	frames = getFrames();
 }
 
 SettingsIO::~SettingsIO()
 {
-	fclose(PosAndVelFile);
+	//fclose(PosAndVelFile);
 }
 
-void SettingsIO::readPosVelFile(Particle *part,bool readVelocity)
+void SettingsIO::readPosVelFile(long frame, Particle *part,bool readVelocity)
 {
-
-	glm::vec4 *pos = new glm::vec4[N];
-	glm::vec4 *vel;
-	fread(pos, sizeof(glm::vec4), (int)N, PosAndVelFile);
-	part->changeTranslations(N,pos);
-	if(readVelocity)
+	FILE *PosAndVelFile = fopen(posName, "r");
+	if(PosAndVelFile)
 	{
-		vel = new glm::vec4[N];
-		fread(vel, sizeof(glm::vec4), N, PosAndVelFile);
-		part->changeVelocities(vel);
+		if(frame >= frames)
+		{
+			frame = frames-1;
+		}
+		if(frame < 0)
+		{
+			frame = 0;
+		}
+		fseek(PosAndVelFile, frame * sizeof(glm::vec4) * 2 * N, SEEK_CUR);
+		glm::vec4 *pos = new glm::vec4[N];
+		glm::vec4 *vel;
+		fread(pos, sizeof(glm::vec4), (int)N, PosAndVelFile);
+		part->changeTranslations(N,pos);
+		if(readVelocity)
+		{
+			vel = new glm::vec4[N];
+			fread(vel, sizeof(glm::vec4), N, PosAndVelFile);
+			part->changeVelocities(vel);
+			delete[] vel;
+		}
+		delete[] pos;
+		fclose(PosAndVelFile);
+		return;
 	}
+	fclose(PosAndVelFile);
+	cout << "Error Reading File" << endl;
 }
 
-void SettingsIO::seekReadPosVelFile(int skip, Particle *part, bool readVelocity)
+void SettingsIO::seekReadPosVelFile(int frame, Particle *part, bool readVelocity)
 {
 
-	fseek(PosAndVelFile, skip * sizeof(glm::vec4) * 2 * N, SEEK_CUR);
-	readPosVelFile(part,readVelocity);
+	
 	
 }
 
@@ -366,4 +387,20 @@ double SettingsIO::getMassOfEarth()
 double SettingsIO::getPi()
 {
 	return Pi;
+}
+long long int SettingsIO::getFrames()
+{
+	std::ifstream input;
+	input.open(posName, std::ios::in | std::ios::binary);
+	if(input)
+	{
+		unsigned long long int size = 0;
+		input.seekg(0,std::ios::end);
+		size = input.tellg();
+		size = size / (sizeof(glm::vec4) * 2 * N);
+		input.seekg(0,std::ios::beg);
+		return size;
+	}
+	cout << "Error Getting File Size" << endl;
+	return 0;
 }
