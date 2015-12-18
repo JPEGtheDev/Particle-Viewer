@@ -150,32 +150,12 @@ SettingsIO::~SettingsIO()
 	fclose(PosAndVelFile);
 }
 
-glm::vec3 *SettingsIO::readPosVelFile()
-{
-	glm::vec4 *pos = new glm::vec4[N];
-	glm::vec3 *conv = new glm::vec3[N];
-	fread(pos, sizeof(glm::vec4), (int)N, PosAndVelFile);
-
-	for(long i =0; i < N; i++)
-	{
-		conv[i] = glm::vec3(pos[i].x,pos[i].y,pos[i].z);
-	}
-
-	return conv;
-}
-GLuint *SettingsIO::readColor()
+void SettingsIO::readPosVelFile(Particle *part)
 {
 
 	glm::vec4 *pos = new glm::vec4[N];
-	GLuint *conv = new GLuint[N];
 	fread(pos, sizeof(glm::vec4), (int)N, PosAndVelFile);
-
-	for(long i =0; i < N; i++)
-	{
-		conv[i] = (GLuint) pos[i].w;
-	}
-
-	return conv;
+	part->changeTranslations(N,pos);
 }
 
 void SettingsIO::seekReadPosVelFile(int skip, glm::vec4 *pos, glm::vec4 *vel)

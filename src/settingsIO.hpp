@@ -5,7 +5,7 @@
 #include <sstream>
 #include "glm/glm.hpp"
 #include "glad/glad.h"
-
+#include "particle.hpp"
 class SettingsIO 
 { 
 public:
@@ -14,7 +14,7 @@ public:
 	SettingsIO();
 	SettingsIO(const char*,const char*);
 	~SettingsIO();
-	glm::vec3 *readPosVelFile();
+	void readPosVelFile(Particle*);
 	void seekReadPosVelFile(int, glm::vec4*, glm::vec4*);
 	glm::vec3 getInitialPosition1();
 	glm::vec3 getInitialPosition2();
@@ -22,7 +22,6 @@ public:
 	glm::vec3 getInitialVelocity2();
 	glm::vec4 getInitialSpin1();
 	glm::vec4 getInitialSpin2();
-	GLuint *readColor();
 	double getFractionEarthMassOfBody1();
 	double getFractionEarthMassOfBody2();
 	double getFractionFeBody1();

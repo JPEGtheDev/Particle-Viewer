@@ -11,15 +11,15 @@ class Particle
 public:
 	
     Particle();					//default cube constructor
-    Particle(long,glm::vec3*);
+    Particle(long,glm::vec4*);
     ~Particle();				//destructor for the particles
 
     void pushVBO();				//pushes the VBO to the graphics card. Allows the positions to change.
 	void setUpInstanceArray();	//sets up the instance array to be used in the shader
-	void changeTranslations(long,glm::vec3*);
+	void changeTranslations(long,glm::vec4*);
 	long n;						//number of objects
 	GLuint instanceVBO;			//the instance VBO, it contains a pointer to the translations
-	glm::vec3 *translations;	//the positions of the particles
+	glm::vec4 *translations;	//the positions of the particles
 	
 	//include shader
 

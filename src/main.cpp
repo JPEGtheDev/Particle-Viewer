@@ -7,7 +7,7 @@ int main(int argc, char* argv[])
 	ticks = SDL_GetTicks();
 	gladLoadGLLoader(SDL_GL_GetProcAddress);
 	part = new Particle();
-	part->changeTranslations(set ->N, set->readPosVelFile());
+	set->readPosVelFile(part);
 	
 
 	setupGLStuff();
@@ -111,7 +111,7 @@ void setupGLStuff()
 	glGenBuffers(1, &circleVBO);
 	glBindVertexArray(circleVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, circleVBO);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
 	part->setUpInstanceArray();
 	glBindVertexArray(0);
