@@ -217,7 +217,8 @@ void readRunParameters(char* posName, char* statsName)
 	setRunParameters();
 }
 
-void WaitFor (unsigned int secs) {
+void WaitFor (unsigned int secs) 
+{
     int retTime = time(0) + secs;     // Get finishing time.
     while (time(0) < retTime);    // Loop until it arrives.
 }

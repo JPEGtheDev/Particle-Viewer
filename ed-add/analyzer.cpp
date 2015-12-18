@@ -1,14 +1,5 @@
 /*
 
-cd '/media/storage/PMGProjects/LunarFormingImpact/Analyzer Mk II'
-nvcc analyzer.cpp -o analyzer -lglut -lm -lGLU -lGL -O3 -run
-
-To stop hit "control c" in the window you launched it from.
-
-Analyzer goes here
-Todo:
--Better keyboard commands; need to get away from Ctrl+C perhaps?
-
 Note: this version only works with float4s that store the ID of the body in the 4th position,
 so older .bin files probably won't work properly anymore.
 

@@ -8,6 +8,7 @@
     #include "camera.hpp"
 	#include "tinyFileDialogs/tinyfiledialogs.h"
 	#include "particle.hpp"
+	#include "settingsIO.hpp"
 	#include <ft2build.h>
 	#include FT_FREETYPE_H  
 	#ifdef _WIN32 //Windows Includes
@@ -29,7 +30,6 @@
 	void setupGLStuff();									//sets up the VAOs and the VBOs
 	void cleanup();											//destroy it all with fire
     void setupRender();										//Updates the VBOs for position changes
-
 //end function prototypes
 
 //variables
@@ -58,7 +58,9 @@
     #include "shaders/sphereFragment.frag"
     ;
 //end variables
-
+    const std::string posLoc = "/Users/JPEG/Desktop/500kSlam/PosAndVel";
+    const std::string setLoc = "/Users/JPEG/Desktop/500kSlam/RunSetup";
+    SettingsIO *set = new SettingsIO(posLoc.c_str(),setLoc.c_str());
 //functions that should not be changed
     void manageFPS(uint32_t &ticks, uint32_t &lastticks)
 	{

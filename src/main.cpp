@@ -7,6 +7,9 @@ int main(int argc, char* argv[])
 	ticks = SDL_GetTicks();
 	gladLoadGLLoader(SDL_GL_GetProcAddress);
 	part = new Particle();
+	part->changeTranslations(set ->N, set->readPosVelFile());
+	
+
 	setupGLStuff();
 	while (!quit) 
 	{
