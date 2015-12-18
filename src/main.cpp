@@ -7,7 +7,7 @@ int main(int argc, char* argv[])
 	ticks = SDL_GetTicks();
 	gladLoadGLLoader(SDL_GL_GetProcAddress);
 	part = new Particle();
-	set->readPosVelFile(part);
+	set->readPosVelFile(part,false); //loads the file
 	
 
 	setupGLStuff();

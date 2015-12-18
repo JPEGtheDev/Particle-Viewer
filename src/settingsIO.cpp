@@ -150,19 +150,27 @@ SettingsIO::~SettingsIO()
 	fclose(PosAndVelFile);
 }
 
-void SettingsIO::readPosVelFile(Particle *part)
+void SettingsIO::readPosVelFile(Particle *part,bool readVelocity)
 {
 
 	glm::vec4 *pos = new glm::vec4[N];
+	glm::vec4 *vel;
 	fread(pos, sizeof(glm::vec4), (int)N, PosAndVelFile);
 	part->changeTranslations(N,pos);
+	if(readVelocity)
+	{
+		vel = new glm::vec4[N];
+		fread(vel, sizeof(glm::vec4), N, PosAndVelFile);
+		part->changeVelocities(vel);
+	}
 }
 
-void SettingsIO::seekReadPosVelFile(int skip, glm::vec4 *pos, glm::vec4 *vel)
+void SettingsIO::seekReadPosVelFile(int skip, Particle *part, bool readVelocity)
 {
+
 	fseek(PosAndVelFile, skip * sizeof(glm::vec4) * 2 * N, SEEK_CUR);
-	fread(pos, sizeof(glm::vec4), N, PosAndVelFile);
-	fread(vel, sizeof(glm::vec4), N, PosAndVelFile);
+	readPosVelFile(part,readVelocity);
+	
 }
 
 glm::vec3 SettingsIO::getInitialPosition1()

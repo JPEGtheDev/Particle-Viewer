@@ -14,8 +14,8 @@ public:
 	SettingsIO();
 	SettingsIO(const char*,const char*);
 	~SettingsIO();
-	void readPosVelFile(Particle*);
-	void seekReadPosVelFile(int, glm::vec4*, glm::vec4*);
+	void readPosVelFile(Particle*,bool);
+	void seekReadPosVelFile(int, Particle*,bool);
 	glm::vec3 getInitialPosition1();
 	glm::vec3 getInitialPosition2();
 	glm::vec3 getInitialVelocity1();

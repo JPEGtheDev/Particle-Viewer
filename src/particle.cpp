@@ -5,6 +5,7 @@ Particle::Particle()
 
     n = 64000;
     translations = new glm::vec4[n];
+    velocities = new glm::vec4[1];
     for(int i =0; i < n; i++)
     {
         translations[i] = glm::vec4 (i%40 *.75,i%1600/40.0f * .75,i %64000/1600.0f *.75,500);
@@ -32,6 +33,16 @@ void Particle::changeTranslations(long N, glm::vec4 *newTrans)
         return;
     }
     std::cout << "Error Loading New Translations" << std::endl;
+}
+void Particle::changeVelocities(glm::vec4 *newVel)
+{
+    if(newVel)
+    {
+        delete[] velocities;
+        velocities = newVel;
+        return;
+    }
+    std::cout << "Error Loading New Velocities" << std::endl;
 }
 void Particle::pushVBO()
 {

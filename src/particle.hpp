@@ -17,10 +17,11 @@ public:
     void pushVBO();				//pushes the VBO to the graphics card. Allows the positions to change.
 	void setUpInstanceArray();	//sets up the instance array to be used in the shader
 	void changeTranslations(long,glm::vec4*);
+	void changeVelocities(glm::vec4*);
 	long n;						//number of objects
 	GLuint instanceVBO;			//the instance VBO, it contains a pointer to the translations
 	glm::vec4 *translations;	//the positions of the particles
-	
+	glm::vec4 *velocities;		//the (should be) blank velocities vec4
 	//include shader
 
 private:
