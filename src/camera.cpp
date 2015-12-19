@@ -1,6 +1,6 @@
 #include "camera.hpp"
 
-Camera::Camera()
+Camera::Camera(const int SCREEN_WIDTH, const int SCREEN_HEIGHT)
 {
 	this->cameraPos 	= glm::vec3(0.0f, 0.0f,  3.0f);
 	this->cameraFront 	= glm::vec3(0.0f, 0.0f, -1.0f);
@@ -9,6 +9,8 @@ Camera::Camera()
 	this->speed 		= this->baseSpeed;
 	this->yaw			= -90.0f;	
 	this->pitch  		= 0.0f;
+	this->renderDistance= 3000.0f;
+	this->projection	= glm::perspective(45.0f, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, renderDistance);
 }
 
 glm::mat4 Camera::setupCam()
@@ -36,21 +38,21 @@ void Camera::updateSpeed(GLfloat deltaTime)
 {
 	this->speed = this->baseSpeed * deltaTime;
 }
-void Camera::lookUp()
+void Camera::lookUp(float pitch)
 {
-	pitch += 2.5f;
+	this->pitch += pitch;
 }
-void Camera::lookDown()
+void Camera::lookDown(float pitch)
 {
-	pitch -= 2.5f;
+	this->pitch -= pitch;
 }
-void Camera::lookRight()
+void Camera::lookRight(float yaw)
 {
-	yaw += 2.5f;
+	this->yaw += yaw;
 }
-void Camera::lookLeft()
+void Camera::lookLeft(float yaw)
 {
-	yaw -= 2.5f;
+	this->yaw -= yaw;
 }
 void Camera::update(GLfloat deltaTime)
 {
@@ -73,4 +75,12 @@ void Camera::clampPitch()
     {
         this->pitch = -89.0f;
     }
+}
+void Camera::setRenderDistance(float renderDistance)
+{
+	this->renderDistance = renderDistance;
+}
+void Camera::changeSpeed(float speed)
+{
+	this->speed = speed;
 }

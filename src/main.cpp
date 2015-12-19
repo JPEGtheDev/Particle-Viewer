@@ -7,19 +7,20 @@ int main(int argc, char* argv[])
 	ticks = SDL_GetTicks();
 	gladLoadGLLoader(SDL_GL_GetProcAddress);
 	part = new Particle();
-	set->readPosVelFile(20,part,false); //loads the file
-	int curFrame = 0;
+	//set->readPosVelFile(0,part,false); //loads the file
 	setupGLStuff();
 	while (!quit) 
 	{
-		set->readPosVelFile(curFrame,part,false);
 		readInput(event);
 		beforeDraw();
 		drawFunct();
 		SDL_GL_SwapWindow(window);
-		curFrame++;
-		curFrame = curFrame % set->frames;
-		//std::cout << curFrame << std::endl;
+		
+		if(set->isPlaying)
+		{
+			set->readPosVelFile(curFrame,part,false);
+			curFrame++;
+		}
 	}
 	cleanup();
 	return 0;
@@ -43,7 +44,7 @@ void drawFunct()
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glUniformMatrix4fv(glGetUniformLocation(sphereShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
-	glUniformMatrix4fv(glGetUniformLocation(sphereShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+	glUniformMatrix4fv(glGetUniformLocation(sphereShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(cam.projection));
 	glDrawArraysInstanced(GL_POINTS,0,1,part->n);
 	glBindVertexArray(0);
 	
@@ -72,19 +73,19 @@ void readInput(SDL_Event &event)
 	}
 	if(keystate[SDL_SCANCODE_I])
 	{
-		cam.lookUp();
+		cam.lookUp(2.5f);
 	}
 	if(keystate[SDL_SCANCODE_K])
 	{
-		cam.lookDown();
+		cam.lookDown(2.5f);
 	}
 	if(keystate[SDL_SCANCODE_J])
 	{
-		cam.lookLeft();
+		cam.lookLeft(2.5f);
 	}
 	if(keystate[SDL_SCANCODE_L])
 	{
-		cam.lookRight();
+		cam.lookRight(2.5f);
 	}
 
 	while (SDL_PollEvent(&event)) 
@@ -99,10 +100,16 @@ void readInput(SDL_Event &event)
 			{
 				quit = true;
 			}
+			if(event.key.keysym.sym == SDLK_SPACE)
+			{
+				set->togglePlay();
+			}
 			if(event.key.keysym.sym == SDLK_t)
 			{
-				highRes = !highRes;
+				set->loadFile(part,false);
+				curFrame = 0;
 			}
+
 		}
 	}
 }
@@ -112,8 +119,7 @@ void setupGLStuff()
 	glEnable(GL_DEPTH_TEST);
 	glEnable( GL_PROGRAM_POINT_SIZE );
 	sphereShader = Shader(sphereVertexShader.c_str(),sphereFragmentShader.c_str());							//creates the shader to be used on the spheres
-	projection = glm::perspective(45.0f, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 1000.0f);	//basically tells the camera how to look
-	
+
 	glGenVertexArrays(1, &circleVAO);
 	glGenBuffers(1, &circleVBO);
 	glBindVertexArray(circleVAO);

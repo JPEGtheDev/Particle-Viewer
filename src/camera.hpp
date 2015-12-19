@@ -13,7 +13,9 @@ class Camera
 		GLfloat pitch;
 		void clampPitch();
 	public:
-		Camera();
+		Camera(const int, const int);
+		float renderDistance;
+		glm::mat4 projection; //basically tells the camera how to look
 		glm::mat4 setupCam();
 		glm::vec3 cameraPos;
 		glm::vec3 cameraFront;
@@ -22,12 +24,14 @@ class Camera
 		void moveBackward();
 		void moveRight();
 		void moveLeft();
-		void lookUp();
-		void lookDown();
-		void lookRight();
-		void lookLeft();
+		void lookUp(float);
+		void lookDown(float);
+		void lookRight(float);
+		void lookLeft(float);
 		void updateSpeed(GLfloat deltaTime);
 		void update(GLfloat deltaTime);
+		void setRenderDistance(float);
+		void changeSpeed(float);
 
 };
 

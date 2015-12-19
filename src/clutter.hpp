@@ -34,7 +34,7 @@
 
 //variables
 	const int SCREEN_FULLSCREEN = 0, SCREEN_WIDTH  = 1280, SCREEN_HEIGHT = 720;
-
+	int curFrame = 0;
 	bool quit = false, highRes = false;
     GLuint circleVAO, circleVBO;
 
@@ -46,10 +46,10 @@
 
     Shader sphereShader;
    
-    Camera cam = Camera();
+    Camera cam = Camera(SCREEN_WIDTH,SCREEN_HEIGHT);
     Particle* part;
     
-    glm::mat4 view, projection;
+    glm::mat4 view;
     
     std::string sphereVertexShader =
     #include "shaders/sphereVertex.vs"
@@ -60,7 +60,7 @@
 //end variables
     const std::string posLoc = "/Users/JPEG/Desktop/500kSlam/PosAndVel";
     const std::string setLoc = "/Users/JPEG/Desktop/500kSlam/RunSetup";
-    SettingsIO *set = new SettingsIO(posLoc.c_str(),setLoc.c_str());
+    SettingsIO *set = new SettingsIO(posLoc,setLoc);
 //functions that should not be changed
     void manageFPS(uint32_t &ticks, uint32_t &lastticks)
 	{

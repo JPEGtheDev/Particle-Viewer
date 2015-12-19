@@ -6,20 +6,23 @@
 #include "glm/glm.hpp"
 #include "glad/glad.h"
 #include "particle.hpp"
+#include "tinyFileDialogs/tinyfiledialogs.h"
 class SettingsIO 
 { 
 public:
 	//FILE *PosAndVelFile;
-	const char* posName;
-	const char* statsName;
+	std::string posName;
+	std::string statsName;
+	bool isPlaying;
 	int errorCount;
 	long N;
 	long frames;
 	SettingsIO();
-	SettingsIO(const char*,const char*);
+	SettingsIO(std::string,std::string);
 	~SettingsIO();
 	void readPosVelFile(long, Particle*,bool);
 	void seekReadPosVelFile(int, Particle*,bool);
+	void togglePlay();
 	glm::vec3 getInitialPosition1();
 	glm::vec3 getInitialPosition2();
 	glm::vec3 getInitialVelocity1();
@@ -45,7 +48,7 @@ public:
 	float getDt();
 	int getWriteToFile();
 	int getRecordRate();
-
+	SettingsIO* loadFile(Particle*, bool);
 	double getDensityFe();
 	double getDensitySi();
 	double getKFe();
@@ -103,6 +106,8 @@ private:
 	glm::vec3 InitialVelocity2;
 	glm::vec4 InitialSpin1;
 	glm::vec4 InitialSpin2;
+	std::string posFile;
+	std::string statsFile;
 };
 
 #endif /* SETTINGSIO_H */ 

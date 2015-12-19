@@ -7,16 +7,18 @@ SettingsIO::SettingsIO()
 	//but it looks nice to have
 }
 
-SettingsIO::SettingsIO(const char* posName, const char* statsName)
+SettingsIO::SettingsIO(string posName, string statsName)
 {
 	this->posName = posName;
 	this->statsName = statsName;
-	//this->PosAndVelFile = fopen(posName, "r");
 	ifstream data;
+	posFile = "PosAndVel";
+	statsFile = "RunSetup";
 	string name;
 	string blank;
 	errorCount = 0;
-	data.open(statsName);
+	isPlaying = false;
+	data.open(statsName.c_str());
 
 	if(data.good() && data.is_open())
 	{
@@ -214,16 +216,18 @@ SettingsIO::~SettingsIO()
 
 void SettingsIO::readPosVelFile(long frame, Particle *part,bool readVelocity)
 {
-	FILE *PosAndVelFile = fopen(posName, "r");
+	FILE *PosAndVelFile = fopen(posName.c_str(), "r");
 	if(PosAndVelFile)
 	{
 		if(frame >= frames)
 		{
 			frame = frames-1;
+			isPlaying = false;
 		}
 		if(frame < 0)
 		{
 			frame = 0;
+			isPlaying = false;
 		}
 		fseek(PosAndVelFile, frame * sizeof(glm::vec4) * 2 * N, SEEK_CUR);
 		glm::vec4 *pos = new glm::vec4[N];
@@ -470,4 +474,34 @@ long long int SettingsIO::getFrames()
 	}
 	cout << "Error Getting File Size" << endl;
 	return 1;
+}
+void SettingsIO::togglePlay()
+{
+	isPlaying = !isPlaying;
+}
+SettingsIO* SettingsIO::loadFile(Particle *part, bool readVelocity)
+{
+	string dialog = "Select Folder";
+	const char* fol = tinyfd_selectFolderDialog (dialog.c_str() , "") ;
+	
+	string folder;
+	if(fol != NULL)
+	{
+		folder = string(fol);
+	}
+	else
+	{
+		folder = "";
+	}
+	if(folder != "")
+	{
+		string posVel = folder;//strcat(folder,posFile.c_str());
+		posVel = posVel + posFile;
+		string settings = folder + statsFile;//strcat(folder, settingsFile.c_str());
+		SettingsIO *set = new SettingsIO(posVel.c_str(),settings.c_str());
+		readPosVelFile(0,part,readVelocity);
+		return set;
+	}
+	cout << "Folder not selected" << endl;
+	return this;
 }
