@@ -106,7 +106,7 @@ void readInput(SDL_Event &event)
 			}
 			if(event.key.keysym.sym == SDLK_t)
 			{
-				set->loadFile(part,false);
+				set = set->loadFile(part,false);
 				curFrame = 0;
 			}
 

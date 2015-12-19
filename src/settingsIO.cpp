@@ -3,8 +3,8 @@ using namespace std;
 
 SettingsIO::SettingsIO() 
 {
-	//not really sure I need this tbh
-	//but it looks nice to have
+	posFile = "/PosAndVel";
+	statsFile = "/RunSetup";
 }
 
 SettingsIO::SettingsIO(string posName, string statsName)
@@ -12,8 +12,8 @@ SettingsIO::SettingsIO(string posName, string statsName)
 	this->posName = posName;
 	this->statsName = statsName;
 	ifstream data;
-	posFile = "PosAndVel";
-	statsFile = "RunSetup";
+	posFile = "/PosAndVel";
+	statsFile = "/RunSetup";
 	string name;
 	string blank;
 	errorCount = 0;
@@ -499,7 +499,7 @@ SettingsIO* SettingsIO::loadFile(Particle *part, bool readVelocity)
 		posVel = posVel + posFile;
 		string settings = folder + statsFile;//strcat(folder, settingsFile.c_str());
 		SettingsIO *set = new SettingsIO(posVel.c_str(),settings.c_str());
-		readPosVelFile(0,part,readVelocity);
+		set->readPosVelFile(0,part,readVelocity);
 		return set;
 	}
 	cout << "Folder not selected" << endl;

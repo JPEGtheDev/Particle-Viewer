@@ -60,7 +60,7 @@
 //end variables
     const std::string posLoc = "/Users/JPEG/Desktop/500kSlam/PosAndVel";
     const std::string setLoc = "/Users/JPEG/Desktop/500kSlam/RunSetup";
-    SettingsIO *set = new SettingsIO(posLoc,setLoc);
+    SettingsIO *set = new SettingsIO();
 //functions that should not be changed
     void manageFPS(uint32_t &ticks, uint32_t &lastticks)
 	{
