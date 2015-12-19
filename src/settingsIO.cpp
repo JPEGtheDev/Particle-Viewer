@@ -18,7 +18,7 @@ SettingsIO::SettingsIO(const char* posName, const char* statsName)
 	errorCount = 0;
 	data.open(statsName);
 
-	if(data.good())
+	if(data.good() && data.is_open())
 	{
 		getline(data,name,'=');
 		data >> this->InitialPosition1.x;
