@@ -241,7 +241,7 @@ void SettingsIO::readPosVelFile(long frame, Particle *part,bool readVelocity)
 		fclose(PosAndVelFile);
 		return;
 	}
-	fclose(PosAndVelFile);
+	//fclose(PosAndVelFile);
 	errorCount++;
 	if(errorCount < 5)
 	{
