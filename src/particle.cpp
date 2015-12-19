@@ -8,7 +8,7 @@ Particle::Particle()
     velocities = new glm::vec4[1];
     for(int i =0; i < n; i++)
     {
-        translations[i] = glm::vec4 (i%40 *.75,i%1600/40.0f * .75,i %64000/1600.0f *.75,500);
+        translations[i] = glm::vec4 (i%40 *.9,i%1600/40.0f * .9,i %64000/1600.0f *.9,500);
     }
     setUpInstanceBuffer();
 }

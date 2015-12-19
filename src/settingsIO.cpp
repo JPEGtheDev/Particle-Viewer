@@ -15,9 +15,10 @@ SettingsIO::SettingsIO(const char* posName, const char* statsName)
 	ifstream data;
 	string name;
 	string blank;
-	
+	errorCount = 0;
 	data.open(statsName);
-	if(data.is_open())
+
+	if(data.good())
 	{
 		getline(data,name,'=');
 		data >> this->InitialPosition1.x;
@@ -145,6 +146,63 @@ SettingsIO::SettingsIO(const char* posName, const char* statsName)
 		getline(data,name,'=');
 		data >> this->Pi;
 	}
+	else
+	{
+		this->InitialPosition1.x = 100;
+		this->InitialPosition1.y = 100;
+		this->InitialPosition1.z = 100;
+		this->InitialPosition2.x = 100;
+		this->InitialPosition2.y = 100;
+		this->InitialPosition2.z = 100;
+		this->InitialVelocity1.x = 100;
+		this->InitialVelocity1.y = 100;
+		this->InitialVelocity1.z = 100;
+		this->InitialVelocity2.x = 100;
+		this->InitialVelocity2.y = 100;
+		this->InitialVelocity2.z = 100;
+		this->InitialSpin1.x = 100;
+		this->InitialSpin1.y = 100;
+		this->InitialSpin1.z = 100;
+		this->InitialSpin1.w = 100;
+		this->InitialSpin2.x = 100;
+		this->InitialSpin2.y = 100;
+		this->InitialSpin2.z = 100;
+		this->InitialSpin2.w = 100;
+		this->FractionEarthMassOfBody1 = 100;
+		this->FractionEarthMassOfBody2 = 100;
+		this->FractionFeBody1 = 100;
+		this->FractionSiBody1 = 100;
+		this->FractionFeBody2 = 100;
+		this->FractionSiBody2 = 100;
+		this->DampRateBody1 = 100;
+		this->DampRateBody2 = 100;
+		this->EnergyTargetBody1 = 100;
+		this->EnergyTargetBody2 = 100;
+		this->N = 100;
+		this->TotalRunTime = 100;
+		this->DampTime = 100;
+		this->DampRestTime = 100;
+		this->EnergyAdjustmentTime = 100;
+		this->EnergyAdjustmentRestTime = 100;
+		this->SpinRestTime = 100;
+		this->Dt = 100;
+		this->WriteToFile = 100;
+		this->RecordRate = 100;
+		this->DensityFe = 100;
+		this->DensitySi = 100;
+		this->KFe = 100;
+		this->KSi = 100;
+		this->KRFe = 100;
+		this->KRSi = 100;
+		this->SDFe = 100;
+		this->SDSi = 100;
+		this->DrawRate = 100;
+		this->DrawQuality = 100;
+		this->UseMultipleGPU = 100;
+		this->UniversalGravity = 100;
+		this->MassOfEarth = 100;
+		this->Pi = 100;
+	}
 	data.close();
 	frames = getFrames();
 }
@@ -184,7 +242,16 @@ void SettingsIO::readPosVelFile(long frame, Particle *part,bool readVelocity)
 		return;
 	}
 	fclose(PosAndVelFile);
-	cout << "Error Reading File" << endl;
+	errorCount++;
+	if(errorCount < 5)
+	{
+		cout << "Error Reading File. Attempt: " << errorCount << endl;
+	}
+	else if (errorCount == 5)
+	{
+		cout << "Too many errors. stopping log here" << endl;
+	}
+	
 }
 
 void SettingsIO::seekReadPosVelFile(int frame, Particle *part, bool readVelocity)
@@ -402,5 +469,5 @@ long long int SettingsIO::getFrames()
 		return size;
 	}
 	cout << "Error Getting File Size" << endl;
-	return 0;
+	return 1;
 }

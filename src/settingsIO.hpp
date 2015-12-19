@@ -12,6 +12,7 @@ public:
 	//FILE *PosAndVelFile;
 	const char* posName;
 	const char* statsName;
+	int errorCount;
 	long N;
 	long frames;
 	SettingsIO();
@@ -44,6 +45,7 @@ public:
 	float getDt();
 	int getWriteToFile();
 	int getRecordRate();
+
 	double getDensityFe();
 	double getDensitySi();
 	double getKFe();
