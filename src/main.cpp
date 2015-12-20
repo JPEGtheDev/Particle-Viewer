@@ -15,11 +15,23 @@ int main(int argc, char* argv[])
 		beforeDraw();
 		drawFunct();
 		SDL_GL_SwapWindow(window);
+		if(set->frames > 1)
+		{
+			set->readPosVelFile(curFrame,part,false);
+		}
 		
 		if(set->isPlaying)
 		{
-			set->readPosVelFile(curFrame,part,false);
+			
 			curFrame++;
+		}
+		if(curFrame > set->frames)
+		{
+			curFrame = set->frames;
+		}
+		if (curFrame < 0)
+		{
+			curFrame = 0;
 		}
 	}
 	cleanup();
@@ -87,7 +99,14 @@ void readInput(SDL_Event &event)
 	{
 		cam.lookRight(2.5f);
 	}
-
+	if(keystate[SDL_SCANCODE_E])
+	{
+		curFrame += 3;
+	}
+	if(keystate[SDL_SCANCODE_Q])
+	{
+		curFrame -= 3;
+	}
 	while (SDL_PollEvent(&event)) 
 	{
 		if (event.type == SDL_QUIT) 
