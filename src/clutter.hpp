@@ -30,6 +30,7 @@
 	void setupGLStuff();									//sets up the VAOs and the VBOs
 	void cleanup();											//destroy it all with fire
     void setupRender();										//Updates the VBOs for position changes
+    void seekFrame(int frame, bool isForward);				//skips frames
 //end function prototypes
 
 //variables

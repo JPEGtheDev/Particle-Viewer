@@ -101,11 +101,11 @@ void readInput(SDL_Event &event)
 	}
 	if(keystate[SDL_SCANCODE_E])
 	{
-		curFrame += 3;
+		seekFrame(3, true);
 	}
 	if(keystate[SDL_SCANCODE_Q])
 	{
-		curFrame -= 3;
+		seekFrame(3, false);
 	}
 	while (SDL_PollEvent(&event)) 
 	{
@@ -127,6 +127,14 @@ void readInput(SDL_Event &event)
 			{
 				set = set->loadFile(part,false);
 				curFrame = 0;
+			}
+			if(event.key.keysym.sym == SDLK_RIGHT)
+			{
+				seekFrame(1,true);
+			}
+			if(event.key.keysym.sym == SDLK_LEFT)
+			{
+				seekFrame(1,false);
 			}
 
 		}
@@ -151,7 +159,18 @@ void setupGLStuff()
 
 	//set up other object arrays
 }
-
+void seekFrame(int frame, bool isForward)
+{
+	if(isForward)
+	{
+		curFrame += frame;
+	}
+	else
+	{
+		curFrame -= frame;
+	}
+	
+}
 void cleanup()
 {
 	delete part;
