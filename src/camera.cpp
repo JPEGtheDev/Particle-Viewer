@@ -11,6 +11,7 @@ Camera::Camera(const int SCREEN_WIDTH, const int SCREEN_HEIGHT)
 	this->pitch  		= 0.0f;
 	this->renderDistance= 3000.0f;
 	this->projection	= glm::perspective(45.0f, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, renderDistance);
+	this->isPlayingBack = false;
 }
 
 glm::mat4 Camera::setupCam()
@@ -83,4 +84,20 @@ void Camera::setRenderDistance(float renderDistance)
 void Camera::changeSpeed(float speed)
 {
 	this->speed = speed;
+}
+void Camera::recordPosition(int frame)
+{
+	for(int i =0; i < camLocation.size();i++) //checks to make sure the element has not been used already
+	{
+		if(camLocation[i].frame == frame)
+		{
+				camLocation.erase(camLocation.begin() + i); //deletes the element if it already exists
+		}
+	}
+	locData data;
+	data.frame = frame;
+	data.position = cameraPos;
+	data.look = glm::vec2(yaw,pitch);
+	camLocation.push_back(data);
+	//sort data
 }

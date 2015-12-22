@@ -1,9 +1,16 @@
 #ifndef CAMERA_H
 #define CAMERA_H
+#include <vector>
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "glad/glad.h"
+struct locData
+{
+	long frame;
+	glm::vec3 position;
+	glm::vec2 look;
+};
 class Camera
 {
 	private:
@@ -20,6 +27,8 @@ class Camera
 		glm::vec3 cameraPos;
 		glm::vec3 cameraFront;
 		glm::vec3 cameraUp;
+		std::vector<locData> camLocation;
+		bool isPlayingBack;
 		void moveForward();
 		void moveBackward();
 		void moveRight();
@@ -32,6 +41,7 @@ class Camera
 		void update(GLfloat deltaTime);
 		void setRenderDistance(float);
 		void changeSpeed(float);
+		void recordPosition(int);
 
 };
 
