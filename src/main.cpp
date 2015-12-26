@@ -57,6 +57,8 @@ void drawFunct()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glUniformMatrix4fv(glGetUniformLocation(sphereShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
 	glUniformMatrix4fv(glGetUniformLocation(sphereShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(cam.projection));
+	glUniform1f(glGetUniformLocation(sphereShader.Program, "radius"), sphereRadius);
+	glUniform1f(glGetUniformLocation(sphereShader.Program, "scale"), sphereScale);
 	glDrawArraysInstanced(GL_POINTS,0,1,part->n);
 	glBindVertexArray(0);
 	
@@ -136,7 +138,6 @@ void readInput(SDL_Event &event)
 			{
 				seekFrame(1,false);
 			}
-
 		}
 	}
 }

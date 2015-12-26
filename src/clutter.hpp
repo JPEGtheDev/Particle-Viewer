@@ -37,6 +37,8 @@
 	const int SCREEN_FULLSCREEN = 0, SCREEN_WIDTH  = 1280, SCREEN_HEIGHT = 720;
 	int curFrame = 0;
 	bool quit = false, highRes = false;
+	float sphereScale = 1.0;
+	float sphereRadius = 250.0f;
     GLuint circleVAO, circleVBO;
 
     uint32_t ticks,lastticks = 0;
