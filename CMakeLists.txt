@@ -8,7 +8,6 @@ file(GLOB DIALOG src/tinyFileDialogs/*.c)
 file(GLOB srcCPP src/*.cpp)
 file(GLOB srcHPP src/*.hpp)
 find_package(SDL2 REQUIRED)
-find_package(Freetype REQUIRED)
 add_executable(Viewer
   ${GLAD}
   ${DIALOG}
@@ -19,9 +18,9 @@ add_executable(Viewer
 target_link_libraries(Viewer ${CMAKE_DL_LIBS})
 
 target_include_directories(Viewer PUBLIC
-  ${SDL2_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIR_ft2build}
+  ${SDL2_INCLUDE_DIR}
 )
 
 target_link_libraries(Viewer
-  ${SDL2_LIBRARY} ${FREETYPE_LIBRARY}
+  ${SDL2_LIBRARY}
 )
