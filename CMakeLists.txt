@@ -24,3 +24,5 @@ target_include_directories(Viewer PUBLIC
 target_link_libraries(Viewer
   ${SDL2_LIBRARY}
 )
+
+install (TARGETS Viewer DESTINATION bin)

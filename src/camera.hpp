@@ -5,6 +5,13 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "glad/glad.h"
+#include "shader.hpp"
+#ifdef _WIN32 //Windows Includes
+	#include <windows.h>
+	#include <SDL.h>
+#else //Includes for Linux and OSX
+	#include <SDL2/SDL.h>
+#endif
 struct locData
 {
 	long frame;
@@ -18,7 +25,15 @@ class Camera
 		GLfloat baseSpeed;
 		GLfloat yaw;
 		GLfloat pitch;
+		GLuint VAO;
+		GLuint VBO;
+		bool rotLock;
+		glm::vec3 spherePos;
+		Shader sphereShader;
 		void clampPitch();
+		std::string vertShader;
+    	std::string fragShader;
+    	glm::vec3 calcSpherePos();
 	public:
 		Camera(const int, const int);
 		float renderDistance;
@@ -29,6 +44,10 @@ class Camera
 		glm::vec3 cameraUp;
 		std::vector<locData> camLocation;
 		bool isPlayingBack;
+		bool renderSphere;
+		GLuint rotateState;
+		glm::vec3 sphereColor;
+		GLfloat sphereDistance;
 		void moveForward();
 		void moveBackward();
 		void moveRight();
@@ -42,7 +61,10 @@ class Camera
 		void setRenderDistance(float);
 		void changeSpeed(float);
 		void recordPosition(int);
-
+		void MultiKeyEventReader(SDL_Event &event);
+		void SingleKeyEventReader(SDL_Event &event);
+		void RenderSphere();
+		void initGL();
 };
 
 #endif

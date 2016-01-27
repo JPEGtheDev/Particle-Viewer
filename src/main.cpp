@@ -6,6 +6,7 @@ int main(int argc, char* argv[])
 	SDL_Event event;
 	ticks = SDL_GetTicks();
 	gladLoadGLLoader(SDL_GL_GetProcAddress);
+	cam.initGL();
 	part = new Particle();
 	//set->readPosVelFile(0,part,false); //loads the file
 	setupGLStuff();
@@ -61,46 +62,15 @@ void drawFunct()
 	glUniform1f(glGetUniformLocation(sphereShader.Program, "scale"), sphereScale);
 	glDrawArraysInstanced(GL_POINTS,0,1,part->n);
 	glBindVertexArray(0);
-	
+	cam.RenderSphere();
 	//draw other stuff
 }
 
 void readInput(SDL_Event &event)
 {
-	const Uint8 *keystate = SDL_GetKeyboardState(NULL);
 
-	if(keystate[SDL_SCANCODE_W])
-	{
-		cam.moveForward();
-	}
-	if(keystate[SDL_SCANCODE_S])
-	{
-		cam.moveBackward();
-	}
-	if(keystate[SDL_SCANCODE_A])
-	{
-		cam.moveLeft();
-	}
-	if(keystate[SDL_SCANCODE_D])
-	{
-		cam.moveRight();
-	}
-	if(keystate[SDL_SCANCODE_I])
-	{
-		cam.lookUp(2.5f);
-	}
-	if(keystate[SDL_SCANCODE_K])
-	{
-		cam.lookDown(2.5f);
-	}
-	if(keystate[SDL_SCANCODE_J])
-	{
-		cam.lookLeft(2.5f);
-	}
-	if(keystate[SDL_SCANCODE_L])
-	{
-		cam.lookRight(2.5f);
-	}
+	const Uint8 *keystate = SDL_GetKeyboardState(NULL);
+	cam.MultiKeyEventReader(event);
 	if(keystate[SDL_SCANCODE_E])
 	{
 		seekFrame(3, true);
@@ -139,6 +109,7 @@ void readInput(SDL_Event &event)
 				seekFrame(1,false);
 			}
 		}
+		cam.SingleKeyEventReader(event);
 	}
 }
 
