@@ -25,15 +25,17 @@ class Camera
 		GLfloat baseSpeed;
 		GLfloat yaw;
 		GLfloat pitch;
+		GLfloat sphereYaw;
+		GLfloat spherePitch;
 		GLuint VAO;
 		GLuint VBO;
 		bool rotLock;
 		glm::vec3 spherePos;
 		Shader sphereShader;
-		void clampPitch();
+		void clampPitch(GLfloat &);
 		std::string vertShader;
     	std::string fragShader;
-    	glm::vec3 calcSpherePos();
+    	glm::vec3 calcSpherePos(GLfloat,GLfloat,glm::vec3);
 	public:
 		Camera(const int, const int);
 		float renderDistance;
