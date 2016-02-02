@@ -134,25 +134,25 @@ void Camera::MultiKeyEventReader(SDL_Event &event)
 	}
 	if(keystate[SDL_SCANCODE_W] && rotLock)
 	{
-		spherePitch += 2.5;
-		lookDown(2.5f);
+		spherePitch += 1.0;
+		lookDown(1.0f);
 		clampPitch(this->spherePitch);
 	}
 	if(keystate[SDL_SCANCODE_S]&& rotLock)
 	{
-		spherePitch -= 2.5;
-		lookUp(2.5f);
+		spherePitch -= 1.0;
+		lookUp(1.0f);
 		clampPitch(this->spherePitch);
 	}
 	if(keystate[SDL_SCANCODE_A]&& rotLock)
 	{
-		sphereYaw -= 2.5;
-		lookLeft(2.5);
+		sphereYaw -= 1.0;
+		lookLeft(1.0);
 	}
 	if(keystate[SDL_SCANCODE_D]&& rotLock)
 	{
-		sphereYaw += 2.5;
-		lookRight(2.5);
+		sphereYaw += 1.0;
+		lookRight(1.0);
 	}
 	if(keystate[SDL_SCANCODE_I]&& !rotLock)
 	{
