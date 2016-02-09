@@ -18,19 +18,19 @@ void main()
 	gl_PointSize = radius * (scale / dist); //radius * scale
 	if(colVal == 0)
 	{
-		fColor = vec3(1,0,0);
+		fColor = vec3(1.0,0,0); //core1
 	}
 	else if(colVal == 1)
 	{
-		fColor = vec3(0,1,0);
+		fColor = vec3(0.2,0.6,1.0); //sil1
 	}
 	else if(colVal == 2)
 	{
-		fColor = vec3(0,0,1);
+		fColor = vec3(1.0,0,1.0); //core2
 	}
 	else if(colVal == 3)
 	{
-		fColor = vec3(1,1,0);
+		fColor = vec3(0.89,0.59,0);
 	}
 	else if (colVal == 500)
 	{
