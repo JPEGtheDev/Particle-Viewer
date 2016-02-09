@@ -33,6 +33,7 @@ class Camera
 		glm::vec3 spherePos;
 		Shader sphereShader;
 		void clampPitch(GLfloat &);
+		void clampDegrees(GLfloat &);
 		std::string vertShader;
     	std::string fragShader;
     	glm::vec3 calcSpherePos(GLfloat,GLfloat,glm::vec3);

@@ -88,6 +88,14 @@ void Camera::clampPitch(GLfloat &pitch)
         pitch = -89.0f;
     }
 }
+void Camera::clampDegrees(GLfloat &in)
+{
+	in = fmod(in,360);
+	if(in < 0.0)
+	{
+		in += 360.0f;
+	}
+}
 void Camera::setRenderDistance(float renderDistance)
 {
 	this->renderDistance = renderDistance;
@@ -136,13 +144,11 @@ void Camera::MultiKeyEventReader(SDL_Event &event)
 	{
 		spherePitch += 1.0;
 		lookDown(1.0f);
-		clampPitch(this->spherePitch);
 	}
 	if(keystate[SDL_SCANCODE_S]&& rotLock)
 	{
 		spherePitch -= 1.0;
 		lookUp(1.0f);
-		clampPitch(this->spherePitch);
 	}
 	if(keystate[SDL_SCANCODE_A]&& rotLock)
 	{
@@ -181,6 +187,9 @@ void Camera::MultiKeyEventReader(SDL_Event &event)
 			sphereDistance += .25;
 		}
 	}
+	clampPitch(this->spherePitch);
+	clampDegrees(this->sphereYaw);
+	clampDegrees(this->yaw);
 }
 void Camera::SingleKeyEventReader(SDL_Event &event)
 {
@@ -204,15 +213,58 @@ void Camera::SingleKeyEventReader(SDL_Event &event)
 			}
 			else if(rotateState == 2)
 			{
-				this->yaw= 90.0f;
-				this->pitch = 0.0f;
-				this->sphereYaw = -90.0f;
-				this->spherePitch = 0.0f;
+				this->sphereYaw = yaw + 180;
+				this->spherePitch = -pitch;
 				renderSphere = true;
 				rotLock = true;
 				sphereColor  = glm::vec3(0.0f,1.0f,0.0f);
 			}
 		}
+		if(event.key.keysym.sym == SDLK_1 && rotLock)
+		{
+			this->yaw= 90.0f;
+			this->pitch = 0.0f;
+			this->sphereYaw = -90.0f;
+			this->spherePitch = 0.0f;
+		}
+		if(event.key.keysym.sym == SDLK_2 && rotLock)
+		{
+			this->yaw= 180.0f;
+			this->pitch = 0.0f;
+			this->sphereYaw = 0.0f;
+			this->spherePitch = 0.0f;
+		}
+		if(event.key.keysym.sym == SDLK_3 && rotLock)
+		{
+			this->yaw= 270.0f;
+			this->pitch = 0.0f;
+			this->sphereYaw = 90.0f;
+			this->spherePitch = 0.0f;
+		}
+		if(event.key.keysym.sym == SDLK_4 && rotLock)
+		{
+			this->yaw= 0.0f;
+			this->pitch = 0.0f;
+			this->sphereYaw = 180.0f;
+			this->spherePitch = 0.0f;
+		}
+		if(event.key.keysym.sym == SDLK_5 && rotLock)
+		{
+			this->yaw= 90.0f;
+			this->pitch = -89.0f;
+			this->sphereYaw = 270.0f;
+			this->spherePitch = 89.0f;
+		}
+		if(event.key.keysym.sym == SDLK_6 && rotLock)
+		{
+			this->yaw= 90.0f;
+			this->pitch = 89.0f;
+			this->sphereYaw = 270.0f;
+			this->spherePitch = -89.0f;
+		}
+		clampPitch(this->spherePitch);
+		clampDegrees(this->sphereYaw);
+		clampDegrees(this->yaw);
 	}
 }
 void Camera::RenderSphere()
