@@ -16,6 +16,7 @@ int main(int argc, char* argv[])
 		beforeDraw();
 		drawFunct();
 		SDL_GL_SwapWindow(window);
+		
 		if(set->frames > 1)
 		{
 			set->readPosVelFile(curFrame,part,false);
@@ -23,7 +24,6 @@ int main(int argc, char* argv[])
 		
 		if(set->isPlaying)
 		{
-			
 			curFrame++;
 		}
 		if(curFrame > set->frames)
@@ -48,6 +48,7 @@ void beforeDraw()
 
 	
 }
+
 void drawFunct()
 {
 	sphereShader.Use();
@@ -62,13 +63,37 @@ void drawFunct()
 	glUniform1f(glGetUniformLocation(sphereShader.Program, "scale"), sphereScale);
 	glDrawArraysInstanced(GL_POINTS,0,1,part->n);
 	glBindVertexArray(0);
+	//take screenshot
+	if(set->isPlaying && isRecording)
+	{
+		glReadPixels(0,0,(int)SCREEN_WIDTH, (int)SCREEN_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+		for (int i = 0; i < SCREEN_WIDTH * 3; i++)
+		{
+			for(int j = 0; j < SCREEN_HEIGHT; j++)
+			{
+				pixels2[i + SCREEN_WIDTH* 3 * j] = pixels[i+ SCREEN_WIDTH* 3 * (SCREEN_HEIGHT - j)];
+			}
+		}
+		if(!stbi_write_tga(std::string(recordFolder+"/" + std::to_string(curFrame) + ".tga").c_str(), (int)SCREEN_WIDTH, (int)SCREEN_HEIGHT, 3, pixels2))
+		{
+			if(imageError < 5)
+			{
+				imageError++;
+				std::cout << "Unable to save image: Error "<< imageError << std::endl;
+			}
+			else
+			{
+				std::cout << "Max Image Error Count Reached! Ending Recording!"<< std::endl;
+				isRecording = false;
+			}
+		}
+	}
+	//draw GUI elements
 	cam.RenderSphere();
-	//draw other stuff
 }
 
 void readInput(SDL_Event &event)
 {
-
 	const Uint8 *keystate = SDL_GetKeyboardState(NULL);
 	cam.MultiKeyEventReader(event);
 	if(keystate[SDL_SCANCODE_E])
@@ -108,6 +133,39 @@ void readInput(SDL_Event &event)
 			{
 				seekFrame(1,false);
 			}
+			if(event.key.keysym.sym == SDLK_r)
+			{
+				if(!isRecording)
+				{
+					imageError = 0;
+					std::string dialog = "Select Folder";
+					const char* fol = tinyfd_selectFolderDialog (dialog.c_str() , "") ;
+					
+					std::string folder;
+					if(fol != NULL)
+					{
+						folder = std::string(fol);
+					}
+					else
+					{
+						folder = "";
+					}
+					if(folder != "")
+					{
+						recordFolder = folder;
+						isRecording = true;
+						break;
+					}
+					std::cout << "Folder not selected" << std::endl;
+					isRecording = false;
+				}
+				else
+				{
+					recordFolder = "";
+					isRecording = false;
+				}
+				
+			}
 		}
 		cam.SingleKeyEventReader(event);
 	}
@@ -128,7 +186,6 @@ void setupGLStuff()
 	glEnableVertexAttribArray(0);
 	part->setUpInstanceArray();
 	glBindVertexArray(0);
-
 	//set up other object arrays
 }
 void seekFrame(int frame, bool isForward)
@@ -146,4 +203,6 @@ void seekFrame(int frame, bool isForward)
 void cleanup()
 {
 	delete part;
+	delete pixels;
+	delete pixels2;
 }

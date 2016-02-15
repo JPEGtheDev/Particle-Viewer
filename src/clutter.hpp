@@ -9,6 +9,8 @@
 	#include "tinyFileDialogs/tinyfiledialogs.h"
 	#include "particle.hpp"
 	#include "settingsIO.hpp"
+	#define STB_IMAGE_WRITE_IMPLEMENTATION
+	#include "stb/stb_image_write.h"
 	#ifdef _WIN32 //Windows Includes
 		#include <windows.h>
 		#include <SDL.h>
@@ -37,14 +39,16 @@
 	bool quit = false, highRes = false;
 	float sphereScale = 1.0;
 	float sphereRadius = 250.0f;
+	bool isRecording = false;
     GLuint circleVAO, circleVBO;
-
+    std::string recordFolder = "";
     uint32_t ticks,lastticks = 0;
     GLfloat deltaTime = 0.0f, lastFrame = 0.0f;
-
+    int imageError = 0;
 	SDL_Window *window = NULL;
 	SDL_GLContext maincontext;
-
+	unsigned char * pixels = new unsigned char[SCREEN_WIDTH*SCREEN_HEIGHT*3];
+	unsigned char * pixels2 = new unsigned char[SCREEN_WIDTH*SCREEN_HEIGHT*3];
     Shader sphereShader;
    
     Camera cam = Camera(SCREEN_WIDTH,SCREEN_HEIGHT);
