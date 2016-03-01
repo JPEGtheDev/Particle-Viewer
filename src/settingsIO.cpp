@@ -5,6 +5,7 @@ SettingsIO::SettingsIO()
 {
 	posFile = "/PosAndVel";
 	statsFile = "/RunSetup";
+	comFile = "/COMFile";
 }
 
 SettingsIO::SettingsIO(string posName, string statsName, string comName)
