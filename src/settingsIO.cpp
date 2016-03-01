@@ -503,10 +503,11 @@ void SettingsIO::getCOM(long frame, glm::vec3 &value)
 			fclose(COMFile);
 			if((long)readVal[0].w == frame)
 			{
-				value.x = readVal[0].x;
-				value.y = readVal[0].y;
-				value.z = readVal[0].z;
+				value.x = readVal[0].x *.25;
+				value.y = readVal[0].y *.25;
+				value.z = readVal[0].z *.25;
 			}
+
 			return;
 		}
 	}
