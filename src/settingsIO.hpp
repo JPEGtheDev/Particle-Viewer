@@ -13,12 +13,13 @@ public:
 	//FILE *PosAndVelFile;
 	std::string posName;
 	std::string statsName;
+	std::string comName;
 	bool isPlaying;
 	int errorCount;
 	long N;
 	long frames;
 	SettingsIO();
-	SettingsIO(std::string,std::string);
+	SettingsIO(std::string,std::string,std::string);
 	~SettingsIO();
 	void readPosVelFile(long, Particle*,bool);
 	void seekReadPosVelFile(int, Particle*,bool);
@@ -66,6 +67,7 @@ public:
 	long long int getFrames();
 	bool checkCOM();
 	void getCOM(long,glm::vec3 &);
+
 private: 
 	//Note: most of these aren't used, but kept for posterity's sake and/or if the actual slam programs want to use this to simplify reading in stuff
 	int RecordRate;

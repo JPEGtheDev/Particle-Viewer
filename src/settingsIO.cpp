@@ -7,10 +7,11 @@ SettingsIO::SettingsIO()
 	statsFile = "/RunSetup";
 }
 
-SettingsIO::SettingsIO(string posName, string statsName)
+SettingsIO::SettingsIO(string posName, string statsName, string comName)
 {
 	this->posName = posName;
 	this->statsName = statsName;
+	this->comName = comName;
 	ifstream data;
 	posFile = "/PosAndVel";
 	statsFile = "/RunSetup";
@@ -479,7 +480,7 @@ long long int SettingsIO::getFrames()
 bool SettingsIO::checkCOM()
 {
 	std::ifstream input;
-	input.open(comFile, std::ios::in | std::ios::binary);
+	input.open(comName, std::ios::in | std::ios::binary);
 	if(input)
 	{
 		input.close();
@@ -492,7 +493,7 @@ void SettingsIO::getCOM(long frame, glm::vec3 &value)
 {
 	if(checkCOM())
 	{
-		FILE *COMFile = fopen(comFile.c_str(), "r");
+		FILE *COMFile = fopen(comName.c_str(), "r");
 		if(COMFile)
 		{
 			fseek(COMFile, frame * sizeof(glm::vec4), SEEK_CUR);
@@ -532,7 +533,8 @@ SettingsIO* SettingsIO::loadFile(Particle *part, bool readVelocity)
 		string posVel = folder;//strcat(folder,posFile.c_str());
 		posVel = posVel + posFile;
 		string settings = folder + statsFile;//strcat(folder, settingsFile.c_str());
-		SettingsIO *set = new SettingsIO(posVel.c_str(),settings.c_str());
+		string comName = folder + comFile;
+		SettingsIO *set = new SettingsIO(posVel.c_str(),settings.c_str(),comName.c_str());
 		set->readPosVelFile(0,part,readVelocity);
 		return set;
 	}
