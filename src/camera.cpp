@@ -17,6 +17,7 @@ Camera::Camera(const int SCREEN_WIDTH, const int SCREEN_HEIGHT)
 	this->renderSphere 	= false;
 	this->rotateState	= 0;
 	this->sphereColor  	= glm::vec3(0.0f,0.0f,0.0f);
+	this->centerOfMass 	= glm::vec3(0.0f,0.0f,0.0f);
 	this->sphereDistance= 5.0f;
 	this->vertShader 	= 
 	#include "shaders/colorSphere.vs"
@@ -26,6 +27,7 @@ Camera::Camera(const int SCREEN_WIDTH, const int SCREEN_HEIGHT)
 	;
 	spherePos 			= calcSpherePos(this->yaw,this->pitch,this->cameraPos);
 	this->rotLock = false;
+	this->comLock = false;
 }
 glm::mat4 Camera::setupCam()
 {
@@ -202,12 +204,14 @@ void Camera::SingleKeyEventReader(SDL_Event &event)
 			if(rotateState == 0)
 			{
 				rotLock = false;
+				comLock = false;
 				renderSphere = false;
 				sphereColor  = glm::vec3(0.0f,0.0f,0.0f);
 			}
 			else if(rotateState == 1)
 			{
 				rotLock = false;
+				comLock = false;
 				renderSphere = true;
 				sphereColor  = glm::vec3(1.0f,0.0f,0.0f);
 			}
@@ -219,6 +223,14 @@ void Camera::SingleKeyEventReader(SDL_Event &event)
 				rotLock = true;
 				sphereColor  = glm::vec3(0.0f,1.0f,0.0f);
 			}
+		}
+		if(event.key.keysym.sym == SDLK_o)
+		{
+			if(rotLock)
+			{
+				comLock = !comLock;
+			}
+			
 		}
 		if(event.key.keysym.sym == SDLK_1 && rotLock)
 		{
@@ -267,6 +279,10 @@ void Camera::SingleKeyEventReader(SDL_Event &event)
 		clampDegrees(this->yaw);
 	}
 }
+void Camera::setSphereCenter(glm::vec3 pos)
+{
+	centerOfMass = pos;
+}
 void Camera::RenderSphere()
 {
 	if(renderSphere)
@@ -274,25 +290,46 @@ void Camera::RenderSphere()
 		sphereShader.Use();
 		glUniformMatrix4fv(glGetUniformLocation(sphereShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(setupCam()));
 		glUniformMatrix4fv(glGetUniformLocation(sphereShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(this->projection));
-		if(!rotLock)
+		
+		if(rotLock && comLock)
+		{
+			cameraPos = calcSpherePos(this->sphereYaw,this->spherePitch,this->centerOfMass);
+		}
+
+		else if(!rotLock)
 		{
 			spherePos = calcSpherePos(this->yaw,this->pitch,this->cameraPos);
 		}
-		else
+		else if(rotLock)
 		{
 			cameraPos = calcSpherePos(this->sphereYaw,this->spherePitch,this->spherePos);
 		}
+		else
+		{
+			std::cout << "Yeah... Fix the rotLock and comLock if statements" << std::endl;
+		}
+		
 	    glUniform3fv(glGetUniformLocation(sphereShader.Program, "pos"), 1, glm::value_ptr(spherePos));
 	    glUniform3fv(glGetUniformLocation(sphereShader.Program, "color"), 1, glm::value_ptr(sphereColor));
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_POINTS, 0, 1);
 		glBindVertexArray(0);
+		if(comLock)
+		{
+			glUniform3fv(glGetUniformLocation(sphereShader.Program, "pos"), 1, glm::value_ptr(centerOfMass));
+		    glUniform3fv(glGetUniformLocation(sphereShader.Program, "color"), 1, glm::value_ptr(glm::vec3(0,0,1.0f)));
+			glBindVertexArray(VAO2);
+			glDrawArrays(GL_POINTS, 0, 1);
+			glBindVertexArray(0);
+		}
+		
 	}
 }
 void Camera::initGL()
 {
 	this->sphereShader = Shader(vertShader.c_str(),fragShader.c_str());
 	glGenVertexArrays(1, &VAO);
+	glGenVertexArrays(1, &VAO2);
 }
 glm::vec3 Camera::calcSpherePos(GLfloat yaw, GLfloat pitch,glm::vec3 pos)
 {

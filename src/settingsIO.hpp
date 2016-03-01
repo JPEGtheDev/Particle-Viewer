@@ -64,6 +64,8 @@ public:
 	double getMassOfEarth();
 	double getPi();
 	long long int getFrames();
+	bool checkCOM();
+	void getCOM(long,glm::vec3 &);
 private: 
 	//Note: most of these aren't used, but kept for posterity's sake and/or if the actual slam programs want to use this to simplify reading in stuff
 	int RecordRate;
@@ -106,8 +108,10 @@ private:
 	glm::vec3 InitialVelocity2;
 	glm::vec4 InitialSpin1;
 	glm::vec4 InitialSpin2;
+	glm::vec4 CenterOfMass;
 	std::string posFile;
 	std::string statsFile;
+	std::string comFile;
 };
 
 #endif /* SETTINGSIO_H */ 

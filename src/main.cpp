@@ -38,19 +38,19 @@ int main(int argc, char* argv[])
 	cleanup();
 	return 0;
 }
-
 void beforeDraw()
 {
 	cam.update(deltaTime);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	manageFPS(ticks,lastticks);
 	view = cam.setupCam();
-
+	
 	
 }
-
 void drawFunct()
 {
+	set->getCOM(curFrame, com);
+	cam.setSphereCenter(com);
 	sphereShader.Use();
 	part->pushVBO();
 	glBindVertexArray(circleVAO);

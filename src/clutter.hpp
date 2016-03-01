@@ -46,6 +46,7 @@
     GLfloat deltaTime = 0.0f, lastFrame = 0.0f;
     int imageError = 0;
 	SDL_Window *window = NULL;
+	glm::vec3 com;
 	SDL_GLContext maincontext;
 	unsigned char * pixels = new unsigned char[SCREEN_WIDTH*SCREEN_HEIGHT*3];
 	unsigned char * pixels2 = new unsigned char[SCREEN_WIDTH*SCREEN_HEIGHT*3];
@@ -70,12 +71,12 @@
     void manageFPS(uint32_t &ticks, uint32_t &lastticks)
 	{
 		ticks = SDL_GetTicks();
-	  deltaTime = ticks - lastticks;
-	  if ( ((ticks*10-lastticks*10)) < 167 )
-	  {
-	    SDL_Delay( (167-((ticks*10-lastticks*10)))/10 );
-	  } 
-	  lastticks = SDL_GetTicks();
+		deltaTime = ticks - lastticks;
+		if ( ((ticks*10-lastticks*10)) < 167 )
+		{
+		    SDL_Delay( (167-((ticks*10-lastticks*10)))/10 );
+		} 
+		lastticks = SDL_GetTicks();
 	}
 
 	static void sdl_die(const char * message) 

@@ -28,8 +28,10 @@ class Camera
 		GLfloat sphereYaw;
 		GLfloat spherePitch;
 		GLuint VAO;
-		GLuint VBO;
+		GLuint VAO2;
 		bool rotLock;
+		bool comLock;
+		glm::vec3 centerOfMass;
 		glm::vec3 spherePos;
 		Shader sphereShader;
 		void clampPitch(GLfloat &);
@@ -68,6 +70,7 @@ class Camera
 		void SingleKeyEventReader(SDL_Event &event);
 		void RenderSphere();
 		void initGL();
+		void setSphereCenter(glm::vec3);
 };
 
 #endif

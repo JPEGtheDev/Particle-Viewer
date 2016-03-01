@@ -14,6 +14,7 @@ SettingsIO::SettingsIO(string posName, string statsName)
 	ifstream data;
 	posFile = "/PosAndVel";
 	statsFile = "/RunSetup";
+	comFile = "/COMFile";
 	string name;
 	string blank;
 	errorCount = 0;
@@ -474,6 +475,39 @@ long long int SettingsIO::getFrames()
 	}
 	cout << "Error Getting File Size" << endl;
 	return 1;
+}
+bool SettingsIO::checkCOM()
+{
+	std::ifstream input;
+	input.open(comFile, std::ios::in | std::ios::binary);
+	if(input)
+	{
+		input.close();
+		return true;
+	}
+	//cout << "Error Loading Center Of Mass File" << endl;
+	return false;
+}
+void SettingsIO::getCOM(long frame, glm::vec3 &value)
+{
+	if(checkCOM())
+	{
+		FILE *COMFile = fopen(comFile.c_str(), "r");
+		if(COMFile)
+		{
+			fseek(COMFile, frame * sizeof(glm::vec4), SEEK_CUR);
+			glm::vec4 *readVal = new glm::vec4[1];
+			fread(readVal, sizeof(glm::vec4), 1, COMFile);
+			fclose(COMFile);
+			if((long)readVal[0].w == frame)
+			{
+				value.x = readVal[0].x;
+				value.y = readVal[0].y;
+				value.z = readVal[0].z;
+			}
+			return;
+		}
+	}
 }
 void SettingsIO::togglePlay()
 {
