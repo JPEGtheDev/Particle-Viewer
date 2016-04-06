@@ -1,7 +1,6 @@
 # Particle-Viewer 
 <h3>Build Status:</h3>
-Travis-CI:
-   [![Build Status](https://travis-ci.org/JPEGtheDev/Particle-Viewer.svg?branch=master)](https://travis-ci.org/JPEGtheDev/Particle-Viewer)
+Travis-CI: [![Build Status](https://travis-ci.org/JPEGtheDev/Particle-Viewer.svg?branch=master)](https://travis-ci.org/JPEGtheDev/Particle-Viewer)
 AppVeyor: [![Build status](https://ci.appveyor.com/api/projects/status/9pu5howob96kpf6w?svg=true)](https://ci.appveyor.com/project/JPEGtheDev/particle-viewer)
 
     
