@@ -18,7 +18,8 @@ add_executable(Viewer
 target_link_libraries(Viewer ${CMAKE_DL_LIBS})
 
 target_include_directories(Viewer PUBLIC
-  ${SDL2_INCLUDE_DIR}
+	src/glm  
+	${SDL2_INCLUDE_DIR}
 )
 
 target_link_libraries(Viewer
