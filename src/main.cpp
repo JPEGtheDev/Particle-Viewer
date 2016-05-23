@@ -5,7 +5,7 @@ int main(int argc, char* argv[])
 	init_screen("Particle-Viewer");
 	SDL_Event event;
 	ticks = SDL_GetTicks();
-	gladLoadGLLoader(SDL_GL_GetProcAddress);
+	
 	cam.initGL();
 	part = new Particle();
 	//set->readPosVelFile(0,part,false); //loads the file
