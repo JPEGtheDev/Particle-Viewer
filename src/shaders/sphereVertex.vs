@@ -1,4 +1,3 @@
-R"(
 #version 330 core
 layout (location = 0) in vec4 offset;
 out vec3 fColor;
@@ -39,4 +38,3 @@ void main()
 	
     lightDir = lightDirection;
 }
-)"

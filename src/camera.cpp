@@ -19,12 +19,8 @@ Camera::Camera(const int SCREEN_WIDTH, const int SCREEN_HEIGHT)
 	this->sphereColor  	= glm::vec3(0.0f,0.0f,0.0f);
 	this->centerOfMass 	= glm::vec3(0.0f,0.0f,0.0f);
 	this->sphereDistance= 5.0f;
-	this->vertShader 	= 
-	#include "shaders/colorSphere.vs"
-	;
-	this->fragShader 	= 
-	#include "shaders/colorSphere.frag"
-	;
+	this->vertShader 	= "/Developer/Particle-Viewer/src/shaders/colorSphere.vs";
+	this->fragShader 	= "/Developer/Particle-Viewer/src/shaders/colorSphere.frag";
 	spherePos 			= calcSpherePos(this->yaw,this->pitch,this->cameraPos);
 	this->rotLock = false;
 	this->comLock = false;

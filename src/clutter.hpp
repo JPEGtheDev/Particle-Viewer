@@ -52,12 +52,8 @@
     
     glm::mat4 view;
     
-    std::string sphereVertexShader =
-    #include "shaders/sphereVertex.vs"
-    ,
-    sphereFragmentShader =
-    #include "shaders/sphereFragment.frag"
-    ;
+    std::string sphereVertexShader = "/Developer/Particle-Viewer/src/shaders/sphereVertex.vs";
+    std::string sphereFragmentShader = "/Developer/Particle-Viewer/src/shaders/sphereFragment.frag";
     const std::string posLoc = "/Users/JPEG/Desktop/500kSlam/PosAndVel";
     const std::string setLoc = "/Users/JPEG/Desktop/500kSlam/RunSetup";
     SettingsIO *set = new SettingsIO();  

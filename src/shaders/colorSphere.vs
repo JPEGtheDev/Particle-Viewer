@@ -1,4 +1,3 @@
-R"(
 #version 330 core
 out vec3 fColor;
 out vec3 lightDir;
@@ -17,4 +16,3 @@ void main()
 	fColor = color;
 	lightDir = lightDirection;
 }
-)"

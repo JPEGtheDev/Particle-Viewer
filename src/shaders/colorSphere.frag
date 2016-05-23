@@ -1,4 +1,3 @@
-R"(
 #version 330 core
 out vec4 color;
 in vec3 fColor;
@@ -15,4 +14,3 @@ void main()
    float diffuse = max(0.0, dot(lightDir, N));
    color = vec4(fColor*1.25,1) * diffuse;
 }
-)"
