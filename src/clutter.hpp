@@ -17,9 +17,6 @@
 	#else //Includes for Linux and OSX
 		#include <SDL2/SDL.h>
 	#endif
-//end includes
-	
-
 //function prototypes
 	static void sdl_die(const char * message); 				//finds SDL errors / kills the app if something doesn't init properly
 	void init_screen(const char * caption);					//initializes the screen / window / context
@@ -31,8 +28,6 @@
 	void cleanup();											//destroy it all with fire
     void setupRender();										//Updates the VBOs for position changes
     void seekFrame(int frame, bool isForward);				//skips frames
-//end function prototypes
-
 //variables
 	const int SCREEN_FULLSCREEN = 0, SCREEN_WIDTH  = 1280, SCREEN_HEIGHT = 720;
 	int curFrame = 0;
@@ -63,10 +58,9 @@
     sphereFragmentShader =
     #include "shaders/sphereFragment.frag"
     ;
-//end variables
     const std::string posLoc = "/Users/JPEG/Desktop/500kSlam/PosAndVel";
     const std::string setLoc = "/Users/JPEG/Desktop/500kSlam/RunSetup";
-    SettingsIO *set = new SettingsIO();
+    SettingsIO *set = new SettingsIO();  
 //functions that should not be changed
     void manageFPS(uint32_t &ticks, uint32_t &lastticks)
 	{
@@ -121,4 +115,3 @@
 	  glViewport(0, 0, w, h);
 	  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	}
-//functions
