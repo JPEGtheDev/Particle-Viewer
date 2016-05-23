@@ -28,3 +28,4 @@ target_link_libraries(Viewer
 )
 
 install (TARGETS Viewer DESTINATION bin)
+install (DIRECTORY src/shaders/ DESTINATION bin/Viewer-Assets/shaders)
