@@ -85,6 +85,8 @@
 	  SDL_GL_LoadLibrary(NULL);
 	  
 	  //set base GL stuff
+	  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4); //Don't remove, killed running on linux
+	  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0); //Don't remove, killed running on linux
 	  SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
 	  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
