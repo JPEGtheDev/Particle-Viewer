@@ -46,14 +46,14 @@
 	unsigned char * pixels = new unsigned char[SCREEN_WIDTH*SCREEN_HEIGHT*3];
 	unsigned char * pixels2 = new unsigned char[SCREEN_WIDTH*SCREEN_HEIGHT*3];
     Shader sphereShader;
-   
+   	std::string exePath;
     Camera cam = Camera(SCREEN_WIDTH,SCREEN_HEIGHT);
     Particle* part;
     
     glm::mat4 view;
     
-    std::string sphereVertexShader = "/Developer/Particle-Viewer/src/shaders/sphereVertex.vs";
-    std::string sphereFragmentShader = "/Developer/Particle-Viewer/src/shaders/sphereFragment.frag";
+    std::string sphereVertexShader = "Viewer-Assets/shaders/sphereVertex.vs";
+    std::string sphereFragmentShader = "Viewer-Assets/shaders/sphereFragment.frag";
     const std::string posLoc = "/Users/JPEG/Desktop/500kSlam/PosAndVel";
     const std::string setLoc = "/Users/JPEG/Desktop/500kSlam/RunSetup";
     SettingsIO *set = new SettingsIO();  
@@ -107,3 +107,22 @@
 	  glViewport(0, 0, w, h);
 	  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	}
+
+	void initPaths() 
+	{
+		char *data_path = NULL;
+	    char *base_path = SDL_GetBasePath();
+	    if (base_path) 
+	    {
+	        data_path = base_path;
+	    } 
+	    else 
+	    {
+	        data_path = SDL_strdup("./");
+	    }
+	    std::string str(data_path);
+	    exePath = str;
+	    sphereVertexShader = exePath + sphereVertexShader;
+	    sphereFragmentShader = exePath + sphereFragmentShader;
+	}
+

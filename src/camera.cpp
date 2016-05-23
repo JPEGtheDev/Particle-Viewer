@@ -2,6 +2,17 @@
 //#include <iostream>
 Camera::Camera(const int SCREEN_WIDTH, const int SCREEN_HEIGHT)
 {
+	char *data_path = NULL;
+    char *base_path = SDL_GetBasePath();
+    if (base_path) 
+    {
+        data_path = base_path;
+    } 
+    else 
+    {
+        data_path = SDL_strdup("./");
+    }
+    std::string exePath(data_path);
 	this->cameraPos 	= glm::vec3(0.0f, 0.0f,  3.0f);
 	this->cameraFront 	= glm::vec3(0.0f, 0.0f, -1.0f);
 	this->cameraUp		= glm::vec3(0.0f, 1.0f,  0.0f);
@@ -19,11 +30,12 @@ Camera::Camera(const int SCREEN_WIDTH, const int SCREEN_HEIGHT)
 	this->sphereColor  	= glm::vec3(0.0f,0.0f,0.0f);
 	this->centerOfMass 	= glm::vec3(0.0f,0.0f,0.0f);
 	this->sphereDistance= 5.0f;
-	this->vertShader 	= "/Developer/Particle-Viewer/src/shaders/colorSphere.vs";
-	this->fragShader 	= "/Developer/Particle-Viewer/src/shaders/colorSphere.frag";
+	this->vertShader 	= exePath + "Viewer-Assets/shaders/colorSphere.vs";
+	this->fragShader 	= exePath + "Viewer-Assets/shaders/colorSphere.frag";
 	spherePos 			= calcSpherePos(this->yaw,this->pitch,this->cameraPos);
 	this->rotLock = false;
 	this->comLock = false;
+
 }
 glm::mat4 Camera::setupCam()
 {

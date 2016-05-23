@@ -2,10 +2,10 @@
 
 int main(int argc, char* argv[])
 {
+	initPaths();
 	init_screen("Particle-Viewer");
 	SDL_Event event;
 	ticks = SDL_GetTicks();
-	
 	cam.initGL();
 	part = new Particle();
 	//set->readPosVelFile(0,part,false); //loads the file
@@ -203,6 +203,6 @@ void seekFrame(int frame, bool isForward)
 void cleanup()
 {
 	delete part;
-	delete pixels;
-	delete pixels2;
+	delete[] pixels;
+	delete[] pixels2;
 }
