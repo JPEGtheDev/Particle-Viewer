@@ -26,6 +26,6 @@ target_include_directories(Viewer PUBLIC
 target_link_libraries(Viewer
   ${SDL2_LIBRARY}
 )
-
+file(COPY src/shaders/ DESTINATION Viewer-Assets/shaders)
 install (TARGETS Viewer DESTINATION bin)
 install (DIRECTORY src/shaders/ DESTINATION bin/Viewer-Assets/shaders)
