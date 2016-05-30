@@ -4,7 +4,7 @@
 [submodule "external/stb"]
 	path = external/stb
 	url = https://github.com/nothings/stb
-    branch = master
+	branch = master
 [submodule "external/glad"]
 	path = external/glad
 	url = https://github.com/Dav1dde/glad.git

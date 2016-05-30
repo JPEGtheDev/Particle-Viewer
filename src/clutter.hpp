@@ -5,7 +5,7 @@
 	#include "glm/gtc/type_ptr.hpp"
 	#include "glad/glad.h"
 	#include "shader.hpp"
-    #include "camera.hpp"
+	#include "camera.hpp"
 	#include "tinyFileDialogs/tinyfiledialogs.h"
 	#include "particle.hpp"
 	#include "settingsIO.hpp"
@@ -26,8 +26,8 @@
 	void readInput(SDL_Event &event); 						//takes in all input
 	void setupGLStuff();									//sets up the VAOs and the VBOs
 	void cleanup();											//destroy it all with fire
-    void setupRender();										//Updates the VBOs for position changes
-    void seekFrame(int frame, bool isForward);				//skips frames
+	void setupRender();										//Updates the VBOs for position changes
+	void seekFrame(int frame, bool isForward);				//skips frames
 //variables
 	const int SCREEN_FULLSCREEN = 0, SCREEN_WIDTH  = 1280, SCREEN_HEIGHT = 720;
 	int curFrame = 0;
@@ -35,96 +35,93 @@
 	float sphereScale = 1.0;
 	float sphereRadius = 250.0f;
 	bool isRecording = false;
-    GLuint circleVAO, circleVBO;
-    std::string recordFolder = "";
-    uint32_t ticks,lastticks = 0;
-    GLfloat deltaTime = 0.0f, lastFrame = 0.0f;
-    int imageError = 0;
+	GLuint circleVAO, circleVBO;
+	std::string recordFolder = "";
+	uint32_t ticks,lastticks = 0;
+	GLfloat deltaTime = 0.0f, lastFrame = 0.0f;
+	int imageError = 0;
 	SDL_Window *window = NULL;
 	glm::vec3 com;
 	SDL_GLContext maincontext;
 	unsigned char * pixels = new unsigned char[SCREEN_WIDTH*SCREEN_HEIGHT*3];
 	unsigned char * pixels2 = new unsigned char[SCREEN_WIDTH*SCREEN_HEIGHT*3];
-    Shader sphereShader;
-   	std::string exePath;
-    Camera cam = Camera(SCREEN_WIDTH,SCREEN_HEIGHT);
-    Particle* part;
-    
-    glm::mat4 view;
-    
-    std::string sphereVertexShader = "Viewer-Assets/shaders/sphereVertex.vs";
-    std::string sphereFragmentShader = "Viewer-Assets/shaders/sphereFragment.frag";
-    const std::string posLoc = "/Users/JPEG/Desktop/500kSlam/PosAndVel";
-    const std::string setLoc = "/Users/JPEG/Desktop/500kSlam/RunSetup";
-    SettingsIO *set = new SettingsIO();  
+	Shader sphereShader;
+	std::string exePath;
+	Camera cam = Camera(SCREEN_WIDTH,SCREEN_HEIGHT);
+	Particle* part;
+	glm::mat4 view;
+
+	std::string sphereVertexShader = "Viewer-Assets/shaders/sphereVertex.vs";
+	std::string sphereFragmentShader = "Viewer-Assets/shaders/sphereFragment.frag";
+	const std::string posLoc = "/Users/JPEG/Desktop/500kSlam/PosAndVel";
+	const std::string setLoc = "/Users/JPEG/Desktop/500kSlam/RunSetup";
+	SettingsIO *set = new SettingsIO();  
 //functions that should not be changed
-    void manageFPS(uint32_t &ticks, uint32_t &lastticks)
+	void manageFPS(uint32_t &ticks, uint32_t &lastticks)
 	{
 		ticks = SDL_GetTicks();
 		deltaTime = ticks - lastticks;
 		if ( ((ticks*10-lastticks*10)) < 167 )
 		{
-		    SDL_Delay( (167-((ticks*10-lastticks*10)))/10 );
-		} 
+			SDL_Delay( (167-((ticks*10-lastticks*10)))/10 );
+		}
 		lastticks = SDL_GetTicks();
 	}
 
 	static void sdl_die(const char * message) 
 	{
-	  fprintf(stderr, "%s: %s\n", message, SDL_GetError());
-	  exit(2);
+		fprintf(stderr, "%s: %s\n", message, SDL_GetError());
+		exit(2);
 	}
 
 	void init_screen(const char * title) 
 	{
-	  // Init SDL 
-	  if (SDL_Init(SDL_INIT_VIDEO) < 0) sdl_die("SDL Initialize Failed!");
-	  atexit (SDL_Quit);
-	  
-	  //loads base GL Libs
-	  SDL_GL_LoadLibrary(NULL);
-	  
-	  //set base GL stuff
-	  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4); //Don't remove, killed running on linux
-	  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0); //Don't remove, killed running on linux
-	  SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-	  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-	  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+		// Init SDL 
+		if (SDL_Init(SDL_INIT_VIDEO) < 0) sdl_die("SDL Initialize Failed!");
+		atexit (SDL_Quit);
+		//loads base GL Libs
+		SDL_GL_LoadLibrary(NULL);
+		//set base GL stuff
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4); //Don't remove, killed running on linux
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1); //Don't remove, killed running on linux
+		SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
-	  //creates the window
-	  window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_OPENGL);
-	  if (window == NULL) sdl_die("Failed to create window!");
+		//creates the window
+		window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_OPENGL);
+		if (window == NULL) sdl_die("Failed to create window!");
 
-	  //creates the main GL context
-	  maincontext = SDL_GL_CreateContext(window);
-	  if (maincontext == NULL) sdl_die("Failed to create an OpenGL context!");
-	  gladLoadGLLoader(SDL_GL_GetProcAddress);
-	  printf("OpenGL Version %d.%d loaded\n", GLVersion.major, GLVersion.minor);
-	  // Use v-sync
-	  SDL_GL_SetSwapInterval(1);
+		//creates the main GL context
+		maincontext = SDL_GL_CreateContext(window);
+		if (maincontext == NULL) sdl_die("Failed to create an OpenGL context!");
+		gladLoadGLLoader(SDL_GL_GetProcAddress);
+		printf("OpenGL Version %d.%d loaded\n", GLVersion.major, GLVersion.minor);
+		// Use v-sync
+		SDL_GL_SetSwapInterval(1);
 
-	  int w,h;
-	  SDL_GetWindowSize(window, &w, &h);
-	  glViewport(0, 0, w, h);
-	  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		int w,h;
+		SDL_GetWindowSize(window, &w, &h);
+		glViewport(0, 0, w, h);
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	}
 
 	void initPaths() 
 	{
 		char *data_path = NULL;
-	    char *base_path = SDL_GetBasePath();
-	    if (base_path) 
-	    {
-	        data_path = base_path;
-	    } 
-	    else 
-	    {
-	        data_path = SDL_strdup("./");
-	    }
-	    std::string str(data_path);
-	    exePath = str;
-	    sphereVertexShader = exePath + sphereVertexShader;
-	    sphereFragmentShader = exePath + sphereFragmentShader;
+		char *base_path = SDL_GetBasePath();
+		if (base_path) 
+		{
+			data_path = base_path;
+		} 
+		else 
+		{
+			data_path = SDL_strdup("./");
+		}
+		std::string str(data_path);
+		exePath = str;
+		sphereVertexShader = exePath + sphereVertexShader;
+		sphereFragmentShader = exePath + sphereFragmentShader;
 	}
 

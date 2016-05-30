@@ -8,10 +8,10 @@ file(GLOB srcCPP src/*.cpp)
 file(GLOB srcHPP src/*.hpp)
 find_package(SDL2 REQUIRED)
 add_executable(Viewer
-  ${DIALOG}
-  ${srcCPP}
-  ${srcHPP}
-  external/glad/src/glad.c
+	${DIALOG}
+	${srcCPP}
+	${srcHPP}
+	external/glad/src/glad.c
 
 )
 target_link_libraries(Viewer ${CMAKE_DL_LIBS})
@@ -24,7 +24,7 @@ target_include_directories(Viewer PUBLIC
 )
 
 target_link_libraries(Viewer
-  ${SDL2_LIBRARY}
+	${SDL2_LIBRARY}
 )
 file(COPY src/shaders/ DESTINATION Viewer-Assets/shaders)
 install (TARGETS Viewer DESTINATION bin)

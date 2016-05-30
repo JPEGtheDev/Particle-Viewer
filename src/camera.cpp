@@ -3,16 +3,16 @@
 Camera::Camera(const int SCREEN_WIDTH, const int SCREEN_HEIGHT)
 {
 	char *data_path = NULL;
-    char *base_path = SDL_GetBasePath();
-    if (base_path) 
-    {
-        data_path = base_path;
-    } 
-    else 
-    {
-        data_path = SDL_strdup("./");
-    }
-    std::string exePath(data_path);
+	char *base_path = SDL_GetBasePath();
+	if (base_path) 
+	{
+		data_path = base_path;
+	} 
+	else 
+	{
+		data_path = SDL_strdup("./");
+	}
+	std::string exePath(data_path);
 	this->cameraPos 	= glm::vec3(0.0f, 0.0f,  3.0f);
 	this->cameraFront 	= glm::vec3(0.0f, 0.0f, -1.0f);
 	this->cameraUp		= glm::vec3(0.0f, 1.0f,  0.0f);
@@ -80,23 +80,23 @@ void Camera::lookLeft(float yaw)
 void Camera::update(GLfloat deltaTime)
 {
 	clampPitch(this->pitch);
- 	glm::vec3 front;
-    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    front.y = sin(glm::radians(pitch));
-    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    cameraFront = glm::normalize(front);
-    updateSpeed(deltaTime);
+	glm::vec3 front;
+	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	front.y = sin(glm::radians(pitch));
+	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	cameraFront = glm::normalize(front);
+	updateSpeed(deltaTime);
 }
 void Camera::clampPitch(GLfloat &pitch)
 {
 	if (pitch > 89.0f)
 	{
-        pitch = 89.0f;
+		pitch = 89.0f;
 	}
-    if (pitch < -89.0f)
-    {
-        pitch = -89.0f;
-    }
+	if (pitch < -89.0f)
+	{
+		pitch = -89.0f;
+	}
 }
 void Camera::clampDegrees(GLfloat &in)
 {
@@ -325,7 +325,7 @@ void Camera::RenderSphere()
 		if(comLock)
 		{
 			glUniform3fv(glGetUniformLocation(sphereShader.Program, "pos"), 1, glm::value_ptr(centerOfMass));
-		    glUniform3fv(glGetUniformLocation(sphereShader.Program, "color"), 1, glm::value_ptr(glm::vec3(0,0,1.0f)));
+			glUniform3fv(glGetUniformLocation(sphereShader.Program, "color"), 1, glm::value_ptr(glm::vec3(0,0,1.0f)));
 			glBindVertexArray(VAO2);
 			glDrawArrays(GL_POINTS, 0, 1);
 			glBindVertexArray(0);

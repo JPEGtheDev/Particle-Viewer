@@ -54,9 +54,9 @@ void drawFunct()
 	sphereShader.Use();
 	part->pushVBO();
 	glBindVertexArray(circleVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, part->instanceVBO);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, part->instanceVBO);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glUniformMatrix4fv(glGetUniformLocation(sphereShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
 	glUniformMatrix4fv(glGetUniformLocation(sphereShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(cam.projection));
 	glUniform1f(glGetUniformLocation(sphereShader.Program, "radius"), sphereRadius);
