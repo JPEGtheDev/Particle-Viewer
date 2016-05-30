@@ -3,78 +3,78 @@ language: cpp
 sudo: false
 
 os:
-	- linux
-	- osx
+  - linux
+  - osx
 compiler:
-	- gcc
-	- clang
+  - gcc
+  - clang
 env:
-	global:
-	 # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
-	 #   via the "travis encrypt" command using the project repo's public key
-	 - secure: "flFt5aekg/6F5kn5i6j5dOeezwlbd8b56RgAReHYQH9zAtAIMqLlGx3F9khql4kLI7LP4X68mTrmIhOPtx0DRsFh249w3kgdrDSBYpM0WbMPRj9gDtHOUhhDZ3OPY46bNox6+7AIiPjBFxUxm1eibb9pwmZjRBUSzzCB/Lm7xTvsd7Ax7L/2Z+fFCa8JCslMCjUzmV5upS4fRCb64+XNmSRUaWXz+WP5a7bT9Dw8YjG25VQ7STqWbs9fYvw9n0bacKRfmvHxMpWXJo+v6VP0wRAXaDM+xSZYsMzVWv3gbkF+wXr37eClGHLdvwAzeXZtOD9d/UlCo3Sufm7fA3XGEqC+HqBvtnLvulUQnWvSfBZ5b6Ob/VUFqASixjyvwMnTBlyvCBC4qw2clk5DzIFrJvnyFcgOYfxS4V10MuKcgQSHf1i542beyE9M/sJbQ3Lp+qKM3CNaA/ueClViTuJ9WO8Hu8ORKwQWP7wrb+gX/hfyyQedaWf4pvnd5wWuzIoxahXwqgM3uO1M+ZPnTWKlMLXjKqJB6zRTSNOakzuH/I3h7UhD4YKLWNgo/RbVMaSZVTeYDBuFWqIiWBQQj7AnyMk+y6cJTX8QyO5g6XUFPwjqRclLzGvH1a3tc5p0g/bnOhpEKiLyDd4P56m3HqxmhYs+5YC38CukPJX/MAEHIAw="
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   #   via the "travis encrypt" command using the project repo's public key
+   - secure: "flFt5aekg/6F5kn5i6j5dOeezwlbd8b56RgAReHYQH9zAtAIMqLlGx3F9khql4kLI7LP4X68mTrmIhOPtx0DRsFh249w3kgdrDSBYpM0WbMPRj9gDtHOUhhDZ3OPY46bNox6+7AIiPjBFxUxm1eibb9pwmZjRBUSzzCB/Lm7xTvsd7Ax7L/2Z+fFCa8JCslMCjUzmV5upS4fRCb64+XNmSRUaWXz+WP5a7bT9Dw8YjG25VQ7STqWbs9fYvw9n0bacKRfmvHxMpWXJo+v6VP0wRAXaDM+xSZYsMzVWv3gbkF+wXr37eClGHLdvwAzeXZtOD9d/UlCo3Sufm7fA3XGEqC+HqBvtnLvulUQnWvSfBZ5b6Ob/VUFqASixjyvwMnTBlyvCBC4qw2clk5DzIFrJvnyFcgOYfxS4V10MuKcgQSHf1i542beyE9M/sJbQ3Lp+qKM3CNaA/ueClViTuJ9WO8Hu8ORKwQWP7wrb+gX/hfyyQedaWf4pvnd5wWuzIoxahXwqgM3uO1M+ZPnTWKlMLXjKqJB6zRTSNOakzuH/I3h7UhD4YKLWNgo/RbVMaSZVTeYDBuFWqIiWBQQj7AnyMk+y6cJTX8QyO5g6XUFPwjqRclLzGvH1a3tc5p0g/bnOhpEKiLyDd4P56m3HqxmhYs+5YC38CukPJX/MAEHIAw="
 addons:
-	apt:
-	sources:
-		- ubuntu-toolchain-r-test
-		- llvm-toolchain-precise-3.6
-	packages:
-		- gcc-4.9
-		- g++-4.9
-		- clang-3.6
-		- valgrind
-		- gdb
-		- llvm-3.0-dev
-		- libfreetype6-dev
-	coverity_scan:
-	project:
-		name: "JPEGtheDev/Particle-Viewer"
-		description: "<Your project description here>"
-	notification_email: jpegthedev@gmail.com
-	build_command_prepend: "mkdir build; cd build; cmake .."
-	build_command:   "make"
-	branch_pattern: scanner
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+      - llvm-toolchain-precise-3.6
+    packages:
+      - gcc-4.9
+      - g++-4.9
+      - clang-3.6
+      - valgrind
+      - gdb
+      - llvm-3.0-dev
+      - libfreetype6-dev
+  coverity_scan:
+    project:
+      name: "JPEGtheDev/Particle-Viewer"
+      description: "<Your project description here>"
+    notification_email: jpegthedev@gmail.com
+    build_command_prepend: "mkdir build; cd build; cmake .."
+    build_command:   "make"
+    branch_pattern: scanner
 
 cache:
-	directories:
-	- /home/travis/build/JPEGtheDev/SDL2_Build
-	- /home/travis/build/JPEGtheDev/cmake
+  directories:
+    - /home/travis/build/JPEGtheDev/SDL2_Build
+    - /home/travis/build/JPEGtheDev/cmake
 before_install:
 
-	- echo $LANG
-	- echo $LC_ALL
-	- if [ $TRAVIS_OS_NAME == linux ]; then
-		if [ "$CXX" = "g++" ]; then export CXX="g++-4.9"; fi;
-		if [ "$CC" = "gcc" ]; then export CC="gcc-4.9"; fi;
-		if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.6"; fi;
-		if [ "$CC" = "clang" ]; then export CC="clang-3.6"; fi;
-		sh ./scripts/linuxPre.sh;
-	fi
+  - echo $LANG
+  - echo $LC_ALL
+  - if [ $TRAVIS_OS_NAME == linux ]; then
+      if [ "$CXX" = "g++" ]; then export CXX="g++-4.9"; fi;
+      if [ "$CC" = "gcc" ]; then export CC="gcc-4.9"; fi;
+      if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.6"; fi;
+      if [ "$CC" = "clang" ]; then export CC="clang-3.6"; fi;
+      sh ./scripts/linuxPre.sh;
+    fi
 
-	- if [ $TRAVIS_OS_NAME == osx ]; then
-		sh ./scripts/OSXPre.sh;
-	fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then
+      sh ./scripts/OSXPre.sh;
+    fi
 
 script:
-	- if [ $TRAVIS_OS_NAME == osx ]; then
-		sh ./scripts/OSXBuild.sh;
-	fi
-	- if [ $TRAVIS_OS_NAME == linux ]; then
-		sh ./scripts/linuxBuild.sh;
-	fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then
+      sh ./scripts/OSXBuild.sh;
+    fi
+  - if [ $TRAVIS_OS_NAME == linux ]; then
+      sh ./scripts/linuxBuild.sh;
+    fi
 
 after_success:
-	- echo "SUCCESS!!!"
+  - echo "SUCCESS!!!"
 
 after_failure:
-	- echo "FAILURE"
+  - echo "FAILURE"
 
 branches:
-	whitelist:
-	- master
+  whitelist:
+    - master
 
 notifications:
-	email: true
+  email: true
 
 
 
