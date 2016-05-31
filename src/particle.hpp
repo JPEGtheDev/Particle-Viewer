@@ -10,11 +10,11 @@ class Particle
 {
 public:
 	
-    Particle();					//default cube constructor
-    Particle(long,glm::vec4*);
-    ~Particle();				//destructor for the particles
+	Particle();					//default cube constructor
+	Particle(long,glm::vec4*);
+	~Particle();				//destructor for the particles
 
-    void pushVBO();				//pushes the VBO to the graphics card. Allows the positions to change.
+	void pushVBO();				//pushes the VBO to the graphics card. Allows the positions to change.
 	void setUpInstanceArray();	//sets up the instance array to be used in the shader
 	void changeTranslations(long,glm::vec4*);
 	void changeVelocities(glm::vec4*);
