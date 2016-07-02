@@ -9,3 +9,6 @@
 	path = external/glad
 	url = https://github.com/Dav1dde/glad.git
 	branch = c
+[submodule "external/rapidjson"]
+	path = external/rapidjson
+	url = https://github.com/miloyip/rapidjson.git

@@ -20,6 +20,7 @@ target_include_directories(Viewer PUBLIC
 	external
 	external/glm
 	external/glad/include
+	external/rapidjson/include
 	${SDL2_INCLUDE_DIR}
 )
 
