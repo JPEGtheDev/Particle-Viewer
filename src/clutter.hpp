@@ -11,6 +11,7 @@
 	#include "settingsIO.hpp"
 	#define STB_IMAGE_WRITE_IMPLEMENTATION
 	#include "stb/stb_image_write.h"
+	#include <GLFW/glfw3.h>
 	#ifdef _WIN32 //Windows Includes
 		#include <windows.h>
 		#include <SDL.h>
@@ -18,16 +19,15 @@
 		#include <SDL2/SDL.h>
 	#endif
 //function prototypes
-	static void sdl_die(const char * message); 				//finds SDL errors / kills the app if something doesn't init properly
 	void init_screen(const char * caption);					//initializes the screen / window / context
-	void manageFPS(uint32_t &ticks, uint32_t &lastticks);	//limits FPS to 60 and update deltaTime
+	void upDeltaTime();										//updates deltaTime
 	void beforeDraw(); 										//the generic clear screen and other stuff before anything else has to be done
 	void drawFunct(); 										//Draws stuff to the screen
-	void readInput(SDL_Event &event); 						//takes in all input
 	void setupGLStuff();									//sets up the VAOs and the VBOs
 	void cleanup();											//destroy it all with fire
 	void setupRender();										//Updates the VBOs for position changes
 	void seekFrame(int frame, bool isForward);				//skips frames
+	static void key_callback(GLFWwindow*,int,int,int,int);	//key commands for GLFW
 //variables
 	const int SCREEN_FULLSCREEN = 0, SCREEN_WIDTH  = 1280, SCREEN_HEIGHT = 720;
 	int curFrame = 0;
@@ -40,9 +40,8 @@
 	uint32_t ticks,lastticks = 0;
 	GLfloat deltaTime = 0.0f, lastFrame = 0.0f;
 	int imageError = 0;
-	SDL_Window *window = NULL;
+	GLFWwindow *window = NULL;
 	glm::vec3 com;
-	SDL_GLContext maincontext;
 	unsigned char * pixels = new unsigned char[SCREEN_WIDTH*SCREEN_HEIGHT*3];
 	unsigned char * pixels2 = new unsigned char[SCREEN_WIDTH*SCREEN_HEIGHT*3];
 	Shader sphereShader;
@@ -57,53 +56,36 @@
 	const std::string setLoc = "/Users/JPEG/Desktop/500kSlam/RunSetup";
 	SettingsIO *set = new SettingsIO();  
 //functions that should not be changed
-	void manageFPS(uint32_t &ticks, uint32_t &lastticks)
+	void upDeltaTime()
 	{
-		ticks = SDL_GetTicks();
-		deltaTime = ticks - lastticks;
-		if ( ((ticks*10-lastticks*10)) < 167 )
-		{
-			SDL_Delay( (167-((ticks*10-lastticks*10)))/10 );
-		}
-		lastticks = SDL_GetTicks();
+		GLfloat currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
 	}
-
-	static void sdl_die(const char * message) 
+	void error_callback(int error, const char* description)
 	{
-		fprintf(stderr, "%s: %s\n", message, SDL_GetError());
-		exit(2);
+	    fprintf(stderr, "Error: %s\n", description);
 	}
-
 	void init_screen(const char * title) 
 	{
-		// Init SDL 
-		if (SDL_Init(SDL_INIT_VIDEO) < 0) sdl_die("SDL Initialize Failed!");
-		atexit (SDL_Quit);
-		//loads base GL Libs
-		SDL_GL_LoadLibrary(NULL);
-		//set base GL stuff
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4); //Don't remove, killed running on linux
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1); //Don't remove, killed running on linux
-		SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-
+		glfwSetErrorCallback(error_callback);
+		if (!glfwInit())
+        exit(EXIT_FAILURE);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+		glfwWindowHint(GLFW_SAMPLES, 4);
 		//creates the window
-		window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_OPENGL);
-		if (window == NULL) sdl_die("Failed to create window!");
 
-		//creates the main GL context
-		maincontext = SDL_GL_CreateContext(window);
-		if (maincontext == NULL) sdl_die("Failed to create an OpenGL context!");
-		gladLoadGLLoader(SDL_GL_GetProcAddress);
-		printf("OpenGL Version %d.%d loaded\n", GLVersion.major, GLVersion.minor);
-		// Use v-sync
-		SDL_GL_SetSwapInterval(1);
+		window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "My Title", NULL, NULL);
+		if (!window)
+		{
 
-		int w,h;
-		SDL_GetWindowSize(window, &w, &h);
-		glViewport(0, 0, w, h);
+		}
+		glfwSetKeyCallback(window, key_callback);
+		glfwMakeContextCurrent(window);
+    	gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
+    	glfwSwapInterval(1);
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	}
 
@@ -125,3 +107,73 @@
 		sphereFragmentShader = exePath + sphereFragmentShader;
 	}
 
+	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+	{
+		cam.KeyReader(window,key,scancode,action,mods);
+	    if (key == GLFW_KEY_Q && action == GLFW_REPEAT)
+		{
+			seekFrame(3, false);
+		}
+		if (key == GLFW_KEY_E && action == GLFW_REPEAT)
+		{
+			seekFrame(3, true);
+		}
+	    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+	    {
+	        glfwSetWindowShouldClose(window, GLFW_TRUE);
+
+	    }
+	    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+		{
+			set->togglePlay();
+		}
+		if (key == GLFW_KEY_T && action == GLFW_PRESS)
+		{
+			set = set->loadFile(part,false);
+			curFrame = 0;
+		}
+		if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
+		{
+			seekFrame(1,true);
+		}
+		if (key == GLFW_KEY_LEFT && action == GLFW_PRESS)
+		{
+			seekFrame(1,false);
+		}
+		if (key == GLFW_KEY_R && action == GLFW_PRESS)
+		{
+			if(!isRecording)
+			{
+				imageError = 0;
+				std::string dialog = "Select Folder";
+				const char* fol = tinyfd_selectFolderDialog (dialog.c_str() , "") ;
+				
+				std::string folder;
+				if(fol != NULL)
+				{
+					folder = std::string(fol);
+				}
+				else
+				{
+					folder = "";
+				}
+				if(folder != "")
+				{
+					recordFolder = folder;
+					isRecording = true;
+					return;
+				}
+				std::cout << "Folder not selected" << std::endl;
+				isRecording = false;
+			}
+			else
+			{
+				recordFolder = "";
+				isRecording = false;
+			}
+		}
+		if (key == GLFW_KEY_LEFT && action == GLFW_PRESS)
+		{
+			seekFrame(1,false);
+		}
+	}

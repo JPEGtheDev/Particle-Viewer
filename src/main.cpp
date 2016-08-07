@@ -4,18 +4,20 @@ int main(int argc, char* argv[])
 {
 	initPaths();
 	init_screen("Particle-Viewer");
-	SDL_Event event;
 	ticks = SDL_GetTicks();
 	cam.initGL();
 	part = new Particle();
 	//set->readPosVelFile(0,part,false); //loads the file
 	setupGLStuff();
-	while (!quit) 
+	while (!glfwWindowShouldClose(window)) 
 	{
-		readInput(event);
+		glfwPollEvents();
+		cam.Move();
+		//readInput(event);
 		beforeDraw();
 		drawFunct();
-		SDL_GL_SwapWindow(window);
+		glfwSwapBuffers(window);
+        
 		
 		if(set->frames > 1)
 		{
@@ -42,7 +44,7 @@ void beforeDraw()
 {
 	cam.update(deltaTime);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	manageFPS(ticks,lastticks);
+	upDeltaTime();
 	view = cam.setupCam();
 	
 	
@@ -92,89 +94,11 @@ void drawFunct()
 	cam.RenderSphere();
 }
 
-void readInput(SDL_Event &event)
-{
-	const Uint8 *keystate = SDL_GetKeyboardState(NULL);
-	cam.MultiKeyEventReader(event);
-	if(keystate[SDL_SCANCODE_E])
-	{
-		seekFrame(3, true);
-	}
-	if(keystate[SDL_SCANCODE_Q])
-	{
-		seekFrame(3, false);
-	}
-	while (SDL_PollEvent(&event)) 
-	{
-		if (event.type == SDL_QUIT) 
-		{
-			quit = true;
-		}
-		else if(event.type == SDL_KEYDOWN)
-		{
-			if(event.key.keysym.sym == SDLK_ESCAPE)
-			{
-				quit = true;
-			}
-			if(event.key.keysym.sym == SDLK_SPACE)
-			{
-				set->togglePlay();
-			}
-			if(event.key.keysym.sym == SDLK_t)
-			{
-				set = set->loadFile(part,false);
-				curFrame = 0;
-			}
-			if(event.key.keysym.sym == SDLK_RIGHT)
-			{
-				seekFrame(1,true);
-			}
-			if(event.key.keysym.sym == SDLK_LEFT)
-			{
-				seekFrame(1,false);
-			}
-			if(event.key.keysym.sym == SDLK_r)
-			{
-				if(!isRecording)
-				{
-					imageError = 0;
-					std::string dialog = "Select Folder";
-					const char* fol = tinyfd_selectFolderDialog (dialog.c_str() , "") ;
-					
-					std::string folder;
-					if(fol != NULL)
-					{
-						folder = std::string(fol);
-					}
-					else
-					{
-						folder = "";
-					}
-					if(folder != "")
-					{
-						recordFolder = folder;
-						isRecording = true;
-						break;
-					}
-					std::cout << "Folder not selected" << std::endl;
-					isRecording = false;
-				}
-				else
-				{
-					recordFolder = "";
-					isRecording = false;
-				}
-				
-			}
-		}
-		cam.SingleKeyEventReader(event);
-	}
-}
-
 void setupGLStuff() 
 {
 	glEnable(GL_DEPTH_TEST);
-	glEnable( GL_PROGRAM_POINT_SIZE );
+	glEnable(GL_PROGRAM_POINT_SIZE );
+	glEnable(GL_MULTISAMPLE);  
 	sphereShader = Shader(sphereVertexShader.c_str(),sphereFragmentShader.c_str());							//creates the shader to be used on the spheres
 
 	glGenVertexArrays(1, &circleVAO);

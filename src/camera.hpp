@@ -6,6 +6,7 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "glad/glad.h"
 #include "shader.hpp"
+#include <GLFW/glfw3.h>
 #ifdef _WIN32 //Windows Includes
 	#include <windows.h>
 	#include <SDL.h>
@@ -66,11 +67,12 @@ class Camera
 		void setRenderDistance(float);
 		void changeSpeed(float);
 		void recordPosition(int);
-		void MultiKeyEventReader(SDL_Event &event);
-		void SingleKeyEventReader(SDL_Event &event);
+		void KeyReader(GLFWwindow* window, int key, int scancode, int action, int mods);
 		void RenderSphere();
 		void initGL();
 		void setSphereCenter(glm::vec3);
+		void Move();
+		bool keys[1024];
 };
 
 #endif

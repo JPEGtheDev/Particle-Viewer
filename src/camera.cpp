@@ -16,7 +16,7 @@ Camera::Camera(const int SCREEN_WIDTH, const int SCREEN_HEIGHT)
 	this->cameraPos 	= glm::vec3(0.0f, 0.0f,  3.0f);
 	this->cameraFront 	= glm::vec3(0.0f, 0.0f, -1.0f);
 	this->cameraUp		= glm::vec3(0.0f, 1.0f,  0.0f);
-	this->baseSpeed		= 0.01f;
+	this->baseSpeed		= 5.0f;
 	this->speed 		= this->baseSpeed;
 	this->yaw			= -90.0f;	
 	this->pitch  		= 0.0f;
@@ -130,82 +130,16 @@ void Camera::recordPosition(int frame)
 	camLocation.push_back(data);
 	//sort data
 }
-void Camera::MultiKeyEventReader(SDL_Event &event)
+void Camera::KeyReader(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	const Uint8 *keystate = SDL_GetKeyboardState(NULL);
+	if(action == GLFW_PRESS)
+  		keys[key] = true;
+	else if(action == GLFW_RELEASE)
+  		keys[key] = false;
 
-	if(keystate[SDL_SCANCODE_W] && !rotLock)
-	{
-		moveForward();
-	}
-	if(keystate[SDL_SCANCODE_S]&& !rotLock)
-	{
-		moveBackward();
-	}
-	if(keystate[SDL_SCANCODE_A]&& !rotLock)
-	{
-		moveLeft();
-	}
-	if(keystate[SDL_SCANCODE_D]&& !rotLock)
-	{
-		moveRight();
-	}
-	if(keystate[SDL_SCANCODE_W] && rotLock)
-	{
-		spherePitch += 1.0;
-		lookDown(1.0f);
-	}
-	if(keystate[SDL_SCANCODE_S]&& rotLock)
-	{
-		spherePitch -= 1.0;
-		lookUp(1.0f);
-	}
-	if(keystate[SDL_SCANCODE_A]&& rotLock)
-	{
-		sphereYaw -= 1.0;
-		lookLeft(1.0);
-	}
-	if(keystate[SDL_SCANCODE_D]&& rotLock)
-	{
-		sphereYaw += 1.0;
-		lookRight(1.0);
-	}
-	if(keystate[SDL_SCANCODE_I]&& !rotLock)
-	{
-		lookUp(2.5f);
-	}
-	if(keystate[SDL_SCANCODE_K]&& !rotLock)
-	{
-		lookDown(2.5f);
-	}
-	if(keystate[SDL_SCANCODE_J]&& !rotLock)
-	{
-		lookLeft(2.5f);
-	}
-	if(keystate[SDL_SCANCODE_L]&& !rotLock)
-	{
-		lookRight(2.5f);
-	}
-	if(renderSphere)
-	{
-		if(keystate[SDL_SCANCODE_LEFTBRACKET])
-		{
-			sphereDistance -= .25;
-		}
-		if(keystate[SDL_SCANCODE_RIGHTBRACKET])
-		{
-			sphereDistance += .25;
-		}
-	}
-	clampPitch(this->spherePitch);
-	clampDegrees(this->sphereYaw);
-	clampDegrees(this->yaw);
-}
-void Camera::SingleKeyEventReader(SDL_Event &event)
-{
-	if(event.type == SDL_KEYDOWN)
-	{
-		if(event.key.keysym.sym == SDLK_p)
+  	if (action == GLFW_PRESS)
+	{  
+		if( key == GLFW_KEY_P)
 		{
 			rotateState++;
 			rotateState = rotateState%3;
@@ -232,7 +166,7 @@ void Camera::SingleKeyEventReader(SDL_Event &event)
 				sphereColor  = glm::vec3(0.0f,1.0f,0.0f);
 			}
 		}
-		if(event.key.keysym.sym == SDLK_o)
+		if(key == GLFW_KEY_O)
 		{
 			if(rotLock)
 			{
@@ -240,56 +174,135 @@ void Camera::SingleKeyEventReader(SDL_Event &event)
 			}
 			
 		}
-		if(event.key.keysym.sym == SDLK_1 && rotLock)
+		if(rotLock)
 		{
-			this->yaw= 90.0f;
-			this->pitch = 0.0f;
-			this->sphereYaw = -90.0f;
-			this->spherePitch = 0.0f;
+			if(key == GLFW_KEY_1)
+			{
+				this->yaw= 90.0f;
+				this->pitch = 0.0f;
+				this->sphereYaw = -90.0f;
+				this->spherePitch = 0.0f;
+			}
+			if(key == GLFW_KEY_2)
+			{
+				this->yaw= 180.0f;
+				this->pitch = 0.0f;
+				this->sphereYaw = 0.0f;
+				this->spherePitch = 0.0f;
+			}
+			if(key == GLFW_KEY_3)
+			{
+				this->yaw= 270.0f;
+				this->pitch = 0.0f;
+				this->sphereYaw = 90.0f;
+				this->spherePitch = 0.0f;
+			}
+			if(key == GLFW_KEY_4)
+			{
+				this->yaw= 0.0f;
+				this->pitch = 0.0f;
+				this->sphereYaw = 180.0f;
+				this->spherePitch = 0.0f;
+			}
+			if(key == GLFW_KEY_5)
+			{
+				this->yaw= 90.0f;
+				this->pitch = -89.0f;
+				this->sphereYaw = 270.0f;
+				this->spherePitch = 89.0f;
+			}
+			if(key == GLFW_KEY_6)
+			{
+				this->yaw= 90.0f;
+				this->pitch = 89.0f;
+				this->sphereYaw = 270.0f;
+				this->spherePitch = -89.0f;
+			}
 		}
-		if(event.key.keysym.sym == SDLK_2 && rotLock)
-		{
-			this->yaw= 180.0f;
-			this->pitch = 0.0f;
-			this->sphereYaw = 0.0f;
-			this->spherePitch = 0.0f;
-		}
-		if(event.key.keysym.sym == SDLK_3 && rotLock)
-		{
-			this->yaw= 270.0f;
-			this->pitch = 0.0f;
-			this->sphereYaw = 90.0f;
-			this->spherePitch = 0.0f;
-		}
-		if(event.key.keysym.sym == SDLK_4 && rotLock)
-		{
-			this->yaw= 0.0f;
-			this->pitch = 0.0f;
-			this->sphereYaw = 180.0f;
-			this->spherePitch = 0.0f;
-		}
-		if(event.key.keysym.sym == SDLK_5 && rotLock)
-		{
-			this->yaw= 90.0f;
-			this->pitch = -89.0f;
-			this->sphereYaw = 270.0f;
-			this->spherePitch = 89.0f;
-		}
-		if(event.key.keysym.sym == SDLK_6 && rotLock)
-		{
-			this->yaw= 90.0f;
-			this->pitch = 89.0f;
-			this->sphereYaw = 270.0f;
-			this->spherePitch = -89.0f;
-		}
-		clampPitch(this->spherePitch);
-		clampDegrees(this->sphereYaw);
-		clampDegrees(this->yaw);
 	}
+	clampPitch(this->spherePitch);
+	clampDegrees(this->sphereYaw);
+	clampDegrees(this->yaw);
 }
 void Camera::setSphereCenter(glm::vec3 pos)
 {
 	centerOfMass = pos;
+}
+void Camera::Move()
+{
+	if(!rotLock)
+	{
+		if(keys[GLFW_KEY_W])
+		{
+			moveForward();
+		}
+		if(keys[GLFW_KEY_S])
+		{
+			moveBackward();
+		}
+		if(keys[GLFW_KEY_A])
+		{
+			moveLeft();
+		}
+		if(keys[GLFW_KEY_D])
+		{
+			moveRight();
+		}
+		if(keys[GLFW_KEY_I])
+		{
+			lookUp(2.5f);
+		}
+		if(keys[GLFW_KEY_K])
+		{
+			lookDown(2.5f);
+		}
+		if(keys[GLFW_KEY_J])
+		{
+			lookLeft(2.5f);
+		}
+		if(keys[GLFW_KEY_L])
+		{
+			lookRight(2.5f);
+		}
+	}
+	else
+	{
+		if(keys[GLFW_KEY_W])
+		{
+			spherePitch += 1.0;
+			lookDown(1.0f);
+		}
+		if(keys[GLFW_KEY_S])
+		{
+			spherePitch -= 1.0;
+			lookUp(1.0f);
+		}
+		if(keys[GLFW_KEY_A])
+		{
+			sphereYaw -= 1.0;
+			lookLeft(1.0);
+		}
+		if(keys[GLFW_KEY_D])
+		{
+			sphereYaw += 1.0;
+			lookRight(1.0);
+		}
+	}
+
+	if(renderSphere)
+	{
+		if(keys[GLFW_KEY_LEFT_BRACKET])
+		{
+			sphereDistance -= .25;
+		}
+		if(keys[GLFW_KEY_RIGHT_BRACKET])
+		{
+			sphereDistance += .25;
+		}
+	}
+	clampPitch(this->spherePitch);
+	clampDegrees(this->sphereYaw);
+	clampDegrees(this->yaw);
 }
 void Camera::RenderSphere()
 {
