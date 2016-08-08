@@ -12,15 +12,4 @@ if [ ! "$(ls -A /home/travis/build/JPEGtheDev/cmake)" ]; then
 	cd /home/travis/build/JPEGtheDev/Particle-Viewer;
 fi
 
-if [ ! "$(ls -A /home/travis/build/JPEGtheDev/SDL2_Build)" ]; then
-	hg clone https://hg.libsdl.org/SDL SDL;
-	cd SDL;
-	mkdir build;
-	cd build;
-	/home/travis/build/JPEGtheDev/cmake/bin/cmake .. -DCMAKE_INSTALL_PREFIX="/home/travis/build/JPEGtheDev/SDL2_Build";
-	make;
-	make install;
-	cd /home/travis/build/JPEGtheDev/Particle-Viewer;
-fi
-
 

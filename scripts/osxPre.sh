@@ -1,1 +1,1 @@
-brew update && brew install sdl2;
+#removed sdl from here... nothing to see here now
