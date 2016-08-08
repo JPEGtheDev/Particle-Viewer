@@ -25,7 +25,6 @@ Camera::Camera(const int SCREEN_WIDTH, const int SCREEN_HEIGHT)
 	spherePos 			= calcSpherePos(this->yaw,this->pitch,this->cameraPos);
 	this->rotLock = false;
 	this->comLock = false;
-
 }
 glm::mat4 Camera::setupCam()
 {

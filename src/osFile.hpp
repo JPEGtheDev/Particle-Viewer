@@ -29,7 +29,9 @@
 	    #elif __linux__
 			char result[ PATH_MAX ];
 		 	ssize_t count = readlink( "/proc/self/exe", result, PATH_MAX );
-		 	return std::string( result, (count > 0) ? count : 0 );
+		 	std::string::size_type pos = std::string( result ).find_last_of( "\\/" );
+		 	return std::string( result ).substr(0,pos);
+		 	//return std::string( result, (count > 0) ? count : 0 );
 	    #endif
 	}
 	
