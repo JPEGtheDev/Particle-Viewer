@@ -8,8 +8,7 @@
 	#ifdef _WIN32
 		#include <windows.h>
 	#elif __APPLE__
-		#include <limits.h>
-		#include <unistd.h>	
+		#include <mach-o/dyld.h>
 	#elif __linux__
 		#include <limits.h>
 		#include <unistd.h>
@@ -22,10 +21,11 @@
 	    	std::string::size_type pos = std::string( buffer ).find_last_of( "\\/" );
 	    	return std::string( buffer ).substr( 0, pos);
 	    #elif __APPLE__
-	    	std::cout << "DEBUG:: On OSX" << std::endl;
-			char result[ PATH_MAX ];
-			ssize_t count = readlink( "/proc/self/exe", result, PATH_MAX );
-			return std::string( result, (count > 0) ? count : 0 );
+	    	char path[1024];
+			uint32_t size = sizeof(path);
+			_NSGetExecutablePath(path, &size);
+			std::string::size_type pos = std::string( path ).find_last_of( "." ) -1;
+			return std::string( path ).substr(0,pos);
 	    #elif __linux__
 			char result[ PATH_MAX ];
 		 	ssize_t count = readlink( "/proc/self/exe", result, PATH_MAX );

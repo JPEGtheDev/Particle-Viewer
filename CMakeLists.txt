@@ -6,7 +6,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -march=native")
 file(GLOB DIALOG src/tinyFileDialogs/*.c)
 file(GLOB srcCPP src/*.cpp)
 file(GLOB srcHPP src/*.hpp)
-find_package(SDL2 REQUIRED)
 add_executable(Viewer
 	${DIALOG}
 	${srcCPP}
@@ -26,11 +25,6 @@ target_include_directories(Viewer PUBLIC
 	external/rapidjson/include
 	external/glfw/include
 	external/filesystem/include
-	${SDL2_INCLUDE_DIR}
-)
-
-target_link_libraries(Viewer
-	${SDL2_LIBRARY}
 )
 file(COPY src/shaders/ DESTINATION Viewer-Assets/shaders)
 install (TARGETS Viewer DESTINATION bin)

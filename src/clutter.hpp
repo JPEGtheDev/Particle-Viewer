@@ -15,9 +15,6 @@
 	#include "osFile.hpp"
 	#ifdef _WIN32 //Windows Includes
 		#include <windows.h>
-		#include <SDL.h>
-	#else //Includes for Linux and OSX
-		#include <SDL2/SDL.h>
 	#endif
 //function prototypes
 	void init_screen(const char * caption);					//initializes the screen / window / context
@@ -38,7 +35,6 @@
 	bool isRecording = false;
 	GLuint circleVAO, circleVBO;
 	std::string recordFolder = "";
-	uint32_t ticks,lastticks = 0;
 	GLfloat deltaTime = 0.0f, lastFrame = 0.0f;
 	int imageError = 0;
 	GLFWwindow *window = NULL;
@@ -51,8 +47,8 @@
 	Particle* part;
 	glm::mat4 view;
 
-	std::string sphereVertexShader = "Viewer-Assets/shaders/sphereVertex.vs";
-	std::string sphereFragmentShader = "Viewer-Assets/shaders/sphereFragment.frag";
+	std::string sphereVertexShader = "/Viewer-Assets/shaders/sphereVertex.vs";
+	std::string sphereFragmentShader = "/Viewer-Assets/shaders/sphereFragment.frag";
 	const std::string posLoc = "/Users/JPEG/Desktop/500kSlam/PosAndVel";
 	const std::string setLoc = "/Users/JPEG/Desktop/500kSlam/RunSetup";
 	SettingsIO *set = new SettingsIO();  
@@ -95,19 +91,8 @@
 	}
 
 	void initPaths() 
-	{
-		char *data_path = NULL;
-		char *base_path = SDL_GetBasePath();
-		if (base_path) 
-		{
-			data_path = base_path;
-		} 
-		else 
-		{
-			data_path = SDL_strdup("./");
-		}
-		std::string str(data_path);
-		exePath = str;
+	{	
+		exePath = ExePath();
 		sphereVertexShader = exePath + sphereVertexShader;
 		sphereFragmentShader = exePath + sphereFragmentShader;
 	}

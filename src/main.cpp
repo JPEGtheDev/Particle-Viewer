@@ -2,10 +2,8 @@
 
 int main(int argc, char* argv[])
 {
-	std::cout << ExePath() << std::endl;
 	initPaths();
 	init_screen("Particle-Viewer");
-	ticks = SDL_GetTicks();
 	cam.initGL();
 	part = new Particle();
 	//set->readPosVelFile(0,part,false); //loads the file

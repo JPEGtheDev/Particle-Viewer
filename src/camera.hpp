@@ -10,9 +10,6 @@
 #include <GLFW/glfw3.h>
 #ifdef _WIN32 //Windows Includes
 	#include <windows.h>
-	#include <SDL.h>
-#else //Includes for Linux and OSX
-	#include <SDL2/SDL.h>
 #endif
 struct locData
 {
