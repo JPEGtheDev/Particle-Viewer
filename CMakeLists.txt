@@ -6,20 +6,18 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -march=native")
 file(GLOB DIALOG src/tinyFileDialogs/*.c)
 file(GLOB srcCPP src/*.cpp)
 file(GLOB srcHPP src/*.hpp)
-
 find_package(SDL2 REQUIRED)
 add_executable(Viewer
 	${DIALOG}
 	${srcCPP}
 	${srcHPP}
 	external/glad/src/glad.c
-
 )
 option(GLFW_BUILD_DOCS OFF)
 option(GLFW_BUILD_EXAMPLES OFF)
 option(GLFW_BUILD_TESTS OFF)
 add_subdirectory(external/glfw)
-target_link_libraries(Viewer ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES})
+target_link_libraries(Viewer ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES}  )
 
 target_include_directories(Viewer PUBLIC
 	external
@@ -27,6 +25,7 @@ target_include_directories(Viewer PUBLIC
 	external/glad/include
 	external/rapidjson/include
 	external/glfw/include
+	external/filesystem/include
 	${SDL2_INCLUDE_DIR}
 )
 

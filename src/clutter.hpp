@@ -12,6 +12,7 @@
 	#define STB_IMAGE_WRITE_IMPLEMENTATION
 	#include "stb/stb_image_write.h"
 	#include <GLFW/glfw3.h>
+	#include "osFile.hpp"
 	#ifdef _WIN32 //Windows Includes
 		#include <windows.h>
 		#include <SDL.h>

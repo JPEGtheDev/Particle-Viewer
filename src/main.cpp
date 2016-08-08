@@ -2,6 +2,7 @@
 
 int main(int argc, char* argv[])
 {
+	std::cout << ExePath() << std::endl;
 	initPaths();
 	init_screen("Particle-Viewer");
 	ticks = SDL_GetTicks();
