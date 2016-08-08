@@ -19,7 +19,7 @@
 		#ifdef _WIN32
 	    	char buffer[MAX_PATH];
 	    	GetModuleFileName( NULL, buffer, MAX_PATH );
-	    	std::string::size_type pos = string( buffer ).find_last_of( "\\/" );
+	    	std::string::size_type pos = std::string( buffer ).find_last_of( "\\/" );
 	    	return std::string( buffer ).substr( 0, pos);
 	    #elif __APPLE__
 	    	std::cout << "DEBUG:: On OSX" << std::endl;
