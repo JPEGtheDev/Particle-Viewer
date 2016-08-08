@@ -24,7 +24,6 @@ target_include_directories(Viewer PUBLIC
 	external/glad/include
 	external/rapidjson/include
 	external/glfw/include
-	external/filesystem/include
 )
 file(COPY src/shaders/ DESTINATION Viewer-Assets/shaders)
 install (TARGETS Viewer DESTINATION bin)
