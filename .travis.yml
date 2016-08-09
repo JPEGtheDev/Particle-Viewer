@@ -35,10 +35,7 @@ addons:
     build_command:   "make"
     branch_pattern: scanner
 
-cache:
-  directories:
-    - /home/travis/build/JPEGtheDev/SDL2_Build
-    - /home/travis/build/JPEGtheDev/cmake
+
 before_install:
 
   - echo $LANG
