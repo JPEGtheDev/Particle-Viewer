@@ -2,6 +2,5 @@
 #gcc build script
 mkdir build;
 cd build;
-#/home/travis/build/JPEGtheDev/cmake/bin/cmake ..;
-cmake ..;
+/home/travis/build/JPEGtheDev/cmake/bin/cmake ..;
 make
