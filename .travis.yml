@@ -26,6 +26,7 @@ addons:
       - gdb
       - llvm-3.0-dev
       - libfreetype6-dev
+      - cmake
   coverity_scan:
     project:
       name: "JPEGtheDev/Particle-Viewer"
