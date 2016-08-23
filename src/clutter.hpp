@@ -49,8 +49,6 @@
 
 	std::string sphereVertexShader = "/Viewer-Assets/shaders/sphereVertex.vs";
 	std::string sphereFragmentShader = "/Viewer-Assets/shaders/sphereFragment.frag";
-	const std::string posLoc = "/Users/JPEG/Desktop/500kSlam/PosAndVel";
-	const std::string setLoc = "/Users/JPEG/Desktop/500kSlam/RunSetup";
 	SettingsIO *set = new SettingsIO();  
 //functions that should not be changed
 	void upDeltaTime()
@@ -77,7 +75,7 @@
 		#endif
 		//creates the window
 
-		window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "My Title", NULL, NULL);
+		window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, title, NULL, NULL);
 		if (!window)
 		{
 

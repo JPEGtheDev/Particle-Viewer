@@ -1,5 +1,4 @@
 #!/usr/bin/env sh
-#touch /home/travis/build/JPEGtheDev/SDL2_Build;
 if [ ! "$(ls -A /home/travis/build/JPEGtheDev/cmake)" ]; then
 	
 	cd /home/travis/build/JPEGtheDev/;

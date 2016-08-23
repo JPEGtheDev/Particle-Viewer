@@ -1,5 +1,4 @@
 #include "camera.hpp"
-//#include <iostream>
 Camera::Camera(const int SCREEN_WIDTH, const int SCREEN_HEIGHT)
 {
 	std::string exePath = ExePath();

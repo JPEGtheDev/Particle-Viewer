@@ -6,7 +6,6 @@ int main(int argc, char* argv[])
 	init_screen("Particle-Viewer");
 	cam.initGL();
 	part = new Particle();
-	//set->readPosVelFile(0,part,false); //loads the file
 	setupGLStuff();
 	while (!glfwWindowShouldClose(window)) 
 	{

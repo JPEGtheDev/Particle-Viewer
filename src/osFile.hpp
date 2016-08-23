@@ -1,4 +1,4 @@
-//winFile.hpp
+//osFile.hpp
 #ifndef osFile_HPP
 	#define osFile_HPP
 	
