@@ -47,7 +47,15 @@ void Camera::moveLeft()
 }
 void Camera::updateSpeed(GLfloat deltaTime)
 {
-	this->speed = this->baseSpeed * deltaTime;
+	if(keys[GLFW_KEY_LEFT_SHIFT])
+	{
+		this->speed = this->baseSpeed * deltaTime * 20;
+	}
+	else
+	{
+		this->speed = this->baseSpeed * deltaTime;
+	}
+	
 }
 void Camera::lookUp(float pitch)
 {
