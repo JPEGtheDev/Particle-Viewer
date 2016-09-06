@@ -7,6 +7,7 @@ int main(int argc, char* argv[])
 	cam.initGL();
 	part = new Particle();
 	setupGLStuff();
+	double precalcRealTime = set->getDt() * 50 * 2935.864063;
 	while (!glfwWindowShouldClose(window)) 
 	{
 		glfwPollEvents();
@@ -24,7 +25,12 @@ int main(int argc, char* argv[])
 		
 		if(set->isPlaying)
 		{
+			if(curFrame != 0)
+			{
+				std::cout << "Real Time: " << curFrame * precalcRealTime << std::endl; //DT * RecordRate * currentFrame * unitTime
+			}
 			curFrame++;
+
 		}
 		if(curFrame > set->frames)
 		{
