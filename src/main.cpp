@@ -7,7 +7,6 @@ int main(int argc, char* argv[])
 	cam.initGL();
 	part = new Particle();
 	setupGLStuff();
-	double precalcRealTime = set->getDt() * 50 * 2935.864063;
 	while (!glfwWindowShouldClose(window)) 
 	{
 		glfwPollEvents();
@@ -27,7 +26,7 @@ int main(int argc, char* argv[])
 		{
 			if(curFrame != 0)
 			{
-				std::cout << "Real Time: " << curFrame * precalcRealTime << std::endl; //DT * RecordRate * currentFrame * unitTime
+				calculateTime(curFrame, set->getDt(), 50.0, 2935.864063);
 			}
 			curFrame++;
 
@@ -133,4 +132,17 @@ void cleanup()
 	delete part;
 	delete[] pixels;
 	delete[] pixels2;
+}
+void calculateTime(long long frame, float dt, float recordRate, float unitTime)
+{
+	double calc = frame * dt * recordRate * unitTime;
+	int seconds = fmod(calc, 60);
+	int minutes = fmod((calc / 60), 60);
+	int hours	= fmod((calc / 3600), 24);
+	int days	= fmod((calc / 86400), 365);
+	std::string secondS = ((seconds < 10) ? "0" + std::to_string(seconds) : std::to_string(seconds));
+	std::string minuteS = ((minutes < 10) ? "0" + std::to_string(minutes) : std::to_string(minutes));
+	std::string hourS   = ((hours   < 10) ? "0" + std::to_string(hours  ) : std::to_string(hours));
+
+	std::cout << "\nReal Time: " << days << " D | " << hourS << " H | " << minuteS << " M | " << secondS << " S" << std::endl;
 }

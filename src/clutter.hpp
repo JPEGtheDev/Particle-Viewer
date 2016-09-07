@@ -1,5 +1,7 @@
 //includes
 	#include <iostream>
+	#include <string>
+	#include "math.h"
 	#include "glm/glm.hpp"
 	#include "glm/gtc/matrix_transform.hpp"
 	#include "glm/gtc/type_ptr.hpp"
@@ -25,6 +27,7 @@
 	void cleanup();											//destroy it all with fire
 	void setupRender();										//Updates the VBOs for position changes
 	void seekFrame(int frame, bool isForward);				//skips frames
+	void calculateTime(long long frame, float dt, float recordRate, float unitTime); 
 	static void key_callback(GLFWwindow*,int,int,int,int);	//key commands for GLFW
 //variables
 	const int SCREEN_FULLSCREEN = 0, SCREEN_WIDTH  = 1280, SCREEN_HEIGHT = 720;
