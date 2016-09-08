@@ -16,15 +16,19 @@ option(GLFW_BUILD_DOCS OFF)
 option(GLFW_BUILD_EXAMPLES OFF)
 option(GLFW_BUILD_TESTS OFF)
 add_subdirectory(external/glfw)
-target_link_libraries(Viewer ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES}  )
+add_subdirectory(external/freetype2)
+target_link_libraries(Viewer ${CMAKE_DL_LIBS} glfw freetype)
 
 target_include_directories(Viewer PUBLIC
 	external
+	external/freetype2/include
 	external/glm
 	external/glad/include
 	external/rapidjson/include
 	external/glfw/include
 )
 file(COPY src/shaders/ DESTINATION Viewer-Assets/shaders)
+file(COPY src/fonts/ DESTINATION Viewer-Assets/fonts)
 install (TARGETS Viewer DESTINATION bin)
 install (DIRECTORY src/shaders/ DESTINATION bin/Viewer-Assets/shaders)
+install (DIRECTORY src/fonts/ DESTINATION bin/Viewer-Assets/fonts)

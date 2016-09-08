@@ -12,5 +12,6 @@ void main()
    N.z = sqrt(1.0-mag);
    // calculate lighting
    float diffuse = max(0.0, dot(lightDir, N));
-   color = vec4(fColor*1.25,1) * diffuse;
+   color = vec4 ((vec3(fColor*1.25) * diffuse).xyz, 1.0);
+   
 }

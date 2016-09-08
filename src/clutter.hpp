@@ -1,6 +1,7 @@
 //includes
 	#include <iostream>
 	#include <string>
+	#include <map>
 	#include "math.h"
 	#include "glm/glm.hpp"
 	#include "glm/gtc/matrix_transform.hpp"
@@ -11,6 +12,8 @@
 	#include "tinyFileDialogs/tinyfiledialogs.h"
 	#include "particle.hpp"
 	#include "settingsIO.hpp"
+	#include <ft2build.h>
+	#include FT_FREETYPE_H  
 	#define STB_IMAGE_WRITE_IMPLEMENTATION
 	#include "stb/stb_image_write.h"
 	#include <GLFW/glfw3.h>
@@ -27,7 +30,9 @@
 	void cleanup();											//destroy it all with fire
 	void setupRender();										//Updates the VBOs for position changes
 	void seekFrame(int frame, bool isForward);				//skips frames
-	void calculateTime(long long frame, float dt, float recordRate, float unitTime); 
+	std::string calculateTime(long long frame, float dt, float recordRate, float unitTime); 
+	void setupText();
+	void RenderText(Shader &shader, std::string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color);
 	static void key_callback(GLFWwindow*,int,int,int,int);	//key commands for GLFW
 //variables
 	const int SCREEN_FULLSCREEN = 0, SCREEN_WIDTH  = 1280, SCREEN_HEIGHT = 720;
@@ -36,7 +41,7 @@
 	float sphereScale = 1.0;
 	float sphereRadius = 250.0f;
 	bool isRecording = false;
-	GLuint circleVAO, circleVBO;
+	GLuint circleVAO, circleVBO, textVAO, textVBO;
 	std::string recordFolder = "";
 	GLfloat deltaTime = 0.0f, lastFrame = 0.0f;
 	int imageError = 0;
@@ -44,7 +49,9 @@
 	glm::vec3 com;
 	unsigned char * pixels = new unsigned char[SCREEN_WIDTH*SCREEN_HEIGHT*3];
 	unsigned char * pixels2 = new unsigned char[SCREEN_WIDTH*SCREEN_HEIGHT*3];
-	Shader sphereShader;
+	Shader sphereShader, textShader;
+	FT_Library ft;
+
 	std::string exePath;
 	Camera cam = Camera(SCREEN_WIDTH,SCREEN_HEIGHT);
 	Particle* part;
@@ -52,6 +59,9 @@
 
 	std::string sphereVertexShader = "/Viewer-Assets/shaders/sphereVertex.vs";
 	std::string sphereFragmentShader = "/Viewer-Assets/shaders/sphereFragment.frag";
+	std::string textVertexShader = "/Viewer-Assets/shaders/textVertex.vs";
+	std::string textFragmentShader = "/Viewer-Assets/shaders/textFragment.frag";
+	std::string fontFolder = "/Viewer-Assets/fonts/";
 	SettingsIO *set = new SettingsIO();  
 //functions that should not be changed
 	void upDeltaTime()
@@ -96,6 +106,10 @@
 		exePath = ExePath();
 		sphereVertexShader = exePath + sphereVertexShader;
 		sphereFragmentShader = exePath + sphereFragmentShader;
+		textVertexShader = exePath + textVertexShader;
+		textFragmentShader = exePath + textFragmentShader;
+		fontFolder = exePath + fontFolder;
+
 	}
 
 	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -168,3 +182,11 @@
 			seekFrame(1,false);
 		}
 	}
+struct Character 
+{
+    GLuint TextureID;   // ID handle of the glyph texture
+    glm::ivec2 Size;    // Size of glyph
+    glm::ivec2 Bearing;  // Offset from baseline to left/top of glyph
+    long Advance;    // Horizontal offset to advance to next glyph
+};
+std::map<GLchar, Character> Characters;

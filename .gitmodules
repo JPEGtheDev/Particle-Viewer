@@ -18,3 +18,6 @@
 
 
 
+[submodule "external/freetype2"]
+	path = external/freetype2
+	url = http://git.savannah.gnu.org/cgit/freetype/freetype2.git
