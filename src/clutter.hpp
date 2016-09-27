@@ -27,8 +27,11 @@
 	void cleanup();											//destroy it all with fire
 	void setupRender();										//Updates the VBOs for position changes
 	void seekFrame(int frame, bool isForward);				//skips frames
-	void calculateTime(long long frame, float dt, float recordRate, float unitTime); 
+	void calculateTime(long long frame, float dt, float recordRate, float unitTime);
+	GLuint generateAttachmentTexture(GLboolean depth, GLboolean stencil); 
 	static void key_callback(GLFWwindow*,int,int,int,int);	//key commands for GLFW
+	void setupScreenFBO ();
+	void drawFBO();
 //variables
 	const int SCREEN_FULLSCREEN = 0, SCREEN_WIDTH  = 1280, SCREEN_HEIGHT = 720;
 	int curFrame = 0;
@@ -44,14 +47,19 @@
 	glm::vec3 com;
 	unsigned char * pixels = new unsigned char[SCREEN_WIDTH*SCREEN_HEIGHT*3];
 	unsigned char * pixels2 = new unsigned char[SCREEN_WIDTH*SCREEN_HEIGHT*3];
-	Shader sphereShader;
+	Shader sphereShader, screenShader;
 	std::string exePath;
 	Camera cam = Camera(SCREEN_WIDTH,SCREEN_HEIGHT);
 	Particle* part;
 	glm::mat4 view;
-
+	GLuint quadVAO, quadVBO;
+	GLuint framebuffer;
+	GLuint rbo;
+	GLuint textureColorbuffer;
 	std::string sphereVertexShader = "/Viewer-Assets/shaders/sphereVertex.vs";
 	std::string sphereFragmentShader = "/Viewer-Assets/shaders/sphereFragment.frag";
+	std::string screenVertexShader = "/Viewer-Assets/shaders/screenshader.vs";
+	std::string screenFragmentShader = "/Viewer-Assets/shaders/screenshader.frag";
 	SettingsIO *set = new SettingsIO();  
 //functions that should not be changed
 	void upDeltaTime()
@@ -62,13 +70,13 @@
 	}
 	void error_callback(int error, const char* description)
 	{
-	    fprintf(stderr, "Error: %s\n", description);
+		fprintf(stderr, "Error: %s\n", description);
 	}
 	void init_screen(const char * title) 
 	{
 		glfwSetErrorCallback(error_callback);
 		if (!glfwInit())
-        exit(EXIT_FAILURE);
+		exit(EXIT_FAILURE);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 		glfwWindowHint(GLFW_SAMPLES, 4);
@@ -85,8 +93,8 @@
 		}
 		glfwSetKeyCallback(window, key_callback);
 		glfwMakeContextCurrent(window);
-    	gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
-    	glfwSwapInterval(1);
+		gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
+		glfwSwapInterval(1);
 		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	}
@@ -96,12 +104,14 @@
 		exePath = ExePath();
 		sphereVertexShader = exePath + sphereVertexShader;
 		sphereFragmentShader = exePath + sphereFragmentShader;
+		screenVertexShader = exePath + screenVertexShader;
+		screenFragmentShader = exePath + screenFragmentShader;
 	}
 
 	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 	{
 		cam.KeyReader(window,key,scancode,action,mods);
-	    if (key == GLFW_KEY_Q && action == GLFW_REPEAT)
+		if (key == GLFW_KEY_Q && action == GLFW_REPEAT)
 		{
 			seekFrame(3, false);
 		}
@@ -109,12 +119,12 @@
 		{
 			seekFrame(3, true);
 		}
-	    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-	    {
-	        glfwSetWindowShouldClose(window, GLFW_TRUE);
+		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+		{
+			glfwSetWindowShouldClose(window, GLFW_TRUE);
 
-	    }
-	    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+		}
+		if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
 		{
 			set->togglePlay();
 		}
@@ -168,3 +178,38 @@
 			seekFrame(1,false);
 		}
 	}
+	GLuint generateAttachmentTexture(GLboolean depth, GLboolean stencil)
+	{
+		// What enum to use?
+		GLenum attachment_type;
+		if(!depth && !stencil)
+			attachment_type = GL_RGB;
+		else if(depth && !stencil)
+			attachment_type = GL_DEPTH_COMPONENT;
+		else if(!depth && stencil)
+			attachment_type = GL_STENCIL_INDEX;
+
+		//Generate texture ID and load texture data 
+		GLuint textureID;
+		glGenTextures(1, &textureID);
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		if(!depth && !stencil)
+			glTexImage2D(GL_TEXTURE_2D, 0, attachment_type, SCREEN_WIDTH, SCREEN_HEIGHT, 0, attachment_type, GL_UNSIGNED_BYTE, NULL);
+		else // Using both a stencil and depth test, needs special format arguments
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		return textureID;
+	}
+	GLfloat quadVertices[] = {   // Vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+        // Positions   // TexCoords
+        -1.0f,  1.0f,  0.0f, 1.0f,
+        -1.0f, -1.0f,  0.0f, 0.0f,
+         1.0f, -1.0f,  1.0f, 0.0f,
+
+        -1.0f,  1.0f,  0.0f, 1.0f,
+         1.0f, -1.0f,  1.0f, 0.0f,
+         1.0f,  1.0f,  1.0f, 1.0f
+    };	

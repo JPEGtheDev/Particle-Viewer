@@ -1,5 +1,7 @@
 #include "clutter.hpp"
 
+
+
 int main(int argc, char* argv[])
 {
 	initPaths();
@@ -7,15 +9,21 @@ int main(int argc, char* argv[])
 	cam.initGL();
 	part = new Particle();
 	setupGLStuff();
+	setupScreenFBO();
 	while (!glfwWindowShouldClose(window)) 
 	{
 		glfwPollEvents();
 		cam.Move();
 		//readInput(event);
+
 		beforeDraw();
 		drawFunct();
+		cam.RenderSphere(); 
+		drawFBO();
+		//render GUI
+
 		glfwSwapBuffers(window);
-        
+		
 		
 		if(set->frames > 1)
 		{
@@ -45,6 +53,8 @@ int main(int argc, char* argv[])
 }
 void beforeDraw()
 {
+	glEnable(GL_DEPTH_TEST);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 	cam.update(deltaTime);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	upDeltaTime();
@@ -79,6 +89,7 @@ void drawFunct()
 				pixels2[i + SCREEN_WIDTH* 3 * j] = pixels[i+ SCREEN_WIDTH* 3 * (SCREEN_HEIGHT - j)];
 			}
 		}
+		//
 		if(!stbi_write_tga(std::string(recordFolder+"/" + std::to_string(curFrame) + ".tga").c_str(), (int)SCREEN_WIDTH, (int)SCREEN_HEIGHT, 3, pixels2))
 		{
 			if(imageError < 5)
@@ -93,8 +104,7 @@ void drawFunct()
 			}
 		}
 	}
-	//draw GUI elements
-	cam.RenderSphere();
+	
 }
 
 void setupGLStuff() 
@@ -103,7 +113,7 @@ void setupGLStuff()
 	glEnable(GL_PROGRAM_POINT_SIZE );
 	glEnable(GL_MULTISAMPLE);  
 	sphereShader = Shader(sphereVertexShader.c_str(),sphereFragmentShader.c_str());							//creates the shader to be used on the spheres
-
+	screenShader = Shader(screenVertexShader.c_str(),screenFragmentShader.c_str());
 	glGenVertexArrays(1, &circleVAO);
 	glGenBuffers(1, &circleVBO);
 	glBindVertexArray(circleVAO);
@@ -132,6 +142,7 @@ void cleanup()
 	delete part;
 	delete[] pixels;
 	delete[] pixels2;
+	glDeleteFramebuffers(1, &framebuffer);
 }
 void calculateTime(long long frame, float dt, float recordRate, float unitTime)
 {
@@ -145,4 +156,46 @@ void calculateTime(long long frame, float dt, float recordRate, float unitTime)
 	std::string hourS   = ((hours   < 10) ? "0" + std::to_string(hours  ) : std::to_string(hours));
 
 	std::cout << "\nReal Time: " << days << " D | " << hourS << " H | " << minuteS << " M | " << secondS << " S" << std::endl;
+}
+void setupScreenFBO ()
+{
+	glGenVertexArrays(1, &quadVAO);
+	glGenBuffers(1, &quadVBO);
+	glBindVertexArray(quadVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)(2 * sizeof(GLfloat)));
+	glBindVertexArray(0);
+
+	glGenFramebuffers(1, &framebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);  
+	// Create a color attachment texture
+	textureColorbuffer = generateAttachmentTexture(false, false);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
+	glGenRenderbuffers(1, &rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo); 
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCREEN_WIDTH, SCREEN_HEIGHT); // Use a single renderbuffer object for both a depth AND stencil buffer.
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo); // Now actually attach it
+	// Now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
+	if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+void drawFBO()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		// Clear all relevant buffers
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clear color to white (not really necessery actually, since we won't be able to see behind the quad anyways)
+	glClear(GL_COLOR_BUFFER_BIT);
+	glDisable(GL_DEPTH_TEST); // We don't care about depth information when rendering a single quad
+		// Draw Screen
+	screenShader.Use();
+	glBindVertexArray(quadVAO);
+	glBindTexture(GL_TEXTURE_2D, textureColorbuffer);	// Use the color attachment texture as the texture of the quad plane
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
 }
