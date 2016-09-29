@@ -1,29 +1,87 @@
 #include "clutter.hpp"
+#include <openvr.h>
+vr::IVRSystem* hmd;
+vr::HmdError* vrError;
+vr::IVRCompositor* compositor;
+vr::TrackedDevicePose_t trackedDevicePose[vr::k_unMaxTrackedDeviceCount];
+#   pragma comment(lib, "openvr_api")
 
+std::string getHMDString(vr::IVRSystem* pHmd, vr::TrackedDeviceIndex_t unDevice, vr::TrackedDeviceProperty prop, vr::TrackedPropertyError* peError = nullptr) {
+	uint32_t unRequiredBufferLen = pHmd->GetStringTrackedDeviceProperty(unDevice, prop, nullptr, 0, peError);
+	if (unRequiredBufferLen == 0) {
+		return "";
+	}
 
+	char* pchBuffer = new char[unRequiredBufferLen];
+	unRequiredBufferLen = pHmd->GetStringTrackedDeviceProperty(unDevice, prop, pchBuffer, unRequiredBufferLen, peError);
+	std::string sResult = pchBuffer;
+	delete[] pchBuffer;
 
+	return sResult;
+}
+
+vr::IVRSystem* initOpenVR(uint32_t& hmdWidth, uint32_t& hmdHeight) {
+	vr::EVRInitError eError = vr::VRInitError_None;
+	vr::IVRSystem* hmd = vr::VR_Init(&eError, vr::VRApplication_Scene);
+
+	if (eError != vr::VRInitError_None) {
+		fprintf(stderr, "OpenVR Initialization Error: %s\n", vr::VR_GetVRInitErrorAsEnglishDescription(eError));
+		return nullptr;
+	}
+
+	const std::string& driver = getHMDString(hmd, vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_TrackingSystemName_String);
+	const std::string& model = getHMDString(hmd, vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_ModelNumber_String);
+	const std::string& serial = getHMDString(hmd, vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_SerialNumber_String);
+	const float freq = hmd->GetFloatTrackedDeviceProperty(vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_DisplayFrequency_Float);
+
+	//get the proper resolution of the hmd
+	hmd->GetRecommendedRenderTargetSize(&hmdWidth, &hmdHeight);
+
+	fprintf(stderr, "HMD: %s '%s' #%s (%d x %d @ %g Hz)\n", driver.c_str(), model.c_str(), serial.c_str(), hmdWidth, hmdHeight, freq);
+
+	// Initialize the compositor
+	vr::IVRCompositor* compositor = vr::VRCompositor();
+	if (!compositor) {
+		fprintf(stderr, "OpenVR Compositor initialization failed. See log file for details\n");
+		vr::VR_Shutdown();
+		assert("VR failed" && false);
+	}
+
+	return hmd;
+}
+uint32_t framebufferWidth = 1280, framebufferHeight = 720;
 int main(int argc, char* argv[])
 {
+	
+	const int numEyes = 2;
+	hmd = initOpenVR(framebufferWidth, framebufferHeight);
+
 	initPaths();
 	init_screen("Particle-Viewer");
 	cam.initGL();
 	part = new Particle();
 	setupGLStuff();
 	setupScreenFBO();
+
+
+	vr::TrackedDevicePose_t trackedDevicePose[vr::k_unMaxTrackedDeviceCount];
 	while (!glfwWindowShouldClose(window)) 
 	{
+		vr::VRCompositor()->WaitGetPoses(trackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
 		glfwPollEvents();
 		cam.Move();
-		//readInput(event);
-
 		beforeDraw();
 		drawFunct();
 		cam.RenderSphere(); 
 		drawFBO();
 		//render GUI
-
-		glfwSwapBuffers(window);
 		
+		const vr::Texture_t tex = { reinterpret_cast<void*>(intptr_t(textureColorbuffer)), vr::API_OpenGL, vr::ColorSpace_Gamma };
+		vr::VRCompositor()->Submit(vr::EVREye(0), &tex);
+		vr::VRCompositor()->Submit(vr::EVREye(1), &tex);
+		
+		glfwSwapBuffers(window);
+		vr::VRCompositor()->PostPresentHandoff();
 		
 		if(set->frames > 1)
 		{
