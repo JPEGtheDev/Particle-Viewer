@@ -15,8 +15,9 @@ add_executable(Viewer
 option(GLFW_BUILD_DOCS OFF)
 option(GLFW_BUILD_EXAMPLES OFF)
 option(GLFW_BUILD_TESTS OFF)
+
 add_subdirectory(external/glfw)
-target_link_libraries(Viewer ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES}  )
+target_link_libraries(Viewer ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} external/openvr/lib/linux64/libopenvr_api.so )
 
 target_include_directories(Viewer PUBLIC
 	external
@@ -24,6 +25,7 @@ target_include_directories(Viewer PUBLIC
 	external/glad/include
 	external/rapidjson/include
 	external/glfw/include
+	external/openvr/headers
 )
 file(COPY src/shaders/ DESTINATION Viewer-Assets/shaders)
 install (TARGETS Viewer DESTINATION bin)
