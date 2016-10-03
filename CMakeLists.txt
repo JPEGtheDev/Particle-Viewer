@@ -14,7 +14,7 @@ if(UNIX AND NOT APPLE)
 endif()
 
 if(Linux)
-	file(GLOB OpenVRLibs "external/openvr/lib/linux64/*.so")
+	file(GLOB OpenVRLibs "external/openvr/lib/linux32/*.so")
 endif()
 
 add_executable(Viewer
