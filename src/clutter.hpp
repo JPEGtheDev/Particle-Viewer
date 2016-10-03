@@ -36,7 +36,7 @@
 	const int SCREEN_FULLSCREEN = 0, SCREEN_WIDTH  = 1512, SCREEN_HEIGHT = 1680;
 	int curFrame = 0;
 	bool quit = false, highRes = false;
-	float sphereScale = 1.0;
+	float sphereScale = 2.5;
 	float sphereRadius = 250.0f;
 	bool isRecording = false;
 	GLuint circleVAO, circleVBO;
@@ -141,6 +141,7 @@
 		{
 			seekFrame(1,false);
 		}
+		/*
 		if (key == GLFW_KEY_UP)
 		{
 			
@@ -152,6 +153,7 @@
 			sphereScale -= 0.1f;
 			std::cout << "Sphere Scale: " << sphereScale << std::endl;
 		}
+		*/
 		if (key == GLFW_KEY_R && action == GLFW_PRESS)
 		{
 			if(!isRecording)

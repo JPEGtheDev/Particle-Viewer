@@ -55,8 +55,6 @@ class Camera
 		GLuint rotateState;
 		glm::vec3 sphereColor;
 		GLfloat sphereDistance;
-		void upTweak();
-		void downTweak();
 		void moveForward();
 		void moveBackward();
 		void moveRight();

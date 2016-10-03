@@ -26,21 +26,7 @@ Camera::Camera(const int SCREEN_WIDTH, const int SCREEN_HEIGHT)
 	this->comLock = false;
 	this->distTweak = .125f;
 }
-void Camera::upTweak()
-{
 
-	//distTweak += .125f;
-	std::cout << "Tweak Distance: " <<  distTweak << std::endl;
-	std::cout << "Camera Location: " << "(" << cameraPos.x << " , " << cameraPos.y 
-		<< " , " << cameraPos.z << " ) "<< std::endl;
-}
-void Camera::downTweak()
-{
-	//distTweak -= .125f;
-	std::cout << "Tweak Distance: " << distTweak << std::endl;
-	std::cout << "Camera Location: " << "(" << cameraPos.x << " , " << cameraPos.y
-		<< " , " << cameraPos.z << " ) " << std::endl;
-}
 glm::mat4 Camera::setupCam()
 {
 	return glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
