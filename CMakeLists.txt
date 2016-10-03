@@ -6,6 +6,17 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -march=native")
 file(GLOB DIALOG src/tinyFileDialogs/*.c)
 file(GLOB srcCPP src/*.cpp)
 file(GLOB srcHPP src/*.hpp)
+if (APPLE)
+	file(GLOB OpenVRLibs "external/openvr/lib/osx32/*.dylib")
+endif (APPLE)
+if(UNIX AND NOT APPLE)
+        set(LINUX TRUE)
+endif()
+
+if(Linux)
+	file(GLOB OpenVRLibs "external/openvr/lib/linux64/*.so")
+endif()
+
 add_executable(Viewer
 	${DIALOG}
 	${srcCPP}
@@ -17,7 +28,7 @@ option(GLFW_BUILD_EXAMPLES OFF)
 option(GLFW_BUILD_TESTS OFF)
 
 add_subdirectory(external/glfw)
-target_link_libraries(Viewer ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} external/openvr/lib/linux64/libopenvr_api.so )
+target_link_libraries(Viewer ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${OpenVRLibs} )
 
 target_include_directories(Viewer PUBLIC
 	external
