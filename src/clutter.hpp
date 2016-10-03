@@ -21,7 +21,7 @@
 //function prototypes
 	void init_screen(const char * caption);					//initializes the screen / window / context
 	void upDeltaTime();										//updates deltaTime
-	void beforeDraw(); 										//the generic clear screen and other stuff before anything else has to be done
+	void beforeDraw(int);									//the generic clear screen and other stuff before anything else has to be done
 	void drawFunct(); 										//Draws stuff to the screen
 	void setupGLStuff();									//sets up the VAOs and the VBOs
 	void cleanup();											//destroy it all with fire
@@ -33,7 +33,7 @@
 	void setupScreenFBO ();
 	void drawFBO();
 //variables
-	const int SCREEN_FULLSCREEN = 0, SCREEN_WIDTH  = 1280, SCREEN_HEIGHT = 720;
+	const int SCREEN_FULLSCREEN = 0, SCREEN_WIDTH  = 1512, SCREEN_HEIGHT = 1680;
 	int curFrame = 0;
 	bool quit = false, highRes = false;
 	float sphereScale = 1.0;
@@ -135,11 +135,22 @@
 		}
 		if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
 		{
-			seekFrame(1,true);
+			seekFrame(1, true);
 		}
 		if (key == GLFW_KEY_LEFT && action == GLFW_PRESS)
 		{
 			seekFrame(1,false);
+		}
+		if (key == GLFW_KEY_UP)
+		{
+			
+			sphereScale += 0.1f;
+			std::cout << "Sphere Scale: " << sphereScale << std::endl;
+		}
+		if (key == GLFW_KEY_DOWN)
+		{
+			sphereScale -= 0.1f;
+			std::cout << "Sphere Scale: " << sphereScale << std::endl;
 		}
 		if (key == GLFW_KEY_R && action == GLFW_PRESS)
 		{
@@ -183,7 +194,7 @@
 		// What enum to use?
 		GLenum attachment_type;
 		if(!depth && !stencil)
-			attachment_type = GL_RGBA8;
+			attachment_type = GL_RGB;
 		else if(depth && !stencil)
 			attachment_type = GL_DEPTH_COMPONENT;
 		else if(!depth && stencil)
@@ -194,13 +205,11 @@
 		glGenTextures(1, &textureID);
 		glBindTexture(GL_TEXTURE_2D, textureID);
 		if(!depth && !stencil)
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+			glTexImage2D(GL_TEXTURE_2D, 0, attachment_type, SCREEN_WIDTH, SCREEN_HEIGHT, 0, attachment_type, GL_UNSIGNED_BYTE, NULL);
 		else // Using both a stencil and depth test, needs special format arguments
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glBindTexture(GL_TEXTURE_2D, 0);
 
 		return textureID;

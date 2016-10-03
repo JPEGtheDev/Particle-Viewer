@@ -20,6 +20,7 @@ struct locData
 class Camera
 {
 	private:
+		GLfloat distTweak;
 		GLfloat speed;
 		GLfloat baseSpeed;
 		GLfloat yaw;
@@ -43,6 +44,8 @@ class Camera
 		float renderDistance;
 		glm::mat4 projection; //basically tells the camera how to look
 		glm::mat4 setupCam();
+		glm::mat4 setupRightCam();
+		glm::mat4 setupLeftCam();
 		glm::vec3 cameraPos;
 		glm::vec3 cameraFront;
 		glm::vec3 cameraUp;
@@ -52,6 +55,8 @@ class Camera
 		GLuint rotateState;
 		glm::vec3 sphereColor;
 		GLfloat sphereDistance;
+		void upTweak();
+		void downTweak();
 		void moveForward();
 		void moveBackward();
 		void moveRight();

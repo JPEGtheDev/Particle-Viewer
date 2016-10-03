@@ -19,7 +19,7 @@ std::string getHMDString(vr::IVRSystem* pHmd, vr::TrackedDeviceIndex_t unDevice,
 
 	return sResult;
 }
-
+//1512
 vr::IVRSystem* initOpenVR(uint32_t& hmdWidth, uint32_t& hmdHeight) {
 	vr::EVRInitError eError = vr::VRInitError_None;
 	vr::IVRSystem* hmd = vr::VR_Init(&eError, vr::VRApplication_Scene);
@@ -49,7 +49,7 @@ vr::IVRSystem* initOpenVR(uint32_t& hmdWidth, uint32_t& hmdHeight) {
 
 	return hmd;
 }
-uint32_t framebufferWidth = 1280, framebufferHeight = 720;
+uint32_t framebufferWidth = 2560, framebufferHeight = 1680;
 int main(int argc, char* argv[])
 {
 	
@@ -70,15 +70,22 @@ int main(int argc, char* argv[])
 		vr::VRCompositor()->WaitGetPoses(trackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
 		glfwPollEvents();
 		cam.Move();
-		beforeDraw();
-		drawFunct();
-		cam.RenderSphere(); 
+		for (int i = 0; i < 3; i++)
+		{
+			beforeDraw(i);
+			drawFunct();
+			cam.RenderSphere();
+			//const vr::VRTextureBounds_t* a = &(vr::VRTextureBounds_t{ 0.0f,0.0f,0.5f,1.0f });
+			//const vr::VRTextureBounds_t* b = &(vr::VRTextureBounds_t{ 0.5f,0.0f,1.0f,1.0f });
+			const vr::Texture_t tex = { reinterpret_cast<void*>(intptr_t(textureColorbuffer)), vr::API_OpenGL, vr::ColorSpace_Gamma };
+			vr::VRCompositor()->Submit(vr::EVREye(i), &tex);
+		}
+		
+		//vr::VRCompositor()->Submit(vr::EVREye(1), &tex);
 		drawFBO();
 		//render GUI
 		
-		const vr::Texture_t tex = { reinterpret_cast<void*>(intptr_t(textureColorbuffer)), vr::API_OpenGL, vr::ColorSpace_Gamma };
-		vr::VRCompositor()->Submit(vr::EVREye(0), &tex);
-		vr::VRCompositor()->Submit(vr::EVREye(1), &tex);
+		
 		
 		glfwSwapBuffers(window);
 		vr::VRCompositor()->PostPresentHandoff();
@@ -109,16 +116,28 @@ int main(int argc, char* argv[])
 	cleanup();
 	return 0;
 }
-void beforeDraw()
+void beforeDraw(int i)
 {
 	glEnable(GL_DEPTH_TEST);
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-	cam.update(deltaTime);
+	
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	upDeltaTime();
-	view = cam.setupCam();
 	
-	
+	if (i == 1)
+	{
+		view = cam.setupRightCam();
+	}
+	else if(i == 0)
+	{
+		cam.update(deltaTime);
+		upDeltaTime();
+		view = cam.setupLeftCam();
+	}
+	else
+	{
+		view = cam.setupCam();
+	}
 }
 void drawFunct()
 {

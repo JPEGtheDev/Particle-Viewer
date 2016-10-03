@@ -24,10 +24,34 @@ Camera::Camera(const int SCREEN_WIDTH, const int SCREEN_HEIGHT)
 	spherePos 			= calcSpherePos(this->yaw,this->pitch,this->cameraPos);
 	this->rotLock = false;
 	this->comLock = false;
+	this->distTweak = .125f;
+}
+void Camera::upTweak()
+{
+
+	//distTweak += .125f;
+	std::cout << "Tweak Distance: " <<  distTweak << std::endl;
+	std::cout << "Camera Location: " << "(" << cameraPos.x << " , " << cameraPos.y 
+		<< " , " << cameraPos.z << " ) "<< std::endl;
+}
+void Camera::downTweak()
+{
+	//distTweak -= .125f;
+	std::cout << "Tweak Distance: " << distTweak << std::endl;
+	std::cout << "Camera Location: " << "(" << cameraPos.x << " , " << cameraPos.y
+		<< " , " << cameraPos.z << " ) " << std::endl;
 }
 glm::mat4 Camera::setupCam()
 {
 	return glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+}
+glm::mat4 Camera::setupLeftCam()
+{
+	return glm::lookAt(cameraPos - glm::vec3(distTweak ,0,0), cameraPos - glm::vec3(distTweak, 0, 0) + cameraFront, cameraUp);
+}
+glm::mat4 Camera::setupRightCam()
+{
+	return glm::lookAt(cameraPos + glm::vec3(distTweak, 0, 0), cameraPos + glm::vec3(distTweak, 0, 0) + cameraFront, cameraUp);
 }
 void Camera::moveForward()
 {
@@ -81,6 +105,7 @@ void Camera::update(GLfloat deltaTime)
 	front.y = sin(glm::radians(pitch));
 	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
 	cameraFront = glm::normalize(front);
+	distTweak = cameraPos.z / 21;
 	updateSpeed(deltaTime);
 }
 void Camera::clampPitch(GLfloat &pitch)
