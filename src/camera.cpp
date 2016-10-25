@@ -9,8 +9,6 @@ Camera::Camera(const int SCREEN_WIDTH, const int SCREEN_HEIGHT)
 	this->speed 		= this->baseSpeed;
 	this->yaw			= -90.0f;	
 	this->pitch  		= 0.0f;
-	this->sphereYaw		= -90.0f;	
-	this->spherePitch  	= 0.0f;
 	this->renderDistance= 3000.0f;
 	this->projection	= glm::perspective(45.0f, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, renderDistance);
 	this->isPlayingBack = false;
@@ -21,7 +19,6 @@ Camera::Camera(const int SCREEN_WIDTH, const int SCREEN_HEIGHT)
 	this->sphereDistance= 5.0f;
 	this->vertShader 	= exePath + "/Viewer-Assets/shaders/colorSphere.vs";
 	this->fragShader 	= exePath + "/Viewer-Assets/shaders/colorSphere.frag";
-	spherePos 			= calcSpherePos(this->yaw,this->pitch,this->cameraPos);
 	this->rotLock = false;
 	this->comLock = false;
 	this->distTweak = .125f;
@@ -31,13 +28,16 @@ glm::mat4 Camera::setupCam()
 {
 	return glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 }
-glm::mat4 Camera::setupLeftCam()
+glm::mat4 Camera::setupLeftCam(glm::vec3 cam)
 {
-	return glm::lookAt(cameraPos - glm::vec3(distTweak ,0,0), cameraPos - glm::vec3(distTweak, 0, 0) + cameraFront, cameraUp);
+	glm::vec3 real = cameraPos;// +glm::vec3(cam.x * 10, cam.y * 10, cam.z * 1 - );
+	return glm::lookAt(real , cameraFront, cameraUp);
+	//return glm::lookAt(cameraPos - glm::vec3(distTweak ,0,0), cameraPos - glm::vec3(distTweak, 0, 0) + cameraFront, cameraUp);
 }
-glm::mat4 Camera::setupRightCam()
+glm::mat4 Camera::setupRightCam(glm::vec3 cam)
 {
-	return glm::lookAt(cameraPos + glm::vec3(distTweak, 0, 0), cameraPos + glm::vec3(distTweak, 0, 0) + cameraFront, cameraUp);
+	return glm::lookAt( cameraPos , cameraFront, cameraUp);
+	//return glm::lookAt( cameraPos + glm::vec3(distTweak, 0, 0), cameraPos + glm::vec3(distTweak, 0, 0) + cameraFront, cameraUp);
 }
 void Camera::moveForward()
 {
@@ -143,92 +143,6 @@ void Camera::KeyReader(GLFWwindow* window, int key, int scancode, int action, in
   		keys[key] = true;
 	else if(action == GLFW_RELEASE)
   		keys[key] = false;
-
-  	if (action == GLFW_PRESS)
-	{  
-		if( key == GLFW_KEY_P)
-		{
-			rotateState++;
-			rotateState = rotateState%3;
-			if(rotateState == 0)
-			{
-				rotLock = false;
-				comLock = false;
-				renderSphere = false;
-				sphereColor  = glm::vec3(0.0f,0.0f,0.0f);
-			}
-			else if(rotateState == 1)
-			{
-				rotLock = false;
-				comLock = false;
-				renderSphere = true;
-				sphereColor  = glm::vec3(1.0f,0.0f,0.0f);
-			}
-			else if(rotateState == 2)
-			{
-				this->sphereYaw = yaw + 180;
-				this->spherePitch = -pitch;
-				renderSphere = true;
-				rotLock = true;
-				sphereColor  = glm::vec3(0.0f,1.0f,0.0f);
-			}
-		}
-		if(key == GLFW_KEY_O)
-		{
-			if(rotLock)
-			{
-				comLock = !comLock;
-			}
-			
-		}
-		if(rotLock)
-		{
-			if(key == GLFW_KEY_1)
-			{
-				this->yaw= 90.0f;
-				this->pitch = 0.0f;
-				this->sphereYaw = -90.0f;
-				this->spherePitch = 0.0f;
-			}
-			if(key == GLFW_KEY_2)
-			{
-				this->yaw= 180.0f;
-				this->pitch = 0.0f;
-				this->sphereYaw = 0.0f;
-				this->spherePitch = 0.0f;
-			}
-			if(key == GLFW_KEY_3)
-			{
-				this->yaw= 270.0f;
-				this->pitch = 0.0f;
-				this->sphereYaw = 90.0f;
-				this->spherePitch = 0.0f;
-			}
-			if(key == GLFW_KEY_4)
-			{
-				this->yaw= 0.0f;
-				this->pitch = 0.0f;
-				this->sphereYaw = 180.0f;
-				this->spherePitch = 0.0f;
-			}
-			if(key == GLFW_KEY_5)
-			{
-				this->yaw= 90.0f;
-				this->pitch = -89.0f;
-				this->sphereYaw = 270.0f;
-				this->spherePitch = 89.0f;
-			}
-			if(key == GLFW_KEY_6)
-			{
-				this->yaw= 90.0f;
-				this->pitch = 89.0f;
-				this->sphereYaw = 270.0f;
-				this->spherePitch = -89.0f;
-			}
-		}
-	}
-	clampPitch(this->spherePitch);
-	clampDegrees(this->sphereYaw);
 	clampDegrees(this->yaw);
 }
 void Camera::setSphereCenter(glm::vec3 pos)
@@ -272,98 +186,5 @@ void Camera::Move()
 			lookRight(2.5f);
 		}
 	}
-	else
-	{
-		if(keys[GLFW_KEY_W])
-		{
-			spherePitch += 1.0;
-			lookDown(1.0f);
-		}
-		if(keys[GLFW_KEY_S])
-		{
-			spherePitch -= 1.0;
-			lookUp(1.0f);
-		}
-		if(keys[GLFW_KEY_A])
-		{
-			sphereYaw -= 1.0;
-			lookLeft(1.0);
-		}
-		if(keys[GLFW_KEY_D])
-		{
-			sphereYaw += 1.0;
-			lookRight(1.0);
-		}
-	}
-
-	if(renderSphere)
-	{
-		if(keys[GLFW_KEY_LEFT_BRACKET])
-		{
-			sphereDistance -= .25;
-		}
-		if(keys[GLFW_KEY_RIGHT_BRACKET])
-		{
-			sphereDistance += .25;
-		}
-	}
-	clampPitch(this->spherePitch);
-	clampDegrees(this->sphereYaw);
 	clampDegrees(this->yaw);
-}
-void Camera::RenderSphere()
-{
-	if(renderSphere)
-	{
-		sphereShader.Use();
-		glUniformMatrix4fv(glGetUniformLocation(sphereShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(setupCam()));
-		glUniformMatrix4fv(glGetUniformLocation(sphereShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(this->projection));
-		
-		if(rotLock && comLock)
-		{
-			cameraPos = calcSpherePos(this->sphereYaw,this->spherePitch,this->centerOfMass);
-		}
-
-		else if(!rotLock)
-		{
-			spherePos = calcSpherePos(this->yaw,this->pitch,this->cameraPos);
-		}
-		else if(rotLock)
-		{
-			cameraPos = calcSpherePos(this->sphereYaw,this->spherePitch,this->spherePos);
-		}
-		else
-		{
-			std::cout << "Yeah... Fix the rotLock and comLock if statements" << std::endl;
-		}
-		
-	    glUniform3fv(glGetUniformLocation(sphereShader.Program, "pos"), 1, glm::value_ptr(spherePos));
-	    glUniform3fv(glGetUniformLocation(sphereShader.Program, "color"), 1, glm::value_ptr(sphereColor));
-		glBindVertexArray(VAO);
-		glDrawArrays(GL_POINTS, 0, 1);
-		glBindVertexArray(0);
-		if(comLock)
-		{
-			glUniform3fv(glGetUniformLocation(sphereShader.Program, "pos"), 1, glm::value_ptr(centerOfMass));
-			glUniform3fv(glGetUniformLocation(sphereShader.Program, "color"), 1, glm::value_ptr(glm::vec3(0,0,1.0f)));
-			glBindVertexArray(VAO2);
-			glDrawArrays(GL_POINTS, 0, 1);
-			glBindVertexArray(0);
-		}
-		
-	}
-}
-void Camera::initGL()
-{
-	this->sphereShader = Shader(vertShader.c_str(),fragShader.c_str());
-	glGenVertexArrays(1, &VAO);
-	glGenVertexArrays(1, &VAO2);
-}
-glm::vec3 Camera::calcSpherePos(GLfloat yaw, GLfloat pitch,glm::vec3 pos)
-{
-	if(sphereDistance < 1)
-	{
-		sphereDistance = 1;
-	}
-	return glm::vec3(pos.x + cos(glm::radians(yaw)) * cos(glm::radians(pitch)) * sphereDistance,pos.y + sin(glm::radians(pitch)) * sphereDistance,pos.z + sin(glm::radians(yaw)) * cos(glm::radians(pitch)) * sphereDistance);
 }

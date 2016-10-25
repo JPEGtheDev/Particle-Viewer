@@ -23,10 +23,7 @@ class Camera
 		GLfloat distTweak;
 		GLfloat speed;
 		GLfloat baseSpeed;
-		GLfloat yaw;
-		GLfloat pitch;
-		GLfloat sphereYaw;
-		GLfloat spherePitch;
+
 		GLuint VAO;
 		GLuint VAO2;
 		bool rotLock;
@@ -44,8 +41,8 @@ class Camera
 		float renderDistance;
 		glm::mat4 projection; //basically tells the camera how to look
 		glm::mat4 setupCam();
-		glm::mat4 setupRightCam();
-		glm::mat4 setupLeftCam();
+		glm::mat4 setupRightCam(glm::vec3 pos);
+		glm::mat4 setupLeftCam(glm::vec3 pos);
 		glm::vec3 cameraPos;
 		glm::vec3 cameraFront;
 		glm::vec3 cameraUp;
@@ -74,6 +71,8 @@ class Camera
 		void setSphereCenter(glm::vec3);
 		void Move();
 		bool keys[1024];
+		GLfloat yaw;
+		GLfloat pitch;
 };
 
 #endif
