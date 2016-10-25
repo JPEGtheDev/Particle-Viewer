@@ -58,7 +58,6 @@ int main(int argc, char* argv[])
 
 	initPaths();
 	init_screen("Particle-Viewer");
-	cam.initGL();
 	part = new Particle();
 	setupGLStuff();
 	setupScreenFBO();
@@ -74,7 +73,6 @@ int main(int argc, char* argv[])
 		{
 			beforeDraw(i);
 			drawFunct();
-			cam.RenderSphere();
 			//const vr::VRTextureBounds_t* a = &(vr::VRTextureBounds_t{ 0.0f,0.0f,0.5f,1.0f });
 			//const vr::VRTextureBounds_t* b = &(vr::VRTextureBounds_t{ 0.5f,0.0f,1.0f,1.0f });
 			const vr::Texture_t tex = { reinterpret_cast<void*>(intptr_t(textureColorbuffer)), vr::API_OpenGL, vr::ColorSpace_Gamma };

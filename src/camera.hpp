@@ -41,8 +41,8 @@ class Camera
 		float renderDistance;
 		glm::mat4 projection; //basically tells the camera how to look
 		glm::mat4 setupCam();
-		glm::mat4 setupRightCam(glm::vec3 pos);
-		glm::mat4 setupLeftCam(glm::vec3 pos);
+		glm::mat4 setupRightCam();
+		glm::mat4 setupLeftCam();
 		glm::vec3 cameraPos;
 		glm::vec3 cameraFront;
 		glm::vec3 cameraUp;

@@ -28,13 +28,13 @@ glm::mat4 Camera::setupCam()
 {
 	return glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 }
-glm::mat4 Camera::setupLeftCam(glm::vec3 cam)
+glm::mat4 Camera::setupLeftCam()
 {
 	glm::vec3 real = cameraPos;// +glm::vec3(cam.x * 10, cam.y * 10, cam.z * 1 - );
 	return glm::lookAt(real , cameraFront, cameraUp);
 	//return glm::lookAt(cameraPos - glm::vec3(distTweak ,0,0), cameraPos - glm::vec3(distTweak, 0, 0) + cameraFront, cameraUp);
 }
-glm::mat4 Camera::setupRightCam(glm::vec3 cam)
+glm::mat4 Camera::setupRightCam()
 {
 	return glm::lookAt( cameraPos , cameraFront, cameraUp);
 	//return glm::lookAt( cameraPos + glm::vec3(distTweak, 0, 0), cameraPos + glm::vec3(distTweak, 0, 0) + cameraFront, cameraUp);
