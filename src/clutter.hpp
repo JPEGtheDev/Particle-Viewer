@@ -21,8 +21,8 @@
 //function prototypes
 	void init_screen(const char * caption);					//initializes the screen / window / context
 	void upDeltaTime();										//updates deltaTime
-	void beforeDraw(int);									//the generic clear screen and other stuff before anything else has to be done
-	void drawFunct(); 										//Draws stuff to the screen
+	void beforeDraw(int,glm::mat4,glm::mat4[2],glm::mat4[2]);									//the generic clear screen and other stuff before anything else has to be done
+	void drawFunct(int,glm::mat4[2]); 							//Draws stuff to the screen
 	void setupGLStuff();									//sets up the VAOs and the VBOs
 	void cleanup();											//destroy it all with fire
 	void setupRender();										//Updates the VBOs for position changes
@@ -33,10 +33,11 @@
 	void setupScreenFBO ();
 	void drawFBO();
 //variables
+	glm::vec3 bodyTranslation(0.0f, 1.6f, 5.0f);
 	const int SCREEN_FULLSCREEN = 0, SCREEN_WIDTH  = 1512, SCREEN_HEIGHT = 1680;
 	int curFrame = 0;
 	bool quit = false, highRes = false;
-	float sphereScale = 2.5;
+	float sphereScale = .25f;
 	float sphereRadius = 250.0f;
 	bool isRecording = false;
 	GLuint circleVAO, circleVBO;
@@ -54,6 +55,7 @@
 	glm::mat4 view;
 	GLuint quadVAO, quadVBO;
 	GLuint framebuffer;
+
 	GLuint rbo;
 	GLuint textureColorbuffer;
 	std::string sphereVertexShader = "/Viewer-Assets/shaders/sphereVertex.vs";
@@ -141,19 +143,24 @@
 		{
 			seekFrame(1,false);
 		}
-		/*
 		if (key == GLFW_KEY_UP)
 		{
 			
-			sphereScale += 0.1f;
+			sphereScale *= 1.5f;
 			std::cout << "Sphere Scale: " << sphereScale << std::endl;
 		}
 		if (key == GLFW_KEY_DOWN)
 		{
-			sphereScale -= 0.1f;
+			sphereScale /= 1.5f;
+			
 			std::cout << "Sphere Scale: " << sphereScale << std::endl;
 		}
-		*/
+		if (key == GLFW_KEY_W)
+		{
+			bodyTranslation.z -= 1;
+
+			std::cout << "Sphere Scale: " << sphereScale << std::endl;
+		}
 		if (key == GLFW_KEY_R && action == GLFW_PRESS)
 		{
 			if(!isRecording)
@@ -210,7 +217,7 @@
 			glTexImage2D(GL_TEXTURE_2D, 0, attachment_type, SCREEN_WIDTH, SCREEN_HEIGHT, 0, attachment_type, GL_UNSIGNED_BYTE, NULL);
 		else // Using both a stencil and depth test, needs special format arguments
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glBindTexture(GL_TEXTURE_2D, 0);
 

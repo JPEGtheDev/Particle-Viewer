@@ -9,7 +9,7 @@ Camera::Camera(const int SCREEN_WIDTH, const int SCREEN_HEIGHT)
 	this->speed 		= this->baseSpeed;
 	this->yaw			= -90.0f;	
 	this->pitch  		= 0.0f;
-	this->renderDistance= 3000.0f;
+	this->renderDistance= 1000.0f;
 	this->projection	= glm::perspective(45.0f, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, renderDistance);
 	this->isPlayingBack = false;
 	this->renderSphere 	= false;
@@ -22,23 +22,21 @@ Camera::Camera(const int SCREEN_WIDTH, const int SCREEN_HEIGHT)
 	this->rotLock = false;
 	this->comLock = false;
 	this->distTweak = .125f;
+	for (int c = 0; c < 4; c++)
+	{
+		for (int r = 0; r < 4; r++)
+		{
+			std::cout << projection[c][r] << " ";
+		}
+		std::cout << std::endl;
+	}
 }
 
 glm::mat4 Camera::setupCam()
 {
 	return glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 }
-glm::mat4 Camera::setupLeftCam()
-{
-	glm::vec3 real = cameraPos;// +glm::vec3(cam.x * 10, cam.y * 10, cam.z * 1 - );
-	return glm::lookAt(real , cameraFront, cameraUp);
-	//return glm::lookAt(cameraPos - glm::vec3(distTweak ,0,0), cameraPos - glm::vec3(distTweak, 0, 0) + cameraFront, cameraUp);
-}
-glm::mat4 Camera::setupRightCam()
-{
-	return glm::lookAt( cameraPos , cameraFront, cameraUp);
-	//return glm::lookAt( cameraPos + glm::vec3(distTweak, 0, 0), cameraPos + glm::vec3(distTweak, 0, 0) + cameraFront, cameraUp);
-}
+
 void Camera::moveForward()
 {
 	cameraPos += speed * cameraFront;
@@ -87,11 +85,11 @@ void Camera::update(GLfloat deltaTime)
 {
 	clampPitch(this->pitch);
 	glm::vec3 front;
-	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-	front.y = sin(glm::radians(pitch));
-	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-	cameraFront = glm::normalize(front);
-	distTweak = cameraPos.z / 21;
+	//front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	//front.y = sin(glm::radians(pitch));
+	//front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	//cameraFront = glm::normalize(front);
+	//distTweak = cameraPos.z / 21;
 	updateSpeed(deltaTime);
 }
 void Camera::clampPitch(GLfloat &pitch)
@@ -121,22 +119,7 @@ void Camera::changeSpeed(float speed)
 {
 	this->speed = speed;
 }
-void Camera::recordPosition(int frame)
-{
-	for(int i =0; i < camLocation.size();i++) //checks to make sure the element has not been used already
-	{
-		if(camLocation[i].frame == frame)
-		{
-				camLocation.erase(camLocation.begin() + i); //deletes the element if it already exists
-		}
-	}
-	locData data;
-	data.frame = frame;
-	data.position = cameraPos;
-	data.look = glm::vec2(yaw,pitch);
-	camLocation.push_back(data);
-	//sort data
-}
+
 void Camera::KeyReader(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	if(action == GLFW_PRESS)

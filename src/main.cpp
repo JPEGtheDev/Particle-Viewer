@@ -50,6 +50,49 @@ vr::IVRSystem* initOpenVR(uint32_t& hmdWidth, uint32_t& hmdHeight) {
 	return hmd;
 }
 uint32_t framebufferWidth = 2560, framebufferHeight = 1680;
+
+void getEyeTransformations
+(vr::IVRSystem*  hmd,
+	vr::TrackedDevicePose_t* trackedDevicePose,
+	float           nearPlaneZ,
+	float           farPlaneZ,
+	glm::mat4       &headToWorldRowMajor3x4,
+	glm::mat4       &ltEyeToHeadRowMajor3x4,
+	glm::mat4       &rtEyeToHeadRowMajor3x4,
+	glm::mat4       &ltProjectionMatrixRowMajor4x4,
+	glm::mat4       &rtProjectionMatrixRowMajor4x4)
+{
+
+	assert(nearPlaneZ < 0.0f && farPlaneZ < nearPlaneZ);
+
+	vr::VRCompositor()->WaitGetPoses(trackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
+	assert(trackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid);
+	const vr::HmdMatrix34_t head = trackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking;
+	const vr::HmdMatrix44_t& ltProj = hmd->GetProjectionMatrix(vr::Eye_Left, -nearPlaneZ, -farPlaneZ, vr::API_OpenGL);
+	const vr::HmdMatrix44_t& rtProj = hmd->GetProjectionMatrix(vr::Eye_Right, -nearPlaneZ, -farPlaneZ, vr::API_OpenGL);
+	const vr::HmdMatrix34_t& ltMatrix = hmd->GetEyeToHeadTransform(vr::Eye_Left);
+	const vr::HmdMatrix34_t& rtMatrix = hmd->GetEyeToHeadTransform(vr::Eye_Right);
+	for (int r = 0; r < 3; ++r) 
+	{
+		for (int c = 0; c < 4; ++c) 
+		{
+			ltEyeToHeadRowMajor3x4[c][r] = ltMatrix.m[r][c];
+			rtEyeToHeadRowMajor3x4[c][r] = rtMatrix.m[r][c];
+			headToWorldRowMajor3x4[c][r] = head.m[r][c];
+		}
+	}
+	for (int r = 0; r < 4; ++r)
+	{
+		for (int c = 0; c < 4; ++c)
+		{
+			ltProjectionMatrixRowMajor4x4[c][r] = ltProj.m[r][c];
+			rtProjectionMatrixRowMajor4x4[c][r] = rtProj.m[r][c];
+		}
+	}
+}
+glm::vec3 bodyRotation;
+const float verticalFieldOfView = 45.0f * glm::pi<float>() / 180.0f;
+
 int main(int argc, char* argv[])
 {
 	
@@ -66,13 +109,44 @@ int main(int argc, char* argv[])
 	vr::TrackedDevicePose_t trackedDevicePose[vr::k_unMaxTrackedDeviceCount];
 	while (!glfwWindowShouldClose(window)) 
 	{
-		vr::VRCompositor()->WaitGetPoses(trackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
 		glfwPollEvents();
 		cam.Move();
+		const float nearPlaneZ = -0.1f;
+		const float farPlaneZ = -1000.0f;
+		
+		glm::mat4 eyeToHead[numEyes], projectionMatrix[numEyes], headToBodyMatrix;
+		getEyeTransformations(hmd, trackedDevicePose, nearPlaneZ, farPlaneZ, headToBodyMatrix, eyeToHead[0], eyeToHead[1], projectionMatrix[0], projectionMatrix[1]);
+		
+		glm::mat4 translate; // bodyTranslation
+		translate[0] = glm::vec4(1.0f, 0, 0, 0);
+		translate[1] = glm::vec4(0, 1.0f, 0, 0);
+		translate[2] = glm::vec4(0, 0, 1.0f, 0);
+		translate[3] = glm::vec4(bodyTranslation.x, bodyTranslation.y, bodyTranslation.z, 1.0f);
+		glm::mat4 roll;
+		roll[0] = glm::vec4(cos(bodyRotation.z), sin(bodyRotation.z), 0, 0);
+		roll[1] = glm::vec4(-sin(bodyRotation.z), cos(bodyRotation.z), 0, 0);
+		roll[2] = glm::vec4(0, 0, 1.0f, 0);
+		roll[3] = glm::vec4(0, 0, 0, 1.0f);
+		glm::mat4 yaw;
+		yaw[0] = glm::vec4(cos(bodyRotation.z), 0, -sin(bodyRotation.z), 0);
+		yaw[1] = glm::vec4(0, 1.0f, 0, 0);
+		yaw[2] = glm::vec4(sin(bodyRotation.z), 0, cos(bodyRotation.z), 0);
+		yaw[3] = glm::vec4(0, 0, 0, 1.0f);
+		glm::mat4 pitch;
+
+		pitch[0] = glm::vec4(1.0f, 0, 0, 0);
+		pitch[1] = glm::vec4(0, cos(bodyRotation.z), sin(bodyRotation.z), 0);
+		pitch[2] = glm::vec4(0, -sin(bodyRotation.z), cos(bodyRotation.z), 0);
+		pitch[3] = glm::vec4(0, 0, 0, 1.0f);
+		const glm::mat4& bodyToWorldMatrix =
+			translate * roll* yaw * pitch;
+		const glm::mat4& headToWorldMatrix = bodyToWorldMatrix * headToBodyMatrix;
+
 		for (int i = 0; i < 3; i++)
 		{
-			beforeDraw(i);
-			drawFunct();
+			
+			beforeDraw(i,headToWorldMatrix,eyeToHead,projectionMatrix);
+			drawFunct(i, projectionMatrix);
 			//const vr::VRTextureBounds_t* a = &(vr::VRTextureBounds_t{ 0.0f,0.0f,0.5f,1.0f });
 			//const vr::VRTextureBounds_t* b = &(vr::VRTextureBounds_t{ 0.5f,0.0f,1.0f,1.0f });
 			const vr::Texture_t tex = { reinterpret_cast<void*>(intptr_t(textureColorbuffer)), vr::API_OpenGL, vr::ColorSpace_Gamma };
@@ -109,35 +183,41 @@ int main(int argc, char* argv[])
 		if (curFrame < 0)
 		{
 			curFrame = 0;
+
 		}
 	}
 	cleanup();
 	return 0;
 }
-void beforeDraw(int i)
+void beforeDraw(int i,glm::mat4 headToWorldMatrix, glm::mat4 eyeToHead[2],glm::mat4 projectionMatrix[2])
 {
 	glEnable(GL_DEPTH_TEST);
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+	glm::mat4 yaw;
+	yaw[0] = glm::vec4(cos(glm::pi<float>() / 3.0f), 0, -sin(glm::pi<float>() / 3.0f), 0);
+	yaw[1] = glm::vec4(0, 1.0f, 0, 0);
+	yaw[2] = glm::vec4(sin(glm::pi<float>() / 3.0f), 0, cos(glm::pi<float>() / 3.0f), 0);
+	yaw[3] = glm::vec4(0, 0, 0, 1.0f);
+	glm::mat4 translate;
+	translate[0] = glm::vec4(1.0f, 0, 0, 0);
+	translate[1] = glm::vec4(0, 1.0f, 0, 0);
+	translate[2] = glm::vec4(0, 0, 1.0f, 0);
+	translate[3] = glm::vec4(0, .5f, 0, 1.0f);
+	const glm::mat4& objectToWorldMatrix = translate * yaw;
+	glm::mat4& cameraToWorldMatrix = headToWorldMatrix * eyeToHead[i%2];
+	const glm::mat3& objectToWorldNormalMatrix = glm::inverse(glm::transpose(glm::mat3(objectToWorldMatrix)));
+	const glm::mat4& modelViewProjectionMatrix = glm::inverse(cameraToWorldMatrix) * objectToWorldMatrix;
 	
-
+	view = modelViewProjectionMatrix;
+		
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
-	if (i == 1)
-	{
-		view = cam.setupRightCam();
-	}
-	else if(i == 0)
+	if(i == 0)
 	{
 		cam.update(deltaTime);
 		upDeltaTime();
-		view = cam.setupLeftCam();
-	}
-	else
-	{
-		view = cam.setupCam();
 	}
 }
-void drawFunct()
+void drawFunct(int i,glm::mat4 projectionMatrix[2])
 {
 	set->getCOM(curFrame, com);
 	cam.setSphereCenter(com);
@@ -148,9 +228,10 @@ void drawFunct()
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glUniformMatrix4fv(glGetUniformLocation(sphereShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
-	glUniformMatrix4fv(glGetUniformLocation(sphereShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(cam.projection));
+	glUniformMatrix4fv(glGetUniformLocation(sphereShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projectionMatrix[i%2]));
 	glUniform1f(glGetUniformLocation(sphereShader.Program, "radius"), sphereRadius);
 	glUniform1f(glGetUniformLocation(sphereShader.Program, "scale"), sphereScale);
+	glUniform1f(glGetUniformLocation(sphereShader.Program, "transScale"),sphereScale/4);
 	glDrawArraysInstanced(GL_POINTS,0,1,part->n);
 	glBindVertexArray(0);
 	//take screenshot
