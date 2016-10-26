@@ -224,6 +224,8 @@ void drawFunct(int i,glm::mat4 projectionMatrix[2])
 	sphereShader.Use();
 	part->pushVBO();
 	glBindVertexArray(circleVAO);
+	glm::vec3 cubeRot = com;
+	//std::cout << cubeRot.x <<" , " << cubeRot.y << " , " << cubeRot.z << std::endl;
 	glBindBuffer(GL_ARRAY_BUFFER, part->instanceVBO);
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -232,7 +234,9 @@ void drawFunct(int i,glm::mat4 projectionMatrix[2])
 	glUniform1f(glGetUniformLocation(sphereShader.Program, "radius"), sphereRadius);
 	glUniform1f(glGetUniformLocation(sphereShader.Program, "scale"), sphereScale);
 	glUniform1f(glGetUniformLocation(sphereShader.Program, "transScale"),sphereScale/4);
-	glDrawArraysInstanced(GL_POINTS,0,1,part->n);
+	glUniform1f(glGetUniformLocation(sphereShader.Program, "angleRot"),angleRot);
+	glUniform3fv(glGetUniformLocation(sphereShader.Program, "rotPoint"),1,glm::value_ptr(cubeRot));
+	glDrawArraysInstanced(GL_POINTS,0,1, part->n);
 	glBindVertexArray(0);
 	//take screenshot
 	if(set->isPlaying && isRecording)

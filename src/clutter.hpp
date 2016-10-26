@@ -40,6 +40,7 @@
 	float sphereScale = .25f;
 	float sphereRadius = 250.0f;
 	bool isRecording = false;
+	float angleRot = 1.0;
 	GLuint circleVAO, circleVBO;
 	std::string recordFolder = "";
 	GLfloat deltaTime = 0.0f, lastFrame = 0.0f;
@@ -138,10 +139,12 @@
 		if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
 		{
 			seekFrame(1, true);
+			angleRot += 10;
 		}
 		if (key == GLFW_KEY_LEFT && action == GLFW_PRESS)
 		{
 			seekFrame(1,false);
+			angleRot -= 10;
 		}
 		if (key == GLFW_KEY_UP)
 		{
@@ -198,6 +201,7 @@
 			seekFrame(1,false);
 		}
 	}
+	
 	GLuint generateAttachmentTexture(GLboolean depth, GLboolean stencil)
 	{
 		// What enum to use?
