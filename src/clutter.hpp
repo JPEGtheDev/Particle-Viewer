@@ -43,6 +43,7 @@
 	float angleRot = 1.0;
 	GLuint circleVAO, circleVBO;
 	std::string recordFolder = "";
+	bool keys[1024];
 	GLfloat deltaTime = 0.0f, lastFrame = 0.0f;
 	int imageError = 0;
 	GLFWwindow *window = NULL;
@@ -113,15 +114,53 @@
 
 	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 	{
-		cam.KeyReader(window,key,scancode,action,mods);
-		if (key == GLFW_KEY_Q && action == GLFW_REPEAT)
+		if (action == GLFW_PRESS)
+			keys[key] = true;
+		else if (action == GLFW_RELEASE)
+			keys[key] = false;
+
+		if(keys[GLFW_KEY_W])
+		{
+				bodyTranslation.z -= .25;
+		}
+		if (keys[GLFW_KEY_S])
+		{
+				bodyTranslation.z += .25;
+		}
+		if (keys[GLFW_KEY_A])
+		{
+			bodyTranslation.x -= .25;
+		}
+		if (keys[GLFW_KEY_D])
+		{
+			bodyTranslation.x += .25;
+		}
+		if (keys[GLFW_KEY_Q])
 		{
 			seekFrame(3, false);
 		}
-		if (key == GLFW_KEY_E && action == GLFW_REPEAT)
+		if (keys[GLFW_KEY_E])
 		{
 			seekFrame(3, true);
 		}
+		if (keys[GLFW_KEY_I])
+		{
+			bodyTranslation.y += .25;
+		}
+		if (keys[GLFW_KEY_K])
+
+		{
+			bodyTranslation.y -= .25;
+		}
+		if (keys[GLFW_KEY_J])
+		{
+			angleRot += 5;
+		}
+		if (key == GLFW_KEY_L)
+		{
+			angleRot -= 5;
+		}
+		cam.KeyReader(window,key,scancode,action,mods);
 		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		{
 			glfwSetWindowShouldClose(window, GLFW_TRUE);
@@ -139,13 +178,12 @@
 		if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
 		{
 			seekFrame(1, true);
-			angleRot += 10;
 		}
 		if (key == GLFW_KEY_LEFT && action == GLFW_PRESS)
 		{
 			seekFrame(1,false);
-			angleRot -= 10;
 		}
+
 		if (key == GLFW_KEY_UP)
 		{
 			
@@ -158,44 +196,7 @@
 			
 			std::cout << "Sphere Scale: " << sphereScale << std::endl;
 		}
-		if (key == GLFW_KEY_W)
-		{
-			bodyTranslation.z -= 1;
-
-			std::cout << "Sphere Scale: " << sphereScale << std::endl;
-		}
-		if (key == GLFW_KEY_R && action == GLFW_PRESS)
-		{
-			if(!isRecording)
-			{
-				imageError = 0;
-				std::string dialog = "Select Folder";
-				const char* fol = tinyfd_selectFolderDialog (dialog.c_str() , "") ;
-				
-				std::string folder;
-				if(fol != NULL)
-				{
-					folder = std::string(fol);
-				}
-				else
-				{
-					folder = "";
-				}
-				if(folder != "")
-				{
-					recordFolder = folder;
-					isRecording = true;
-					return;
-				}
-				std::cout << "Folder not selected" << std::endl;
-				isRecording = false;
-			}
-			else
-			{
-				recordFolder = "";
-				isRecording = false;
-			}
-		}
+		
 		if (key == GLFW_KEY_LEFT && action == GLFW_PRESS)
 		{
 			seekFrame(1,false);
