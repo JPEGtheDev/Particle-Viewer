@@ -29,7 +29,8 @@ addons:
       name: "JPEGtheDev/Particle-Viewer"
       description: "Build submitted via Travis CI"
     notification_email: jpegthedev@gmail.com
-    build_command_prepend: "cov-configure --comptype gcc --compiler gcc-4.9; mkdir build; cd build; /home/travis/build/JPEGtheDev/cmake/bin/cmake ..;"
+    #fix build_command_prepend if you plan on adding more to the build matrix
+    build_command_prepend: "if [ "$CXX" = "g++" ]; then cov-configure --comptype gcc --compiler gcc-4.9; else cov-configure --comptype clang --compiler clang-3.6 fi;  mkdir build; cd build; /home/travis/build/JPEGtheDev/cmake/bin/cmake ..;"
     build_command:   "make"
     branch_pattern: master
 
