@@ -3,4 +3,4 @@
 mkdir build;
 cd build;
 cmake ..;
-make;
+if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make ; fi
