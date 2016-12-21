@@ -24,14 +24,14 @@ addons:
       - gdb
       - llvm-3.0-dev
       - libfreetype6-dev
-    coverity_scan:
-      project:
-        name: "JPEGtheDev/Particle-Viewer"
-        description: "TSU Particle-Viewer"
-      notification_email: jpegthedev@gmail.com
-      build_command_prepend: "mkdir build; cd build; cmake .."
-      build_command: "make"
-      branch_pattern: master
+  coverity_scan:
+    project:
+      name: "JPEGtheDev/Particle-Viewer"
+      description: "Build submitted via Travis CI"
+    notification_email: jpegthedev@gmail.com
+    build_command_prepend: "./configure; make clean"
+    build_command:   "make -j 4"
+    branch_pattern: coverity_scan
 
 cache:
   directories:
