@@ -52,7 +52,7 @@ before_install:
       sh ./scripts/OSXPre.sh;
     fi
 script:
-  - cat /home/travis/build/JPEGtheDev/Particle-Viewer/cov-int/scm_log.txt
+  - cat /home/travis/build/JPEGtheDev/Particle-Viewer/build/cov-int/scm_log.txt
   - if [ $TRAVIS_OS_NAME == osx ]; then
       sh ./scripts/OSXBuild.sh;
     fi
