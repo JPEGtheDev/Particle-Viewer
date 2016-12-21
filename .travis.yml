@@ -24,14 +24,13 @@ addons:
       - gdb
       - llvm-3.0-dev
       - libfreetype6-dev
-  coverity_scan:
-    project:
-      name: "JPEGtheDev/Particle-Viewer"
-      description: "<Your project description here>"
-    notification_email: jpegthedev@gmail.com
-    build_command_prepend: "mkdir build; cd build; cmake .."
-    build_command:   "make"
-    branch_pattern: scanner
+    coverity_scan:
+      project:
+        name: "JPEGtheDev/Particle-Viewer"
+        description: "TSU Particle-Viewer"
+      notification_email: jpegthedev@gmail.com
+      build_command_prepend: "mkdir build; cd build; cmake .."
+      build_command:   "make"
 
 cache:
   directories:
