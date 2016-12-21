@@ -1,15 +1,16 @@
 cmake_minimum_required (VERSION 2.8.12)
 project (Particle-Viewer)
-
+option(alloutput off)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -march=native")
 
 
-if(DEFINED ENV{TRAVIS_OS_NAME})
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0") # debug, no optimisation
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage") # enabling coverage
+if(${alloutput})
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -Wall -W -Wshadow -Wunused-variable -Wunused-parameter -Wunused-function -Wunused -Wno-system-headers -Wno-deprecated -Woverloaded-virtual -Wwrite-strings -fprofile-arcs -ftest-coverage")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -Wall -W -fprofile-arcs -ftest-coverage")
     # some more commands
 endif()
+message("CXX Flags:" ${CMAKE_CXX_FLAGS})
 
 file(GLOB DIALOG src/tinyFileDialogs/*.c)
 file(GLOB srcCPP src/*.cpp)

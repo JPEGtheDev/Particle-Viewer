@@ -24,7 +24,7 @@ addons:
       - gdb
       - llvm-3.0-dev
       - libfreetype6-dev
-      
+
 cache:
   directories:
     - /home/travis/build/JPEGtheDev/cmake
@@ -53,7 +53,8 @@ script:
 
 after_success:
   - echo "SUCCESS!!!"
-  - coveralls --exclude lib --exclude tests --gcov-options '\-lp'
+  #saving coveralls support for a rainy day
+  #- coveralls --exclude lib --exclude tests --gcov-options '\-lp'
 
 after_failure:
   - echo "FAILURE"
