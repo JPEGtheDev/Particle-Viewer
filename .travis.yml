@@ -62,6 +62,7 @@ script:
 
 after_success:
   - echo "SUCCESS!!!"
+  - coveralls --exclude lib --exclude tests --gcov-options '\-lp'
 
 after_failure:
   - echo "FAILURE"

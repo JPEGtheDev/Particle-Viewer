@@ -11,4 +11,6 @@ if [ ! "$(ls -A /home/travis/build/JPEGtheDev/cmake)" ]; then
 	cd /home/travis/build/JPEGtheDev/Particle-Viewer;
 fi
 
+pip install --user cpp-coveralls
+
 
