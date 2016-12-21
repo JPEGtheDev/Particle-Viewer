@@ -51,7 +51,6 @@ before_install:
   - if [ $TRAVIS_OS_NAME == osx ]; then
       sh ./scripts/OSXPre.sh;
     fi
-  - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
 script:
   - if [ $TRAVIS_OS_NAME == osx ]; then
       sh ./scripts/OSXBuild.sh;
