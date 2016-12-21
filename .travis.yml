@@ -44,11 +44,11 @@ addons:
         fi
     build_command:   
       - if [ $TRAVIS_OS_NAME == osx ]; then
-      sh ./scripts/OSXBuild.sh;
-      fi
-    - if [ $TRAVIS_OS_NAME == linux ]; then
-        sh ./scripts/linuxBuild.sh;
-      fi
+          sh ./scripts/OSXBuild.sh;
+        fi
+      - if [ $TRAVIS_OS_NAME == linux ]; then
+          sh ./scripts/linuxBuild.sh;
+        fi
     branch_pattern: master
 
 cache:
