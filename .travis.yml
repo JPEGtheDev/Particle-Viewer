@@ -29,8 +29,8 @@ addons:
       name: "JPEGtheDev/Particle-Viewer"
       description: "Build submitted via Travis CI"
     notification_email: jpegthedev@gmail.com
-    build_command_prepend: "./configure; make clean"
-    build_command:   "make -j 4"
+    build_command_prepend: "cmake ."
+    build_command:   "make"
     branch_pattern: master
 
 cache:
