@@ -33,34 +33,31 @@
 	void setupScreenFBO ();
 	void drawFBO();
 //variables
-	const int SCREEN_FULLSCREEN = 0, SCREEN_WIDTH  = 1280, SCREEN_HEIGHT = 720;
-	int curFrame = 0;
-	bool quit = false, highRes = false;
-	float sphereScale = 1.0;
-	float sphereRadius = 250.0f;
-	bool isRecording = false;
-	GLuint circleVAO, circleVBO;
-	std::string recordFolder = "";
-	GLfloat deltaTime = 0.0f, lastFrame = 0.0f;
-	int imageError = 0;
-	GLFWwindow *window = NULL;
-	glm::vec3 com;
-	unsigned char * pixels = new unsigned char[SCREEN_WIDTH*SCREEN_HEIGHT*3];
-	unsigned char * pixels2 = new unsigned char[SCREEN_WIDTH*SCREEN_HEIGHT*3];
-	Shader sphereShader, screenShader;
-	std::string exePath;
+	const GLint SCREEN_FULLSCREEN = 0, SCREEN_WIDTH  = 1280, SCREEN_HEIGHT = 720;
+
+	GLboolean quit = false, highRes = false, isRecording = false;
+	GLint curFrame = 0, imageError = 0;
+	GLfloat sphereScale = 1.0, sphereRadius = 250.0f,deltaTime = 0.0f, lastFrame = 0.0f;
+	GLuint quadVAO, quadVBO, framebuffer, rbo, textureColorbuffer, circleVAO, circleVBO;
+	
+	
 	Camera cam = Camera(SCREEN_WIDTH,SCREEN_HEIGHT);
-	Particle* part;
+	GLFWwindow *window = NULL;
 	glm::mat4 view;
-	GLuint quadVAO, quadVBO;
-	GLuint framebuffer;
-	GLuint rbo;
-	GLuint textureColorbuffer;
+	glm::vec3 com;
+	Particle* part;
+	SettingsIO *set = new SettingsIO();
+	Shader sphereShader, screenShader;
+
+	std::string exePath;
 	std::string sphereVertexShader = "/Viewer-Assets/shaders/sphereVertex.vs";
 	std::string sphereFragmentShader = "/Viewer-Assets/shaders/sphereFragment.frag";
 	std::string screenVertexShader = "/Viewer-Assets/shaders/screenshader.vs";
 	std::string screenFragmentShader = "/Viewer-Assets/shaders/screenshader.frag";
-	SettingsIO *set = new SettingsIO();  
+	std::string recordFolder = "";
+	
+	unsigned char * pixels = new unsigned char[SCREEN_WIDTH*SCREEN_HEIGHT*3];
+	unsigned char * pixels2 = new unsigned char[SCREEN_WIDTH*SCREEN_HEIGHT*3];
 //functions that should not be changed
 	void upDeltaTime()
 	{
@@ -203,7 +200,8 @@
 
 		return textureID;
 	}
-	GLfloat quadVertices[] = {   // Vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+	GLfloat quadVertices[] = 
+	{   // Vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
         // Positions   // TexCoords
         -1.0f,  1.0f,  0.0f, 1.0f,
         -1.0f, -1.0f,  0.0f, 0.0f,
@@ -213,3 +211,60 @@
          1.0f, -1.0f,  1.0f, 0.0f,
          1.0f,  1.0f,  1.0f, 1.0f
     };	
+
+	void calculateTime(long long frame, float dt, float recordRate, float unitTime)
+	{
+		double calc = frame * dt * recordRate * unitTime;
+		int seconds = fmod(calc, 60);
+		int minutes = fmod((calc / 60), 60);
+		int hours	= fmod((calc / 3600), 24);
+		int days	= fmod((calc / 86400), 365);
+		std::string secondS = ((seconds < 10) ? "0" + std::to_string(seconds) : std::to_string(seconds));
+		std::string minuteS = ((minutes < 10) ? "0" + std::to_string(minutes) : std::to_string(minutes));
+		std::string hourS   = ((hours   < 10) ? "0" + std::to_string(hours  ) : std::to_string(hours));
+
+		std::cout << "\nReal Time: " << days << " D | " << hourS << " H | " << minuteS << " M | " << secondS << " S" << std::endl;
+	}
+	void setupScreenFBO ()
+	{
+		glGenVertexArrays(1, &quadVAO);
+		glGenBuffers(1, &quadVBO);
+		glBindVertexArray(quadVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)(2 * sizeof(GLfloat)));
+		glBindVertexArray(0);
+
+		glGenFramebuffers(1, &framebuffer);
+		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);  
+		// Create a color attachment texture
+		textureColorbuffer = generateAttachmentTexture(false, false);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
+		glGenRenderbuffers(1, &rbo);
+		glBindRenderbuffer(GL_RENDERBUFFER, rbo); 
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCREEN_WIDTH, SCREEN_HEIGHT); // Use a single renderbuffer object for both a depth AND stencil buffer.
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo); // Now actually attach it
+		// Now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
+		if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+	void drawFBO()
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			// Clear all relevant buffers
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clear color to white (not really necessery actually, since we won't be able to see behind the quad anyways)
+		glClear(GL_COLOR_BUFFER_BIT);
+		glDisable(GL_DEPTH_TEST); // We don't care about depth information when rendering a single quad
+			// Draw Screen
+		screenShader.Use();
+		glBindVertexArray(quadVAO);
+		glBindTexture(GL_TEXTURE_2D, textureColorbuffer);	// Use the color attachment texture as the texture of the quad plane
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(0);
+	}
+
