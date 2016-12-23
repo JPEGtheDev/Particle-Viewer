@@ -186,10 +186,8 @@ class Camera
 		void KeyReader(GLFWwindow* window, int key, int scancode, int action, int mods)
 		{
 			/* Allows for smooth, constant key presses */
-			if(action == GLFW_PRESS)
-		  		keys[key] = true;
-			else if(action == GLFW_RELEASE)
-		  		keys[key] = false;
+			if(action == GLFW_PRESS)		{ keys[key] = true;}
+			else if(action == GLFW_RELEASE)	{ keys[key] = false;}
 		  	/* ======================================= */
 
 		  	if (action == GLFW_PRESS)	//single press key commands
@@ -337,38 +335,14 @@ class Camera
 		{
 			if(!rotLock)	// unlocked movement
 			{
-				if(keys[GLFW_KEY_W])
-				{
-					moveForward();
-				}
-				if(keys[GLFW_KEY_S])
-				{
-					moveBackward();
-				}
-				if(keys[GLFW_KEY_A])
-				{
-					moveLeft();
-				}
-				if(keys[GLFW_KEY_D])
-				{
-					moveRight();
-				}
-				if(keys[GLFW_KEY_I])
-				{
-					lookUp(2.5f);
-				}
-				if(keys[GLFW_KEY_K])
-				{
-					lookDown(2.5f);
-				}
-				if(keys[GLFW_KEY_J])
-				{
-					lookLeft(2.5f);
-				}
-				if(keys[GLFW_KEY_L])
-				{
-					lookRight(2.5f);
-				}
+				if(keys[GLFW_KEY_W])	{ moveForward();}
+				if(keys[GLFW_KEY_S])	{ moveBackward();}
+				if(keys[GLFW_KEY_A])	{ moveLeft();}
+				if(keys[GLFW_KEY_D])	{ moveRight();}
+				if(keys[GLFW_KEY_I])	{ lookUp(2.5f);}
+				if(keys[GLFW_KEY_K])	{ lookDown(2.5f);}
+				if(keys[GLFW_KEY_J])	{ lookLeft(2.5f);}
+				if(keys[GLFW_KEY_L])	{ lookRight(2.5f);}
 			}
 			else			// Rotation locked movement
 			{
@@ -396,16 +370,10 @@ class Camera
 
 			if(renderSphere)
 			{
-				if(keys[GLFW_KEY_LEFT_BRACKET])	// Move sphere/camera in
-				{
-					sphereDistance -= .25;
-				}
-				if(keys[GLFW_KEY_RIGHT_BRACKET])// Move sphere/camera out
-				{
-					sphereDistance += .25;
-				}
+				if(keys[GLFW_KEY_LEFT_BRACKET])	{ sphereDistance -= .25;} // Move sphere/camera in
+				if(keys[GLFW_KEY_RIGHT_BRACKET]){ sphereDistance += .25;} // Move sphere/camera out
 			}
-			clampPitch(this->spherePitch);
+			clampPitch	(this->spherePitch);
 			clampDegrees(this->sphereYaw);
 			clampDegrees(this->yaw);
 		}

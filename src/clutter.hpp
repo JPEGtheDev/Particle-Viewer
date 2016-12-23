@@ -148,53 +148,31 @@
 	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 	{
 		cam.KeyReader(window,key,scancode,action,mods);
-		if (key == GLFW_KEY_Q && action == GLFW_REPEAT)
-		{
-			seekFrame(3, false);
-		}
-		if (key == GLFW_KEY_E && action == GLFW_REPEAT)
-		{
-			seekFrame(3, true);
-		}
-		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-		{
-			glfwSetWindowShouldClose(window, GLFW_TRUE);
+		if (key == GLFW_KEY_Q && action == GLFW_REPEAT)		{ seekFrame(3, false);}
+		if (key == GLFW_KEY_E && action == GLFW_REPEAT)		{ seekFrame(3, true);}
+		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)	{ glfwSetWindowShouldClose(window, GLFW_TRUE);}
+		if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)	{ set->togglePlay();}
 
-		}
-		if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
-		{
-			set->togglePlay();
-		}
 		if (key == GLFW_KEY_T && action == GLFW_PRESS)
 		{
 			set = set->loadFile(part,false);
 			curFrame = 0;
 		}
-		if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
-		{
-			seekFrame(1,true);
-		}
-		if (key == GLFW_KEY_LEFT && action == GLFW_PRESS)
-		{
-			seekFrame(1,false);
-		}
+		if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)	{ seekFrame(1,true);}
+		if (key == GLFW_KEY_LEFT && action == GLFW_PRESS)	{ seekFrame(1,false);}
 		if (key == GLFW_KEY_R && action == GLFW_PRESS)
 		{
 			if(!isRecording)
 			{
 				imageError = 0;
 				std::string dialog = "Select Folder";
-				const char* fol = tinyfd_selectFolderDialog (dialog.c_str() , "") ;
+				const char* fol = tinyfd_selectFolderDialog (dialog.c_str() , "");	//Pulls up a file dialog
 
 				std::string folder;
-				if(fol != NULL)
-				{
-					folder = std::string(fol);
-				}
-				else
-				{
-					folder = "";
-				}
+
+				if(fol != NULL)	{ folder = std::string(fol);}
+				else			{ folder = "";}
+
 				if(folder != "")
 				{
 					recordFolder = folder;
@@ -210,10 +188,7 @@
 				isRecording = false;
 			}
 		}
-		if (key == GLFW_KEY_LEFT && action == GLFW_PRESS)
-		{
-			seekFrame(1,false);
-		}
+		if (key == GLFW_KEY_LEFT && action == GLFW_PRESS)	{ seekFrame(1,false);}
 	}
 
 	/*
@@ -225,21 +200,22 @@
 	{
 		// What enum to use?
 		GLenum attachment_type;
-		if(!depth && !stencil)
-			attachment_type = GL_RGB;
-		else if(depth && !stencil)
-			attachment_type = GL_DEPTH_COMPONENT;
-		else if(!depth && stencil)
-			attachment_type = GL_STENCIL_INDEX;
+		if(!depth && !stencil)		{ attachment_type = GL_RGB;}
+		else if(depth && !stencil)	{ attachment_type = GL_DEPTH_COMPONENT;}
+		else if(!depth && stencil)	{ attachment_type = GL_STENCIL_INDEX;}
 
 		//Generate texture ID and load texture data
 		GLuint textureID;
 		glGenTextures(1, &textureID);
 		glBindTexture(GL_TEXTURE_2D, textureID);
 		if(!depth && !stencil)
+		{
 			glTexImage2D(GL_TEXTURE_2D, 0, attachment_type, SCREEN_WIDTH, SCREEN_HEIGHT, 0, attachment_type, GL_UNSIGNED_BYTE, NULL);
+		}
 		else // Using both a stencil and depth test, needs special format arguments
+		{
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
+		}
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glBindTexture(GL_TEXTURE_2D, 0);

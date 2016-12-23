@@ -31,28 +31,10 @@ int main(int argc, char* argv[])
 
 		glfwSwapBuffers(window);
 
-		if(set->frames > 1)
-		{
-			set->readPosVelFile(curFrame,part,false);
-		}
-
-		if(set->isPlaying)
-		{
-			if(curFrame != 0)
-			{
-				//calculateTime(curFrame, set->getDt(), 50.0, 2935.864063);
-			}
-			curFrame++;
-
-		}
-		if(curFrame > set->frames)
-		{
-			curFrame = set->frames;
-		}
-		if (curFrame < 0)
-		{
-			curFrame = 0;
-		}
+		if(set->frames > 1)			{ set->readPosVelFile(curFrame,part,false);}
+		if(set->isPlaying)			{ curFrame++;}
+		if(curFrame > set->frames)	{ curFrame = set->frames;}
+		if (curFrame < 0)			{ curFrame = 0;}
 	}
 	cleanup();
 	return 0;
@@ -124,6 +106,7 @@ void setupGLStuff()
 	glEnable(GL_MULTISAMPLE);
 	sphereShader = Shader(sphereVertexShader.c_str(),sphereFragmentShader.c_str());
 	screenShader = Shader(screenVertexShader.c_str(),screenFragmentShader.c_str());
+	/* Sets up sphere array in OpenGL */
 	glGenVertexArrays(1, &circleVAO);
 	glGenBuffers(1, &circleVBO);
 	glBindVertexArray(circleVAO);
@@ -133,7 +116,7 @@ void setupGLStuff()
 	glEnableVertexAttribArray(0);
 	part->setUpInstanceArray();
 	glBindVertexArray(0);
-	//set up other object arrays
+	/* ============================== */
 }
 
 /*
@@ -141,14 +124,8 @@ void setupGLStuff()
  */
 void seekFrame(int frame, bool isForward)
 {
-	if(isForward)
-	{
-		curFrame += frame;
-	}
-	else
-	{
-		curFrame -= frame;
-	}
+	if(isForward)	{ curFrame += frame;}
+	else			{ curFrame -= frame;}
 
 }
 
