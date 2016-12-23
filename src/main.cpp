@@ -1,9 +1,9 @@
 /*
-* main.cpp
-*
-* contains main function
-*
-*/
+ * main.cpp
+ *
+ * contains main function
+ *
+ */
 
 #include "clutter.hpp"
 
@@ -115,8 +115,8 @@ void drawFunct()
 }
 
 /*
-* Sets up the basic OpenGL stuff.
-*/
+ * Sets up the basic OpenGL stuff.
+ */
 void setupGLStuff()
 {
 	glEnable(GL_DEPTH_TEST);
@@ -137,8 +137,8 @@ void setupGLStuff()
 }
 
 /*
-* Increment / decrement current frame by x amount.
-*/
+ * Increment / decrement current frame by x amount.
+ */
 void seekFrame(int frame, bool isForward)
 {
 	if(isForward)

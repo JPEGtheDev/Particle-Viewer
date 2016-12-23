@@ -1,10 +1,10 @@
 /*
-* shader.hpp
-*
-* Loads shader data from file
-* Pulled from https://learnopengl.com/#!Getting-started/Shaders
-*
-*/
+ * shader.hpp
+ *
+ * Loads shader data from file
+ * Pulled from https://learnopengl.com/#!Getting-started/Shaders
+ *
+ */
 
 
 #ifndef SHADER_H

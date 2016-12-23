@@ -1,9 +1,9 @@
 /*
-* osFile.hpp
-*
-* Sets up OS Specific path data.
-*
-*/
+ * osFile.hpp
+ *
+ * Sets up OS Specific path data.
+ *
+ */
 
 #ifndef osFile_HPP
 	#define osFile_HPP

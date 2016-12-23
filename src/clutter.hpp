@@ -1,10 +1,10 @@
 /*
-* clutter.hpp
-*
-* This is the 'Junk' hpp file that contains any and all loose functions in the
-* main loop as well as all includes for the main
-*
-*/
+ * clutter.hpp
+ *
+ * This is the 'Junk' hpp file that contains any and all loose functions in the
+ * main loop as well as all includes for the main
+ *
+ */
 
 //includes
 	#include <iostream>
@@ -86,8 +86,8 @@
 //functions that should not be changed
 
 	/*
-	* Updates deltaTime
-	*/
+	 * Updates deltaTime
+	 */
 	void upDeltaTime()
 	{
 		GLfloat currentFrame = glfwGetTime();
@@ -96,16 +96,16 @@
 	}
 
 	/*
-	* Allows GLFW to output any errors to the console
-	*/
+	 * Allows GLFW to output any errors to the console
+	 */
 	void error_callback(int error, const char* description)
 	{
 		fprintf(stderr, "Error: %s\n", description);
 	}
 
 	/*
-	* Initializes the GLFW window with a title
-	*/
+	 * Initializes the GLFW window with a title
+	 */
 	void init_screen(const char * title)
 	{
 		glfwSetErrorCallback(error_callback);
@@ -130,9 +130,9 @@
 	}
 
 	/*
-	* Initializes the paths to the executable.
-	* This is used to link external files, such as fonts or shaders to the application at runtime.
-	*/
+	 * Initializes the paths to the executable.
+	 * This is used to link external files, such as fonts or shaders to the application at runtime.
+	 */
 	void initPaths()
 	{
 		exePath = ExePath();
@@ -143,8 +143,8 @@
 	}
 
 	/*
-	* Sets up keys
-	*/
+	 * Sets up keys
+	 */
 	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 	{
 		cam.KeyReader(window,key,scancode,action,mods);
@@ -217,10 +217,10 @@
 	}
 
 	/*
-	* Generates the texture for the screen Frame Buffer Object.
-	*
-	* Pulled from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers
-	*/
+	 * Generates the texture for the screen Frame Buffer Object.
+	 *
+	 * Pulled from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers
+	 */
 	GLuint generateAttachmentTexture(GLboolean depth, GLboolean stencil)
 	{
 		// What enum to use?
@@ -259,8 +259,8 @@
     };
 
 	/*
-	* Calculates simulation time based off of the frame number.
-	*/
+	 * Calculates simulation time based off of the frame number.
+	 */
 	void calculateTime(long long frame, float dt, float recordRate, float unitTime)
 	{
 		double calc = frame * dt * recordRate * unitTime;
@@ -276,10 +276,10 @@
 	}
 
 	/*
-	* Sets up the screen Frame Buffer Object (quadVAO / quadVAO) to pull data from the primary framebuffer.
-	*
-	* Pulled from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers
-	*/
+	 * Sets up the screen Frame Buffer Object (quadVAO / quadVAO) to pull data from the primary framebuffer.
+	 *
+	 * Pulled from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers
+	 */
 	void setupScreenFBO ()
 	{
 		glGenVertexArrays(1, &quadVAO);
@@ -310,10 +310,10 @@
 	}
 
 	/*
-	* Draws the screen Frame Buffer Object (quadVAO / quadVAO) to the screen.
-	*
-	* Pulled from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers
-	*/
+	 * Draws the screen Frame Buffer Object (quadVAO / quadVAO) to the screen.
+	 *
+	 * Pulled from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers
+	 */
 	void drawFBO()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);

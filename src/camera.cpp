@@ -1,6 +1,6 @@
 /*
-* camera.cpp
-*/
+ * camera.cpp
+ */
 #include "camera.hpp"
 Camera::Camera(const int SCREEN_WIDTH, const int SCREEN_HEIGHT)
 {

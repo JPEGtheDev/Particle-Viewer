@@ -1,9 +1,9 @@
 /*
-* settingsIO.hpp
-*
-* Loads position data from a binary file.
-*
-*/
+ * settingsIO.hpp
+ *
+ * Loads position data from a binary file.
+ *
+ */
 
 #ifndef SETTINGSIO_H
 #define SETTINGSIO_H
@@ -30,8 +30,8 @@ public:
 	long frames;
 
 	/*
-	* Default constructor for SettingsIO, used for the default cube
-	*/
+	 * Default constructor for SettingsIO, used for the default cube
+	 */
 	SettingsIO()
 	{
 		posFile = "/PosAndVel";
@@ -40,8 +40,8 @@ public:
 	}
 
 	/*
-	* Loads a specific position file.
-	*/
+	 * Loads a specific position file.
+	 */
 	SettingsIO(std::string posName, std::string statsName, std::string comName)
 	{
 		this->posName = posName;
@@ -249,8 +249,8 @@ public:
 	~SettingsIO();
 
 	/*
-	* Reads positions and velocities from a file at a specifc frame
-	*/
+	 * Reads positions and velocities from a file at a specifc frame
+	 */
 	void readPosVelFile(long frame, Particle *part,bool readVelocity)
 	{
 		FILE *PosAndVelFile = fopen(posName.c_str(), "r");
@@ -295,8 +295,8 @@ public:
 	}
 
 	/*
-	* Toggles playback.
-	*/
+	 * Toggles playback.
+	 */
 	void togglePlay()
 	{
 		isPlaying = !isPlaying;
@@ -343,8 +343,8 @@ public:
 	double getPi()						{return Pi;}
 
 	/*
-	* Opens up a file dialog and loads particle data.
-	*/
+	 * Opens up a file dialog and loads particle data.
+	 */
 	SettingsIO* loadFile(Particle *part, bool readVelocity)
 	{
 		std::string dialog = "Select Folder";
@@ -374,8 +374,8 @@ public:
 	}
 
 	/*
-	* Gets the total number of frames in a file.
-	*/
+	 * Gets the total number of frames in a file.
+	 */
 	long long int getFrames()
 	{
 		std::ifstream input;
@@ -394,8 +394,8 @@ public:
 	}
 
 	/*
-	* Checks to see if a COMFile exists.
-	*/
+	 * Checks to see if a COMFile exists.
+	 */
 	bool checkCOM()
 	{
 		std::ifstream input;
@@ -410,8 +410,8 @@ public:
 	}
 
 	/*
-	* Grabs the center of mass from the COMFile.
-	*/
+	 * Grabs the center of mass from the COMFile.
+	 */
 	void getCOM(long frame, glm::vec3 &value)
 	{
 		if(checkCOM())

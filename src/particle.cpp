@@ -1,12 +1,12 @@
 /*
-* particle.cpp
-*/
+ * particle.cpp
+ */
 
 #include "particle.hpp"
 
 /*
-* Generates the default cube for graphics testing.
-*/
+ * Generates the default cube for graphics testing.
+ */
 Particle::Particle()
 {
 
@@ -21,8 +21,9 @@ Particle::Particle()
 }
 
 /*
-* creates a new particle structure containing an N number of particles.
-*/
+ * Creates a new particle structure containing an N number of particles.
+ * This functon also sets up the buffer to be used with OpenGL calls.
+ */
 Particle::Particle(long N, glm::vec4* trans)
 {
 	n = N;
