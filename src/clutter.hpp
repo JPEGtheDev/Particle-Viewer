@@ -1,3 +1,11 @@
+/*
+* clutter.hpp
+*
+* This is the 'Junk' hpp file that contains any and all loose functions in the
+* main loop as well as all includes for the main
+*
+*/
+
 //includes
 	#include <iostream>
 	#include <string>
@@ -19,32 +27,49 @@
 		#include <windows.h>
 	#endif
 //function prototypes
-	void init_screen(const char * caption);					//initializes the screen / window / context
-	void upDeltaTime();										//updates deltaTime
-	void beforeDraw(); 										//the generic clear screen and other stuff before anything else has to be done
-	void drawFunct(); 										//Draws stuff to the screen
-	void setupGLStuff();									//sets up the VAOs and the VBOs
-	void cleanup();											//destroy it all with fire
-	void setupRender();										//Updates the VBOs for position changes
-	void seekFrame(int frame, bool isForward);				//skips frames
+	void init_screen(const char * caption);
+	void upDeltaTime();
+	void beforeDraw();
+	void drawFunct();
+	void setupGLStuff();
+	void cleanup();
+	void setupRender();
+	void seekFrame(int frame, bool isForward);
 	void calculateTime(long long frame, float dt, float recordRate, float unitTime);
-	GLuint generateAttachmentTexture(GLboolean depth, GLboolean stencil); 
-	static void key_callback(GLFWwindow*,int,int,int,int);	//key commands for GLFW
+	GLuint generateAttachmentTexture(GLboolean depth, GLboolean stencil);
+	static void key_callback(GLFWwindow*,int,int,int,int);
 	void setupScreenFBO ();
 	void drawFBO();
 //variables
-	const GLint SCREEN_FULLSCREEN = 0, SCREEN_WIDTH  = 1280, SCREEN_HEIGHT = 720;
+	const GLint
+		SCREEN_FULLSCREEN = 0,
+		SCREEN_WIDTH  = 1280,
+		SCREEN_HEIGHT = 720;
 
-	GLboolean quit = false, highRes = false, isRecording = false;
-	GLint curFrame = 0, imageError = 0;
-	GLfloat sphereScale = 1.0, sphereRadius = 250.0f,deltaTime = 0.0f, lastFrame = 0.0f;
-	GLuint quadVAO, quadVBO, framebuffer, rbo, textureColorbuffer, circleVAO, circleVBO;
-	
-	
+	GLboolean quit = false, isRecording = false;
+	GLint
+		curFrame = 0,		// Current frame number (must be > 0)
+		imageError = 0,		// Number of errors when trying to save a frame
+		imageErrorMax = 5;	// The maximum number of errors when trying to save a frame
+	GLfloat
+		sphereScale = 1.0,		// The scale of the spheres.
+		sphereRadius = 250.0f,	// Radius of the spheres rendered.
+		deltaTime = 0.0f,		// Time it took to render the last frame.
+		lastFrame = 0.0f;		// Timestamp of the last frame.
+
+	GLuint
+		quadVAO,			// Array Object for the screen.
+		quadVBO,			// Buffer Object for the screen.
+		framebuffer,		// Holds screen data for the spheres.
+		rbo,				// Renderbuffer for the spheres.
+		textureColorbuffer,	// Holds color data for the spheres.
+		circleVAO,			// Sphere VAO
+		circleVBO;			// Sphere VBO
+
 	Camera cam = Camera(SCREEN_WIDTH,SCREEN_HEIGHT);
 	GLFWwindow *window = NULL;
 	glm::mat4 view;
-	glm::vec3 com;
+	glm::vec3 com;			// Center of mass for the simulation.
 	Particle* part;
 	SettingsIO *set = new SettingsIO();
 	Shader sphereShader, screenShader;
@@ -55,21 +80,33 @@
 	std::string screenVertexShader = "/Viewer-Assets/shaders/screenshader.vs";
 	std::string screenFragmentShader = "/Viewer-Assets/shaders/screenshader.frag";
 	std::string recordFolder = "";
-	
+
 	unsigned char * pixels = new unsigned char[SCREEN_WIDTH*SCREEN_HEIGHT*3];
 	unsigned char * pixels2 = new unsigned char[SCREEN_WIDTH*SCREEN_HEIGHT*3];
 //functions that should not be changed
+
+	/*
+	* Updates deltaTime
+	*/
 	void upDeltaTime()
 	{
 		GLfloat currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 	}
+
+	/*
+	* Allows GLFW to output any errors to the console
+	*/
 	void error_callback(int error, const char* description)
 	{
 		fprintf(stderr, "Error: %s\n", description);
 	}
-	void init_screen(const char * title) 
+
+	/*
+	* Initializes the GLFW window with a title
+	*/
+	void init_screen(const char * title)
 	{
 		glfwSetErrorCallback(error_callback);
 		if (!glfwInit())
@@ -79,25 +116,25 @@
 		glfwWindowHint(GLFW_SAMPLES, 4);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		#ifdef __APPLE__
-			glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+			glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);		//Allows rendering on OSX
 		#endif
-		//creates the window
 
 		window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, title, NULL, NULL);
-		if (!window)
-		{
-
-		}
+		if (!window){}
 		glfwSetKeyCallback(window, key_callback);
 		glfwMakeContextCurrent(window);
-		gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
+		gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);			//Links GLAD to GLFW
 		glfwSwapInterval(1);
 		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	}
 
-	void initPaths() 
-	{	
+	/*
+	* Initializes the paths to the executable.
+	* This is used to link external files, such as fonts or shaders to the application at runtime.
+	*/
+	void initPaths()
+	{
 		exePath = ExePath();
 		sphereVertexShader = exePath + sphereVertexShader;
 		sphereFragmentShader = exePath + sphereFragmentShader;
@@ -105,6 +142,9 @@
 		screenFragmentShader = exePath + screenFragmentShader;
 	}
 
+	/*
+	* Sets up keys
+	*/
 	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 	{
 		cam.KeyReader(window,key,scancode,action,mods);
@@ -145,7 +185,7 @@
 				imageError = 0;
 				std::string dialog = "Select Folder";
 				const char* fol = tinyfd_selectFolderDialog (dialog.c_str() , "") ;
-				
+
 				std::string folder;
 				if(fol != NULL)
 				{
@@ -175,6 +215,12 @@
 			seekFrame(1,false);
 		}
 	}
+
+	/*
+	* Generates the texture for the screen Frame Buffer Object.
+	*
+	* Pulled from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers
+	*/
 	GLuint generateAttachmentTexture(GLboolean depth, GLboolean stencil)
 	{
 		// What enum to use?
@@ -186,7 +232,7 @@
 		else if(!depth && stencil)
 			attachment_type = GL_STENCIL_INDEX;
 
-		//Generate texture ID and load texture data 
+		//Generate texture ID and load texture data
 		GLuint textureID;
 		glGenTextures(1, &textureID);
 		glBindTexture(GL_TEXTURE_2D, textureID);
@@ -200,7 +246,7 @@
 
 		return textureID;
 	}
-	GLfloat quadVertices[] = 
+	GLfloat quadVertices[] =
 	{   // Vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
         // Positions   // TexCoords
         -1.0f,  1.0f,  0.0f, 1.0f,
@@ -210,8 +256,11 @@
         -1.0f,  1.0f,  0.0f, 1.0f,
          1.0f, -1.0f,  1.0f, 0.0f,
          1.0f,  1.0f,  1.0f, 1.0f
-    };	
+    };
 
+	/*
+	* Calculates simulation time based off of the frame number.
+	*/
 	void calculateTime(long long frame, float dt, float recordRate, float unitTime)
 	{
 		double calc = frame * dt * recordRate * unitTime;
@@ -225,6 +274,12 @@
 
 		std::cout << "\nReal Time: " << days << " D | " << hourS << " H | " << minuteS << " M | " << secondS << " S" << std::endl;
 	}
+
+	/*
+	* Sets up the screen Frame Buffer Object (quadVAO / quadVAO) to pull data from the primary framebuffer.
+	*
+	* Pulled from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers
+	*/
 	void setupScreenFBO ()
 	{
 		glGenVertexArrays(1, &quadVAO);
@@ -239,12 +294,12 @@
 		glBindVertexArray(0);
 
 		glGenFramebuffers(1, &framebuffer);
-		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);  
+		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 		// Create a color attachment texture
 		textureColorbuffer = generateAttachmentTexture(false, false);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
 		glGenRenderbuffers(1, &rbo);
-		glBindRenderbuffer(GL_RENDERBUFFER, rbo); 
+		glBindRenderbuffer(GL_RENDERBUFFER, rbo);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCREEN_WIDTH, SCREEN_HEIGHT); // Use a single renderbuffer object for both a depth AND stencil buffer.
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo); // Now actually attach it
@@ -253,6 +308,12 @@
 			std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
+
+	/*
+	* Draws the screen Frame Buffer Object (quadVAO / quadVAO) to the screen.
+	*
+	* Pulled from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers
+	*/
 	void drawFBO()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);

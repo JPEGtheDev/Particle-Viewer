@@ -70,13 +70,13 @@ void Particle::setUpInstanceBuffer()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+
 void Particle::setUpInstanceArray()
 {
 	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
 	glVertexAttribDivisor(0, 1);
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0); 
-	
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 //figure out if anyhting else needs to be put in here

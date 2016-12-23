@@ -10,26 +10,27 @@ int main(int argc, char* argv[])
 	part = new Particle();
 	setupGLStuff();
 	setupScreenFBO();
-	while (!glfwWindowShouldClose(window)) 
+
+	while (!glfwWindowShouldClose(window))
 	{
+
 		glfwPollEvents();
 		cam.Move();
 		//readInput(event);
 
 		beforeDraw();
 		drawFunct();
-		cam.RenderSphere(); 
+		cam.RenderSphere();
 		drawFBO();
 		//render GUI
 
 		glfwSwapBuffers(window);
-		
-		
+
 		if(set->frames > 1)
 		{
 			set->readPosVelFile(curFrame,part,false);
 		}
-		
+
 		if(set->isPlaying)
 		{
 			if(curFrame != 0)
@@ -59,8 +60,7 @@ void beforeDraw()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	upDeltaTime();
 	view = cam.setupCam();
-	
-	
+
 }
 void drawFunct()
 {
@@ -92,7 +92,7 @@ void drawFunct()
 		//
 		if(!stbi_write_tga(std::string(recordFolder+"/" + std::to_string(curFrame) + ".tga").c_str(), (int)SCREEN_WIDTH, (int)SCREEN_HEIGHT, 3, pixels2))
 		{
-			if(imageError < 5)
+			if(imageError < imageErrorMax)
 			{
 				imageError++;
 				std::cout << "Unable to save image: Error "<< imageError << std::endl;
@@ -104,21 +104,21 @@ void drawFunct()
 			}
 		}
 	}
-	
+
 }
 
-void setupGLStuff() 
+void setupGLStuff()
 {
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_PROGRAM_POINT_SIZE );
-	glEnable(GL_MULTISAMPLE);  
-	sphereShader = Shader(sphereVertexShader.c_str(),sphereFragmentShader.c_str());							//creates the shader to be used on the spheres
+	glEnable(GL_MULTISAMPLE);
+	sphereShader = Shader(sphereVertexShader.c_str(),sphereFragmentShader.c_str());
 	screenShader = Shader(screenVertexShader.c_str(),screenFragmentShader.c_str());
 	glGenVertexArrays(1, &circleVAO);
 	glGenBuffers(1, &circleVBO);
 	glBindVertexArray(circleVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, circleVBO);
-	
+
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
 	part->setUpInstanceArray();
@@ -135,7 +135,7 @@ void seekFrame(int frame, bool isForward)
 	{
 		curFrame -= frame;
 	}
-	
+
 }
 void cleanup()
 {

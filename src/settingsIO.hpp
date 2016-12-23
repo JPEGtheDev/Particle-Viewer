@@ -1,5 +1,5 @@
-#ifndef SETTINGSIO_H 
-#define SETTINGSIO_H 
+#ifndef SETTINGSIO_H
+#define SETTINGSIO_H
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -7,8 +7,8 @@
 #include "glad/glad.h"
 #include "particle.hpp"
 #include "tinyFileDialogs/tinyfiledialogs.h"
-class SettingsIO 
-{ 
+class SettingsIO
+{
 public:
 	//FILE *PosAndVelFile;
 	std::string posName;
@@ -68,13 +68,13 @@ public:
 	bool checkCOM();
 	void getCOM(long,glm::vec3 &);
 
-private: 
+private:
 	//Note: most of these aren't used, but kept for posterity's sake and/or if the actual slam programs want to use this to simplify reading in stuff
 	int RecordRate;
 	int DrawRate;
 	int DrawQuality;
 	int WriteToFile;
-	int UseMultipleGPU;	
+	int UseMultipleGPU;
 	float DampRateBody1;
 	float DampRateBody2;
 	float EnergyTargetBody1;
@@ -87,21 +87,21 @@ private:
 	float SpinRestTime;
 	float SetupTime;
 	float Dt;
-	double FractionEarthMassOfBody1;	
-	double FractionEarthMassOfBody2;	
-	double FractionFeBody1;			
-	double FractionSiBody1;			
-	double FractionFeBody2;			
-	double FractionSiBody2;	
-	double DensityFe;			
-	double DensitySi;			
+	double FractionEarthMassOfBody1;
+	double FractionEarthMassOfBody2;
+	double FractionFeBody1;
+	double FractionSiBody1;
+	double FractionFeBody2;
+	double FractionSiBody2;
+	double DensityFe;
+	double DensitySi;
 	double KFe;
 	double KSi;
 	double KRFe;
 	double KRSi;
 	double SDFe;
 	double SDSi;
-	double UniversalGravity;	
+	double UniversalGravity;
 	double MassOfEarth;
 	double Pi;
 	glm::vec3 InitialPosition1;
@@ -116,4 +116,4 @@ private:
 	std::string comFile;
 };
 
-#endif /* SETTINGSIO_H */ 
+#endif /* SETTINGSIO_H */
