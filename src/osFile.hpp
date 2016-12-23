@@ -1,7 +1,13 @@
-//osFile.hpp
+/*
+* osFile.hpp
+*
+* Sets up OS Specific path data.
+*
+*/
+
 #ifndef osFile_HPP
 	#define osFile_HPP
-	
+
 	#include <string>
 	#include <iostream>
 
@@ -13,7 +19,7 @@
 		#include <limits.h>
 		#include <unistd.h>
 	#endif
-	static std::string ExePath() 
+	static std::string ExePath()
 	{
 		#ifdef _WIN32
 	    	char buffer[MAX_PATH];
@@ -34,5 +40,4 @@
 		 	//return std::string( result, (count > 0) ? count : 0 );
 	    #endif
 	}
-	
 #endif

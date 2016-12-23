@@ -1,6 +1,11 @@
+/*
+* main.cpp
+*
+* contains main function
+*
+*/
+
 #include "clutter.hpp"
-
-
 
 int main(int argc, char* argv[])
 {
@@ -52,6 +57,7 @@ int main(int argc, char* argv[])
 	cleanup();
 	return 0;
 }
+
 void beforeDraw()
 {
 	glEnable(GL_DEPTH_TEST);
@@ -62,6 +68,7 @@ void beforeDraw()
 	view = cam.setupCam();
 
 }
+
 void drawFunct()
 {
 	set->getCOM(curFrame, com);
@@ -107,6 +114,9 @@ void drawFunct()
 
 }
 
+/*
+* Sets up the basic OpenGL stuff.
+*/
 void setupGLStuff()
 {
 	glEnable(GL_DEPTH_TEST);
@@ -125,6 +135,10 @@ void setupGLStuff()
 	glBindVertexArray(0);
 	//set up other object arrays
 }
+
+/*
+* Increment / decrement current frame by x amount.
+*/
 void seekFrame(int frame, bool isForward)
 {
 	if(isForward)
@@ -137,6 +151,7 @@ void seekFrame(int frame, bool isForward)
 	}
 
 }
+
 void cleanup()
 {
 	delete part;

@@ -1,3 +1,12 @@
+/*
+* shader.hpp
+*
+* Loads shader data from file
+* Pulled from https://learnopengl.com/#!Getting-started/Shaders
+*
+*/
+
+
 #ifndef SHADER_H
 #define SHADER_H
 
@@ -7,7 +16,6 @@
 #include <iostream>
 #include "glad/glad.h"
 
-//grabbed from learnopeng.com
 
 class Shader
 {
@@ -43,7 +51,7 @@ public:
 		{
 			std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
 		}
-		
+
 		const GLchar* vShaderCode = vertexCode.c_str();
 		const GLchar * fShaderCode = fragmentCode.c_str();
 		GLuint vertex, fragment;

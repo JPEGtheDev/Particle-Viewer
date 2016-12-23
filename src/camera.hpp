@@ -1,3 +1,10 @@
+/*
+* camera.hpp
+*
+* Somewhat Pulled from https://learnopengl.com/#!Getting-started/Camera
+*
+*/
+
 #ifndef CAMERA_H
 #define CAMERA_H
 #include <vector>

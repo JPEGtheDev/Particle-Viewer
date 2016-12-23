@@ -1,3 +1,10 @@
+/*
+* particle.hpp
+*
+* Particle data structure containing velocities and translations.
+*
+*/
+
 #ifndef PARTICLE_H
 #define PARTICLE_H
 
@@ -9,7 +16,6 @@
 class Particle
 {
 public:
-	
 	Particle();					//default cube constructor
 	Particle(long,glm::vec4*);
 	~Particle();				//destructor for the particles

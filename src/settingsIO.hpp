@@ -1,3 +1,10 @@
+/*
+* settingsIO.hpp
+*
+* Loads position data from a binary file.
+*
+*/
+
 #ifndef SETTINGSIO_H
 #define SETTINGSIO_H
 #include <iostream>

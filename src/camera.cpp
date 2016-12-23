@@ -1,3 +1,6 @@
+/*
+* camera.cpp
+*/
 #include "camera.hpp"
 Camera::Camera(const int SCREEN_WIDTH, const int SCREEN_HEIGHT)
 {
@@ -7,9 +10,9 @@ Camera::Camera(const int SCREEN_WIDTH, const int SCREEN_HEIGHT)
 	this->cameraUp		= glm::vec3(0.0f, 1.0f,  0.0f);
 	this->baseSpeed		= 5.0f;
 	this->speed 		= this->baseSpeed;
-	this->yaw			= -90.0f;	
+	this->yaw			= -90.0f;
 	this->pitch  		= 0.0f;
-	this->sphereYaw		= -90.0f;	
+	this->sphereYaw		= -90.0f;
 	this->spherePitch  	= 0.0f;
 	this->renderDistance= 3000.0f;
 	this->projection	= glm::perspective(45.0f, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, renderDistance);
@@ -55,7 +58,6 @@ void Camera::updateSpeed(GLfloat deltaTime)
 	{
 		this->speed = this->baseSpeed * deltaTime;
 	}
-	
 }
 void Camera::lookUp(float pitch)
 {
@@ -134,7 +136,7 @@ void Camera::KeyReader(GLFWwindow* window, int key, int scancode, int action, in
   		keys[key] = false;
 
   	if (action == GLFW_PRESS)
-	{  
+	{
 		if( key == GLFW_KEY_P)
 		{
 			rotateState++;
@@ -168,7 +170,7 @@ void Camera::KeyReader(GLFWwindow* window, int key, int scancode, int action, in
 			{
 				comLock = !comLock;
 			}
-			
+
 		}
 		if(rotLock)
 		{
@@ -307,7 +309,7 @@ void Camera::RenderSphere()
 		sphereShader.Use();
 		glUniformMatrix4fv(glGetUniformLocation(sphereShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(setupCam()));
 		glUniformMatrix4fv(glGetUniformLocation(sphereShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(this->projection));
-		
+
 		if(rotLock && comLock)
 		{
 			cameraPos = calcSpherePos(this->sphereYaw,this->spherePitch,this->centerOfMass);
@@ -325,7 +327,7 @@ void Camera::RenderSphere()
 		{
 			std::cout << "Yeah... Fix the rotLock and comLock if statements" << std::endl;
 		}
-		
+
 	    glUniform3fv(glGetUniformLocation(sphereShader.Program, "pos"), 1, glm::value_ptr(spherePos));
 	    glUniform3fv(glGetUniformLocation(sphereShader.Program, "color"), 1, glm::value_ptr(sphereColor));
 		glBindVertexArray(VAO);
@@ -339,7 +341,6 @@ void Camera::RenderSphere()
 			glDrawArrays(GL_POINTS, 0, 1);
 			glBindVertexArray(0);
 		}
-		
 	}
 }
 void Camera::initGL()

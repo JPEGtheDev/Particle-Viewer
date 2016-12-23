@@ -1,5 +1,12 @@
+/*
+* particle.cpp
+*/
+
 #include "particle.hpp"
 
+/*
+* Generates the default cube for graphics testing.
+*/
 Particle::Particle()
 {
 
@@ -12,17 +19,23 @@ Particle::Particle()
 	}
 	setUpInstanceBuffer();
 }
+
+/*
+* creates a new particle structure containing an N number of particles.
+*/
 Particle::Particle(long N, glm::vec4* trans)
 {
 	n = N;
 	translations = trans;
 	setUpInstanceBuffer();
 }
+
 Particle::~Particle()
 {
 	delete[] translations;
 	delete[] velocities;
 }
+
 void Particle::changeTranslations(long N, glm::vec4 *newTrans)
 {
 	if(newTrans)
@@ -39,6 +52,7 @@ void Particle::changeTranslations(long N, glm::vec4 *newTrans)
 	}
 	std::cout << "Error Loading New Translations" << std::endl;
 }
+
 void Particle::changeVelocities(glm::vec4 *newVel)
 {
 	if(newVel)
@@ -53,6 +67,7 @@ void Particle::changeVelocities(glm::vec4 *newVel)
 	}
 	std::cout << "Error Loading New Velocities" << std::endl;
 }
+
 void Particle::pushVBO()
 {
 	//glGenBuffers(1, &instanceVBO);
