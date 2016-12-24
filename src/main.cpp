@@ -34,6 +34,7 @@ int main(int argc, char* argv[])
 		if(set->frames > 1)			{ set->readPosVelFile(curFrame,part,false);}
 		if(set->isPlaying)			{ curFrame++;}
 		if(curFrame > set->frames)	{ curFrame = set->frames;}
+		minor_keyCallback();
 		if (curFrame < 0)			{ curFrame = 0;}
 	}
 	cleanup();

@@ -46,7 +46,10 @@
 		SCREEN_WIDTH  = 1280,
 		SCREEN_HEIGHT = 720;
 
-	GLboolean quit = false, isRecording = false;
+	GLboolean
+		quit = false,
+		isRecording = false,
+		keys[1024];			// Array of keys that have been pressed since the last call
 	GLint
 		curFrame = 0,		// Current frame number (must be > 0)
 		imageError = 0,		// Number of errors when trying to save a frame
@@ -143,13 +146,24 @@
 	}
 
 	/*
+	 * Key callback for multiple keypresses and smooth keypress
+	 */
+	void minor_keyCallback()
+	{
+		if(keys[GLFW_KEY_Q])	{ seekFrame(3, false);}
+		if(keys[GLFW_KEY_E])	{ seekFrame(3, true);}
+	}
+	/*
 	 * Sets up keys
 	 */
 	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 	{
+		/* Allows for smooth, constant key presses */
+		if(action == GLFW_PRESS)		{ keys[key] = true;}
+		else if(action == GLFW_RELEASE)	{ keys[key] = false;}
+		/* ======================================= */
 		cam.KeyReader(window,key,scancode,action,mods);
-		if (key == GLFW_KEY_Q && action == GLFW_REPEAT)		{ seekFrame(3, false);}
-		if (key == GLFW_KEY_E && action == GLFW_REPEAT)		{ seekFrame(3, true);}
+
 		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)	{ glfwSetWindowShouldClose(window, GLFW_TRUE);}
 		if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)	{ set->togglePlay();}
 
