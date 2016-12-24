@@ -35,6 +35,6 @@ void main()
 	{
 		fColor = vec3( gl_InstanceID%40/40.0f, gl_InstanceID%1600/1600.0f, gl_InstanceID%64000/64000.0f);
 	}
-	
+
     lightDir = lightDirection;
 }
