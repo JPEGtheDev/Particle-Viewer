@@ -69,6 +69,7 @@ void drawFunct()
 	glDrawArraysInstanced(GL_POINTS,0,1,part->n);
 	glBindVertexArray(0);
 	//take screenshot
+	//std::cout << "FPS: " << 1/deltaTime << std::endl; //get FPS
 	if(set->isPlaying && isRecording)
 	{
 		glReadPixels(0,0,(int)SCREEN_WIDTH, (int)SCREEN_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, pixels);
@@ -79,7 +80,7 @@ void drawFunct()
 				pixels2[i + SCREEN_WIDTH* 3 * j] = pixels[i+ SCREEN_WIDTH* 3 * (SCREEN_HEIGHT - j)];
 			}
 		}
-		//
+
 		if(!stbi_write_tga(std::string(recordFolder+"/" + std::to_string(curFrame) + ".tga").c_str(), (int)SCREEN_WIDTH, (int)SCREEN_HEIGHT, 3, pixels2))
 		{
 			if(imageError < imageErrorMax)
