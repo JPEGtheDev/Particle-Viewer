@@ -27,11 +27,13 @@
 <h3>Currently Used Libraries:</h3>
 <p>
 	<ul>
-		<li><a href="https://www.libsdl.org/">SDL2</a></li>
-		<li><a href="https://www.opengl.org/">OpenGL</a></li>
+		<li><a href="https://github.com/glfw/glfw">GLFW</a></li>
 		<li><a href="https://github.com/Dav1dde/glad">GLAD</a></li>
-		<li><a href="http://glm.g-truc.net/0.9.7/index.html">GLM</a></li>
+		<li><a href="https://github.com/g-truc/glm">GLM</a></li>
+		<li><a href="https://github.com/nothings/stb">stb</a></li>
 		<li><a href="http://sourceforge.net/projects/tinyfiledialogs/">tiny file dialogs</a></li> <!--eww sourceforge... I can understand if they use SVN, but come on -->
+		<!--<li><a href="https://github.com/miloyip/rapidjson">Rapid JSON</a></li> //I havent implemented it yet -->
+		<>
 	</ul>
 </p>
 <hr>
