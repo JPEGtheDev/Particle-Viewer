@@ -33,7 +33,6 @@
 		<li><a href="https://github.com/nothings/stb">stb</a></li>
 		<li><a href="http://sourceforge.net/projects/tinyfiledialogs/">tiny file dialogs</a></li> <!--eww sourceforge... I can understand if they use SVN, but come on -->
 		<!--<li><a href="https://github.com/miloyip/rapidjson">Rapid JSON</a></li> //I havent implemented it yet -->
-		<>
 	</ul>
 </p>
 <hr>
