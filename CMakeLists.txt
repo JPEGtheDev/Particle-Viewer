@@ -34,6 +34,12 @@ target_include_directories(Viewer PUBLIC
 	external/rapidjson/include
 	external/glfw/include
 )
+
+if(WIN32)
+  file(COPY src/shaders/ DESTINATION Debug/Viewer-Assets/shaders)
+  file(COPY src/shaders/ DESTINATION Release/Viewer-Assets/shaders)
+endif()
+
 file(COPY src/shaders/ DESTINATION Viewer-Assets/shaders)
 install (TARGETS Viewer DESTINATION bin)
 install (DIRECTORY src/shaders/ DESTINATION bin/Viewer-Assets/shaders)
