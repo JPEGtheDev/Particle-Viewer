@@ -22,7 +22,7 @@ addons:
       - clang-3.6
       - valgrind
       - gdb
-      - llvm-3.0-dev
+      #- llvm-3.0-dev
       - libfreetype6-dev
 
 cache:
