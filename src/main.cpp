@@ -73,15 +73,7 @@ void drawFunct()
 	if(set->isPlaying && isRecording)
 	{
 		glReadPixels(0,0,(int)SCREEN_WIDTH, (int)SCREEN_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, pixels);
-		for (int i = 0; i < SCREEN_WIDTH * 3; i++)
-		{
-			for(int j = 0; j < SCREEN_HEIGHT; j++)
-			{
-				pixels2[i + SCREEN_WIDTH* 3 * j] = pixels[i+ SCREEN_WIDTH* 3 * (SCREEN_HEIGHT - j)];
-			}
-		}
-
-		if(!stbi_write_tga(std::string(recordFolder+"/" + std::to_string(curFrame) + ".tga").c_str(), (int)SCREEN_WIDTH, (int)SCREEN_HEIGHT, 3, pixels2))
+		if(!stbi_write_tga(std::string(recordFolder+"/" + std::to_string(curFrame) + ".tga").c_str(), (int)SCREEN_WIDTH, (int)SCREEN_HEIGHT, 3, pixels))
 		{
 			if(imageError < imageErrorMax)
 			{
@@ -135,6 +127,5 @@ void cleanup()
 {
 	delete part;
 	delete[] pixels;
-	delete[] pixels2;
 	glDeleteFramebuffers(1, &framebuffer);
 }

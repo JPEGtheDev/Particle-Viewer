@@ -43,6 +43,15 @@
 //variables
 	const GLint
 		SCREEN_FULLSCREEN = 0,
+		//4k res
+		//SCREEN_WIDTH  = 3840,
+		//SCREEN_HEIGHT = 2160;
+
+		//1080p
+		//SCREEN_WIDTH  = 1920,
+		//SCREEN_HEIGHT = 1080;
+	
+		//720p
 		SCREEN_WIDTH  = 1280,
 		SCREEN_HEIGHT = 720;
 
@@ -55,8 +64,11 @@
 		imageError = 0,		// Number of errors when trying to save a frame
 		imageErrorMax = 5;	// The maximum number of errors when trying to save a frame
 	GLfloat
-		sphereScale = 1.0,		// The scale of the spheres.
-		sphereRadius = 250.0f,	// Radius of the spheres rendered.
+		//sphereScale = 1.75 if 4k
+		//spherescale = 1.25 if 1080p
+		//spherescale = 1.00 if 720p
+		sphereScale = 1.0f,		// The scale of the spheres.
+		sphereRadius = 250.0f * sphereScale,	// Radius of the spheres rendered.
 		deltaTime = 0.0f,		// Time it took to render the last frame.
 		lastFrame = 0.0f;		// Timestamp of the last frame.
 
@@ -85,7 +97,7 @@
 	std::string recordFolder = "";
 
 	unsigned char * pixels = new unsigned char[SCREEN_WIDTH*SCREEN_HEIGHT*3];
-	unsigned char * pixels2 = new unsigned char[SCREEN_WIDTH*SCREEN_HEIGHT*3];
+
 //functions that should not be changed
 
 	/*
@@ -130,6 +142,7 @@
 		glfwSwapInterval(1);
 		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		stbi_flip_vertically_on_write(true);
 	}
 
 	/*
