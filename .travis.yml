@@ -22,7 +22,6 @@ addons:
       - clang-3.6
       - valgrind
       - gdb
-      #- llvm-3.0-dev
       - xorg-dev 
       - libglu1-mesa-dev
       - libfreetype6-dev
