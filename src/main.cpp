@@ -9,23 +9,25 @@
 
 int main(int argc, char* argv[])
 {
+	checkArgs(argc, argv);
+	//setResolution();
 	initPaths();
 	init_screen("Particle-Viewer");
-	cam.initGL();
+	cam->initGL();
 	part = new Particle();
 	setupGLStuff();
 	setupScreenFBO();
-
+	
 	while (!glfwWindowShouldClose(window))
 	{
 
 		glfwPollEvents();
-		cam.Move();
+		cam->Move();
 		//readInput(event);
 
 		beforeDraw();
 		drawFunct();
-		cam.RenderSphere();
+		cam->RenderSphere();
 		drawFBO();
 		//render GUI
 
@@ -45,17 +47,17 @@ void beforeDraw()
 {
 	glEnable(GL_DEPTH_TEST);
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-	cam.update(deltaTime);
+	cam->update(deltaTime);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	upDeltaTime();
-	view = cam.setupCam();
+	view = cam->setupCam();
 
 }
 
 void drawFunct()
 {
 	set->getCOM(curFrame, com);
-	cam.setSphereCenter(com);
+	cam->setSphereCenter(com);
 	sphereShader.Use();
 	part->pushVBO();
 	glBindVertexArray(circleVAO);
@@ -63,7 +65,7 @@ void drawFunct()
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glUniformMatrix4fv(glGetUniformLocation(sphereShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
-	glUniformMatrix4fv(glGetUniformLocation(sphereShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(cam.projection));
+	glUniformMatrix4fv(glGetUniformLocation(sphereShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(cam->projection));
 	glUniform1f(glGetUniformLocation(sphereShader.Program, "radius"), sphereRadius);
 	glUniform1f(glGetUniformLocation(sphereShader.Program, "scale"), sphereScale);
 	glDrawArraysInstanced(GL_POINTS,0,1,part->n);

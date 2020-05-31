@@ -40,21 +40,14 @@
 	static void key_callback(GLFWwindow*,int,int,int,int);
 	void setupScreenFBO ();
 	void drawFBO();
+	void setResolution(std::string);
+	void checkArgs(int argc, char* argv[]);
+	void setSphereScale(GLfloat scale);
 //variables
-	const GLint
+	GLint
 		SCREEN_FULLSCREEN = 0,
-		//4k res
-		//SCREEN_WIDTH  = 3840,
-		//SCREEN_HEIGHT = 2160;
-
-		//1080p
-		//SCREEN_WIDTH  = 1920,
-		//SCREEN_HEIGHT = 1080;
-	
-		//720p
-		SCREEN_WIDTH  = 1280,
-		SCREEN_HEIGHT = 720;
-
+		SCREEN_WIDTH,
+		SCREEN_HEIGHT;
 	GLboolean
 		quit = false,
 		isRecording = false,
@@ -64,11 +57,10 @@
 		imageError = 0,		// Number of errors when trying to save a frame
 		imageErrorMax = 5;	// The maximum number of errors when trying to save a frame
 	GLfloat
-		//sphereScale = 1.75 if 4k
-		//spherescale = 1.25 if 1080p
-		//spherescale = 1.00 if 720p
-		sphereScale = 1.0f,		// The scale of the spheres.
-		sphereRadius = 250.0f * sphereScale,	// Radius of the spheres rendered.
+		
+		sphereScale,		// The scale of the spheres.
+		sphereBaseRadius = 250.0f, //base sphere radius
+		sphereRadius,	// Radius of the spheres rendered.
 		deltaTime = 0.0f,		// Time it took to render the last frame.
 		lastFrame = 0.0f;		// Timestamp of the last frame.
 
@@ -81,7 +73,7 @@
 		circleVAO,			// Sphere VAO
 		circleVBO;			// Sphere VBO
 
-	Camera cam = Camera(SCREEN_WIDTH,SCREEN_HEIGHT);
+	Camera *cam;
 	GLFWwindow *window = NULL;
 	glm::mat4 view;
 	glm::vec3 com;			// Center of mass for the simulation.
@@ -96,7 +88,7 @@
 	std::string screenFragmentShader = "/Viewer-Assets/shaders/screenshader.frag";
 	std::string recordFolder = "";
 
-	unsigned char * pixels = new unsigned char[SCREEN_WIDTH*SCREEN_HEIGHT*3];
+	unsigned char * pixels;
 
 //functions that should not be changed
 
@@ -123,6 +115,8 @@
 	 */
 	void init_screen(const char * title)
 	{
+		pixels = new unsigned char[SCREEN_WIDTH*SCREEN_HEIGHT*3];
+		cam = new Camera(SCREEN_WIDTH,SCREEN_HEIGHT);
 		glfwSetErrorCallback(error_callback);
 		if (!glfwInit())
 		exit(EXIT_FAILURE);
@@ -175,7 +169,7 @@
 		if(action == GLFW_PRESS)		{ keys[key] = true;}
 		else if(action == GLFW_RELEASE)	{ keys[key] = false;}
 		/* ======================================= */
-		cam.KeyReader(window,key,scancode,action,mods);
+		cam->KeyReader(window,key,scancode,action,mods);
 
 		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)	{ glfwSetWindowShouldClose(window, GLFW_TRUE);}
 		if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)	{ set->togglePlay();}
@@ -331,4 +325,47 @@
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
 	}
-
+	void setResolution(std::string resolution)
+	{
+		GLfloat scale;
+		if (resolution == "4k")
+		{
+			SCREEN_WIDTH  = 3840,
+			SCREEN_HEIGHT = 2160;
+			scale = 1.75;
+		}
+		else if(resolution == "1080" || resolution == "1080p" || resolution == "HD")
+		{
+			SCREEN_WIDTH  = 1920;
+			SCREEN_HEIGHT = 1080;
+			scale = 1.25;
+		}
+		else //720p
+		{
+			SCREEN_WIDTH  = 1280;
+			SCREEN_HEIGHT = 720;
+			scale = 1.0;
+		}
+		std::cout << "Setting resolution to:" << SCREEN_WIDTH << "x" << SCREEN_HEIGHT << std::endl;
+		setSphereScale(scale);
+	}
+	void setSphereScale(GLfloat scale)
+	{
+		sphereScale = scale;
+		sphereRadius = sphereBaseRadius * sphereScale;
+	}
+	void checkArgs(int argc, char* argv[])
+	{
+		std::string resolution;
+		for(int i =1; i < argc; i++)
+		{
+			std::string arg = std::string(argv[i]);
+			if(arg == "--resolution" || arg == "--res")
+			{
+				if(i+1 <argc)
+					resolution = argv[++i];
+				
+			}
+		}
+		setResolution(resolution);
+	}
