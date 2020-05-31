@@ -7,9 +7,9 @@ os:
 compiler:
   - gcc
   - clang
-env:
-  global:
-   - secure: "czzPQue5rO4VkyxAXmWYJ8UMld2qPRL3gerQt9ZRRbH+FnURb+qZK7mUXsYAeabgK7bv5cBHYkOhNRTdpsohkqo94E6nJ1G03VKg1dJ3mhFa0GlCcWkcFi0uRIV8XvUjs0nbTp1+OkB36YPkwRkWaK7bt4deOp206IcQ2cyrN3dhTCGxbeHX8U8EpqUwdHPK02fYXfYQ75LgPIIkqqyLTL4+geZeeffMxBTndgKUfxL8cur/s37vlrv1vJcPh/nEdG9IidZWEVTJmVduTEiay979UHJu+tTjFf1ucKvxZ5MMsrDXKJtAFnsIjw68a4XZsgFCkGsBrTEbgdw802+P+o7HQNnr7rrOG6ucOlCkx4JDneAXaU0FQpVSsWCAwFm2LVN6gmAV5EUK6rnfIWDp5vO4TriYwFoNOApvHmGi89J38Dgmx3XOaMjKmrMY/UsqnSG39Gw/yO0CL/1zuoIiIBp5k//6CTftQFjem0fpt2E76aIN8zGx1/0F4nhj9lUNH9rjDvA7ASE6mgIjRYWji+HcBJV1RcojRTdsi5LttVFMQs812A1iou8IHc46Z+tSBJ/XbOiypG2V7EsgWZLtQGhP4ek4Qta+VpUM3utGEf15qV/6938G76ZBUz9gwiIoMKrZbJjK2Fx911Q10kUv9jLSuHsRIpES7ZWz1wwKtbY="
+# env:
+#   global:
+#    - secure: "czzPQue5rO4VkyxAXmWYJ8UMld2qPRL3gerQt9ZRRbH+FnURb+qZK7mUXsYAeabgK7bv5cBHYkOhNRTdpsohkqo94E6nJ1G03VKg1dJ3mhFa0GlCcWkcFi0uRIV8XvUjs0nbTp1+OkB36YPkwRkWaK7bt4deOp206IcQ2cyrN3dhTCGxbeHX8U8EpqUwdHPK02fYXfYQ75LgPIIkqqyLTL4+geZeeffMxBTndgKUfxL8cur/s37vlrv1vJcPh/nEdG9IidZWEVTJmVduTEiay979UHJu+tTjFf1ucKvxZ5MMsrDXKJtAFnsIjw68a4XZsgFCkGsBrTEbgdw802+P+o7HQNnr7rrOG6ucOlCkx4JDneAXaU0FQpVSsWCAwFm2LVN6gmAV5EUK6rnfIWDp5vO4TriYwFoNOApvHmGi89J38Dgmx3XOaMjKmrMY/UsqnSG39Gw/yO0CL/1zuoIiIBp5k//6CTftQFjem0fpt2E76aIN8zGx1/0F4nhj9lUNH9rjDvA7ASE6mgIjRYWji+HcBJV1RcojRTdsi5LttVFMQs812A1iou8IHc46Z+tSBJ/XbOiypG2V7EsgWZLtQGhP4ek4Qta+VpUM3utGEf15qV/6938G76ZBUz9gwiIoMKrZbJjK2Fx911Q10kUv9jLSuHsRIpES7ZWz1wwKtbY="
 addons:
   apt:
     sources:
@@ -26,20 +26,9 @@ addons:
       - libglu1-mesa-dev
       - libfreetype6-dev
 
-#cache:
-#  directories:
-#    - /home/travis/build/JPEGtheDev/cmake
 before_install:
-
   - echo $LANG
   - echo $LC_ALL
-#  - if [ $TRAVIS_OS_NAME == linux ]; then
-#      if [ "$CXX" = "g++" ]; then export CXX="g++-4.9"; fi;
-#      if [ "$CC" = "gcc" ]; then export CC="gcc-4.9"; fi;
-#      if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.6"; fi;
-#      if [ "$CC" = "clang" ]; then export CC="clang-3.6"; fi;
-#      sh ./scripts/linuxPre.sh;
-#    fi
 
 script:
   - if [ $TRAVIS_OS_NAME == linux ]; then
@@ -48,8 +37,6 @@ script:
 
 after_success:
   - echo "SUCCESS!!!"
-  #saving coveralls support for a rainy day
-  #- coveralls --exclude lib --exclude tests --gcov-options '\-lp'
 
 after_failure:
   - echo "FAILURE"
