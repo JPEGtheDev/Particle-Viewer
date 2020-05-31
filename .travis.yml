@@ -19,26 +19,27 @@ addons:
       - gcc
       - g++
       - clang
+      - cmake
       #- valgrind
       #- gdb
       - xorg-dev 
       - libglu1-mesa-dev
       - libfreetype6-dev
 
-cache:
-  directories:
-    - /home/travis/build/JPEGtheDev/cmake
+#cache:
+#  directories:
+#    - /home/travis/build/JPEGtheDev/cmake
 before_install:
 
   - echo $LANG
   - echo $LC_ALL
-  - if [ $TRAVIS_OS_NAME == linux ]; then
-      if [ "$CXX" = "g++" ]; then export CXX="g++-4.9"; fi;
-      if [ "$CC" = "gcc" ]; then export CC="gcc-4.9"; fi;
-      if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.6"; fi;
-      if [ "$CC" = "clang" ]; then export CC="clang-3.6"; fi;
-      sh ./scripts/linuxPre.sh;
-    fi
+#  - if [ $TRAVIS_OS_NAME == linux ]; then
+#      if [ "$CXX" = "g++" ]; then export CXX="g++-4.9"; fi;
+#      if [ "$CC" = "gcc" ]; then export CC="gcc-4.9"; fi;
+#      if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.6"; fi;
+#      if [ "$CC" = "clang" ]; then export CC="clang-3.6"; fi;
+#      sh ./scripts/linuxPre.sh;
+#    fi
 
 script:
   - if [ $TRAVIS_OS_NAME == linux ]; then
