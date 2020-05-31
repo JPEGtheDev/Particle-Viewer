@@ -29,3 +29,6 @@
 #build folder
 build/
 .DS_Store
+
+#Visual Studio Code
+.vscode/
