@@ -1,5 +1,5 @@
 # Particle-Viewer 
-<h3>Build Status:</h3>
+## Build Status:
 
 [![Build Status](https://travis-ci.org/JPEGtheDev/Particle-Viewer.svg?branch=master)](https://travis-ci.org/JPEGtheDev/Particle-Viewer)
 [![Build status](https://ci.appveyor.com/api/projects/status/9pu5howob96kpf6w?svg=true)](https://ci.appveyor.com/project/JPEGtheDev/particle-viewer)
@@ -21,7 +21,7 @@ This is a project created by Jonathan Petz for Tarleton State University's Parti
 * [stb](https://github.com/nothings/stb) 
 * [Tiny File Dialogs](http://sourceforge.net/projects/tinyfiledialogs/)
 ___
-## Utilities Used:</h3>
+## Utilities Used:
 [CMAKE](https://cmake.org/")
 ___
 
