@@ -4,7 +4,6 @@ sudo: false
 
 os:
   - linux
-  - osx
 compiler:
   - gcc
   - clang
@@ -20,8 +19,8 @@ addons:
       - gcc-4.9
       - g++-4.9
       - clang-3.6
-      - valgrind
-      - gdb
+      #- valgrind
+      #- gdb
       - xorg-dev 
       - libglu1-mesa-dev
       - libfreetype6-dev
@@ -41,13 +40,7 @@ before_install:
       sh ./scripts/linuxPre.sh;
     fi
 
-  - if [ $TRAVIS_OS_NAME == osx ]; then
-      sh ./scripts/OSXPre.sh;
-    fi
 script:
-  - if [ $TRAVIS_OS_NAME == osx ]; then
-      sh ./scripts/OSXBuild.sh;
-    fi
   - if [ $TRAVIS_OS_NAME == linux ]; then
       sh ./scripts/linuxBuild.sh;
     fi
