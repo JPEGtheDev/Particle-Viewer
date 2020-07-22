@@ -5,16 +5,12 @@
 	path = external/stb
 	url = https://github.com/nothings/stb
 	branch = master
-[submodule "external/glad"]
-	path = external/glad
-	url = https://github.com/Dav1dde/glad.git
-	branch = c
 [submodule "external/rapidjson"]
 	path = external/rapidjson
 	url = https://github.com/miloyip/rapidjson.git
 [submodule "external/glfw"]
-	path = external/glfw
-	url = https://github.com/glfw/glfw.git
+       path = external/glfw
+       url = https://github.com/glfw/glfw.git
 
 
 

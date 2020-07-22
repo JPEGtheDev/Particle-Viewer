@@ -19,7 +19,7 @@ add_executable(Viewer
 	${DIALOG}
 	${srcCPP}
 	${srcHPP}
-	external/glad/src/glad.c
+	src/glad/src/glad.c
 )
 option(GLFW_BUILD_DOCS OFF)
 option(GLFW_BUILD_EXAMPLES OFF)
@@ -30,7 +30,7 @@ target_link_libraries(Viewer ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES}  )
 target_include_directories(Viewer PUBLIC
 	external
 	external/glm
-	external/glad/include
+	src/glad/include
 	external/rapidjson/include
 	external/glfw/include
 )
