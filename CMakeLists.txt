@@ -31,7 +31,6 @@ target_include_directories(Viewer PUBLIC
 	external
 	external/glm
 	src/glad/include
-	external/rapidjson/include
 	external/glfw/include
 )
 

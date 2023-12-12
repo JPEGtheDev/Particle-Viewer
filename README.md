@@ -1,9 +1,4 @@
 # Particle-Viewer 
-## Build Status:
-
-[![Build Status](https://travis-ci.org/JPEGtheDev/Particle-Viewer.svg?branch=master)](https://travis-ci.org/JPEGtheDev/Particle-Viewer)
-[![Build status](https://ci.appveyor.com/api/projects/status/9pu5howob96kpf6w?svg=true)](https://ci.appveyor.com/project/JPEGtheDev/particle-viewer)
-___
 
 ## TL;DR: 
 A viewer for N-Body simulations.
