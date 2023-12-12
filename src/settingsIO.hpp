@@ -11,7 +11,6 @@
 #include <fstream>
 #include <sstream>
 #include "glm/glm.hpp"
-#include "glad/glad.h"
 #include "particle.hpp"
 #include "tinyFileDialogs/tinyfiledialogs.h"
 
