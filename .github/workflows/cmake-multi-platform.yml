@@ -59,7 +59,7 @@ jobs:
             if [ "$RUNNER_OS" == "Linux" ]; then
                   sudo apt-get install -y libglfw3-dev libglm-dev
             elif [ "$RUNNER_OS" == "Windows" ]; then
-                  
+              echo "$RUNNER_OS is being worked on"
             else
                   echo "$RUNNER_OS not supported"
                   exit 1
