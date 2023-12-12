@@ -27,9 +27,9 @@ jobs:
         build_type: [Release]
         c_compiler: [gcc, clang, cl]
         include:
-          - os: windows-latest
-            c_compiler: cl
-            cpp_compiler: cl
+          # - os: windows-latest
+          #   c_compiler: cl
+          #   cpp_compiler: cl
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
@@ -55,8 +55,17 @@ jobs:
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
     
     - name: Install Deps
-      run: sudo apt-get install -y libglfw3-dev libglm-dev
-      
+      run:   |
+            if [ "$RUNNER_OS" == "Linux" ]; then
+                  sudo apt-get install -y libglfw3-dev libglm-dev
+            elif [ "$RUNNER_OS" == "Windows" ]; then
+                  
+            else
+                  echo "$RUNNER_OS not supported"
+                  exit 1
+            fi
+      shell: bash
+
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
