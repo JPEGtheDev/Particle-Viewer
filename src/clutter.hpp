@@ -21,7 +21,7 @@
 	#include "particle.hpp"
 	#include "settingsIO.hpp"
 	#define STB_IMAGE_WRITE_IMPLEMENTATION
-	#include "stb/stb_image_write.h"
+	#include "stb_image_write.h"
 	#include "osFile.hpp"
     #include <GLFW/glfw3.h>
 	#ifdef _WIN32 //Windows Includes

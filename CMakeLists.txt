@@ -29,7 +29,6 @@ add_executable(Viewer
 target_link_libraries(Viewer ${CMAKE_DL_LIBS} glfw OpenGL::GL)
 
 target_include_directories(Viewer PUBLIC
-	external
 	src/glad/include
 )
 
