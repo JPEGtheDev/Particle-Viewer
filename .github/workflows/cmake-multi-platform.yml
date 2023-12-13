@@ -27,9 +27,9 @@ jobs:
         build_type: [Release]
         c_compiler: [gcc, clang, cl]
         include:
-          # - os: windows-latest
-          #   c_compiler: cl
-          #   cpp_compiler: cl
+          - os: windows-latest
+            c_compiler: cl
+            cpp_compiler: cl
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
@@ -60,10 +60,9 @@ jobs:
     - name: Install Deps
       run:   |
             if [ "$RUNNER_OS" == "Linux" ]; then
-              chmod +x ./scripts/ubuntuPreReqs.sh
               ./scripts/ubuntuPreReqs.sh
             elif [ "$RUNNER_OS" == "Windows" ]; then
-              echo "$RUNNER_OS is being worked on"
+              ./scripts/windowsPreReqs.sh
             else
                   echo "$RUNNER_OS not supported"
                   exit 1
