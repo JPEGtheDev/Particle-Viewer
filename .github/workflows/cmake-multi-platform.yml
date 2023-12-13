@@ -57,7 +57,7 @@ jobs:
     - name: Install Deps
       run:   |
             if [ "$RUNNER_OS" == "Linux" ]; then
-                  sudo apt-get install -y libglfw3-dev libglm-dev
+              ${{ github.workspace }}/scripts/ubuntuPreReqs.sh
             elif [ "$RUNNER_OS" == "Windows" ]; then
               echo "$RUNNER_OS is being worked on"
             else
