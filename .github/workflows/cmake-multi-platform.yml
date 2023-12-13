@@ -57,7 +57,8 @@ jobs:
     - name: Install Deps
       run:   |
             if [ "$RUNNER_OS" == "Linux" ]; then
-              ${{ github.workspace }}/scripts/ubuntuPreReqs.sh
+              chmod +x ./scripts/ubuntuPreReqs.sh
+              ./scripts/ubuntuPreReqs.sh
             elif [ "$RUNNER_OS" == "Windows" ]; then
               echo "$RUNNER_OS is being worked on"
             else
