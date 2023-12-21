@@ -1,9 +1,11 @@
-cmake_minimum_required (VERSION 2.8.12)
+cmake_minimum_required (VERSION 3.18)
 project (Particle-Viewer)
 option(alloutput off)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -march=native")
 
+find_package(glfw3 3.3 REQUIRED)
+find_package(OpenGL REQUIRED)
 
 if(${alloutput})
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -Wall -W -Wshadow -Wunused-variable -Wunused-parameter -Wunused-function -Wunused -Wno-system-headers -Woverloaded-virtual -Wwrite-strings -fprofile-arcs -ftest-coverage")
@@ -20,19 +22,14 @@ add_executable(Viewer
 	${srcCPP}
 	${srcHPP}
 	src/glad/src/glad.c
-)
-option(GLFW_BUILD_DOCS OFF)
-option(GLFW_BUILD_EXAMPLES OFF)
-option(GLFW_BUILD_TESTS OFF)
-add_subdirectory(external/glfw)
-target_link_libraries(Viewer ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES}  )
+	src/glad/include/glad/glad.h
+	src/glad/include/KHR/khrplatform.h
+)   
+
+target_link_libraries(Viewer ${CMAKE_DL_LIBS} glfw OpenGL::GL)
 
 target_include_directories(Viewer PUBLIC
-	external
-	external/glm
 	src/glad/include
-	external/rapidjson/include
-	external/glfw/include
 )
 
 if(WIN32)

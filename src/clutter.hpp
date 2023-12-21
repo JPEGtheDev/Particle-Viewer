@@ -13,16 +13,17 @@
 	#include "glm/glm.hpp"
 	#include "glm/gtc/matrix_transform.hpp"
 	#include "glm/gtc/type_ptr.hpp"
-	#include "glad/glad.h"
+
+	#include <glad/glad.h>
 	#include "shader.hpp"
 	#include "camera.hpp"
 	#include "tinyFileDialogs/tinyfiledialogs.h"
 	#include "particle.hpp"
 	#include "settingsIO.hpp"
 	#define STB_IMAGE_WRITE_IMPLEMENTATION
-	#include "stb/stb_image_write.h"
-	#include <GLFW/glfw3.h>
+	#include "stb_image_write.h"
 	#include "osFile.hpp"
+    #include <GLFW/glfw3.h>
 	#ifdef _WIN32 //Windows Includes
 		#include <windows.h>
 	#endif

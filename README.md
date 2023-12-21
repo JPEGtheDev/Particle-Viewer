@@ -1,9 +1,4 @@
 # Particle-Viewer 
-## Build Status:
-
-[![Build Status](https://travis-ci.org/JPEGtheDev/Particle-Viewer.svg?branch=master)](https://travis-ci.org/JPEGtheDev/Particle-Viewer)
-[![Build status](https://ci.appveyor.com/api/projects/status/9pu5howob96kpf6w?svg=true)](https://ci.appveyor.com/project/JPEGtheDev/particle-viewer)
-___
 
 ## TL;DR: 
 A viewer for N-Body simulations.
@@ -15,11 +10,16 @@ ___
 This is a project created by Jonathan Petz for Tarleton State University's Particle Modeling Group. The purpose of this application is to view N-Body simulations in a 3D environment. The secondary purpose of this application is to take screenshots, to be compiled into a video, in order to demonstrate the particle group's findings. The final purpose of this application is to allow me to create a pseudo game engine / hone in on my OpenGl programming skills, while also providing a viewer to the TSU Particle Modeling Group.
 
 ## Currently Used Libraries:
+
+### Needs Development Libraries Installed Locally:
 * [GLFW](https://github.com/glfw/glfw) 
-* [GLAD](https://github.com/Dav1dde/glad) 
 * [GLM](https://github.com/g-truc/glm) 
+
+### Embedded
 * [stb](https://github.com/nothings/stb) 
 * [Tiny File Dialogs](http://sourceforge.net/projects/tinyfiledialogs/)
+* [GLAD](https://github.com/Dav1dde/glad) 
+
 ___
 ## Utilities Used:
 [CMAKE](https://cmake.org/")

@@ -11,12 +11,8 @@
 #include <fstream>
 #include <sstream>
 #include "glm/glm.hpp"
-#include "glad/glad.h"
 #include "particle.hpp"
 #include "tinyFileDialogs/tinyfiledialogs.h"
-#include "rapidjson/document.h"
-#include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
 
 class SettingsIO
 {
