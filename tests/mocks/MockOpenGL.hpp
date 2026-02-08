@@ -90,6 +90,12 @@ class MockOpenGL
     static void reset();
 
     /*
+     * Initialize GLAD function pointers with mock implementations.
+     * Must be called before using any OpenGL functions in tests.
+     */
+    static void initGLAD();
+
+    /*
      * Set the compile status that will be returned by mockGetShaderiv.
      * Use GL_TRUE for success, GL_FALSE for failure.
      */

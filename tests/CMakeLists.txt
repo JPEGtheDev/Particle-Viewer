@@ -2,6 +2,8 @@
 add_executable(ParticleViewerTests
     core/CameraTests.cpp
     core/ShaderTests.cpp
+    core/ParticleTests.cpp
+    core/SettingsIOTests.cpp
     mocks/MockOpenGL.cpp
 )
 
