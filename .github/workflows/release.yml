@@ -81,7 +81,7 @@ jobs:
           COMMITS=$(cat /tmp/commits.txt)
           
           # Check for breaking changes (major bump)
-          if echo "$COMMITS" | grep -qE "^(BREAKING CHANGE:|[a-z]+!:)"; then
+          if echo "$COMMITS" | grep -qE "^(BREAKING CHANGE:|[a-z]+(\([^)]*\))?!:)"; then
             echo "bump_type=major" >> $GITHUB_OUTPUT
             echo "Detected BREAKING CHANGE - major version bump"
           # Check for features (minor bump)
@@ -180,7 +180,7 @@ jobs:
           fi
           
           # Extract breaking changes
-          BREAKING=$(echo "$COMMITS" | grep -E "^(BREAKING CHANGE:|[a-z]+!:)" || true)
+          BREAKING=$(echo "$COMMITS" | grep -E "^(BREAKING CHANGE:|[a-z]+(\([^)]*\))?!:)" || true)
           if [ -n "$BREAKING" ]; then
             echo "" >> /tmp/changelog_entry.md
             echo "### BREAKING CHANGES" >> /tmp/changelog_entry.md
@@ -191,7 +191,7 @@ jobs:
           fi
           
           # Extract other changes (excluding breaking changes properly)
-          OTHER=$(echo "$COMMITS" | grep -vE "^(feat|fix)(\(.*\))?:" | grep -vE "^BREAKING CHANGE:" | grep -vE "^[a-z]+!:" || true)
+          OTHER=$(echo "$COMMITS" | grep -vE "^(feat|fix)(\(.*\))?:" | grep -vE "^BREAKING CHANGE:" | grep -vE "^[a-z]+(\([^)]*\))?!:" || true)
           if [ -n "$OTHER" ]; then
             echo "" >> /tmp/changelog_entry.md
             echo "### Changed" >> /tmp/changelog_entry.md

@@ -10,7 +10,7 @@ The project uses **automated semantic versioning** with a zero-manual release pi
 
 The project follows [Semantic Versioning 2.0.0](https://semver.org/):
 - **MAJOR** version: Breaking changes or incompatible API changes
-- **MINOR** version: New features in a backward-compatible manner  
+- **MINOR** version: New features in a backward-compatible manner
 - **PATCH** version: Backward-compatible bug fixes
 
 Current version is stored in the `VERSION` file at the repository root.

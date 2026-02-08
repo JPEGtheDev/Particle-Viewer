@@ -63,7 +63,7 @@ git commit -m "fix(camera): correct rotation calculations"
 ✅ **DO:**
 - Keep description clear and concise
 - Use present tense ("add" not "added")
-- Start with lowercase letter
+- Start description (after colon) with lowercase letter
 - Don't end with period
 
 ❌ **DON'T:**
