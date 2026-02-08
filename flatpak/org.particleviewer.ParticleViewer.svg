@@ -1,82 +1,108 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="128" height="128" version="1.1" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background circle -->
-  <circle cx="64" cy="64" r="60" fill="#2c3e50" stroke="#34495e" stroke-width="2"/>
+  <!-- Dark background -->
+  <rect width="128" height="128" fill="#000000"/>
   
-  <!-- Motion trails -->
-  <g opacity="0.3">
-    <!-- Left body trail -->
-    <ellipse cx="25" cy="64" rx="15" ry="3" fill="#3498db" opacity="0.2">
-      <animate attributeName="opacity" values="0.2;0.05;0.2" dur="2s" repeatCount="indefinite"/>
-    </ellipse>
-    <ellipse cx="30" cy="64" rx="12" ry="2.5" fill="#3498db" opacity="0.3">
-      <animate attributeName="opacity" values="0.3;0.1;0.3" dur="2s" repeatCount="indefinite"/>
-    </ellipse>
+  <!-- Define colors: Blue (0.2,0.6,1.0) = #3399FF and Orange (0.89,0.59,0) = #E39600 -->
+  
+  <!-- Scattered debris field from left body (blue particles) -->
+  <g opacity="0.8">
+    <!-- Dense cluster near collision point -->
+    <circle cx="45" cy="58" r="0.8" fill="#3399FF"/>
+    <circle cx="48" cy="62" r="0.6" fill="#3399FF"/>
+    <circle cx="42" cy="65" r="0.7" fill="#3399FF"/>
+    <circle cx="47" cy="68" r="0.5" fill="#3399FF"/>
+    <circle cx="43" cy="72" r="0.6" fill="#3399FF"/>
+    <circle cx="50" cy="55" r="0.7" fill="#3399FF"/>
+    <circle cx="46" cy="75" r="0.5" fill="#3399FF"/>
     
-    <!-- Right body trail -->
-    <ellipse cx="103" cy="64" rx="15" ry="3" fill="#e74c3c" opacity="0.2">
-      <animate attributeName="opacity" values="0.2;0.05;0.2" dur="2s" repeatCount="indefinite"/>
-    </ellipse>
-    <ellipse cx="98" cy="64" rx="12" ry="2.5" fill="#e74c3c" opacity="0.3">
-      <animate attributeName="opacity" values="0.3;0.1;0.3" dur="2s" repeatCount="indefinite"/>
-    </ellipse>
+    <!-- Medium spread -->
+    <circle cx="35" cy="50" r="0.6" fill="#3399FF" opacity="0.7"/>
+    <circle cx="38" cy="54" r="0.5" fill="#3399FF" opacity="0.7"/>
+    <circle cx="32" cy="58" r="0.7" fill="#3399FF" opacity="0.7"/>
+    <circle cx="36" cy="62" r="0.6" fill="#3399FF" opacity="0.7"/>
+    <circle cx="30" cy="66" r="0.5" fill="#3399FF" opacity="0.7"/>
+    <circle cx="34" cy="70" r="0.6" fill="#3399FF" opacity="0.7"/>
+    <circle cx="28" cy="74" r="0.5" fill="#3399FF" opacity="0.7"/>
+    <circle cx="40" cy="48" r="0.5" fill="#3399FF" opacity="0.7"/>
+    <circle cx="38" cy="76" r="0.5" fill="#3399FF" opacity="0.7"/>
+    
+    <!-- Wide dispersal -->
+    <circle cx="22" cy="45" r="0.4" fill="#3399FF" opacity="0.5"/>
+    <circle cx="25" cy="52" r="0.4" fill="#3399FF" opacity="0.5"/>
+    <circle cx="18" cy="60" r="0.5" fill="#3399FF" opacity="0.5"/>
+    <circle cx="20" cy="68" r="0.4" fill="#3399FF" opacity="0.5"/>
+    <circle cx="24" cy="76" r="0.4" fill="#3399FF" opacity="0.5"/>
+    <circle cx="15" cy="72" r="0.3" fill="#3399FF" opacity="0.5"/>
+    <circle cx="28" cy="42" r="0.4" fill="#3399FF" opacity="0.5"/>
+    <circle cx="26" cy="80" r="0.3" fill="#3399FF" opacity="0.5"/>
   </g>
   
-  <!-- Collision impact burst (at center) -->
+  <!-- Scattered debris field from right body (orange particles) -->
+  <g opacity="0.8">
+    <!-- Dense cluster near collision point -->
+    <circle cx="83" cy="58" r="0.8" fill="#E39600"/>
+    <circle cx="80" cy="62" r="0.6" fill="#E39600"/>
+    <circle cx="86" cy="65" r="0.7" fill="#E39600"/>
+    <circle cx="81" cy="68" r="0.5" fill="#E39600"/>
+    <circle cx="85" cy="72" r="0.6" fill="#E39600"/>
+    <circle cx="78" cy="55" r="0.7" fill="#E39600"/>
+    <circle cx="82" cy="75" r="0.5" fill="#E39600"/>
+    
+    <!-- Medium spread -->
+    <circle cx="93" cy="50" r="0.6" fill="#E39600" opacity="0.7"/>
+    <circle cx="90" cy="54" r="0.5" fill="#E39600" opacity="0.7"/>
+    <circle cx="96" cy="58" r="0.7" fill="#E39600" opacity="0.7"/>
+    <circle cx="92" cy="62" r="0.6" fill="#E39600" opacity="0.7"/>
+    <circle cx="98" cy="66" r="0.5" fill="#E39600" opacity="0.7"/>
+    <circle cx="94" cy="70" r="0.6" fill="#E39600" opacity="0.7"/>
+    <circle cx="100" cy="74" r="0.5" fill="#E39600" opacity="0.7"/>
+    <circle cx="88" cy="48" r="0.5" fill="#E39600" opacity="0.7"/>
+    <circle cx="90" cy="76" r="0.5" fill="#E39600" opacity="0.7"/>
+    
+    <!-- Wide dispersal -->
+    <circle cx="106" cy="45" r="0.4" fill="#E39600" opacity="0.5"/>
+    <circle cx="103" cy="52" r="0.4" fill="#E39600" opacity="0.5"/>
+    <circle cx="110" cy="60" r="0.5" fill="#E39600" opacity="0.5"/>
+    <circle cx="108" cy="68" r="0.4" fill="#E39600" opacity="0.5"/>
+    <circle cx="104" cy="76" r="0.4" fill="#E39600" opacity="0.5"/>
+    <circle cx="113" cy="72" r="0.3" fill="#E39600" opacity="0.5"/>
+    <circle cx="100" cy="42" r="0.4" fill="#E39600" opacity="0.5"/>
+    <circle cx="102" cy="80" r="0.3" fill="#E39600" opacity="0.5"/>
+  </g>
+  
+  <!-- Central collision zone - mixed particles forming connection -->
+  <g opacity="0.9">
+    <!-- Blue particles in center -->
+    <circle cx="58" cy="60" r="0.7" fill="#3399FF"/>
+    <circle cx="60" cy="64" r="0.8" fill="#3399FF"/>
+    <circle cx="56" cy="68" r="0.6" fill="#3399FF"/>
+    <circle cx="62" cy="56" r="0.5" fill="#3399FF"/>
+    <circle cx="54" cy="72" r="0.6" fill="#3399FF"/>
+    
+    <!-- Orange particles in center -->
+    <circle cx="70" cy="60" r="0.7" fill="#E39600"/>
+    <circle cx="68" cy="64" r="0.8" fill="#E39600"/>
+    <circle cx="72" cy="68" r="0.6" fill="#E39600"/>
+    <circle cx="66" cy="56" r="0.5" fill="#E39600"/>
+    <circle cx="74" cy="72" r="0.6" fill="#E39600"/>
+    
+    <!-- Mixed zone particles -->
+    <circle cx="64" cy="58" r="0.6" fill="#3399FF" opacity="0.8"/>
+    <circle cx="64" cy="62" r="0.7" fill="#E39600" opacity="0.8"/>
+    <circle cx="64" cy="66" r="0.6" fill="#3399FF" opacity="0.8"/>
+    <circle cx="64" cy="70" r="0.5" fill="#E39600" opacity="0.8"/>
+  </g>
+  
+  <!-- Connection bridge between debris clouds -->
   <g opacity="0.6">
-    <circle cx="64" cy="64" r="20" fill="none" stroke="#f39c12" stroke-width="2">
-      <animate attributeName="r" values="5;20;5" dur="2s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.8;0.1;0.8" dur="2s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="64" cy="64" r="15" fill="none" stroke="#f1c40f" stroke-width="1.5">
-      <animate attributeName="r" values="3;15;3" dur="2s" repeatCount="indefinite" begin="0.3s"/>
-      <animate attributeName="opacity" values="0.9;0.1;0.9" dur="2s" repeatCount="indefinite" begin="0.3s"/>
-    </circle>
+    <ellipse cx="64" cy="64" rx="18" ry="8" fill="none" stroke="#3399FF" stroke-width="0.3" opacity="0.4"/>
+    <ellipse cx="64" cy="64" rx="16" ry="6" fill="none" stroke="#E39600" stroke-width="0.3" opacity="0.4"/>
   </g>
   
-  <!-- Impact particles ejecting from collision -->
-  <g opacity="0.5">
-    <!-- Particle 1 - up -->
-    <circle cx="64" cy="50" r="2" fill="#f39c12">
-      <animate attributeName="cy" values="64;45;64" dur="2s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0;0.8;0" dur="2s" repeatCount="indefinite"/>
-    </circle>
-    <!-- Particle 2 - down -->
-    <circle cx="64" cy="78" r="2" fill="#e67e22">
-      <animate attributeName="cy" values="64;83;64" dur="2s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0;0.8;0" dur="2s" repeatCount="indefinite"/>
-    </circle>
-    <!-- Particle 3 - up-right -->
-    <circle cx="72" cy="52" r="1.5" fill="#f1c40f">
-      <animate attributeName="cx" values="64;76;64" dur="2s" repeatCount="indefinite"/>
-      <animate attributeName="cy" values="64;48;64" dur="2s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0;0.8;0" dur="2s" repeatCount="indefinite"/>
-    </circle>
-    <!-- Particle 4 - down-left -->
-    <circle cx="56" cy="76" r="1.5" fill="#e67e22">
-      <animate attributeName="cx" values="64;52;64" dur="2s" repeatCount="indefinite"/>
-      <animate attributeName="cy" values="64;80;64" dur="2s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0;0.8;0" dur="2s" repeatCount="indefinite"/>
-    </circle>
+  <!-- Faint outer glow -->
+  <g opacity="0.3">
+    <circle cx="64" cy="64" r="50" fill="none" stroke="#3399FF" stroke-width="0.5" opacity="0.2"/>
+    <circle cx="64" cy="64" r="48" fill="none" stroke="#E39600" stroke-width="0.5" opacity="0.2"/>
   </g>
-  
-  <!-- Left body (blue) - moving right -->
-  <circle cx="40" cy="64" r="12" fill="#3498db" stroke="#2980b9" stroke-width="2">
-    <animate attributeName="cx" values="35;58;35" dur="2s" repeatCount="indefinite"/>
-    <animate attributeName="r" values="12;10;12" dur="2s" repeatCount="indefinite"/>
-  </circle>
-  
-  <!-- Right body (red) - moving left -->
-  <circle cx="88" cy="64" r="12" fill="#e74c3c" stroke="#c0392b" stroke-width="2">
-    <animate attributeName="cx" values="93;70;93" dur="2s" repeatCount="indefinite"/>
-    <animate attributeName="r" values="12;10;12" dur="2s" repeatCount="indefinite"/>
-  </circle>
-  
-  <!-- Highlight on bodies for 3D effect -->
-  <ellipse cx="37" cy="59" rx="4" ry="3" fill="#ffffff" opacity="0.4">
-    <animate attributeName="cx" values="32;55;32" dur="2s" repeatCount="indefinite"/>
-  </ellipse>
-  <ellipse cx="91" cy="59" rx="4" ry="3" fill="#ffffff" opacity="0.4">
-    <animate attributeName="cx" values="96;73;96" dur="2s" repeatCount="indefinite"/>
-  </ellipse>
 </svg>
