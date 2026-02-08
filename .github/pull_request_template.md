@@ -7,7 +7,7 @@
 <!-- Format: type(scope): description -->
 <!-- Examples: "feat: add color picker", "fix(camera): rotation bug" -->
 
-**Current PR title follows format?** 
+**Current PR title follows format?**
 - [ ] Yes, PR title starts with: feat, fix, docs, style, refactor, test, chore, perf, ci, build, or revert
 
 ## Type of Change
