@@ -135,8 +135,8 @@ Only after the user confirms, generate the story using this template:
 ## Effort Estimate
 
 **Total Premium Requests:** [Range, e.g., 30-40]
-**Recommended Model:** [Haiku | Sonnet 4.5 | Opus 4.6]
-**Reasoning:** [One sentence explaining complexity level and why this model]
+**Recommended Model Tier:** [Small | Standard | Advanced]
+**Reasoning:** [One sentence explaining complexity level and why this tier is appropriate]
 
 ---
 
@@ -175,7 +175,7 @@ Only after the user confirms, generate the story using this template:
 ## Definition of Done
 
 - [ ] Code written and peer-reviewed
-- [ ] Unit tests pass (min. 80% coverage on new code)
+- [ ] Unit tests pass (min. 85% coverage on new code)
 - [ ] No new linter/compiler warnings
 - [ ] Documentation updated
 - [ ] Integration tested
@@ -229,28 +229,25 @@ For every story, estimate the **total premium requests** needed for implementati
 
 ### Model Selection Guidelines
 
-**Haiku (Claude 3.5 Haiku):**
-- Simple, straightforward tasks
-- Well-defined patterns with clear examples
-- Basic file operations, configuration
-- Shell scripts, simple utilities
-- When: Task requires speed over deep reasoning
-- Examples: PPM→PNG conversion, simple bash scripts
+**Small (Lightweight model):**
+- Simple, well-defined tasks
+- Straightforward patterns with clear examples
+- Basic file operations, simple utilities
+- When: Task requires speed and minimal context
+- Examples: PPM→PNG conversion, simple scripts
 
-**Sonnet 4.5 (Claude 3.5 Sonnet v2):**
+**Standard (Mid-level model):**
 - Standard implementation work
-- Moderate complexity algorithms
-- Test writing, CI/CD setup
-- Most feature development
+- Moderate complexity and integration
+- Test writing, CI/CD setup, feature development
 - When: Balanced complexity and context understanding needed
 - Examples: Pixel comparator, Google Test integration, most features
 
-**Opus 4.6 (Claude 3 Opus - latest):**
-- Complex architectural decisions
-- Deep refactoring requiring codebase understanding
-- Novel algorithm design
-- Multi-system integration with unclear patterns
-- When: Task requires deep reasoning and architectural insight
+**Advanced (Deep-reasoning model):**
+- Architectural decisions and deep refactoring
+- Complex integration across subsystems
+- Novel design and trade-off analysis
+- When: Task requires deep reasoning and architecture-level decisions
 - Examples: Dependency injection, global state elimination, layer separation
 
 ### Estimation Process
@@ -271,19 +268,19 @@ When estimating, consider:
 
 ### Example Estimates
 
-**Framebuffer Capture (M, Sonnet 4.5, 30-40 requests):**
+**Framebuffer Capture (M, Standard, 30-40 requests):**
 - Implementation: 15-20 requests (OpenGL capture, PPM writing, vertical flip)
 - Testing: 8-12 requests (unit tests, headless validation)
 - Iteration: 5-6 requests (edge cases, performance tweaks)
 - Docs: 2-3 requests (API comments, README update)
 
-**Global State Elimination (L, Opus 4.6, 80-100 requests):**
+**Global State Elimination (L, Advanced, 80-100 requests):**
 - Implementation: 40-50 requests (manager classes, RAII, dependency wiring)
 - Testing: 20-25 requests (unit tests for all managers, integration tests)
 - Iteration: 15-20 requests (fixing circular deps, refactoring existing code)
 - Docs: 5-8 requests (architecture diagrams, migration guide)
 
-**Add & Enforce Coding Standards (S, Sonnet 4.5, estimated 20-25, actual 3 requests):**
+**Add & Enforce Coding Standards (S, Standard, estimated 20-25, actual 3 requests):**
 - *Real-world data from #27:* Foundation work was simpler than anticipated once style guide was in place
 - Shows that some "foundational" work can be lighter than expected if prerequisites are clear
 - Note: Consider if the story is setting up something else (will later stories be larger?)
@@ -419,8 +416,8 @@ If a story violates INVEST, fix it or suggest breaking it down.
 
 ### Include Concrete Details for Particle-Viewer
 When generating stories for this project:
-- Reference specific files: `src/graphics/FramebufferCapture.hpp`
-- Use project naming: PascalCase for classes, snake_case for files
+- Reference specific files (use existing filenames when possible): e.g., `src/settingsIO.hpp`, `src/osFile.hpp`. For refactor target-state, propose snake_case files such as `src/graphics/framebuffer_capture.hpp`.
+- Use project naming: PascalCase for classes (e.g., `FramebufferCapture`); keep current filenames as-is for existing code, adopt snake_case for new/target-state files (e.g., `framebuffer_capture.hpp`)
 - Include CI requirements: "Pass on GitHub Actions with Xvfb + Mesa"
 - Specify test framework: GoogleTest in `tests/` directory
 
@@ -467,7 +464,7 @@ After you've had the conversation and before generating, mentally verify you hav
 
 **Always include the Effort Estimate section** with:
 - Total premium requests (range)
-- Recommended model (Haiku/Sonnet 4.5/Opus 4.6)
+- Recommended model tier (Small/Standard/Advanced)
 - One-sentence reasoning for the model choice
 
 ## After Generating the Story
