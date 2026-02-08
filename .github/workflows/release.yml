@@ -1,0 +1,282 @@
+name: Automated Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'Version bump type (leave empty for auto-detection from commits)'
+        required: false
+        type: choice
+        options:
+          - ''
+          - major
+          - minor
+          - patch
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - 'VERSION'
+      - 'CHANGELOG.md'
+
+# Prevent concurrent releases
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for changelog generation
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      
+      - name: Read current version
+        id: current_version
+        run: |
+          CURRENT_VERSION=$(cat VERSION)
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $CURRENT_VERSION"
+      
+      - name: Get commit messages since last tag
+        id: commits
+        run: |
+          # Get last tag or use initial commit if no tags exist
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)
+          echo "last_tag=$LAST_TAG" >> $GITHUB_OUTPUT
+          
+          # Get commit messages since last tag
+          COMMITS=$(git log $LAST_TAG..HEAD --pretty=format:"%s" || git log --pretty=format:"%s")
+          
+          # Save commits to file for multiline handling
+          echo "$COMMITS" > /tmp/commits.txt
+          
+          echo "Commits since last release:"
+          cat /tmp/commits.txt
+      
+      - name: Determine version bump
+        id: bump
+        run: |
+          # Check for manual override
+          MANUAL_BUMP="${{ github.event.inputs.bump_type }}"
+          if [ -n "$MANUAL_BUMP" ]; then
+            echo "bump_type=$MANUAL_BUMP" >> $GITHUB_OUTPUT
+            echo "Using manual bump type: $MANUAL_BUMP"
+            exit 0
+          fi
+          
+          # Auto-detect from commits
+          COMMITS=$(cat /tmp/commits.txt)
+          
+          # Check for breaking changes (major bump)
+          if echo "$COMMITS" | grep -qiE "^(BREAKING CHANGE:|feat!:|fix!:|.*!:)"; then
+            echo "bump_type=major" >> $GITHUB_OUTPUT
+            echo "Detected BREAKING CHANGE - major version bump"
+          # Check for features (minor bump)
+          elif echo "$COMMITS" | grep -qiE "^feat(\(.*\))?:"; then
+            echo "bump_type=minor" >> $GITHUB_OUTPUT
+            echo "Detected new features - minor version bump"
+          # Check for fixes (patch bump)
+          elif echo "$COMMITS" | grep -qiE "^fix(\(.*\))?:"; then
+            echo "bump_type=patch" >> $GITHUB_OUTPUT
+            echo "Detected bug fixes - patch version bump"
+          # Default to patch for any other commits
+          else
+            echo "bump_type=patch" >> $GITHUB_OUTPUT
+            echo "No conventional commits detected - defaulting to patch version bump"
+          fi
+      
+      - name: Calculate new version
+        id: new_version
+        run: |
+          CURRENT="${{ steps.current_version.outputs.version }}"
+          BUMP="${{ steps.bump.outputs.bump_type }}"
+          
+          # Parse current version
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+          
+          # Increment based on bump type
+          case $BUMP in
+            major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            patch)
+              PATCH=$((PATCH + 1))
+              ;;
+          esac
+          
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "New version: $NEW_VERSION (bump type: $BUMP)"
+      
+      - name: Check if version changed
+        id: version_check
+        run: |
+          if [ "${{ steps.current_version.outputs.version }}" == "${{ steps.new_version.outputs.version }}" ]; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "Version unchanged - skipping release"
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Version changed - proceeding with release"
+          fi
+      
+      - name: Generate changelog entry
+        if: steps.version_check.outputs.changed == 'true'
+        id: changelog
+        run: |
+          LAST_TAG="${{ steps.commits.outputs.last_tag }}"
+          NEW_VERSION="${{ steps.new_version.outputs.version }}"
+          DATE=$(date +%Y-%m-%d)
+          
+          # Create changelog entry
+          cat > /tmp/changelog_entry.md << 'CHANGELOG_EOF'
+          ## [$NEW_VERSION] - $DATE
+          
+          CHANGELOG_EOF
+          
+          # Replace variables
+          sed -i "s/\$NEW_VERSION/$NEW_VERSION/g" /tmp/changelog_entry.md
+          sed -i "s/\$DATE/$DATE/g" /tmp/changelog_entry.md
+          
+          # Parse commits by type
+          COMMITS=$(cat /tmp/commits.txt)
+          
+          # Extract features
+          FEATURES=$(echo "$COMMITS" | grep -iE "^feat(\(.*\))?:" || true)
+          if [ -n "$FEATURES" ]; then
+            echo "" >> /tmp/changelog_entry.md
+            echo "### Added" >> /tmp/changelog_entry.md
+            while IFS= read -r line; do
+              # Remove "feat:" or "feat(scope):" prefix
+              MSG=$(echo "$line" | sed -E 's/^feat(\([^)]*\))?:\s*//')
+              echo "- $MSG" >> /tmp/changelog_entry.md
+            done <<< "$FEATURES"
+          fi
+          
+          # Extract fixes
+          FIXES=$(echo "$COMMITS" | grep -iE "^fix(\(.*\))?:" || true)
+          if [ -n "$FIXES" ]; then
+            echo "" >> /tmp/changelog_entry.md
+            echo "### Fixed" >> /tmp/changelog_entry.md
+            while IFS= read -r line; do
+              # Remove "fix:" or "fix(scope):" prefix
+              MSG=$(echo "$line" | sed -E 's/^fix(\([^)]*\))?:\s*//')
+              echo "- $MSG" >> /tmp/changelog_entry.md
+            done <<< "$FIXES"
+          fi
+          
+          # Extract breaking changes
+          BREAKING=$(echo "$COMMITS" | grep -iE "^(BREAKING CHANGE:|.*!:)" || true)
+          if [ -n "$BREAKING" ]; then
+            echo "" >> /tmp/changelog_entry.md
+            echo "### BREAKING CHANGES" >> /tmp/changelog_entry.md
+            while IFS= read -r line; do
+              MSG=$(echo "$line" | sed -E 's/^[^:]*!?:\s*//')
+              echo "- $MSG" >> /tmp/changelog_entry.md
+            done <<< "$BREAKING"
+          fi
+          
+          # Extract other changes
+          OTHER=$(echo "$COMMITS" | grep -viE "^(feat|fix)(\(.*\))?:" | grep -viE "^BREAKING CHANGE:" | grep -viE "!:" || true)
+          if [ -n "$OTHER" ]; then
+            echo "" >> /tmp/changelog_entry.md
+            echo "### Changed" >> /tmp/changelog_entry.md
+            while IFS= read -r line; do
+              echo "- $line" >> /tmp/changelog_entry.md
+            done <<< "$OTHER"
+          fi
+          
+          echo "" >> /tmp/changelog_entry.md
+          
+          # Display the generated changelog
+          echo "Generated changelog entry:"
+          cat /tmp/changelog_entry.md
+      
+      - name: Update VERSION file
+        if: steps.version_check.outputs.changed == 'true'
+        run: |
+          echo "${{ steps.new_version.outputs.version }}" > VERSION
+          echo "Updated VERSION file to ${{ steps.new_version.outputs.version }}"
+      
+      - name: Update CHANGELOG.md
+        if: steps.version_check.outputs.changed == 'true'
+        run: |
+          # Insert new changelog entry after the [Unreleased] section
+          NEW_ENTRY=$(cat /tmp/changelog_entry.md)
+          
+          # Create temporary file with updated changelog
+          awk -v entry="$NEW_ENTRY" '
+            /^## \[Unreleased\]/ {
+              print $0
+              print ""
+              print entry
+              next
+            }
+            { print }
+          ' CHANGELOG.md > /tmp/CHANGELOG_new.md
+          
+          mv /tmp/CHANGELOG_new.md CHANGELOG.md
+          echo "Updated CHANGELOG.md"
+      
+      - name: Commit version bump
+        if: steps.version_check.outputs.changed == 'true'
+        run: |
+          git add VERSION CHANGELOG.md
+          git commit -m "chore(release): bump version to ${{ steps.new_version.outputs.version }} [skip ci]"
+          git push origin master
+          echo "Committed and pushed version bump"
+      
+      - name: Create Git tag
+        if: steps.version_check.outputs.changed == 'true'
+        run: |
+          TAG="v${{ steps.new_version.outputs.version }}"
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+          echo "Created and pushed tag: $TAG"
+      
+      - name: Create GitHub Release
+        if: steps.version_check.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="v${{ steps.new_version.outputs.version }}"
+          CHANGELOG_ENTRY=$(cat /tmp/changelog_entry.md)
+          
+          # Create release with changelog as body
+          gh release create "$TAG" \
+            --title "Release $TAG" \
+            --notes "$CHANGELOG_ENTRY" \
+            --target master
+          
+          echo "Created GitHub release: $TAG"
+      
+      - name: Release Summary
+        if: always()
+        run: |
+          if [ "${{ steps.version_check.outputs.changed }}" == "true" ]; then
+            echo "✅ Release completed successfully!"
+            echo "   - Previous version: ${{ steps.current_version.outputs.version }}"
+            echo "   - New version: ${{ steps.new_version.outputs.version }}"
+            echo "   - Bump type: ${{ steps.bump.outputs.bump_type }}"
+            echo "   - Tag: v${{ steps.new_version.outputs.version }}"
+          else
+            echo "ℹ️ No version change detected - release skipped"
+          fi

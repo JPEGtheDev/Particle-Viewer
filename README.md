@@ -33,7 +33,16 @@ We welcome contributions! Please follow our [Coding Standards](docs/CODING_STAND
 - Code formatting is enforced via `clang-format` (see `.clang-format`)
 - Static analysis via `clang-tidy` (see `.clang-tidy`)
 - Follow Microsoft C++ Core Guidelines
+- Use [Conventional Commits](https://www.conventionalcommits.org/) for all commit messages
 - All pull requests are checked automatically in CI
+
+## Releases
+
+This project uses **automated semantic versioning** with zero-manual releases. See [Release Process](docs/RELEASE_PROCESS.md) for details on:
+- How versions are automatically determined from commit messages
+- Conventional commit format for controlling version bumps
+- Automated changelog generation
+- Release workflow and best practices
 
 ___
 
