@@ -8,6 +8,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Integration Tests**: Comprehensive integration test suite for viewer pipelines
+  - Created `tests/integration/` directory for pipeline tests
+  - **Data Loading Pipeline Tests** (15 tests): SettingsIO → Particle data flow
+    - Frame loading and position/velocity verification
+    - Frame boundary testing (clamping, playback state)
+    - Sequential and random frame access
+    - Multi-frame consistency verification
+  - **Shader Pipeline Tests** (15 tests): Shader compilation and linking workflow
+    - Full pipeline from file loading to shader use
+    - Shader creation, compilation, attachment, and linking verification
+    - Error handling for compilation and link failures
+    - Multiple shader program management
+  - **Frame Playback Tests** (20 tests): Frame playback and seeking
+    - Playback state management (toggle, boundary detection)
+    - Frame seeking (forward, backward, random access)
+    - Continuous playback simulation
+    - Velocity data loading with frame advancement
+
+- **Coverage Enforcement in CI**: Quality gates for code coverage
+  - 80% minimum line coverage threshold enforced in CI
+  - CI fails if coverage drops below threshold
+  - Coverage delta reporting on pull requests
+  - Third-party code excluded from coverage (glad, stb_*, tinyFileDialogs)
+  - HTML, JSON, and text coverage reports generated
+  - Coverage comments automatically posted on PRs
+
+- **Integration Test Documentation**: Created `docs/testing/integration-tests.md`
+  - How to run integration tests locally
+  - How to add new integration tests
+  - Test organization and naming conventions
+  - Troubleshooting common test failures
+
 - **Unit Testing Infrastructure**: Comprehensive unit testing framework using Google Test
   - Created `docs/TESTING_STANDARDS.md` with AAA (Arrange-Act-Assert) pattern guidelines
   - Established "one reason to fail" principle for test design

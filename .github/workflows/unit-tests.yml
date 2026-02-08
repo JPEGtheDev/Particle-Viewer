@@ -6,6 +6,10 @@ on:
   push:
     branches: [ "master" ]
 
+# Minimum coverage threshold for enforcement
+env:
+  COVERAGE_THRESHOLD: 80
+
 jobs:
   test:
     runs-on: ${{ matrix.os }}
@@ -13,6 +17,7 @@ jobs:
     permissions:
       contents: read
       checks: write
+      pull-requests: write
 
     strategy:
       fail-fast: false
@@ -30,6 +35,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Needed for coverage comparison
 
     - name: Set reusable strings
       id: strings
@@ -57,6 +64,7 @@ jobs:
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -DBUILD_TESTS=ON
+        -Dalloutput=${{ matrix.build_type == 'Debug' && matrix.c_compiler == 'gcc' && 'ON' || 'OFF' }}
         -S ${{ github.workspace }}
 
     - name: Build
@@ -68,30 +76,120 @@ jobs:
 
     - name: Generate Coverage Report (Debug only)
       if: matrix.build_type == 'Debug' && matrix.c_compiler == 'gcc'
+      id: coverage
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: |
         # Install gcovr if not available
         sudo apt-get update
         sudo apt-get install -y gcovr
         
-        # Generate coverage report
+        # Generate coverage report with JSON for parsing
         gcovr --root ${{ github.workspace }} \
               --filter '${{ github.workspace }}/src/' \
               --exclude '${{ github.workspace }}/src/glad/' \
               --exclude '${{ github.workspace }}/src/stb_*' \
               --exclude '${{ github.workspace }}/src/tinyFileDialogs/' \
               --print-summary \
-              --txt coverage.txt
+              --json coverage.json \
+              --txt coverage.txt \
+              --html coverage.html
         
         # Display coverage summary
+        echo "=== Coverage Summary ==="
         cat coverage.txt
+        
+        # Extract line coverage percentage from JSON for enforcement
+        LINE_COVERAGE=$(python3 -c "import json; data=json.load(open('coverage.json')); print(round(data['line_percent'], 2) if 'line_percent' in data else 0)")
+        echo "Line coverage: ${LINE_COVERAGE}%"
+        echo "line_coverage=${LINE_COVERAGE}" >> "$GITHUB_OUTPUT"
+        
+        # Extract branch coverage if available
+        BRANCH_COVERAGE=$(python3 -c "import json; data=json.load(open('coverage.json')); print(round(data.get('branch_percent', 0), 2))")
+        echo "Branch coverage: ${BRANCH_COVERAGE}%"
+        echo "branch_coverage=${BRANCH_COVERAGE}" >> "$GITHUB_OUTPUT"
+
+    - name: Enforce Coverage Threshold
+      if: matrix.build_type == 'Debug' && matrix.c_compiler == 'gcc'
+      run: |
+        LINE_COVERAGE=${{ steps.coverage.outputs.line_coverage }}
+        THRESHOLD=${{ env.COVERAGE_THRESHOLD }}
+        
+        echo "Line coverage: ${LINE_COVERAGE}%"
+        echo "Threshold: ${THRESHOLD}%"
+        
+        # Compare as integers to avoid floating point issues
+        LINE_INT=$(echo "${LINE_COVERAGE}" | cut -d. -f1)
+        
+        if [ "${LINE_INT}" -lt "${THRESHOLD}" ]; then
+          echo "❌ Coverage ${LINE_COVERAGE}% is below threshold ${THRESHOLD}%"
+          exit 1
+        else
+          echo "✅ Coverage ${LINE_COVERAGE}% meets threshold ${THRESHOLD}%"
+        fi
+
+    - name: Comment Coverage on PR
+      if: matrix.build_type == 'Debug' && matrix.c_compiler == 'gcc' && github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const lineCoverage = '${{ steps.coverage.outputs.line_coverage }}';
+          const branchCoverage = '${{ steps.coverage.outputs.branch_coverage }}';
+          const threshold = '${{ env.COVERAGE_THRESHOLD }}';
+          
+          const coverageInt = parseInt(lineCoverage);
+          const thresholdInt = parseInt(threshold);
+          const status = coverageInt >= thresholdInt ? '✅' : '❌';
+          
+          const body = `## 📊 Code Coverage Report
+          
+          | Metric | Value | Status |
+          |--------|-------|--------|
+          | Line Coverage | ${lineCoverage}% | ${status} |
+          | Branch Coverage | ${branchCoverage}% | - |
+          | Threshold | ${threshold}% | - |
+          
+          ${coverageInt >= thresholdInt ? '✅ Coverage meets threshold!' : '❌ Coverage is below threshold!'}
+          
+          > Third-party code excluded: glad, stb_*, tinyFileDialogs
+          `;
+          
+          // Find existing comment
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          });
+          
+          const botComment = comments.find(comment => 
+            comment.user.type === 'Bot' && 
+            comment.body.includes('Code Coverage Report')
+          );
+          
+          if (botComment) {
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: botComment.id,
+              body: body
+            });
+          } else {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+          }
 
     - name: Upload Coverage Report
       if: matrix.build_type == 'Debug' && matrix.c_compiler == 'gcc'
       uses: actions/upload-artifact@v4
       with:
         name: coverage-report
-        path: ${{ steps.strings.outputs.build-output-dir }}/coverage.txt
+        path: |
+          ${{ steps.strings.outputs.build-output-dir }}/coverage.txt
+          ${{ steps.strings.outputs.build-output-dir }}/coverage.html
+          ${{ steps.strings.outputs.build-output-dir }}/coverage.json
 
     - name: Check Test Results
       if: always()
