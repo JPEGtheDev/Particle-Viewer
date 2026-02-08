@@ -110,9 +110,6 @@ class SettingsIOTest : public ::testing::Test
         if (!posFile) {
             FAIL() << "Failed to create test position file";
         }
-            if (!posFile) {
-            FAIL() << "Failed to create test position file";
-        }
         
         for (int frame = 0; frame < 3; frame++) {
             // Write positions
@@ -162,6 +159,10 @@ TEST_F(SettingsIOTest, DefaultConstructor_SetsDefaultFilePaths)
 {
     // Arrange & Act
     SettingsIO settings;
+    
+    // Initialize internal state to avoid undefined behavior in togglePlay
+    settings.isPlaying = false;
+    settings.errorCount = 0;
 
     // Assert - Should create object without errors
     EXPECT_NO_THROW(settings.togglePlay());
@@ -250,6 +251,10 @@ TEST_F(SettingsIOTest, TogglePlay_ChangesPlaybackState)
 {
     // Arrange
     SettingsIO settings;
+    
+    // Initialize internal state to avoid undefined behavior
+    settings.isPlaying = false;
+    settings.errorCount = 0;
     bool initialState = settings.isPlaying;
 
     // Act

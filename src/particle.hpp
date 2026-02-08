@@ -22,6 +22,7 @@ class Particle
     Particle()
     {
         n = 64000;
+        instanceVBO = 0;  // Initialize before setUpInstanceBuffer to avoid undefined behavior
         translations = new glm::vec4[n];
         velocities = new glm::vec4[1];
         for (int i = 0; i < n; i++) {
@@ -37,6 +38,7 @@ class Particle
     Particle(long N, glm::vec4* trans)
     {
         n = N;
+        instanceVBO = 0;  // Initialize before setUpInstanceBuffer to avoid undefined behavior
         translations = trans;
         velocities = new glm::vec4[N];
         setUpInstanceBuffer();

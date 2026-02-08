@@ -18,6 +18,7 @@ jobs:
       contents: read
       checks: write
       pull-requests: write
+      issues: write
 
     strategy:
       fail-fast: false
@@ -36,7 +37,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        fetch-depth: 0  # Needed for coverage comparison
+        fetch-depth: 0  # Fetch full history for version detection
 
     - name: Set reusable strings
       id: strings

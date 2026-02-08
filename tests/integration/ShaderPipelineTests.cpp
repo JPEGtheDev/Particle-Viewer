@@ -23,7 +23,7 @@ class ShaderPipelineTest : public ::testing::Test
     void SetUp() override
     {
         MockOpenGL::reset();
-        initializeMockGLAD();
+        MockOpenGL::initGLAD();  // Use centralized mock initialization for Windows compatibility
         createTestShaderFiles();
     }
 
@@ -32,44 +32,14 @@ class ShaderPipelineTest : public ::testing::Test
         removeTestShaderFiles();
     }
 
-    // Initialize GLAD function pointers with mock implementations
-    void initializeMockGLAD()
-    {
-        // Set up all required OpenGL function pointers to use mocks
-        glCreateProgram = []() -> GLuint { return MockOpenGL::mockCreateProgram(); };
-        glCreateShader = [](GLenum type) -> GLuint { return MockOpenGL::mockCreateShader(type); };
-        glShaderSource = [](GLuint shader, GLsizei count, const GLchar* const* string, const GLint* length) {
-            MockOpenGL::mockShaderSource(shader, count, string, length);
-        };
-        glCompileShader = [](GLuint shader) { MockOpenGL::mockCompileShader(shader); };
-        glGetShaderiv = [](GLuint shader, GLenum pname, GLint* params) {
-            MockOpenGL::mockGetShaderiv(shader, pname, params);
-        };
-        glGetShaderInfoLog = [](GLuint shader, GLsizei maxLength, GLsizei* length, GLchar* infoLog) {
-            // Return empty info log for successful compilation
-            if (length) *length = 0;
-            if (infoLog && maxLength > 0) infoLog[0] = '\0';
-        };
-        glAttachShader = [](GLuint program, GLuint shader) {
-            MockOpenGL::mockAttachShader(program, shader);
-        };
-        glLinkProgram = [](GLuint program) { MockOpenGL::mockLinkProgram(program); };
-        glGetProgramiv = [](GLuint program, GLenum pname, GLint* params) {
-            MockOpenGL::mockGetProgramiv(program, pname, params);
-        };
-        glGetProgramInfoLog = [](GLuint program, GLsizei maxLength, GLsizei* length, GLchar* infoLog) {
-            if (length) *length = 0;
-            if (infoLog && maxLength > 0) infoLog[0] = '\0';
-        };
-        glDeleteShader = [](GLuint shader) { MockOpenGL::mockDeleteShader(shader); };
-        glUseProgram = [](GLuint program) { MockOpenGL::mockUseProgram(program); };
-    }
-
-    // Create test shader files
+    // Create test shader files with file open verification
     void createTestShaderFiles()
     {
         // Valid vertex shader
         std::ofstream vertFile("/tmp/integration_vertex.vs");
+        if (!vertFile.is_open()) {
+            FAIL() << "Failed to create test vertex shader file";
+        }
         vertFile << "#version 330 core\n";
         vertFile << "layout (location = 0) in vec3 position;\n";
         vertFile << "uniform mat4 model;\n";
@@ -83,6 +53,9 @@ class ShaderPipelineTest : public ::testing::Test
 
         // Valid fragment shader
         std::ofstream fragFile("/tmp/integration_fragment.frag");
+        if (!fragFile.is_open()) {
+            FAIL() << "Failed to create test fragment shader file";
+        }
         fragFile << "#version 330 core\n";
         fragFile << "out vec4 FragColor;\n";
         fragFile << "uniform vec3 objectColor;\n";
@@ -94,12 +67,18 @@ class ShaderPipelineTest : public ::testing::Test
 
         // Minimal vertex shader
         std::ofstream minVertFile("/tmp/integration_minimal.vs");
+        if (!minVertFile.is_open()) {
+            FAIL() << "Failed to create test minimal vertex shader file";
+        }
         minVertFile << "#version 330 core\n";
         minVertFile << "void main() { gl_Position = vec4(0.0); }\n";
         minVertFile.close();
 
         // Minimal fragment shader
         std::ofstream minFragFile("/tmp/integration_minimal.frag");
+        if (!minFragFile.is_open()) {
+            FAIL() << "Failed to create test minimal fragment shader file";
+        }
         minFragFile << "#version 330 core\n";
         minFragFile << "out vec4 color;\n";
         minFragFile << "void main() { color = vec4(1.0); }\n";

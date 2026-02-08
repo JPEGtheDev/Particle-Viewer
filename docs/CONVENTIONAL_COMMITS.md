@@ -76,9 +76,8 @@ git commit -m "fix(camera): correct rotation calculations"
 When you push to master:
 1. GitHub Actions analyzes your commits
 2. Determines version bump (major/minor/patch)
-3. Updates VERSION and CHANGELOG.md
-4. Creates git tag (e.g., v0.2.0)
-5. Publishes GitHub release
+3. Creates git tag (e.g., v0.2.0)
+4. Publishes GitHub release with auto-generated changelog
 
 ## More Information
 

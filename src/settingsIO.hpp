@@ -240,9 +240,7 @@ class SettingsIO
         frames = getFrames();
     }
 
-    ~SettingsIO()
-    {
-    }
+    ~SettingsIO() = default;
 
     /*
      * Reads positions and velocities from a file at a specific frame

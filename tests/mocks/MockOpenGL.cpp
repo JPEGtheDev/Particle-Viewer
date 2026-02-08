@@ -254,14 +254,97 @@ static void APIENTRY mock_glVertexAttribDivisor(GLuint index, GLuint divisor)
     // No-op for testing
 }
 
+// ============================================
+// Mock GL Shader Functions (APIENTRY for Windows compatibility)
+// ============================================
+
+static GLuint APIENTRY mock_glCreateProgram()
+{
+    return MockOpenGL::mockCreateProgram();
+}
+
+static GLuint APIENTRY mock_glCreateShader(GLenum shaderType)
+{
+    return MockOpenGL::mockCreateShader(shaderType);
+}
+
+static void APIENTRY mock_glShaderSource(GLuint shader, GLsizei count, const GLchar* const* string, const GLint* length)
+{
+    MockOpenGL::mockShaderSource(shader, count, string, length);
+}
+
+static void APIENTRY mock_glCompileShader(GLuint shader)
+{
+    MockOpenGL::mockCompileShader(shader);
+}
+
+static void APIENTRY mock_glGetShaderiv(GLuint shader, GLenum pname, GLint* params)
+{
+    MockOpenGL::mockGetShaderiv(shader, pname, params);
+}
+
+static void APIENTRY mock_glGetShaderInfoLog(GLuint shader, GLsizei maxLength, GLsizei* length, GLchar* infoLog)
+{
+    // Return empty info log for successful compilation
+    if (length) *length = 0;
+    if (infoLog && maxLength > 0) infoLog[0] = '\0';
+}
+
+static void APIENTRY mock_glAttachShader(GLuint program, GLuint shader)
+{
+    MockOpenGL::mockAttachShader(program, shader);
+}
+
+static void APIENTRY mock_glLinkProgram(GLuint program)
+{
+    MockOpenGL::mockLinkProgram(program);
+}
+
+static void APIENTRY mock_glGetProgramiv(GLuint program, GLenum pname, GLint* params)
+{
+    MockOpenGL::mockGetProgramiv(program, pname, params);
+}
+
+static void APIENTRY mock_glGetProgramInfoLog(GLuint program, GLsizei maxLength, GLsizei* length, GLchar* infoLog)
+{
+    if (length) *length = 0;
+    if (infoLog && maxLength > 0) infoLog[0] = '\0';
+}
+
+static void APIENTRY mock_glDeleteShader(GLuint shader)
+{
+    MockOpenGL::mockDeleteShader(shader);
+}
+
+static void APIENTRY mock_glUseProgram(GLuint program)
+{
+    MockOpenGL::mockUseProgram(program);
+}
+
 void MockOpenGL::initGLAD()
 {
     // Initialize GLAD function pointers with mock implementations
     // This allows testing without a real OpenGL context
+    
+    // Buffer functions
     glGenBuffers = mock_glGenBuffers;
     glDeleteBuffers = mock_glDeleteBuffers;
     glBindBuffer = mock_glBindBuffer;
     glBufferData = mock_glBufferData;
     glVertexAttribPointer = mock_glVertexAttribPointer;
     glVertexAttribDivisor = mock_glVertexAttribDivisor;
+    
+    // Shader functions (using APIENTRY for Windows compatibility)
+    glCreateProgram = mock_glCreateProgram;
+    glCreateShader = mock_glCreateShader;
+    glShaderSource = mock_glShaderSource;
+    glCompileShader = mock_glCompileShader;
+    glGetShaderiv = mock_glGetShaderiv;
+    glGetShaderInfoLog = mock_glGetShaderInfoLog;
+    glAttachShader = mock_glAttachShader;
+    glLinkProgram = mock_glLinkProgram;
+    glGetProgramiv = mock_glGetProgramiv;
+    glGetProgramInfoLog = mock_glGetProgramInfoLog;
+    glDeleteShader = mock_glDeleteShader;
+    glUseProgram = mock_glUseProgram;
 }

@@ -9,7 +9,8 @@ This document provides guidance on running, adding, and troubleshooting integrat
 3. [Test Organization](#test-organization)
 4. [Adding New Integration Tests](#adding-new-integration-tests)
 5. [Test Patterns](#test-patterns)
-6. [Troubleshooting](#troubleshooting)
+6. [Coverage Considerations](#coverage-considerations)
+7. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -236,6 +237,29 @@ TEST_F(ShaderPipelineTest, FullPipeline_CompletesSuccessfully)
     EXPECT_GT(shader.Program, 0u);
 }
 ```
+
+---
+
+## Coverage Considerations
+
+### Integration Tests and Code Coverage
+
+**Important:** Integration tests should NOT be counted towards code coverage metrics post-refactor.
+
+**Rationale:**
+- Integration tests exercise code paths across multiple components and may artificially inflate coverage metrics
+- Code coverage should measure how well unit tests exercise individual components
+- Counting integration tests can mask gaps in unit test coverage
+- Integration tests serve a different purpose: verifying component interactions, not testing individual code paths
+
+**Current Status:**
+- Currently, all tests (unit + integration) contribute to coverage reports
+- TODO: Implement separate coverage reporting that excludes integration tests
+
+**Future Improvement:**
+- Consider migrating to SonarQube for more sophisticated coverage analysis
+- Separate coverage reports for unit tests vs integration tests
+- Integration test execution time tracking
 
 ---
 
