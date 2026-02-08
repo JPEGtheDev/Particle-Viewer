@@ -241,6 +241,14 @@ jobs:
           git push origin "$TAG"
           echo "Created and pushed tag: $TAG"
       
+      - name: Build Flatpak
+        if: steps.version_check.outputs.changed == 'true'
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: particle-viewer-${{ steps.new_version.outputs.version }}.flatpak
+          manifest-path: org.particleviewer.ParticleViewer.yaml
+          cache-key: flatpak-builder-${{ github.sha }}
+      
       - name: Create GitHub Release
         if: steps.version_check.outputs.changed == 'true'
         env:
@@ -249,14 +257,15 @@ jobs:
           TAG="v${{ steps.new_version.outputs.version }}"
           CHANGELOG_ENTRY=$(cat /tmp/changelog_entry.md)
           
-          # Create release with changelog as body
+          # Create release with changelog as body and attach Flatpak
           # Note: This references the tag that was pushed in the previous step
           gh release create "$TAG" \
             --title "Release $TAG" \
             --notes "$CHANGELOG_ENTRY" \
-            --target master
+            --target master \
+            "particle-viewer-${{ steps.new_version.outputs.version }}.flatpak#Flatpak Bundle (Linux)"
           
-          echo "Created GitHub release: $TAG"
+          echo "Created GitHub release: $TAG with Flatpak attachment"
       
       - name: Release Summary
         if: always()

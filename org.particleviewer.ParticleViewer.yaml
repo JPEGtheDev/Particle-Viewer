@@ -1,0 +1,62 @@
+app-id: org.particleviewer.ParticleViewer
+runtime: org.freedesktop.Platform
+runtime-version: '23.08'
+sdk: org.freedesktop.Sdk
+command: Viewer
+
+finish-args:
+  # Graphics access
+  - --device=dri
+  - --socket=x11
+  - --socket=wayland
+  - --share=ipc
+  
+  # File system access for loading particle files
+  - --filesystem=home
+  - --filesystem=xdg-documents
+  - --filesystem=xdg-download
+  
+  # File picker portal access
+  - --talk-name=org.freedesktop.portal.FileChooser
+
+modules:
+  # GLM (header-only library)
+  - name: glm
+    buildsystem: cmake-ninja
+    builddir: true
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DGLM_TEST_ENABLE=OFF
+    sources:
+      - type: archive
+        url: https://github.com/g-truc/glm/archive/refs/tags/0.9.9.8.tar.gz
+        sha256: 37e2a3d62ea3322e43593c34bae29f57e3e251ea89f4067506c94043769ade4c
+
+  # GLFW
+  - name: glfw
+    buildsystem: cmake-ninja
+    builddir: true
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DBUILD_SHARED_LIBS=ON
+      - -DGLFW_BUILD_EXAMPLES=OFF
+      - -DGLFW_BUILD_TESTS=OFF
+      - -DGLFW_BUILD_DOCS=OFF
+    sources:
+      - type: archive
+        url: https://github.com/glfw/glfw/releases/download/3.3.9/glfw-3.3.9.tar.gz
+        sha256: 5f1fe5df5c6c4ff6e5a8e5cd5f4c8d3ae8cf0c98d7f00fb8c3f3a0a5bcc48d51
+
+  # Particle Viewer application
+  - name: particle-viewer
+    buildsystem: cmake-ninja
+    builddir: true
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DBUILD_TESTS=OFF
+    sources:
+      - type: dir
+        path: .
+    post-install:
+      - install -Dm644 org.particleviewer.ParticleViewer.desktop /app/share/applications/org.particleviewer.ParticleViewer.desktop
+      - install -Dm644 org.particleviewer.ParticleViewer.metainfo.xml /app/share/metainfo/org.particleviewer.ParticleViewer.metainfo.xml

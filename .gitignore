@@ -37,3 +37,9 @@ _codeql_build_dir/
 #CLion
 .idea/
 cmake-build-debug/
+
+# Flatpak build artifacts
+.flatpak-builder/
+*.flatpak
+flatpak-build/
+repo/

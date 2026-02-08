@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.particleviewer.ParticleViewer</id>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Particle Viewer</name>
+  <summary>N-Body Simulation Viewer</summary>
+  <description>
+    <p>
+      Particle Viewer is a 3D visualization tool for N-Body simulations created for
+      Tarleton State University's Particle Modeling Group. It allows users to view
+      particle simulations, take screenshots, and create videos of simulation data.
+    </p>
+    <p>Features:</p>
+    <ul>
+      <li>3D visualization of N-Body simulations</li>
+      <li>Screenshot capability for documentation</li>
+      <li>Support for various particle file formats</li>
+      <li>Interactive camera controls</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">org.particleviewer.ParticleViewer.desktop</launchable>
+  <url type="homepage">https://github.com/JPEGtheDev/Particle-Viewer</url>
+  <url type="bugtracker">https://github.com/JPEGtheDev/Particle-Viewer/issues</url>
+  <developer_name>Jonathan Petz</developer_name>
+  <content_rating type="oars-1.1" />
+  <releases>
+    <release version="0.0.1" date="2026-02-08">
+      <description>
+        <p>Initial release with Flatpak support</p>
+      </description>
+    </release>
+  </releases>
+</component>
