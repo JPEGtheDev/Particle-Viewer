@@ -13,7 +13,7 @@ The project follows [Semantic Versioning 2.0.0](https://semver.org/):
 - **MINOR** version: New features in a backward-compatible manner
 - **PATCH** version: Backward-compatible bug fixes
 
-Current version is stored in the `VERSION` file at the repository root.
+At build time, the current version is taken from the PROJECT_VERSION build variable (for example via -DPROJECT_VERSION=...), falling back to git tags when that is not set, and to 0.0.0 if neither is available.
 
 ## Conventional Commits
 
@@ -84,7 +84,7 @@ For manual control, you can trigger a release from GitHub Actions:
 When the release workflow runs:
 
 1. **Version Detection**
-   - Reads current version from `VERSION` file
+   - Reads current version from most recent git tag
    - Analyzes commits since last tag using conventional commit format
    - Determines version bump type (major/minor/patch)
 
@@ -97,20 +97,25 @@ When the release workflow runs:
    - Groups changes by type (Added, Fixed, Breaking Changes, Changed)
    - Generates formatted changelog entry with date
 
-4. **File Updates**
-   - Updates `VERSION` file with new version
-   - Inserts new changelog entry into `CHANGELOG.md`
-   - CMakeLists.txt automatically reads from VERSION file
+4. **Git Operations**
+   - Creates annotated git tag with new version (e.g., `v0.2.0`)
+   - **Pushes tag to remote** (required before GitHub Release creation)
 
-5. **Git Operations**
-   - Commits version and changelog updates with `[skip ci]` tag
-   - Creates annotated git tag (e.g., `v0.2.0`)
-   - Pushes changes and tag to repository
-
-6. **GitHub Release**
-   - Creates GitHub release with changelog as description
+5. **GitHub Release**
+   - Creates GitHub release referencing the pushed tag
+   - Includes generated changelog as description
    - Tags the release with version number
    - Publishes release to GitHub Releases page
+
+6. **Version in Build**
+   - CMakeLists.txt can accept version as variable from CI or read from git tags locally
+
+### Important: Tag Push Order
+
+The workflow explicitly pushes the git tag **before** creating the GitHub Release. This is required because:
+- `gh release create` expects the tag to already exist in the remote repository
+- Pushing the tag first ensures proper synchronization
+- This approach provides better error handling and transparency
 
 ## Zero-Manual Requirements
 
@@ -123,19 +128,16 @@ To maintain the zero-manual release process:
 - Review releases in GitHub Releases page after automation
 
 ❌ **DON'T:**
-- Manually edit VERSION file
 - Manually create git tags
-- Manually edit version in CMakeLists.txt (it reads from VERSION)
-- Manually update CHANGELOG.md (except for [Unreleased] section)
+- Manually edit version in CMakeLists.txt
 
 ## Version Storage
 
-**Single Source of Truth:** The `VERSION` file at repository root
+**Single Source of Truth:** Git tags
 
-- **VERSION file**: Plain text file containing semantic version (e.g., `0.1.0`)
-- **CMakeLists.txt**: Automatically reads version from VERSION file
 - **Git tags**: Created automatically by release workflow (e.g., `v0.1.0`)
-- **CHANGELOG.md**: Updated automatically with each release
+- **CMakeLists.txt**: Can accept version as variable or read from git tags as fallback
+- **GitHub Releases**: Contain generated changelog for each release
 
 ## Workflow Configuration
 
@@ -150,7 +152,6 @@ The release workflow is defined in `.github/workflows/release.yml` with:
 
 ### Release didn't trigger automatically
 - Verify commits are pushed to `master` branch
-- Check that VERSION or CHANGELOG.md weren't the only changed files
 - Review GitHub Actions logs for errors
 
 ### Wrong version bump detected
@@ -168,18 +169,16 @@ The release workflow is defined in `.github/workflows/release.yml` with:
 
 ## Best Practices
 
-1. **Write meaningful commit messages**: They become your changelog
+1. **Write meaningful commit messages**: They become your release notes
 2. **Use conventional commits consistently**: Ensures correct version bumps
-3. **Review the [Unreleased] section**: Add important notes before release
-4. **Test before merging to master**: Releases are automatic on master
-5. **Use scopes in commits**: `feat(renderer): add new feature` for better organization
+3. **Test before merging to master**: Releases are automatic on master
+4. **Use scopes in commits**: `feat(renderer): add new feature` for better organization
 
 ## Release History
 
-All releases are tracked in three places:
-1. **CHANGELOG.md**: Human-readable change history
-2. **Git tags**: Versioned snapshots in git history
-3. **GitHub Releases**: Published releases with notes
+All releases are tracked in two places:
+1. **Git tags**: Versioned snapshots in git history
+2. **GitHub Releases**: Published releases with generated release notes
 
 ## Example Workflow
 
@@ -196,11 +195,9 @@ git push origin master
 
 # Workflow automatically:
 # 1. Detects 1 feature + 1 fix → minor bump (0.1.0 → 0.2.0)
-# 2. Updates VERSION to 0.2.0
-# 3. Generates changelog entry
-# 4. Commits changes
-# 5. Creates tag v0.2.0
-# 6. Publishes GitHub release
+# 2. Generates release notes from commits
+# 3. Creates tag v0.2.0
+# 4. Publishes GitHub release with notes
 ```
 
 ## Future Enhancements

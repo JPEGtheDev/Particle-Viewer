@@ -15,9 +15,6 @@ on:
   push:
     branches:
       - master
-    paths-ignore:
-      - 'VERSION'
-      - 'CHANGELOG.md'
 
 # Prevent concurrent releases
 concurrency:
@@ -43,10 +40,12 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
       
-      - name: Read current version
+      - name: Read current version from git tags
         id: current_version
         run: |
-          CURRENT_VERSION=$(cat VERSION)
+          # Get the most recent tag, or default to 0.0.0 if no tags exist
+          RAW_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          CURRENT_VERSION="${RAW_VERSION#v}"
           echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           echo "Current version: $CURRENT_VERSION"
       
@@ -206,45 +205,13 @@ jobs:
           echo "Generated changelog entry:"
           cat /tmp/changelog_entry.md
       
-      - name: Update VERSION file
-        if: steps.version_check.outputs.changed == 'true'
-        run: |
-          echo "${{ steps.new_version.outputs.version }}" > VERSION
-          echo "Updated VERSION file to ${{ steps.new_version.outputs.version }}"
-      
-      - name: Update CHANGELOG.md
-        if: steps.version_check.outputs.changed == 'true'
-        run: |
-          # Insert new changelog entry after the [Unreleased] section
-          NEW_ENTRY=$(cat /tmp/changelog_entry.md)
-          
-          # Create temporary file with updated changelog
-          awk -v entry="$NEW_ENTRY" '
-            /^## \[Unreleased\]/ {
-              print $0
-              print ""
-              print entry
-              next
-            }
-            { print }
-          ' CHANGELOG.md > /tmp/CHANGELOG_new.md
-          
-          mv /tmp/CHANGELOG_new.md CHANGELOG.md
-          echo "Updated CHANGELOG.md"
-      
-      - name: Commit version bump
-        if: steps.version_check.outputs.changed == 'true'
-        run: |
-          git add VERSION CHANGELOG.md
-          git commit -m "chore(release): bump version to ${{ steps.new_version.outputs.version }} [skip ci]"
-          git push origin master
-          echo "Committed and pushed version bump"
-      
       - name: Create Git tag
         if: steps.version_check.outputs.changed == 'true'
         run: |
           TAG="v${{ steps.new_version.outputs.version }}"
           git tag -a "$TAG" -m "Release $TAG"
+          # Push tag to remote - this must happen before creating the GitHub Release
+          # because 'gh release create' expects the tag to already exist remotely
           git push origin "$TAG"
           echo "Created and pushed tag: $TAG"
       
@@ -257,6 +224,7 @@ jobs:
           CHANGELOG_ENTRY=$(cat /tmp/changelog_entry.md)
           
           # Create release with changelog as body
+          # Note: This references the tag that was pushed in the previous step
           gh release create "$TAG" \
             --title "Release $TAG" \
             --notes "$CHANGELOG_ENTRY" \
