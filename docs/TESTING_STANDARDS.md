@@ -165,21 +165,30 @@ TEST(CameraTest, LookUpIncreasesPitch)
 
 Test names should clearly describe what is being tested and under what conditions.
 
-### Pattern: `TestSuite_MethodOrBehavior_ExpectedOutcome`
+### Pattern: `UnitName_StateUnderTest_ExpectedResult`
+
+This pattern ensures tests clearly communicate:
+- **UnitName**: The method, function, or behavior being tested
+- **StateUnderTest**: The specific condition or scenario (optional if testing default behavior)
+- **ExpectedResult**: What should happen
 
 ```cpp
 // Testing specific methods
-TEST(CameraTest, MoveForward_IncreasesPosition)
+TEST(CameraTest, MoveForward_UpdatesPosition)
 TEST(CameraTest, ClampPitch_LimitsTo89Degrees)
 TEST(CameraTest, Update_NormalizesDirectionVector)
 
-// Testing edge cases
+// Testing with specific state/conditions
 TEST(CameraTest, SetRenderDistance_WithZero_ClampsToMinimum)
 TEST(CameraTest, SpherDistance_BelowOne_ClampsToOne)
 
 // Testing error conditions
 TEST(ShaderTest, Constructor_WithInvalidPath_PrintsError)
 TEST(ShaderTest, CompileShader_WithSyntaxError_ReportsFailure)
+
+// Testing default behavior (StateUnderTest can be omitted)
+TEST(CameraTest, Constructor_InitializesDefaultPosition)
+TEST(CameraTest, SetupCam_ReturnsValidViewMatrix)
 ```
 
 ### Test Suite Naming
@@ -188,11 +197,13 @@ TEST(ShaderTest, CompileShader_WithSyntaxError_ReportsFailure)
 - For functionality tests without a specific class: `GraphicsUtilsTest`, `MatrixMathTest`
 - Keep suite names concise and descriptive
 
-### Test Case Naming
+### Test Case Naming Guidelines
 
-- Start with the method name or behavior being tested
-- Include the condition or input state (e.g., `WithInvalidPath`, `AtBoundary`)
-- End with the expected outcome
+- Start with the method name or behavior being tested (UnitName)
+- Include the condition or input state if relevant (StateUnderTest)
+- End with the expected outcome (ExpectedResult)
+- Use underscores to separate the three parts for readability
+- Be specific and descriptive
 - Use underscores to separate sections for readability
 - Be specific and descriptive
 
@@ -338,6 +349,19 @@ TEST(ShaderTest, Constructor_CallsCompileShader)
 }
 ```
 
+### What to Mock
+
+Mock external dependencies that are:
+- Outside your control (OpenGL, system calls, file I/O)
+- Slow to execute (database queries, network calls)
+- Non-deterministic (random number generators, timestamps)
+- Require special environment setup (GPU, hardware)
+
+**Do NOT mock:**
+- Your own code (test it directly instead)
+- Simple data structures or value objects
+- Pure functions with no side effects
+
 ---
 
 ## Coverage Expectations
@@ -352,17 +376,51 @@ Aim for at least 80% code coverage for tested modules. Focus coverage on:
 
 ### What to Test
 
-**High Priority:**
-- Public methods and APIs
-- Complex algorithms and calculations
-- Error handling and validation
-- State transitions
-- Edge cases (null values, boundary conditions, etc.)
+**Test YOUR code, not external libraries.**
 
-**Lower Priority:**
-- Simple getters/setters
-- Trivial forwarding functions
-- Code that directly calls OpenGL (mock instead)
+The goal of unit testing is to verify that *your* code works correctly, not to test third-party libraries or frameworks. Trust that well-maintained external libraries have their own test suites.
+
+**High Priority - Test These:**
+- **Your public methods and APIs** - Core functionality you've written
+- **Your complex algorithms and calculations** - Business logic and computations
+- **Your error handling and validation** - How your code handles edge cases
+- **Your state transitions** - How your objects change state
+- **Your integration points** - How you use external APIs correctly
+
+**Do NOT Test:**
+- **External library functionality** - Don't test if `std::vector::push_back()` works
+- **Framework behavior** - Don't test if Google Test assertions work
+- **Mock infrastructure itself** - Testing mocks is testing test code, not production code
+- **Simple getters/setters** - Unless they have validation logic
+- **Trivial forwarding functions** - Functions that just call other functions
+
+**Example - What to Test:**
+
+```cpp
+// ✓ GOOD: Testing YOUR code
+TEST(ShaderTest, Constructor_WithValidFiles_InitializesProgram)
+{
+    // Testing that YOUR Shader class correctly uses OpenGL
+    Shader shader("vertex.vs", "fragment.fs");
+    EXPECT_NE(shader.Program, 0u);
+}
+
+// ✗ BAD: Testing external library or test infrastructure
+TEST(ShaderTest, MockOpenGL_CanBeInitialized)
+{
+    // This tests the mock itself, not your Shader code
+    MockOpenGL::reset();
+    EXPECT_EQ(MockOpenGL::createProgramCalls, 0);
+}
+
+// ✗ BAD: Testing file I/O library
+TEST(ShaderTest, TestFiles_CanBeCreatedAndRead)
+{
+    // This tests std::ifstream, not your code
+    std::ifstream file("test.txt");
+    EXPECT_TRUE(file.good());
+}
+```
 
 ### Coverage Guidelines
 
