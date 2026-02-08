@@ -127,28 +127,28 @@ jobs:
             
             const commentMarker = '<!-- flatpak-build-comment -->';
             const comment = `${commentMarker}
-## 📦 Flatpak Build Complete
-
-A prerelease Flatpak build has been created for this PR and is available for testing.
-
-**Version:** \`${prereleaseVersion}\`
-
-### Download & Install
-
-1. Download the artifact from the [workflow run](https://github.com/${repo.owner}/${repo.repo}/actions/runs/${runId})
-2. Extract the zip file to get \`particle-viewer-${prereleaseVersion}.flatpak\`
-3. Install: \`flatpak install --user particle-viewer-${prereleaseVersion}.flatpak\`
-4. Run: \`flatpak run org.particleviewer.ParticleViewer\`
-
-### Testing
-
-Please test the following:
-- ✅ Application launches successfully
-- ✅ File loading works correctly
-- ✅ All features work in the sandboxed environment
-- ✅ No dependency errors
-
-**Note:** This is a prerelease/beta build for testing purposes.`;
+            ## 📦 Flatpak Build Complete
+            
+            A prerelease Flatpak build has been created for this PR and is available for testing.
+            
+            **Version:** \`${prereleaseVersion}\`
+            
+            ### Download & Install
+            
+            1. Download the artifact from the [workflow run](https://github.com/${repo.owner}/${repo.repo}/actions/runs/${runId})
+            2. Extract the zip file to get \`particle-viewer-${prereleaseVersion}.flatpak\`
+            3. Install: \`flatpak install --user particle-viewer-${prereleaseVersion}.flatpak\`
+            4. Run: \`flatpak run org.particleviewer.ParticleViewer\`
+            
+            ### Testing
+            
+            Please test the following:
+            - ✅ Application launches successfully
+            - ✅ File loading works correctly
+            - ✅ All features work in the sandboxed environment
+            - ✅ No dependency errors
+            
+            **Note:** This is a prerelease/beta build for testing purposes.`;
             
             // Find existing comment
             const { data: comments } = await github.rest.issues.listComments({
