@@ -81,15 +81,15 @@ jobs:
           COMMITS=$(cat /tmp/commits.txt)
           
           # Check for breaking changes (major bump)
-          if echo "$COMMITS" | grep -qiE "^(BREAKING CHANGE:|feat!:|fix!:|.*!:)"; then
+          if echo "$COMMITS" | grep -qE "^(BREAKING CHANGE:|[a-z]+!:)"; then
             echo "bump_type=major" >> $GITHUB_OUTPUT
             echo "Detected BREAKING CHANGE - major version bump"
           # Check for features (minor bump)
-          elif echo "$COMMITS" | grep -qiE "^feat(\(.*\))?:"; then
+          elif echo "$COMMITS" | grep -qE "^feat(\(.*\))?:"; then
             echo "bump_type=minor" >> $GITHUB_OUTPUT
             echo "Detected new features - minor version bump"
           # Check for fixes (patch bump)
-          elif echo "$COMMITS" | grep -qiE "^fix(\(.*\))?:"; then
+          elif echo "$COMMITS" | grep -qE "^fix(\(.*\))?:"; then
             echo "bump_type=patch" >> $GITHUB_OUTPUT
             echo "Detected bug fixes - patch version bump"
           # Default to patch for any other commits
@@ -147,20 +147,16 @@ jobs:
           DATE=$(date +%Y-%m-%d)
           
           # Create changelog entry
-          cat > /tmp/changelog_entry.md << 'CHANGELOG_EOF'
+          cat > /tmp/changelog_entry.md << CHANGELOG_EOF
           ## [$NEW_VERSION] - $DATE
           
           CHANGELOG_EOF
-          
-          # Replace variables
-          sed -i "s/\$NEW_VERSION/$NEW_VERSION/g" /tmp/changelog_entry.md
-          sed -i "s/\$DATE/$DATE/g" /tmp/changelog_entry.md
           
           # Parse commits by type
           COMMITS=$(cat /tmp/commits.txt)
           
           # Extract features
-          FEATURES=$(echo "$COMMITS" | grep -iE "^feat(\(.*\))?:" || true)
+          FEATURES=$(echo "$COMMITS" | grep -E "^feat(\(.*\))?:" || true)
           if [ -n "$FEATURES" ]; then
             echo "" >> /tmp/changelog_entry.md
             echo "### Added" >> /tmp/changelog_entry.md
@@ -172,7 +168,7 @@ jobs:
           fi
           
           # Extract fixes
-          FIXES=$(echo "$COMMITS" | grep -iE "^fix(\(.*\))?:" || true)
+          FIXES=$(echo "$COMMITS" | grep -E "^fix(\(.*\))?:" || true)
           if [ -n "$FIXES" ]; then
             echo "" >> /tmp/changelog_entry.md
             echo "### Fixed" >> /tmp/changelog_entry.md
@@ -184,7 +180,7 @@ jobs:
           fi
           
           # Extract breaking changes
-          BREAKING=$(echo "$COMMITS" | grep -iE "^(BREAKING CHANGE:|.*!:)" || true)
+          BREAKING=$(echo "$COMMITS" | grep -E "^(BREAKING CHANGE:|[a-z]+!:)" || true)
           if [ -n "$BREAKING" ]; then
             echo "" >> /tmp/changelog_entry.md
             echo "### BREAKING CHANGES" >> /tmp/changelog_entry.md
@@ -194,8 +190,8 @@ jobs:
             done <<< "$BREAKING"
           fi
           
-          # Extract other changes
-          OTHER=$(echo "$COMMITS" | grep -viE "^(feat|fix)(\(.*\))?:" | grep -viE "^BREAKING CHANGE:" | grep -viE "!:" || true)
+          # Extract other changes (excluding breaking changes properly)
+          OTHER=$(echo "$COMMITS" | grep -vE "^(feat|fix)(\(.*\))?:" | grep -vE "^BREAKING CHANGE:" | grep -vE "^[a-z]+!:" || true)
           if [ -n "$OTHER" ]; then
             echo "" >> /tmp/changelog_entry.md
             echo "### Changed" >> /tmp/changelog_entry.md
