@@ -1,20 +1,22 @@
 cmake_minimum_required (VERSION 3.18)
 
-# Get version from git tags
-execute_process(
-    COMMAND git describe --tags --abbrev=0
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_VERSION
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    ERROR_QUIET
-)
-
-# Remove 'v' prefix if present and use as project version
-if(GIT_VERSION)
-    string(REGEX REPLACE "^v" "" PROJECT_VERSION ${GIT_VERSION})
-else()
-    # Fallback version if no tags exist
-    set(PROJECT_VERSION "0.0.0")
+# Accept version as CMake variable, or use git tags as fallback
+if(NOT DEFINED PROJECT_VERSION)
+    execute_process(
+        COMMAND git describe --tags --abbrev=0
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_VERSION
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+    
+    # Remove 'v' prefix if present and use as project version
+    if(GIT_VERSION)
+        string(REGEX REPLACE "^v" "" PROJECT_VERSION ${GIT_VERSION})
+    else()
+        # Fallback version if no tags exist
+        set(PROJECT_VERSION "0.0.0")
+    endif()
 endif()
 
 project (Particle-Viewer VERSION ${PROJECT_VERSION})

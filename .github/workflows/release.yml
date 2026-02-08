@@ -1,10 +1,5 @@
 name: Automated Release
 
-# IMPORTANT: This workflow pushes directly to the master branch.
-# If branch protection requires pull requests, configure the repository to allow
-# the github-actions bot to bypass protection rules for automated releases.
-# See docs/RELEASE_WORKFLOW_SETUP.md for configuration instructions.
-
 on:
   workflow_dispatch:
     inputs:
@@ -20,8 +15,6 @@ on:
   push:
     branches:
       - master
-    paths-ignore:
-      - 'CHANGELOG.md'
 
 # Prevent concurrent releases
 concurrency:
@@ -210,34 +203,6 @@ jobs:
           # Display the generated changelog
           echo "Generated changelog entry:"
           cat /tmp/changelog_entry.md
-      
-      - name: Update CHANGELOG.md
-        if: steps.version_check.outputs.changed == 'true'
-        run: |
-          # Insert new changelog entry after the [Unreleased] section
-          NEW_ENTRY=$(cat /tmp/changelog_entry.md)
-          
-          # Create temporary file with updated changelog
-          awk -v entry="$NEW_ENTRY" '
-            /^## \[Unreleased\]/ {
-              print $0
-              print ""
-              print entry
-              next
-            }
-            { print }
-          ' CHANGELOG.md > /tmp/CHANGELOG_new.md
-          
-          mv /tmp/CHANGELOG_new.md CHANGELOG.md
-          echo "Updated CHANGELOG.md"
-      
-      - name: Commit changelog update
-        if: steps.version_check.outputs.changed == 'true'
-        run: |
-          git add CHANGELOG.md
-          git commit -m "chore(release): update changelog for v${{ steps.new_version.outputs.version }} [skip ci]"
-          git push origin master
-          echo "Committed and pushed changelog update"
       
       - name: Create Git tag
         if: steps.version_check.outputs.changed == 'true'

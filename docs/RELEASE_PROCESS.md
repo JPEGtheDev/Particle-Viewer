@@ -97,19 +97,17 @@ When the release workflow runs:
    - Groups changes by type (Added, Fixed, Breaking Changes, Changed)
    - Generates formatted changelog entry with date
 
-4. **File Updates**
-   - Inserts new changelog entry into `CHANGELOG.md`
-   - CMakeLists.txt automatically reads version from git tags at build time
-
-5. **Git Operations**
-   - Commits changelog update with `[skip ci]` tag
+4. **Git Operations**
    - Creates annotated git tag with new version (e.g., `v0.2.0`)
-   - Pushes changes and tag to repository
+   - Pushes tag to repository
 
-6. **GitHub Release**
-   - Creates GitHub release with changelog as description
+5. **GitHub Release**
+   - Creates GitHub release with generated changelog as description
    - Tags the release with version number
    - Publishes release to GitHub Releases page
+
+6. **Version in Build**
+   - CMakeLists.txt can accept version as variable from CI or read from git tags locally
 
 ## Zero-Manual Requirements
 
@@ -123,16 +121,15 @@ To maintain the zero-manual release process:
 
 ❌ **DON'T:**
 - Manually create git tags
-- Manually edit version in CMakeLists.txt (it reads from git tags)
-- Manually update CHANGELOG.md (except for [Unreleased] section)
+- Manually edit version in CMakeLists.txt
 
 ## Version Storage
 
 **Single Source of Truth:** Git tags
 
 - **Git tags**: Created automatically by release workflow (e.g., `v0.1.0`)
-- **CMakeLists.txt**: Automatically reads version from git tags at build time
-- **CHANGELOG.md**: Updated automatically with each release
+- **CMakeLists.txt**: Can accept version as variable or read from git tags as fallback
+- **GitHub Releases**: Contain generated changelog for each release
 
 ## Workflow Configuration
 
@@ -147,7 +144,6 @@ The release workflow is defined in `.github/workflows/release.yml` with:
 
 ### Release didn't trigger automatically
 - Verify commits are pushed to `master` branch
-- Check that CHANGELOG.md wasn't the only changed file
 - Review GitHub Actions logs for errors
 
 ### Wrong version bump detected
@@ -159,30 +155,22 @@ The release workflow is defined in `.github/workflows/release.yml` with:
 - Verify GitHub Actions has `contents: write` permission
 - Check that GITHUB_TOKEN has not expired
 
-### Workflow fails with "protected branch" error
-- The master branch has protection rules that prevent direct pushes
-- **See [RELEASE_WORKFLOW_SETUP.md](./RELEASE_WORKFLOW_SETUP.md) for configuration instructions**
-- Configure branch protection to allow `github-actions[bot]` to bypass for automated releases
-- This maintains full automation while keeping branch protection for code changes
-
 ### Duplicate releases created
 - Workflow has concurrency control to prevent this
 - Check if multiple workflows were triggered simultaneously
 
 ## Best Practices
 
-1. **Write meaningful commit messages**: They become your changelog
+1. **Write meaningful commit messages**: They become your release notes
 2. **Use conventional commits consistently**: Ensures correct version bumps
-3. **Review the [Unreleased] section**: Add important notes before release
-4. **Test before merging to master**: Releases are automatic on master
-5. **Use scopes in commits**: `feat(renderer): add new feature` for better organization
+3. **Test before merging to master**: Releases are automatic on master
+4. **Use scopes in commits**: `feat(renderer): add new feature` for better organization
 
 ## Release History
 
-All releases are tracked in three places:
-1. **CHANGELOG.md**: Human-readable change history
-2. **Git tags**: Versioned snapshots in git history
-3. **GitHub Releases**: Published releases with notes
+All releases are tracked in two places:
+1. **Git tags**: Versioned snapshots in git history
+2. **GitHub Releases**: Published releases with generated release notes
 
 ## Example Workflow
 
@@ -199,10 +187,9 @@ git push origin master
 
 # Workflow automatically:
 # 1. Detects 1 feature + 1 fix → minor bump (0.1.0 → 0.2.0)
-# 2. Generates changelog entry
-# 3. Commits changelog update
-# 4. Creates tag v0.2.0
-# 5. Publishes GitHub release
+# 2. Generates release notes from commits
+# 3. Creates tag v0.2.0
+# 4. Publishes GitHub release with notes
 ```
 
 ## Future Enhancements
