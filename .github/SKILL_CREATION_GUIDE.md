@@ -263,12 +263,12 @@ If certain tasks require specific AI models:
 ```markdown
 ## Model Recommendations
 
-**Haiku:** Simple, well-defined tasks
-**Sonnet 4.5:** Standard implementation work
-**Opus 4.6:** Complex architecture or deep reasoning
+**Small (Lightweight):** Simple, well-defined tasks suitable for quick turnaround.
+**Standard:** Typical implementation and integration work with moderate complexity.
+**Advanced:** Complex architecture or deep reasoning tasks that require design and trade-offs.
 
 When recommending, explain why:
-> "This task requires Opus 4.6 because [architectural decisions/complex refactoring]."
+> "This task requires an advanced model because [architectural decisions/complex refactoring]."
 ```
 
 ---
@@ -386,19 +386,19 @@ When generating user stories for work that will be distributed to multiple agent
 
 ### Model-to-Skill Mapping
 
-**Haiku** (Junior-level work):
+**Small (Junior-level work):**
 - Simple, well-scoped tasks with clear inputs/outputs
 - Single-concern implementations (no cross-cutting complexity)
 - Routine, established patterns (no architectural decisions)
 - Examples: Write unit tests for data structures, create simple utilities, apply coding standards
 
-**Sonnet 4.5** (Mid-level work):
+**Standard (Mid-level work):**
 - Moderate complexity (multi-step, multiple considerations)
 - Integration work (connecting established components)
 - Problem-solving with known patterns (error handling, setup, configuration)
 - Examples: Standard feature implementation, CI integration, graphics/shader tests with mocks
 
-**Opus 4.6** (Senior-level work):
+**Advanced (Senior-level work):**
 - Architectural decisions and design
 - Complex integration (subtle interactions, race conditions, global state)
 - Novel solutions (not following established patterns)
@@ -411,18 +411,18 @@ When generating user stories for work that will be distributed to multiple agent
 
 **Broken into three investable stories:**
 
-1. **Unit Tests for Data Structures** (Haiku, 10-15 requests)
+1. **Unit Tests for Data Structures** (Small, 10-15 requests)
    - Particle, Settings tests
    - No mocking, no GL dependencies
    - Clear test structure
 
-2. **Unit Tests for Graphics & CI** (Sonnet, 25-35 requests)
+2. **Unit Tests for Graphics & CI** (Standard, 25-35 requests)
    - Camera, Shader tests + mocks
    - CI workflow setup
    - Standard patterns
 
-3. **Integration Tests & Quality Gates** (Opus, 15-25 requests)
-   - Simulation integration tests
+3. **Integration Tests & Quality Gates** (Advanced, 15-25 requests)
+   - Viewer pipeline integration tests
    - Coverage enforcement logic
    - Flakiness elimination strategy
 

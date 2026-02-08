@@ -130,7 +130,7 @@ Loads reference examples from the skill's knowledge base.
 
 The skill knows Particle-Viewer conventions:
 
-- **Naming:** PascalCase for classes (`FramebufferCapture`), snake_case for files (`framebuffer_capture.hpp`)
+- **Naming:** PascalCase for classes (`FramebufferCapture`). Files: keep existing filenames as-is (e.g., `settingsIO.hpp`, `osFile.hpp`); for new or target-state files prefer snake_case (e.g., `framebuffer_capture.hpp`) - mark target-state paths explicitly when applicable.
 - **Testing:** GoogleTest in `tests/` directory, headless OpenGL with Xvfb
 - **CI:** GitHub Actions with Mesa drivers, no GPU required
 - **Architecture:** Elimination of global state, proper layering

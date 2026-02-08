@@ -76,8 +76,9 @@ src/
 - Globals (deprecated): UPPER_SNAKE_CASE (e.g., `GLOBAL_FRAMEBUFFER`)
 
 **File Paths in Stories:**
-- Use relative paths from project root: `src/graphics/FramebufferCapture.hpp`
-- Test files go in `tests/graphics/FramebufferCaptureTests.cpp`
+- Prefer existing repository paths and filenames (e.g., `src/settingsIO.hpp`, `src/particle.hpp`)
+- Test files go in `tests/` (e.g., `tests/core/SettingsIOTests.cpp` or `tests/core/ParticleTests.cpp`)
+- If the story describes a refactor introducing new structure, **mark target-state paths explicitly**, for example: `target-state: src/graphics/framebuffer_capture.hpp` or `target-state: tests/graphics/FramebufferCaptureTests.cpp`
 - Shaders go in `src/shaders/`
 
 ---
@@ -320,7 +321,7 @@ For **Particle-Viewer** stories, use these as rough guides:
 ### Medium (M) – 1–2 days
 - Implement a new manager class with tests
 - Build framebuffer capture with tests
-- Refactor module with ≥80% existing test coverage
+- Refactor module with ≥85% existing test coverage
 - Write GitHub Actions workflow
 
 ### Large (L) – 2–3 days
@@ -344,7 +345,7 @@ For **Particle-Viewer** stories, use these as rough guides:
 
 ### In Acceptance Criteria
 - Include metrics: "≤16ms per capture" vs "fast"
-- List affected files: `src/graphics/FramebufferCapture.hpp`
+- List affected files: `src/FramebufferCapture.hpp` (or target-state: `src/graphics/framebuffer_capture.hpp`) 
 - Call out edge cases: "Handles framebuffer size changes mid-capture"
 
 ### In Definition of Done

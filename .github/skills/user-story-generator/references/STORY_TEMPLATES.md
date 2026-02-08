@@ -49,8 +49,8 @@ Template examples for different story types. Customize based on your domain and 
 - Language, frameworks, libraries
 
 **Files to Create/Modify:**
-- `src/graphics/FramebufferCapture.hpp`
-- `src/graphics/FramebufferCapture.cpp`
+- `src/FramebufferCapture.hpp` (or target-state: `src/graphics/framebuffer_capture.hpp`)
+- `src/FramebufferCapture.cpp` (or target-state: `src/graphics/framebuffer_capture.cpp`)
 - `tests/FramebufferCaptureTests.cpp`
 
 **Constraints:**
@@ -309,8 +309,8 @@ When a larger story is broken into subtasks, use this format:
 
 ### File/Component Specific
 ```markdown
-- [ ] Tests in `tests/graphics/FramebufferCaptureTests.cpp`
-- [ ] Implementation in `src/graphics/FramebufferCapture.{hpp,cpp}`
+- [ ] Tests in `tests/core/FramebufferCaptureTests.cpp` (or target-state: `tests/graphics/FramebufferCaptureTests.cpp`)
+- [ ] Implementation in `src/FramebufferCapture.{hpp,cpp}` (or target-state: `src/graphics/framebuffer_capture.{hpp,cpp}`)
 ```
 
 ---
