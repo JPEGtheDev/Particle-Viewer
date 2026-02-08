@@ -216,3 +216,52 @@ bool MockOpenGL::wasProgramCreated(GLuint program)
     }
     return false;
 }
+
+// ============================================
+// Mock GL Buffer Functions
+// ============================================
+
+static void APIENTRY mock_glGenBuffers(GLsizei n, GLuint* buffers)
+{
+    static GLuint nextBufferId = 1;
+    for (GLsizei i = 0; i < n; i++) {
+        buffers[i] = nextBufferId++;
+    }
+}
+
+static void APIENTRY mock_glDeleteBuffers(GLsizei n, const GLuint* buffers)
+{
+    // No-op for testing
+}
+
+static void APIENTRY mock_glBindBuffer(GLenum target, GLuint buffer)
+{
+    // No-op for testing
+}
+
+static void APIENTRY mock_glBufferData(GLenum target, GLsizeiptr size, const void* data, GLenum usage)
+{
+    // No-op for testing
+}
+
+static void APIENTRY mock_glVertexAttribPointer(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void* pointer)
+{
+    // No-op for testing
+}
+
+static void APIENTRY mock_glVertexAttribDivisor(GLuint index, GLuint divisor)
+{
+    // No-op for testing
+}
+
+void MockOpenGL::initGLAD()
+{
+    // Initialize GLAD function pointers with mock implementations
+    // This allows testing without a real OpenGL context
+    glGenBuffers = mock_glGenBuffers;
+    glDeleteBuffers = mock_glDeleteBuffers;
+    glBindBuffer = mock_glBindBuffer;
+    glBufferData = mock_glBufferData;
+    glVertexAttribPointer = mock_glVertexAttribPointer;
+    glVertexAttribDivisor = mock_glVertexAttribDivisor;
+}

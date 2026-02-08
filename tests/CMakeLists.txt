@@ -1,8 +1,13 @@
 # Test executable configuration
+# Automatically discover all test files using GLOB for convenience
+# Note: When adding new test files, re-run CMake to detect them:
+#   rm -rf build && mkdir build && cd build && cmake ..
+file(GLOB TEST_CORE_FILES core/*Tests.cpp)
+file(GLOB TEST_MOCK_FILES mocks/*.cpp)
+
 add_executable(ParticleViewerTests
-    core/CameraTests.cpp
-    core/ShaderTests.cpp
-    mocks/MockOpenGL.cpp
+    ${TEST_CORE_FILES}
+    ${TEST_MOCK_FILES}
 )
 
 # Link Google Test and required libraries
