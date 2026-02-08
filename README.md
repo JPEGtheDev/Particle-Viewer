@@ -25,5 +25,17 @@ ___
 [CMAKE](https://cmake.org/")
 ___
 
+## Contributing
+
+We welcome contributions! Please follow our [Coding Standards](docs/CODING_STANDARDS.md) to maintain code quality and consistency.
+
+**Key Guidelines:**
+- Code formatting is enforced via `clang-format` (see `.clang-format`)
+- Static analysis via `clang-tidy` (see `.clang-tidy`)
+- Follow Microsoft C++ Core Guidelines
+- All pull requests are checked automatically in CI
+
+___
+
 ## Why this is under a MIT license:
 I wanted to be able to share the code that I have created for the group with anyone else who wants to create videos of their N-Body simulations. I also want people to use this as a starting point, and modify this application in order to make it better. This allows the group to continue the particle viewer, long after I have left the group / University, while also allowing outside sources to assist in any development issues / to improve the viewer.
