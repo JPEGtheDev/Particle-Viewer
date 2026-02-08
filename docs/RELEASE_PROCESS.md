@@ -84,7 +84,7 @@ For manual control, you can trigger a release from GitHub Actions:
 When the release workflow runs:
 
 1. **Version Detection**
-   - Reads current version from `VERSION` file
+   - Reads current version from most recent git tag
    - Analyzes commits since last tag using conventional commit format
    - Determines version bump type (major/minor/patch)
 
@@ -98,13 +98,12 @@ When the release workflow runs:
    - Generates formatted changelog entry with date
 
 4. **File Updates**
-   - Updates `VERSION` file with new version
    - Inserts new changelog entry into `CHANGELOG.md`
-   - CMakeLists.txt automatically reads from VERSION file
+   - CMakeLists.txt automatically reads version from git tags at build time
 
 5. **Git Operations**
-   - Commits version and changelog updates with `[skip ci]` tag
-   - Creates annotated git tag (e.g., `v0.2.0`)
+   - Commits changelog update with `[skip ci]` tag
+   - Creates annotated git tag with new version (e.g., `v0.2.0`)
    - Pushes changes and tag to repository
 
 6. **GitHub Release**
@@ -123,18 +122,16 @@ To maintain the zero-manual release process:
 - Review releases in GitHub Releases page after automation
 
 ❌ **DON'T:**
-- Manually edit VERSION file
 - Manually create git tags
-- Manually edit version in CMakeLists.txt (it reads from VERSION)
+- Manually edit version in CMakeLists.txt (it reads from git tags)
 - Manually update CHANGELOG.md (except for [Unreleased] section)
 
 ## Version Storage
 
-**Single Source of Truth:** The `VERSION` file at repository root
+**Single Source of Truth:** Git tags
 
-- **VERSION file**: Plain text file containing semantic version (e.g., `0.1.0`)
-- **CMakeLists.txt**: Automatically reads version from VERSION file
 - **Git tags**: Created automatically by release workflow (e.g., `v0.1.0`)
+- **CMakeLists.txt**: Automatically reads version from git tags at build time
 - **CHANGELOG.md**: Updated automatically with each release
 
 ## Workflow Configuration
@@ -150,7 +147,7 @@ The release workflow is defined in `.github/workflows/release.yml` with:
 
 ### Release didn't trigger automatically
 - Verify commits are pushed to `master` branch
-- Check that VERSION or CHANGELOG.md weren't the only changed files
+- Check that CHANGELOG.md wasn't the only changed file
 - Review GitHub Actions logs for errors
 
 ### Wrong version bump detected
@@ -202,11 +199,10 @@ git push origin master
 
 # Workflow automatically:
 # 1. Detects 1 feature + 1 fix → minor bump (0.1.0 → 0.2.0)
-# 2. Updates VERSION to 0.2.0
-# 3. Generates changelog entry
-# 4. Commits changes
-# 5. Creates tag v0.2.0
-# 6. Publishes GitHub release
+# 2. Generates changelog entry
+# 3. Commits changelog update
+# 4. Creates tag v0.2.0
+# 5. Publishes GitHub release
 ```
 
 ## Future Enhancements

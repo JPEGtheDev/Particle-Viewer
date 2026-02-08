@@ -21,7 +21,6 @@ on:
     branches:
       - master
     paths-ignore:
-      - 'VERSION'
       - 'CHANGELOG.md'
 
 # Prevent concurrent releases
@@ -48,10 +47,11 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
       
-      - name: Read current version
+      - name: Read current version from git tags
         id: current_version
         run: |
-          CURRENT_VERSION=$(cat VERSION)
+          # Get the most recent tag, or default to 0.0.0 if no tags exist
+          CURRENT_VERSION=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || echo "0.0.0")
           echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           echo "Current version: $CURRENT_VERSION"
       
@@ -211,12 +211,6 @@ jobs:
           echo "Generated changelog entry:"
           cat /tmp/changelog_entry.md
       
-      - name: Update VERSION file
-        if: steps.version_check.outputs.changed == 'true'
-        run: |
-          echo "${{ steps.new_version.outputs.version }}" > VERSION
-          echo "Updated VERSION file to ${{ steps.new_version.outputs.version }}"
-      
       - name: Update CHANGELOG.md
         if: steps.version_check.outputs.changed == 'true'
         run: |
@@ -237,13 +231,13 @@ jobs:
           mv /tmp/CHANGELOG_new.md CHANGELOG.md
           echo "Updated CHANGELOG.md"
       
-      - name: Commit version bump
+      - name: Commit changelog update
         if: steps.version_check.outputs.changed == 'true'
         run: |
-          git add VERSION CHANGELOG.md
-          git commit -m "chore(release): bump version to ${{ steps.new_version.outputs.version }} [skip ci]"
+          git add CHANGELOG.md
+          git commit -m "chore(release): update changelog for v${{ steps.new_version.outputs.version }} [skip ci]"
           git push origin master
-          echo "Committed and pushed version bump"
+          echo "Committed and pushed changelog update"
       
       - name: Create Git tag
         if: steps.version_check.outputs.changed == 'true'
