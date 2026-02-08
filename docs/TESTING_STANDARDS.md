@@ -174,7 +174,7 @@ This pattern ensures tests clearly communicate:
 
 ```cpp
 // Testing specific methods
-TEST(CameraTest, MoveForward_UpdatesPosition)
+TEST(CameraTest, MoveForward_IncreasesZPosition)
 TEST(CameraTest, ClampPitch_LimitsTo89Degrees)
 TEST(CameraTest, Update_NormalizesDirectionVector)
 
@@ -358,7 +358,10 @@ Mock external dependencies that are:
 - Require special environment setup (GPU, hardware)
 
 **Do NOT mock:**
-- Your own code (test it directly instead)
+- **Your unit under test** (test it directly instead)
+  - Mock dependencies of your unit, not the unit itself
+  - Example: When testing `Shader`, mock `OpenGL` (dependency), don't mock `Shader`
+  - You CAN mock your own helper classes if they're dependencies
 - Simple data structures or value objects
 - Pure functions with no side effects
 
