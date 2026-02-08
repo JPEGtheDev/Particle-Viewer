@@ -238,28 +238,33 @@ jobs:
           DATE=$(date +%Y-%m-%d)
           METAINFO_FILE="flatpak/org.particleviewer.ParticleViewer.metainfo.xml"
           
-          # Create temporary file with new release entry
-          cat > /tmp/new_release.txt << RELEASE_EOF
+          # Check if this version already exists in metainfo
+          if grep -q "version=\"$NEW_VERSION\"" "$METAINFO_FILE"; then
+            echo "Version $NEW_VERSION already exists in metainfo.xml, skipping update"
+          else
+            # Create temporary file with new release entry
+            cat > /tmp/new_release.txt << RELEASE_EOF
             <release version="$NEW_VERSION" date="$DATE">
               <description>
                 <p>Release $NEW_VERSION</p>
               </description>
             </release>
           RELEASE_EOF
-          
-          # Use awk to insert the new release entry after <releases> tag
-          awk -v new_release="$(cat /tmp/new_release.txt)" '
-          /<releases>/ { print; print new_release; next }
-          { print }
-          ' "$METAINFO_FILE" > "${METAINFO_FILE}.tmp"
-          
-          mv "${METAINFO_FILE}.tmp" "$METAINFO_FILE"
-          
-          # Commit the metainfo.xml change
-          git add "$METAINFO_FILE"
-          git commit -m "chore: update Flatpak metainfo to version $NEW_VERSION"
-          
-          echo "Updated Flatpak metainfo.xml to version $NEW_VERSION"
+            
+            # Use awk to insert the new release entry after <releases> tag
+            awk -v new_release="$(cat /tmp/new_release.txt)" '
+            /<releases>/ { print; print new_release; next }
+            { print }
+            ' "$METAINFO_FILE" > "${METAINFO_FILE}.tmp"
+            
+            mv "${METAINFO_FILE}.tmp" "$METAINFO_FILE"
+            
+            # Commit the metainfo.xml change
+            git add "$METAINFO_FILE"
+            git commit -m "chore: update Flatpak metainfo to version $NEW_VERSION"
+            
+            echo "Updated Flatpak metainfo.xml to version $NEW_VERSION"
+          fi
       
       - name: Create Git tag
         if: steps.version_check.outputs.changed == 'true'
