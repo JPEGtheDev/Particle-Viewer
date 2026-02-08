@@ -4,11 +4,12 @@
 ## ⚠️ PR Title Check
 <!-- IMPORTANT: Ensure your PR title follows Conventional Commits format -->
 <!-- The PR title becomes the squash commit message and determines version bumps -->
-<!-- Format: type(scope): description -->
+<!-- Format: type[optional scope]: description -->
 <!-- Examples: "feat: add color picker", "fix(camera): rotation bug" -->
 
 **Current PR title follows format?**
-- [ ] Yes, PR title starts with: feat, fix, docs, style, refactor, test, chore, perf, ci, build, or revert
+- [ ] Yes, PR title starts with: feat, fix, docs, style, refactor, test, chore, or perf
+  - Note: Other types are allowed but will default to a patch version bump
 
 ## Type of Change
 <!-- Mark the relevant option with an "x" -->
