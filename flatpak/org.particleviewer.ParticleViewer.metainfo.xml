@@ -22,12 +22,12 @@
   <launchable type="desktop-id">org.particleviewer.ParticleViewer.desktop</launchable>
   <url type="homepage">https://github.com/JPEGtheDev/Particle-Viewer</url>
   <url type="bugtracker">https://github.com/JPEGtheDev/Particle-Viewer/issues</url>
-  <developer_name>Jonathan Petz</developer_name>
+  <developer_name>JPEGtheDev</developer_name>
   <content_rating type="oars-1.1" />
   <releases>
-    <release version="0.0.1" date="2026-02-08">
+    <release version="0.0.3" date="2026-02-08">
       <description>
-        <p>Initial release with Flatpak support</p>
+        <p>Current release version</p>
       </description>
     </release>
   </releases>

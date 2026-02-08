@@ -20,6 +20,66 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for version detection
+      
+      - name: Calculate prerelease version
+        id: version
+        run: |
+          # Get the most recent tag that matches semantic versioning pattern (vX.Y.Z)
+          RAW_VERSION=$(git tag -l "v[0-9]*.[0-9]*.[0-9]*" --sort=-v:refname | head -n 1)
+          if [ -z "$RAW_VERSION" ]; then
+            RAW_VERSION="v0.0.0"
+          fi
+          
+          # Strip the 'v' prefix
+          BASE_VERSION="${RAW_VERSION#v}"
+          
+          # Create prerelease versions
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          # For metainfo.xml (supports any format): X.Y.Z-pr.N
+          PRERELEASE_VERSION="${BASE_VERSION}-pr.${PR_NUMBER}"
+          # For CMake (numeric only, 4 components max): X.Y.Z.N
+          CMAKE_VERSION="${BASE_VERSION}.${PR_NUMBER}"
+          
+          echo "base_version=$BASE_VERSION" >> $GITHUB_OUTPUT
+          echo "prerelease_version=$PRERELEASE_VERSION" >> $GITHUB_OUTPUT
+          echo "cmake_version=$CMAKE_VERSION" >> $GITHUB_OUTPUT
+          echo "Prerelease version (metainfo): $PRERELEASE_VERSION"
+          echo "CMake version: $CMAKE_VERSION"
+      
+      - name: Update Flatpak metainfo with prerelease version
+        run: |
+          PRERELEASE_VERSION="${{ steps.version.outputs.prerelease_version }}"
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          DATE=$(date +%Y-%m-%d)
+          METAINFO_FILE="flatpak/org.particleviewer.ParticleViewer.metainfo.xml"
+          
+          # Create new prerelease entry directly with echo
+          echo "    <release version=\"$PRERELEASE_VERSION\" date=\"$DATE\" type=\"development\">" > /tmp/new_release.txt
+          echo "      <description>" >> /tmp/new_release.txt
+          echo "        <p>Prerelease build for PR #$PR_NUMBER</p>" >> /tmp/new_release.txt
+          echo "      </description>" >> /tmp/new_release.txt
+          echo "    </release>" >> /tmp/new_release.txt
+          
+          # Use awk to insert the new release entry after <releases> tag
+          awk 'NR == FNR { new_release = new_release $0 ORS; next } /<releases>/ { print; printf "%s", new_release; next } { print }' \
+            /tmp/new_release.txt "$METAINFO_FILE" > "${METAINFO_FILE}.tmp"
+          
+          mv "${METAINFO_FILE}.tmp" "$METAINFO_FILE"
+          
+          echo "Updated metainfo.xml with prerelease version $PRERELEASE_VERSION"
+      
+      - name: Update Flatpak manifest with CMake version
+        run: |
+          CMAKE_VERSION="${{ steps.version.outputs.cmake_version }}"
+          MANIFEST_FILE="flatpak/org.particleviewer.ParticleViewer.yaml"
+          
+          # Add PROJECT_VERSION to config-opts for CMake
+          # Use sed to add the PROJECT_VERSION option after BUILD_TESTS=OFF
+          sed -i "/- -DBUILD_TESTS=OFF/a\\      - -DPROJECT_VERSION=$CMAKE_VERSION" "$MANIFEST_FILE"
+          
+          echo "Updated Flatpak manifest with PROJECT_VERSION=$CMAKE_VERSION"
       
       - name: Install Flatpak and flatpak-builder
         run: |
@@ -40,13 +100,14 @@ jobs:
       
       - name: Create Flatpak bundle
         run: |
-          flatpak build-bundle repo particle-viewer-pr-${{ github.event.pull_request.number }}.flatpak org.particleviewer.ParticleViewer
+          PRERELEASE_VERSION="${{ steps.version.outputs.prerelease_version }}"
+          flatpak build-bundle repo particle-viewer-${PRERELEASE_VERSION}.flatpak org.particleviewer.ParticleViewer
       
       - name: Upload Flatpak artifact
         uses: actions/upload-artifact@v4
         with:
           name: particle-viewer-flatpak-pr-${{ github.event.pull_request.number }}
-          path: particle-viewer-pr-${{ github.event.pull_request.number }}.flatpak
+          path: particle-viewer-${{ steps.version.outputs.prerelease_version }}.flatpak
           retention-days: 30
       
       - name: Comment PR with download link
@@ -58,29 +119,32 @@ jobs:
             const prNumber = context.payload.pull_request.number;
             const runId = context.runId;
             const repo = context.repo;
+            const prereleaseVersion = '${{ steps.version.outputs.prerelease_version }}';
             
             const commentMarker = '<!-- flatpak-build-comment -->';
             const comment = `${commentMarker}
-## 📦 Flatpak Build Complete
-
-A beta Flatpak build has been created for this PR and is available for testing.
-
-### Download & Install
-
-1. Download the artifact from the [workflow run](https://github.com/${repo.owner}/${repo.repo}/actions/runs/${runId})
-2. Extract the zip file to get \`particle-viewer-pr-${prNumber}.flatpak\`
-3. Install: \`flatpak install --user particle-viewer-pr-${prNumber}.flatpak\`
-4. Run: \`flatpak run org.particleviewer.ParticleViewer\`
-
-### Testing
-
-Please test the following:
-- ✅ Application launches successfully
-- ✅ File loading works correctly
-- ✅ All features work in the sandboxed environment
-- ✅ No dependency errors
-
-**Note:** This is a prerelease/beta build for testing purposes.`;
+            ## 📦 Flatpak Build Complete
+            
+            A prerelease Flatpak build has been created for this PR and is available for testing.
+            
+            **Version:** \`${prereleaseVersion}\`
+            
+            ### Download & Install
+            
+            1. Download the artifact from the [workflow run](https://github.com/${repo.owner}/${repo.repo}/actions/runs/${runId})
+            2. Extract the zip file to get \`particle-viewer-${prereleaseVersion}.flatpak\`
+            3. Install: \`flatpak install --user particle-viewer-${prereleaseVersion}.flatpak\`
+            4. Run: \`flatpak run org.particleviewer.ParticleViewer\`
+            
+            ### Testing
+            
+            Please test the following:
+            - ✅ Application launches successfully
+            - ✅ File loading works correctly
+            - ✅ All features work in the sandboxed environment
+            - ✅ No dependency errors
+            
+            **Note:** This is a prerelease/beta build for testing purposes.`;
             
             // Find existing comment
             const { data: comments } = await github.rest.issues.listComments({
