@@ -40,6 +40,13 @@ cmake --install build
 - GLFW 3.3+ and GLM (must be installed on system)
 - clang-format and clang-tidy (for code quality checks)
 
+### Pull Request Requirements
+- **REQUIRED**: All commits must use [Conventional Commits](https://www.conventionalcommits.org/) format (e.g., `feat:`, `fix:`, `docs:`)
+- Code must pass clang-format checks
+- Unit tests must pass
+- Build must succeed on all platforms
+- See [Version Management and Commits](#version-management-and-commits) section for full conventional commit guidelines
+
 ### Important Build Notes
 - Shader files in `src/shaders/` are automatically copied to `Viewer-Assets/shaders/` during build
 - Version priority: (1) PROJECT_VERSION CMake variable if set (e.g., `-DPROJECT_VERSION=1.2.3`), (2) git tags if no variable is provided (format: `v0.1.0`), or (3) fallback to `0.0.0` if neither exists
