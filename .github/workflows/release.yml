@@ -43,17 +43,43 @@ jobs:
       - name: Read current version from git tags
         id: current_version
         run: |
-          # Get the most recent tag, or default to 0.0.0 if no tags exist
-          RAW_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          # Get the most recent tag that matches semantic versioning pattern (vX.Y.Z)
+          # List tags matching v<major>.<minor>.<patch>, sort by version, and take the latest
+          RAW_VERSION=$(git tag -l "v[0-9]*.[0-9]*.[0-9]*" --sort=-v:refname | head -n 1)
+          if [ -z "$RAW_VERSION" ]; then
+            RAW_VERSION="v0.0.0"
+          fi
+          
+          # Strip the 'v' prefix
           CURRENT_VERSION="${RAW_VERSION#v}"
+          
+          # Validate that the version matches semantic versioning pattern (X.Y.Z)
+          if ! echo "$CURRENT_VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Warning: Invalid version format '$CURRENT_VERSION', defaulting to 0.0.0"
+            CURRENT_VERSION="0.0.0"
+          fi
+          
           echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           echo "Current version: $CURRENT_VERSION"
       
       - name: Get commit messages since last tag
         id: commits
         run: |
-          # Get last tag or use initial commit if no tags exist
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)
+          # Get last tag that matches semantic versioning pattern (vX.Y.Z) or use initial commit if no valid tags exist
+          RAW_LAST_TAG=$(git describe --tags --abbrev=0 --match "v[0-9]*" 2>/dev/null || echo "")
+          
+          if [ -n "$RAW_LAST_TAG" ]; then
+            LAST_TAG_VERSION="${RAW_LAST_TAG#v}"
+            if echo "$LAST_TAG_VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+              LAST_TAG="v$LAST_TAG_VERSION"
+            else
+              echo "Warning: Last tag '$RAW_LAST_TAG' is not a valid semantic version, using initial commit instead."
+              LAST_TAG=$(git rev-list --max-parents=0 HEAD)
+            fi
+          else
+            LAST_TAG=$(git rev-list --max-parents=0 HEAD)
+          fi
+          
           echo "last_tag=$LAST_TAG" >> $GITHUB_OUTPUT
           
           # Get commit messages since last tag
