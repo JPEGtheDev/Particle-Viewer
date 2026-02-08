@@ -72,6 +72,12 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/flatpak/org.particleviewer.ParticleViewer.metainf
             DESTINATION share/metainfo)
 endif()
 
+# Install application icon for Flatpak
+if(EXISTS "${CMAKE_SOURCE_DIR}/flatpak/org.particleviewer.ParticleViewer.svg")
+    install(FILES flatpak/org.particleviewer.ParticleViewer.svg 
+            DESTINATION share/icons/hicolor/scalable/apps)
+endif()
+
 # ============================================
 # Testing Configuration
 # ============================================

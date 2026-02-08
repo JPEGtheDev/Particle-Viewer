@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" version="1.1" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="64" cy="64" r="60" fill="#2c3e50" stroke="#34495e" stroke-width="2"/>
+  
+  <!-- Orbit paths -->
+  <ellipse cx="64" cy="64" rx="45" ry="45" fill="none" stroke="#3498db" stroke-width="1.5" opacity="0.3"/>
+  <ellipse cx="64" cy="64" rx="35" ry="35" fill="none" stroke="#3498db" stroke-width="1.5" opacity="0.3"/>
+  <ellipse cx="64" cy="64" rx="25" ry="25" fill="none" stroke="#3498db" stroke-width="1.5" opacity="0.3"/>
+  
+  <!-- Central particle (larger) -->
+  <circle cx="64" cy="64" r="6" fill="#e74c3c">
+    <animate attributeName="opacity" values="1;0.6;1" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Orbiting particles -->
+  <!-- Particle 1 (outer orbit, top) -->
+  <circle cx="64" cy="19" r="4" fill="#3498db">
+    <animateTransform attributeName="transform" type="rotate" from="0 64 64" to="360 64 64" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Particle 2 (outer orbit, bottom right) -->
+  <circle cx="96" cy="85" r="4" fill="#9b59b6">
+    <animateTransform attributeName="transform" type="rotate" from="120 64 64" to="480 64 64" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Particle 3 (outer orbit, bottom left) -->
+  <circle cx="32" cy="85" r="4" fill="#2ecc71">
+    <animateTransform attributeName="transform" type="rotate" from="240 64 64" to="600 64 64" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Particle 4 (middle orbit) -->
+  <circle cx="89" cy="39" r="3.5" fill="#f39c12">
+    <animateTransform attributeName="transform" type="rotate" from="45 64 64" to="405 64 64" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Particle 5 (middle orbit) -->
+  <circle cx="39" cy="89" r="3.5" fill="#1abc9c">
+    <animateTransform attributeName="transform" type="rotate" from="225 64 64" to="585 64 64" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Particle 6 (inner orbit) -->
+  <circle cx="89" cy="64" r="3" fill="#e67e22">
+    <animateTransform attributeName="transform" type="rotate" from="0 64 64" to="360 64 64" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Particle 7 (inner orbit) -->
+  <circle cx="39" cy="64" r="3" fill="#16a085">
+    <animateTransform attributeName="transform" type="rotate" from="180 64 64" to="540 64 64" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Small connecting lines to show motion -->
+  <g opacity="0.2">
+    <line x1="64" y1="64" x2="64" y2="19" stroke="#3498db" stroke-width="0.5">
+      <animateTransform attributeName="transform" type="rotate" from="0 64 64" to="360 64 64" dur="4s" repeatCount="indefinite"/>
+    </line>
+    <line x1="64" y1="64" x2="89" y2="64" stroke="#e67e22" stroke-width="0.5">
+      <animateTransform attributeName="transform" type="rotate" from="0 64 64" to="360 64 64" dur="2s" repeatCount="indefinite"/>
+    </line>
+  </g>
+</svg>
