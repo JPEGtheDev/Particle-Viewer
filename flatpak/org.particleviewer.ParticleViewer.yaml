@@ -44,8 +44,8 @@ modules:
       - -DGLFW_BUILD_DOCS=OFF
     sources:
       - type: archive
-        url: https://github.com/glfw/glfw/releases/download/3.3.9/glfw-3.3.9.tar.gz
-        sha256: 5f1fe5df5c6c4ff6e5a8e5cd5f4c8d3ae8cf0c98d7f00fb8c3f3a0a5bcc48d51
+        url: https://github.com/glfw/glfw/archive/refs/tags/3.3.9.tar.gz
+        sha256: a7e7faef424fcb5f83d8faecf9d697a338da7f7a906fc1afbc0e1879ef31bd53
 
   # Particle Viewer application
   - name: particle-viewer
