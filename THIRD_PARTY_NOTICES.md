@@ -2,6 +2,8 @@
 
 This file contains the licenses and notices for third-party software used in Particle-Viewer.
 
+**Note:** Full license texts are included for embedded libraries. External dependencies (GLFW, GLM, GoogleTest) are referenced with links to their respective repositories for the complete license texts.
+
 ---
 
 ## Embedded Libraries
@@ -109,9 +111,11 @@ freely, subject to the following restrictions:
 - **Generator:** glad 0.1.33
 - **Generated:** Wed Jul 22 13:02:02 2020
 - **Source:** https://github.com/Dav1dde/glad
-- **License:** Public Domain / MIT (depends on generator options)
+- **License:** Public Domain (CC0 1.0 Universal)
 
-GLAD is an OpenGL loader generator. The generated code is typically placed in the public domain or under MIT license. The code was generated for:
+GLAD is an OpenGL loader generator. The generated code in this repository does not contain an explicit license header, which is consistent with GLAD's default behavior of generating public domain code. The generated files may be used without restriction.
+
+Code was generated for:
 - **Language/Generator:** C/C++
 - **Specification:** gl
 - **APIs:** gl=4.6
@@ -169,11 +173,11 @@ GLFW is licensed under the zlib/libpng license. For full license text, see the G
 ### GLM
 
 - **Purpose:** OpenGL Mathematics library for graphics software
-- **License:** MIT License or The Happy Bunny License (Modified MIT)
+- **License:** MIT License (dual-licensed with The Happy Bunny License; this project uses MIT)
 - **Source:** https://github.com/g-truc/glm
 - **Website:** https://glm.g-truc.net/
 
-GLM is header-only and licensed under MIT or The Happy Bunny License. For full license text, see the GLM repository.
+GLM is a header-only library dual-licensed under MIT and The Happy Bunny License. This project uses GLM under the MIT License terms. For full license text, see the GLM repository.
 
 ---
 
