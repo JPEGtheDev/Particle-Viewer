@@ -3,59 +3,80 @@
   <!-- Background circle -->
   <circle cx="64" cy="64" r="60" fill="#2c3e50" stroke="#34495e" stroke-width="2"/>
   
-  <!-- Orbit paths -->
-  <ellipse cx="64" cy="64" rx="45" ry="45" fill="none" stroke="#3498db" stroke-width="1.5" opacity="0.3"/>
-  <ellipse cx="64" cy="64" rx="35" ry="35" fill="none" stroke="#3498db" stroke-width="1.5" opacity="0.3"/>
-  <ellipse cx="64" cy="64" rx="25" ry="25" fill="none" stroke="#3498db" stroke-width="1.5" opacity="0.3"/>
-  
-  <!-- Central particle (larger) -->
-  <circle cx="64" cy="64" r="6" fill="#e74c3c">
-    <animate attributeName="opacity" values="1;0.6;1" dur="2s" repeatCount="indefinite"/>
-  </circle>
-  
-  <!-- Orbiting particles -->
-  <!-- Particle 1 (outer orbit, top) -->
-  <circle cx="64" cy="19" r="4" fill="#3498db">
-    <animateTransform attributeName="transform" type="rotate" from="0 64 64" to="360 64 64" dur="4s" repeatCount="indefinite"/>
-  </circle>
-  
-  <!-- Particle 2 (outer orbit, bottom right) -->
-  <circle cx="96" cy="85" r="4" fill="#9b59b6">
-    <animateTransform attributeName="transform" type="rotate" from="120 64 64" to="480 64 64" dur="4s" repeatCount="indefinite"/>
-  </circle>
-  
-  <!-- Particle 3 (outer orbit, bottom left) -->
-  <circle cx="32" cy="85" r="4" fill="#2ecc71">
-    <animateTransform attributeName="transform" type="rotate" from="240 64 64" to="600 64 64" dur="4s" repeatCount="indefinite"/>
-  </circle>
-  
-  <!-- Particle 4 (middle orbit) -->
-  <circle cx="89" cy="39" r="3.5" fill="#f39c12">
-    <animateTransform attributeName="transform" type="rotate" from="45 64 64" to="405 64 64" dur="3s" repeatCount="indefinite"/>
-  </circle>
-  
-  <!-- Particle 5 (middle orbit) -->
-  <circle cx="39" cy="89" r="3.5" fill="#1abc9c">
-    <animateTransform attributeName="transform" type="rotate" from="225 64 64" to="585 64 64" dur="3s" repeatCount="indefinite"/>
-  </circle>
-  
-  <!-- Particle 6 (inner orbit) -->
-  <circle cx="89" cy="64" r="3" fill="#e67e22">
-    <animateTransform attributeName="transform" type="rotate" from="0 64 64" to="360 64 64" dur="2s" repeatCount="indefinite"/>
-  </circle>
-  
-  <!-- Particle 7 (inner orbit) -->
-  <circle cx="39" cy="64" r="3" fill="#16a085">
-    <animateTransform attributeName="transform" type="rotate" from="180 64 64" to="540 64 64" dur="2s" repeatCount="indefinite"/>
-  </circle>
-  
-  <!-- Small connecting lines to show motion -->
-  <g opacity="0.2">
-    <line x1="64" y1="64" x2="64" y2="19" stroke="#3498db" stroke-width="0.5">
-      <animateTransform attributeName="transform" type="rotate" from="0 64 64" to="360 64 64" dur="4s" repeatCount="indefinite"/>
-    </line>
-    <line x1="64" y1="64" x2="89" y2="64" stroke="#e67e22" stroke-width="0.5">
-      <animateTransform attributeName="transform" type="rotate" from="0 64 64" to="360 64 64" dur="2s" repeatCount="indefinite"/>
-    </line>
+  <!-- Motion trails -->
+  <g opacity="0.3">
+    <!-- Left body trail -->
+    <ellipse cx="25" cy="64" rx="15" ry="3" fill="#3498db" opacity="0.2">
+      <animate attributeName="opacity" values="0.2;0.05;0.2" dur="2s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="30" cy="64" rx="12" ry="2.5" fill="#3498db" opacity="0.3">
+      <animate attributeName="opacity" values="0.3;0.1;0.3" dur="2s" repeatCount="indefinite"/>
+    </ellipse>
+    
+    <!-- Right body trail -->
+    <ellipse cx="103" cy="64" rx="15" ry="3" fill="#e74c3c" opacity="0.2">
+      <animate attributeName="opacity" values="0.2;0.05;0.2" dur="2s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="98" cy="64" rx="12" ry="2.5" fill="#e74c3c" opacity="0.3">
+      <animate attributeName="opacity" values="0.3;0.1;0.3" dur="2s" repeatCount="indefinite"/>
+    </ellipse>
   </g>
+  
+  <!-- Collision impact burst (at center) -->
+  <g opacity="0.6">
+    <circle cx="64" cy="64" r="20" fill="none" stroke="#f39c12" stroke-width="2">
+      <animate attributeName="r" values="5;20;5" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.8;0.1;0.8" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="64" cy="64" r="15" fill="none" stroke="#f1c40f" stroke-width="1.5">
+      <animate attributeName="r" values="3;15;3" dur="2s" repeatCount="indefinite" begin="0.3s"/>
+      <animate attributeName="opacity" values="0.9;0.1;0.9" dur="2s" repeatCount="indefinite" begin="0.3s"/>
+    </circle>
+  </g>
+  
+  <!-- Impact particles ejecting from collision -->
+  <g opacity="0.5">
+    <!-- Particle 1 - up -->
+    <circle cx="64" cy="50" r="2" fill="#f39c12">
+      <animate attributeName="cy" values="64;45;64" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.8;0" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <!-- Particle 2 - down -->
+    <circle cx="64" cy="78" r="2" fill="#e67e22">
+      <animate attributeName="cy" values="64;83;64" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.8;0" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <!-- Particle 3 - up-right -->
+    <circle cx="72" cy="52" r="1.5" fill="#f1c40f">
+      <animate attributeName="cx" values="64;76;64" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="64;48;64" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.8;0" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <!-- Particle 4 - down-left -->
+    <circle cx="56" cy="76" r="1.5" fill="#e67e22">
+      <animate attributeName="cx" values="64;52;64" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="64;80;64" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.8;0" dur="2s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Left body (blue) - moving right -->
+  <circle cx="40" cy="64" r="12" fill="#3498db" stroke="#2980b9" stroke-width="2">
+    <animate attributeName="cx" values="35;58;35" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="12;10;12" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Right body (red) - moving left -->
+  <circle cx="88" cy="64" r="12" fill="#e74c3c" stroke="#c0392b" stroke-width="2">
+    <animate attributeName="cx" values="93;70;93" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="12;10;12" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Highlight on bodies for 3D effect -->
+  <ellipse cx="37" cy="59" rx="4" ry="3" fill="#ffffff" opacity="0.4">
+    <animate attributeName="cx" values="32;55;32" dur="2s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="91" cy="59" rx="4" ry="3" fill="#ffffff" opacity="0.4">
+    <animate attributeName="cx" values="96;73;96" dur="2s" repeatCount="indefinite"/>
+  </ellipse>
 </svg>
