@@ -21,12 +21,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
+      - name: Install Flatpak and flatpak-builder
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder
+          
+      - name: Add Flathub repository
+        run: |
+          sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+      
+      - name: Install Freedesktop SDK and Platform
+        run: |
+          sudo flatpak install -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
+      
       - name: Build Flatpak
-        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
-        with:
-          bundle: particle-viewer-pr-${{ github.event.pull_request.number }}.flatpak
-          manifest-path: flatpak/org.particleviewer.ParticleViewer.yaml
-          cache-key: flatpak-builder-${{ github.sha }}
+        run: |
+          flatpak-builder --force-clean --repo=repo build-dir flatpak/org.particleviewer.ParticleViewer.yaml
+      
+      - name: Create Flatpak bundle
+        run: |
+          flatpak build-bundle repo particle-viewer-pr-${{ github.event.pull_request.number }}.flatpak org.particleviewer.ParticleViewer
       
       - name: Upload Flatpak artifact
         uses: actions/upload-artifact@v4

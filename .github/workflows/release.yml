@@ -296,12 +296,26 @@ jobs:
         with:
           ref: ${{ needs.release.outputs.tag }}
       
+      - name: Install Flatpak and flatpak-builder
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder
+          
+      - name: Add Flathub repository
+        run: |
+          sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+      
+      - name: Install Freedesktop SDK and Platform
+        run: |
+          sudo flatpak install -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
+      
       - name: Build Flatpak
-        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
-        with:
-          bundle: particle-viewer-${{ needs.release.outputs.version }}.flatpak
-          manifest-path: flatpak/org.particleviewer.ParticleViewer.yaml
-          cache-key: flatpak-builder-${{ github.sha }}
+        run: |
+          flatpak-builder --force-clean --repo=repo build-dir flatpak/org.particleviewer.ParticleViewer.yaml
+      
+      - name: Create Flatpak bundle
+        run: |
+          flatpak build-bundle repo particle-viewer-${{ needs.release.outputs.version }}.flatpak org.particleviewer.ParticleViewer
       
       - name: Upload Flatpak to Release
         env:
