@@ -13,7 +13,7 @@ The project follows [Semantic Versioning 2.0.0](https://semver.org/):
 - **MINOR** version: New features in a backward-compatible manner
 - **PATCH** version: Backward-compatible bug fixes
 
-Current version is derived from git tags at build time.
+At build time, the current version is taken from the PROJECT_VERSION build variable (for example via -DPROJECT_VERSION=...), falling back to git tags when that is not set, and to 0.0.0 if neither is available.
 
 ## Conventional Commits
 
