@@ -43,7 +43,7 @@ make install
 
 ### Important Build Notes
 - Shader files in `src/shaders/` are automatically copied to `Viewer-Assets/shaders/` during build
-- Version is determined from: (1) PROJECT_VERSION CMake variable, (2) git tags (format: `v0.1.0`), or (3) fallback to `0.0.0`
+- Version priority: (1) PROJECT_VERSION CMake variable if set (e.g., `-DPROJECT_VERSION=1.2.3`), (2) git tags if no variable is provided (format: `v0.1.0`), or (3) fallback to `0.0.0` if neither exists
 - Tests are enabled by default via `BUILD_TESTS=ON` option
 
 ## Testing
@@ -183,7 +183,9 @@ Configuration in `.clang-tidy` enforces:
 - `feat:` → MINOR version bump (0.1.0 → 0.2.0)
 - `fix:` → PATCH version bump (0.1.0 → 0.1.1)
 - `feat!:` or `BREAKING CHANGE:` → MAJOR version bump (0.1.0 → 1.0.0)
-- Other types (`docs:`, `test:`, `chore:`, etc.) → PATCH version bump
+- Other types (`docs:`, `test:`, `chore:`, etc.) → PATCH version bump (default fallback)
+
+**Note**: The release workflow detects `feat:`, `fix:`, and breaking changes. Commits without these types still trigger a PATCH bump to ensure every push to master creates a release.
 
 **Examples:**
 ```bash
