@@ -32,7 +32,7 @@ class Particle
 
     /*
      * Creates a new particle structure containing an N number of particles.
-     * This functon also sets up the buffer to be used with OpenGL calls.
+     * This function also sets up the buffer to be used with OpenGL calls.
      */
     Particle(long N, glm::vec4* trans)
     {

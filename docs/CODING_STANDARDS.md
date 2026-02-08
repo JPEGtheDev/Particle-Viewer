@@ -208,7 +208,7 @@ class ParticleSystem
 
 ### Source Files
 - Include corresponding header first
-- Keep functions focused and small (< 50 statements ideally)
+- Keep functions focused and small (≤ 50 statements maximum, fewer is better)
 - Limit function parameters (< 5 recommended)
 
 ### Class Organization
@@ -324,12 +324,17 @@ auto it = particles.begin();
 
 ### Range-based for loops
 ```cpp
-// Good
-for (const auto& particle : particles) {
+// Good: use non-const reference for modifying elements
+for (auto& particle : particles) {
     particle.update();
 }
 
-// Avoid
+// Good: use const reference for read-only access
+for (const auto& particle : particles) {
+    renderParticle(particle);
+}
+
+// Avoid: index-based loops when range-based is clearer
 for (size_t i = 0; i < particles.size(); i++) {
     particles[i].update();
 }

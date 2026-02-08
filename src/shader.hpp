@@ -45,7 +45,7 @@ class Shader
             vertexCode = vShaderStream.str();
             fragmentCode = fShaderStream.str();
         } catch (std::ifstream::failure e) {
-            std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+            std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ" << std::endl;
         }
 
         const GLchar* vShaderCode = vertexCode.c_str();
@@ -84,7 +84,7 @@ class Shader
             glGetProgramInfoLog(this->Program, 512, NULL, infoLog);
             std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
         }
-        // Delete the shaders as they're linked into our program now and no longer necessery
+        // Delete the shaders as they're linked into our program now and no longer necessary
         glDeleteShader(vertex);
         glDeleteShader(fragment);
     };
