@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: read
+      pull-requests: write
     
     steps:
       - name: Checkout repository
@@ -206,7 +206,7 @@ jobs:
           echo "Generated changelog entry:"
           cat /tmp/changelog_entry.md
       
-      - name: Update VERSION file
+      - name: Update VERSION file  
         if: steps.version_check.outputs.changed == 'true'
         run: |
           echo "${{ steps.new_version.outputs.version }}" > VERSION
@@ -232,14 +232,6 @@ jobs:
           mv /tmp/CHANGELOG_new.md CHANGELOG.md
           echo "Updated CHANGELOG.md"
       
-      - name: Commit version bump
-        if: steps.version_check.outputs.changed == 'true'
-        run: |
-          git add VERSION CHANGELOG.md
-          git commit -m "chore(release): bump version to ${{ steps.new_version.outputs.version }} [skip ci]"
-          git push origin master
-          echo "Committed and pushed version bump"
-      
       - name: Create Git tag
         if: steps.version_check.outputs.changed == 'true'
         run: |
@@ -247,6 +239,44 @@ jobs:
           git tag -a "$TAG" -m "Release $TAG"
           git push origin "$TAG"
           echo "Created and pushed tag: $TAG"
+      
+      - name: Create Pull Request for version bump
+        if: steps.version_check.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="release/v${{ steps.new_version.outputs.version }}-version-bump"
+          
+          # Create a new branch for the version bump
+          git checkout -b "$BRANCH"
+          
+          # Commit the version changes
+          git add VERSION CHANGELOG.md
+          git commit -m "chore(release): bump version to ${{ steps.new_version.outputs.version }} [skip ci]"
+          
+          # Push the branch
+          git push origin "$BRANCH"
+          
+          # Create a pull request
+          gh pr create \
+            --title "chore(release): bump version to ${{ steps.new_version.outputs.version }}" \
+            --body "Automated version bump following release v${{ steps.new_version.outputs.version }}
+
+## Changes
+- Updated VERSION file to ${{ steps.new_version.outputs.version }}
+- Updated CHANGELOG.md with release notes
+
+## Release Notes
+$(cat /tmp/changelog_entry.md)
+
+---
+*This PR was automatically created by the Automated Release workflow after publishing release v${{ steps.new_version.outputs.version }}.*" \
+            --base master \
+            --head "$BRANCH" \
+            --label "release" \
+            --label "automated"
+          
+          echo "Created pull request for version bump on branch: $BRANCH"
       
       - name: Create GitHub Release
         if: steps.version_check.outputs.changed == 'true'
