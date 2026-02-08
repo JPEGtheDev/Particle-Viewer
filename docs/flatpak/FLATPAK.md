@@ -99,7 +99,7 @@ flatpak install flathub org.freedesktop.Platform//23.08 org.freedesktop.Sdk//23.
 2. **Manual build:**
    ```bash
    # Build the Flatpak
-   flatpak-builder --force-clean --repo=repo flatpak-build org.particleviewer.ParticleViewer.yaml
+   flatpak-builder --force-clean --repo=repo flatpak-build flatpak/org.particleviewer.ParticleViewer.yaml
    
    # Create a bundle for distribution
    flatpak build-bundle repo particle-viewer.flatpak org.particleviewer.ParticleViewer
@@ -127,7 +127,7 @@ flatpak run --log-session-bus org.particleviewer.ParticleViewer
 
 ### Manifest Configuration
 
-The Flatpak manifest (`org.particleviewer.ParticleViewer.yaml`) defines:
+The Flatpak manifest (`flatpak/org.particleviewer.ParticleViewer.yaml`) defines:
 
 - **Runtime:** org.freedesktop.Platform 23.08
 - **SDK:** org.freedesktop.Sdk 23.08

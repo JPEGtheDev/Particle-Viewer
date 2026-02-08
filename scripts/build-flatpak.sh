@@ -27,7 +27,7 @@ fi
 
 # Build the Flatpak
 echo -e "${GREEN}Running flatpak-builder...${NC}"
-flatpak-builder --force-clean --repo=repo flatpak-build org.particleviewer.ParticleViewer.yaml
+flatpak-builder --force-clean --repo=repo flatpak-build flatpak/org.particleviewer.ParticleViewer.yaml
 
 # Create a single-file bundle for distribution
 echo -e "${GREEN}Creating Flatpak bundle...${NC}"

@@ -6,9 +6,7 @@ on:
     paths:
       - 'src/**'
       - 'CMakeLists.txt'
-      - 'org.particleviewer.ParticleViewer.yaml'
-      - 'org.particleviewer.ParticleViewer.desktop'
-      - 'org.particleviewer.ParticleViewer.metainfo.xml'
+      - 'flatpak/**'
       - 'scripts/build-flatpak.sh'
       - '.github/workflows/flatpak-pr.yml'
 
@@ -27,7 +25,7 @@ jobs:
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
           bundle: particle-viewer-pr-${{ github.event.pull_request.number }}.flatpak
-          manifest-path: org.particleviewer.ParticleViewer.yaml
+          manifest-path: flatpak/org.particleviewer.ParticleViewer.yaml
           cache-key: flatpak-builder-${{ github.sha }}
       
       - name: Upload Flatpak artifact

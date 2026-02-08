@@ -22,7 +22,7 @@ flatpak run org.particleviewer.ParticleViewer
 - ✅ Works on any Linux distribution
 - ✅ Single-file distribution
 
-See [FLATPAK.md](FLATPAK.md) for detailed installation and building instructions.
+See [FLATPAK.md](docs/flatpak/FLATPAK.md) for detailed installation and building instructions.
 
 ### Building from Source
 

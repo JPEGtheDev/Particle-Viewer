@@ -303,7 +303,7 @@ jobs:
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
           bundle: particle-viewer-${{ needs.release.outputs.version }}.flatpak
-          manifest-path: org.particleviewer.ParticleViewer.yaml
+          manifest-path: flatpak/org.particleviewer.ParticleViewer.yaml
           cache-key: flatpak-builder-${{ github.sha }}
       
       - name: Upload Flatpak to Release
