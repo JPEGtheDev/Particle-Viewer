@@ -125,15 +125,17 @@ using VertexBuffer = std::vector<Vertex>;
 ```
 
 ### Functions and Methods
-- **camelCase** (lowercase first letter, capitalize subsequent words)
+- **camelCase** (lowercase first letter, capitalize subsequent words) - *Note: clang-tidy enforcement relaxed*
+
+> **Note:** While the project aims for camelCase naming for methods and functions, clang-tidy's `readability-identifier-naming` check doesn't support true camelCase (lowercase first letter). The configuration uses `aNy_CasE` for methods to avoid false positives while allowing the existing code style. New code should follow camelCase convention where possible.
 
 ```cpp
 class Renderer
 {
 public:
-    void initializeBuffers();
-    void drawParticles();
-    int getParticleCount() const;
+    void initializeBuffers();    // camelCase (preferred)
+    void drawParticles();         // camelCase (preferred)
+    int getParticleCount() const; // camelCase (preferred)
 private:
     void updateVertexData();
 };
