@@ -1,0 +1,158 @@
+name: Code Quality Check
+
+on:
+  pull_request:
+    branches: [ "master" ]
+  push:
+    branches: [ "master" ]
+
+jobs:
+  format-check:
+    name: clang-format Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install clang-format
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang-format-14
+    
+    - name: Check C++ code formatting
+      run: |
+        # Find all C++ source files (excluding external dependencies)
+        FILES=$(find src -type f \( -name "*.cpp" -o -name "*.hpp" \) \
+          ! -path "*/glad/*" \
+          ! -path "*/tinyFileDialogs/*" \
+          ! -name "stb_*.h" \
+          ! -name "stb_*.hpp")
+        
+        if [ -z "$FILES" ]; then
+          echo "No files to check"
+          exit 0
+        fi
+        
+        # Check formatting
+        echo "Checking formatting for:"
+        echo "$FILES"
+        echo ""
+        
+        FORMATTED=0
+        for file in $FILES; do
+          if ! clang-format-14 --dry-run -Werror "$file" 2>/dev/null; then
+            echo "❌ $file needs formatting"
+            FORMATTED=1
+          else
+            echo "✓ $file is properly formatted"
+          fi
+        done
+        
+        if [ $FORMATTED -eq 1 ]; then
+          echo ""
+          echo "================================================================"
+          echo "Code formatting issues detected!"
+          echo "Please run: find src -name '*.cpp' -o -name '*.hpp' | xargs clang-format -i"
+          echo "================================================================"
+          exit 1
+        fi
+        
+        echo ""
+        echo "All files are properly formatted! ✓"
+
+  clang-tidy:
+    name: clang-tidy Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang-tidy-14 libglfw3-dev libglm-dev
+    
+    - name: Run clang-tidy
+      run: |
+        # Find all C++ source files (excluding external dependencies)
+        FILES=$(find src -type f \( -name "*.cpp" -o -name "*.hpp" \) \
+          ! -path "*/glad/*" \
+          ! -path "*/tinyFileDialogs/*" \
+          ! -name "stb_*.h" \
+          ! -name "stb_*.hpp")
+        
+        if [ -z "$FILES" ]; then
+          echo "No files to check"
+          exit 0
+        fi
+        
+        echo "Running clang-tidy analysis..."
+        echo ""
+        
+        # Run clang-tidy with project includes
+        # Note: This is informational only, not blocking the build
+        # to allow gradual adoption of standards
+        TIDY_FAILED=0
+        for file in $FILES; do
+          echo "Analyzing $file..."
+          if ! clang-tidy-14 "$file" -- \
+            -std=c++11 \
+            -Isrc/glad/include \
+            -I/usr/include 2>&1 | tee -a tidy_output.log; then
+            TIDY_FAILED=1
+          fi
+        done
+        
+        echo ""
+        echo "================================================================"
+        if [ $TIDY_FAILED -eq 0 ]; then
+          echo "clang-tidy analysis completed with no errors ✓"
+        else
+          echo "⚠️  clang-tidy found potential issues"
+          echo "Review the output above for recommendations"
+          echo "Note: This check is informational and does not block the build"
+        fi
+        echo "================================================================"
+        
+        # Don't fail the build for tidy warnings (gradual adoption)
+        exit 0
+
+  coding-standards-report:
+    name: Generate Coding Standards Report
+    runs-on: ubuntu-latest
+    needs: [format-check, clang-tidy]
+    if: always()
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Check for documentation
+      run: |
+        echo "================================================================"
+        echo "Coding Standards Documentation Check"
+        echo "================================================================"
+        
+        if [ -f "docs/CODING_STANDARDS.md" ]; then
+          echo "✓ Coding standards documentation found"
+        else
+          echo "❌ Coding standards documentation missing"
+          exit 1
+        fi
+        
+        if [ -f ".clang-format" ]; then
+          echo "✓ clang-format configuration found"
+        else
+          echo "❌ clang-format configuration missing"
+          exit 1
+        fi
+        
+        if [ -f ".clang-tidy" ]; then
+          echo "✓ clang-tidy configuration found"
+        else
+          echo "❌ clang-tidy configuration missing"
+          exit 1
+        fi
+        
+        echo ""
+        echo "All coding standards files are present ✓"
+        echo "See docs/CODING_STANDARDS.md for details"
