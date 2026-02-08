@@ -13,6 +13,46 @@ Particle-Viewer is a C++ OpenGL-based viewer for N-Body simulations. It allows v
 - GLFW and GLM libraries (must be installed locally)
 - Embedded libraries: stb, Tiny File Dialogs, GLAD
 
+## For Copilot Agents Creating Pull Requests
+
+**CRITICAL REQUIREMENT**: When creating a PR, the PR title MUST follow conventional commits format because:
+- This project uses squash merging (all commits in a PR become one commit)
+- The PR title becomes the final commit message on the master branch
+- The commit message determines the semantic version bump (feat → minor, fix → patch, feat! → major)
+
+**PR Title Format**: `<type>[optional scope]: <description>`
+
+**Examples of Valid PR Titles:**
+- `feat: add particle color customization`
+- `fix(camera): correct rotation calculation in moveAround method`
+- `docs: update build instructions for Flatpak`
+- `refactor(renderer): simplify shader loading logic`
+- `feat!: redesign configuration API` (breaking change)
+
+**Invalid PR Titles** (will fail CI):
+- ❌ "Add particle color customization" (missing type)
+- ❌ "Update camera rotation" (missing type)
+- ❌ "Implement Flatpak distribution with automated CI/CD pipeline" (missing type)
+
+When you create a PR, always start the title with the appropriate conventional commit type.
+
+## For Copilot Agents Working on Existing Pull Requests
+
+**DO NOT MODIFY THE PR TITLE** unless explicitly instructed by the user.
+
+- The PR title represents the **overall feature or fix**, not individual tasks
+- When working on subtasks within a PR, do NOT change the PR title to match the current task
+- The PR title is the squash commit message and should remain stable throughout the PR lifecycle
+- Only update the PR description to track progress on individual tasks
+
+**Example Workflow:**
+- PR title: `feat: add Flatpak distribution support` ✓ (keep this throughout)
+- Task 1: Update build scripts ✓ (don't change PR title)
+- Task 2: Add CI/CD workflow ✓ (don't change PR title)
+- Task 3: Update documentation ✓ (don't change PR title)
+
+The PR title reflects the high-level change. Individual commits and tasks are implementation details.
+
 ## Build System
 
 ### Building the Project
@@ -41,6 +81,9 @@ cmake --install build
 - clang-format and clang-tidy (for code quality checks)
 
 ### Pull Request Requirements
+- **REQUIRED**: PR title MUST use [Conventional Commits](https://www.conventionalcommits.org/) format (e.g., `feat: add feature`, `fix(scope): bug fix`)
+  - **CRITICAL**: When squash merging, the PR title becomes the commit message that determines semantic version bumps
+  - Example PR titles: `feat: add particle color picker`, `fix(camera): correct rotation`, `docs: update README`
 - **REQUIRED**: All commits must use [Conventional Commits](https://www.conventionalcommits.org/) format (e.g., `feat:`, `fix:`, `docs:`)
 - Code must pass clang-format checks
 - Unit tests must pass
