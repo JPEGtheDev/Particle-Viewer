@@ -9,21 +9,23 @@
 // includes
 #include <iostream>
 #include <string>
-#include "math.h"
+
+#include <glad/glad.h>
+
+#include "camera.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
-
-#include <glad/glad.h>
-#include "shader.hpp"
-#include "camera.hpp"
-#include "tinyFileDialogs/tinyfiledialogs.h"
+#include "math.h"
 #include "particle.hpp"
 #include "settingsIO.hpp"
+#include "shader.hpp"
+#include "tinyFileDialogs/tinyfiledialogs.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
-#include "osFile.hpp"
 #include <GLFW/glfw3.h>
+
+#include "osFile.hpp"
+#include "stb_image_write.h"
 #ifdef _WIN32 // Windows Includes
     #include <windows.h>
 #endif

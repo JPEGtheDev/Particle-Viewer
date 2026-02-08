@@ -8,8 +8,8 @@
 #ifndef osFile_HPP
 #define osFile_HPP
 
-#include <string>
 #include <iostream>
+#include <string>
 
 #ifdef _WIN32
     #include <windows.h>
