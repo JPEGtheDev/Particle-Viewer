@@ -175,5 +175,5 @@ After verification:
 1. Merge PR to enable workflows
 2. Test PR workflow on a subsequent PR
 3. Trigger a release to test release workflow
-4. Consider submitting to Flathub (optional)
-5. Add application icon for better desktop integration
+4. Verify the application icon displays correctly in your desktop environment
+5. Consider submitting to Flathub (optional)

@@ -162,8 +162,8 @@ The Flatpak manifest (`flatpak/org.particleviewer.ParticleViewer.yaml`) defines:
 
 The Flatpak bundles the following dependencies:
 
-1. **GLM** (0.9.9.8) - Header-only math library
-2. **GLFW** (3.3.9) - OpenGL window and input management
+1. **GLM** (1.0.1) - Header-only math library
+2. **GLFW** (3.3.9) - OpenGL window and input management (static-linked)
 3. **OpenGL** - Provided by the runtime
 4. **tinyFileDialogs** - Embedded in source
 5. **GLAD** - Embedded in source
@@ -276,7 +276,7 @@ flatpak run --command=bash org.particleviewer.ParticleViewer
 ## Future Improvements
 
 - [ ] Submit to Flathub for wider distribution
-- [ ] Add application icon
+- [x] Add application icon (completed - collision visualization SVG)
 - [ ] Implement desktop file actions
 - [ ] Add screenshots to AppStream metadata
 - [ ] Consider implementing native file portal support

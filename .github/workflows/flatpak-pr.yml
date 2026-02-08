@@ -50,38 +50,61 @@ jobs:
           retention-days: 30
       
       - name: Comment PR with download link
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        continue-on-error: true
         uses: actions/github-script@v7
         with:
           script: |
-            const fs = require('fs');
             const prNumber = context.payload.pull_request.number;
             const runId = context.runId;
             const repo = context.repo;
             
-            const comment = `## 📦 Flatpak Build Complete
+            const commentMarker = '<!-- flatpak-build-comment -->';
+            const comment = `${commentMarker}
+## 📦 Flatpak Build Complete
+
+A beta Flatpak build has been created for this PR and is available for testing.
+
+### Download & Install
+
+1. Download the artifact from the [workflow run](https://github.com/${repo.owner}/${repo.repo}/actions/runs/${runId})
+2. Extract the zip file to get \`particle-viewer-pr-${prNumber}.flatpak\`
+3. Install: \`flatpak install --user particle-viewer-pr-${prNumber}.flatpak\`
+4. Run: \`flatpak run org.particleviewer.ParticleViewer\`
+
+### Testing
+
+Please test the following:
+- ✅ Application launches successfully
+- ✅ File loading works correctly
+- ✅ All features work in the sandboxed environment
+- ✅ No dependency errors
+
+**Note:** This is a prerelease/beta build for testing purposes.`;
             
-            A beta Flatpak build has been created for this PR and is available for testing.
-            
-            ### Download & Install
-            
-            1. Download the artifact from the [workflow run](https://github.com/${repo.owner}/${repo.repo}/actions/runs/${runId})
-            2. Extract the zip file to get \`particle-viewer-pr-${prNumber}.flatpak\`
-            3. Install: \`flatpak install --user particle-viewer-pr-${prNumber}.flatpak\`
-            4. Run: \`flatpak run org.particleviewer.ParticleViewer\`
-            
-            ### Testing
-            
-            Please test the following:
-            - ✅ Application launches successfully
-            - ✅ File loading works correctly
-            - ✅ All features work in the sandboxed environment
-            - ✅ No dependency errors
-            
-            **Note:** This is a prerelease/beta build for testing purposes.`;
-            
-            github.rest.issues.createComment({
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
               issue_number: prNumber,
               owner: repo.owner,
               repo: repo.repo,
-              body: comment
             });
+            
+            const existingComment = comments.find(c => c.body.includes(commentMarker));
+            
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                comment_id: existingComment.id,
+                owner: repo.owner,
+                repo: repo.repo,
+                body: comment
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                issue_number: prNumber,
+                owner: repo.owner,
+                repo: repo.repo,
+                body: comment
+              });
+            }

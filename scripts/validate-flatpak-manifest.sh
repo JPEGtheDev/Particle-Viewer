@@ -29,11 +29,20 @@ echo -e "${GREEN}✓ Manifest file exists${NC}"
 # 1. Validate YAML syntax
 echo ""
 echo -e "${BLUE}[1/5] Validating YAML syntax...${NC}"
-if python3 -c "import yaml; yaml.safe_load(open('$MANIFEST'))" 2>/dev/null; then
-    echo -e "${GREEN}✓ YAML syntax is valid${NC}"
-else
-    echo -e "${RED}✗ YAML syntax is invalid${NC}"
+
+# Check if PyYAML is installed
+if ! python3 -c "import yaml" 2>/dev/null; then
+    echo -e "${RED}✗ PyYAML not installed${NC}"
+    echo -e "${YELLOW}  Install with: pip3 install pyyaml${NC}"
+    echo -e "${YELLOW}  or: sudo apt-get install python3-yaml${NC}"
     ERRORS=$((ERRORS + 1))
+else
+    if python3 -c "import yaml; yaml.safe_load(open('$MANIFEST'))" 2>/dev/null; then
+        echo -e "${GREEN}✓ YAML syntax is valid${NC}"
+    else
+        echo -e "${RED}✗ YAML syntax is invalid${NC}"
+        ERRORS=$((ERRORS + 1))
+    fi
 fi
 
 # 2. Check URLs are accessible
@@ -54,10 +63,11 @@ else
     while IFS= read -r url; do
         if [ -n "$url" ]; then
             echo -n "  Checking: $url ... "
-            if curl -sIL "$url" | grep -q "HTTP.*[23]0[0-9]"; then
+            status_code=$(curl -s -o /dev/null -w "%{http_code}" -L "$url")
+            if [ "$status_code" -ge 200 ] && [ "$status_code" -lt 300 ]; then
                 echo -e "${GREEN}✓${NC}"
             else
-                echo -e "${RED}✗ (not accessible)${NC}"
+                echo -e "${RED}✗ (not accessible, HTTP $status_code)${NC}"
                 ERRORS=$((ERRORS + 1))
             fi
         fi
@@ -67,7 +77,13 @@ fi
 # 3. Verify SHA256 checksums
 echo ""
 echo -e "${BLUE}[3/5] Verifying SHA256 checksums...${NC}"
-python3 << 'PYEOF'
+
+# Check if PyYAML is installed before running Python script
+if ! python3 -c "import yaml" 2>/dev/null; then
+    echo -e "${YELLOW}⚠ PyYAML not available, skipping SHA256 verification${NC}"
+else
+    set +e  # Temporarily disable exit on error
+    python3 << 'PYEOF'
 import yaml
 import sys
 import hashlib
@@ -114,17 +130,27 @@ except Exception as e:
     sys.exit(1)
 PYEOF
 
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}✓ All SHA256 checksums verified${NC}"
-else
-    echo -e "${RED}✗ SHA256 verification failed${NC}"
-    ERRORS=$((ERRORS + 1))
+    SHA_EXIT=$?
+    set -e  # Re-enable exit on error
+    
+    if [ $SHA_EXIT -eq 0 ]; then
+        echo -e "${GREEN}✓ All SHA256 checksums verified${NC}"
+    else
+        echo -e "${RED}✗ SHA256 verification failed${NC}"
+        ERRORS=$((ERRORS + 1))
+    fi
 fi
 
 # 4. Validate manifest structure
 echo ""
 echo -e "${BLUE}[4/5] Validating manifest structure...${NC}"
-python3 << 'PYEOF'
+
+# Check if PyYAML is installed before running Python script
+if ! python3 -c "import yaml" 2>/dev/null; then
+    echo -e "${YELLOW}⚠ PyYAML not available, skipping structure validation${NC}"
+else
+    set +e  # Temporarily disable exit on error
+    python3 << 'PYEOF'
 import yaml
 import sys
 
@@ -158,11 +184,15 @@ except Exception as e:
     sys.exit(1)
 PYEOF
 
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}✓ Manifest structure is valid${NC}"
-else
-    echo -e "${RED}✗ Manifest structure validation failed${NC}"
-    ERRORS=$((ERRORS + 1))
+    STRUCT_EXIT=$?
+    set -e  # Re-enable exit on error
+    
+    if [ $STRUCT_EXIT -eq 0 ]; then
+        echo -e "${GREEN}✓ Manifest structure is valid${NC}"
+    else
+        echo -e "${RED}✗ Manifest structure validation failed${NC}"
+        ERRORS=$((ERRORS + 1))
+    fi
 fi
 
 # 5. Check if flatpak-builder can parse it
