@@ -35,13 +35,18 @@ jobs:
           # Strip the 'v' prefix
           BASE_VERSION="${RAW_VERSION#v}"
           
-          # Create prerelease version with PR number
+          # Create prerelease versions
           PR_NUMBER="${{ github.event.pull_request.number }}"
+          # For metainfo.xml (supports any format): X.Y.Z-pr.N
           PRERELEASE_VERSION="${BASE_VERSION}-pr.${PR_NUMBER}"
+          # For CMake (numeric only, 4 components max): X.Y.Z.N
+          CMAKE_VERSION="${BASE_VERSION}.${PR_NUMBER}"
           
           echo "base_version=$BASE_VERSION" >> $GITHUB_OUTPUT
           echo "prerelease_version=$PRERELEASE_VERSION" >> $GITHUB_OUTPUT
-          echo "Prerelease version: $PRERELEASE_VERSION"
+          echo "cmake_version=$CMAKE_VERSION" >> $GITHUB_OUTPUT
+          echo "Prerelease version (metainfo): $PRERELEASE_VERSION"
+          echo "CMake version: $CMAKE_VERSION"
       
       - name: Update Flatpak metainfo with prerelease version
         run: |
@@ -64,6 +69,17 @@ jobs:
           mv "${METAINFO_FILE}.tmp" "$METAINFO_FILE"
           
           echo "Updated metainfo.xml with prerelease version $PRERELEASE_VERSION"
+      
+      - name: Update Flatpak manifest with CMake version
+        run: |
+          CMAKE_VERSION="${{ steps.version.outputs.cmake_version }}"
+          MANIFEST_FILE="flatpak/org.particleviewer.ParticleViewer.yaml"
+          
+          # Add PROJECT_VERSION to config-opts for CMake
+          # Use sed to add the PROJECT_VERSION option after BUILD_TESTS=OFF
+          sed -i "/- -DBUILD_TESTS=OFF/a\\      - -DPROJECT_VERSION=$CMAKE_VERSION" "$MANIFEST_FILE"
+          
+          echo "Updated Flatpak manifest with PROJECT_VERSION=$CMAKE_VERSION"
       
       - name: Install Flatpak and flatpak-builder
         run: |
