@@ -97,20 +97,26 @@ When the release workflow runs:
    - Groups changes by type (Added, Fixed, Breaking Changes, Changed)
    - Generates formatted changelog entry with date
 
-4. **File Updates**
+4. **File Updates & Pull Request**
    - Updates `VERSION` file with new version
    - Inserts new changelog entry into `CHANGELOG.md`
+   - Creates a release branch with these changes
+   - Opens a pull request for review and merging
    - CMakeLists.txt automatically reads from VERSION file
 
 5. **Git Operations**
-   - Commits version and changelog updates with `[skip ci]` tag
    - Creates annotated git tag (e.g., `v0.2.0`)
-   - Pushes changes and tag to repository
+   - Pushes tag to repository
 
 6. **GitHub Release**
    - Creates GitHub release with changelog as description
    - Tags the release with version number
    - Publishes release to GitHub Releases page
+
+7. **Version Bump PR**
+   - A pull request is created with VERSION and CHANGELOG updates
+   - PR can be reviewed and merged according to branch protection rules
+   - PR includes `[skip ci]` tag to prevent recursive workflows
 
 ## Zero-Manual Requirements
 
@@ -142,9 +148,20 @@ To maintain the zero-manual release process:
 The release workflow is defined in `.github/workflows/release.yml` with:
 
 - **Concurrency control**: Prevents simultaneous releases
-- **Permissions**: `contents: write` for creating releases
+- **Permissions**: `contents: write` for creating releases and tags, `pull-requests: write` for creating PRs
+- **Branch Protection Compatibility**: Creates PRs for version bumps instead of pushing directly to master
 - **Skip CI**: Version bump commits include `[skip ci]` to prevent recursive workflows
 - **Full history**: Fetches complete git history for changelog generation
+
+### Working with Branch Protection
+
+The workflow is designed to work with branch protection rules on the master branch:
+
+1. **Release Tag & GitHub Release**: Created immediately when workflow runs
+2. **Version File Updates**: Created as a pull request that respects branch protection
+3. **Merge Flow**: After the PR is merged, VERSION and CHANGELOG are updated in master
+
+This ensures releases are published immediately while maintaining code review requirements for version file updates.
 
 ## Troubleshooting
 
@@ -159,8 +176,14 @@ The release workflow is defined in `.github/workflows/release.yml` with:
 - Check that commit prefixes are lowercase (`feat:` not `Feat:`)
 
 ### Workflow fails with permission error
-- Verify GitHub Actions has `contents: write` permission
+- Verify GitHub Actions has `contents: write` and `pull-requests: write` permissions
 - Check that GITHUB_TOKEN has not expired
+- If pushing to master fails, ensure branch protection allows PR-based updates
+
+### Branch is protected
+- This is expected! The workflow creates a PR for version updates instead of pushing directly
+- Review and merge the automatically created PR to update VERSION and CHANGELOG files
+- The release itself is published immediately via git tag and GitHub Release
 
 ### Duplicate releases created
 - Workflow has concurrency control to prevent this
@@ -196,12 +219,13 @@ git push origin master
 
 # Workflow automatically:
 # 1. Detects 1 feature + 1 fix → minor bump (0.1.0 → 0.2.0)
-# 2. Updates VERSION to 0.2.0
-# 3. Generates changelog entry
-# 4. Commits changes
-# 5. Creates tag v0.2.0
-# 6. Publishes GitHub release
+# 2. Creates tag v0.2.0
+# 3. Publishes GitHub release
+# 4. Creates PR with VERSION and CHANGELOG updates
+# 5. Merge the PR to update version files in master
 ```
+
+**Note**: The GitHub release is created immediately, while the VERSION and CHANGELOG updates are merged via PR to respect branch protection rules.
 
 ## Future Enhancements
 
