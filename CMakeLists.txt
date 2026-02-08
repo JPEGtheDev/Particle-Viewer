@@ -61,6 +61,17 @@ file(COPY src/shaders/ DESTINATION Viewer-Assets/shaders)
 install (TARGETS Viewer DESTINATION bin)
 install (DIRECTORY src/shaders/ DESTINATION bin/Viewer-Assets/shaders)
 
+# Install desktop and metainfo files for Flatpak
+if(EXISTS "${CMAKE_SOURCE_DIR}/flatpak/org.particleviewer.ParticleViewer.desktop")
+    install(FILES flatpak/org.particleviewer.ParticleViewer.desktop 
+            DESTINATION share/applications)
+endif()
+
+if(EXISTS "${CMAKE_SOURCE_DIR}/flatpak/org.particleviewer.ParticleViewer.metainfo.xml")
+    install(FILES flatpak/org.particleviewer.ParticleViewer.metainfo.xml 
+            DESTINATION share/metainfo)
+endif()
+
 # ============================================
 # Testing Configuration
 # ============================================

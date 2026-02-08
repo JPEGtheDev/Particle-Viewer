@@ -57,6 +57,3 @@ modules:
     sources:
       - type: dir
         path: ..
-    post-install:
-      - install -Dm644 flatpak/org.particleviewer.ParticleViewer.desktop /app/share/applications/org.particleviewer.ParticleViewer.desktop
-      - install -Dm644 flatpak/org.particleviewer.ParticleViewer.metainfo.xml /app/share/metainfo/org.particleviewer.ParticleViewer.metainfo.xml
