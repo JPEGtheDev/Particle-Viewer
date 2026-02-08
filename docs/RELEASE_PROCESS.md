@@ -13,7 +13,7 @@ The project follows [Semantic Versioning 2.0.0](https://semver.org/):
 - **MINOR** version: New features in a backward-compatible manner
 - **PATCH** version: Backward-compatible bug fixes
 
-Current version is stored in the `VERSION` file at the repository root.
+Current version is derived from git tags at build time.
 
 ## Conventional Commits
 

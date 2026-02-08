@@ -117,11 +117,6 @@ This configuration maintains code quality standards while enabling full release 
 - Check that you saved the branch protection rule changes
 - Ensure the workflow is using `GITHUB_TOKEN` (default) or a PAT with sufficient permissions
 
-### Releases created but VERSION file not updated
-- Check that the workflow has `contents: write` permission
-- Verify git configuration in the workflow is correct
-- Review workflow logs for commit/push failures
-
 ### Tags created but GitHub Release fails
 - Ensure `GITHUB_TOKEN` has `contents: write` permission
 - Check for API rate limiting
