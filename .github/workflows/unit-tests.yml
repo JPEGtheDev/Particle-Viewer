@@ -1,0 +1,102 @@
+name: Unit Tests
+
+on:
+  pull_request:
+    branches: [ "master" ]
+  push:
+    branches: [ "master" ]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    
+    permissions:
+      contents: read
+      checks: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        build_type: [Debug, Release]
+        c_compiler: [gcc, clang]
+        include:
+          - os: ubuntu-latest
+            c_compiler: gcc
+            cpp_compiler: g++
+          - os: ubuntu-latest
+            c_compiler: clang
+            cpp_compiler: clang++
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set reusable strings
+      id: strings
+      shell: bash
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+    
+    - name: Make scripts executable
+      run: chmod -R +x ./scripts/
+
+    - name: Install Dependencies
+      run: |
+        if [ "$RUNNER_OS" == "Linux" ]; then
+          ./scripts/installUbuntuPreReqs.sh
+        else
+          echo "$RUNNER_OS not supported"
+          exit 1
+        fi
+      shell: bash
+
+    - name: Configure CMake
+      run: >
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -DBUILD_TESTS=ON
+        -S ${{ github.workspace }}
+
+    - name: Build
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+
+    - name: Run Tests
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      run: ctest --build-config ${{ matrix.build_type }} --output-on-failure --verbose
+
+    - name: Generate Coverage Report (Debug only)
+      if: matrix.build_type == 'Debug' && matrix.c_compiler == 'gcc'
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      run: |
+        # Install gcovr if not available
+        sudo apt-get update
+        sudo apt-get install -y gcovr
+        
+        # Generate coverage report
+        gcovr --root ${{ github.workspace }} \
+              --filter '${{ github.workspace }}/src/' \
+              --exclude '${{ github.workspace }}/src/glad/' \
+              --exclude '${{ github.workspace }}/src/stb_*' \
+              --exclude '${{ github.workspace }}/src/tinyFileDialogs/' \
+              --print-summary \
+              --txt coverage.txt
+        
+        # Display coverage summary
+        cat coverage.txt
+
+    - name: Upload Coverage Report
+      if: matrix.build_type == 'Debug' && matrix.c_compiler == 'gcc'
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: ${{ steps.strings.outputs.build-output-dir }}/coverage.txt
+
+    - name: Check Test Results
+      if: always()
+      run: |
+        if [ -f "${{ steps.strings.outputs.build-output-dir }}/Testing/Temporary/LastTest.log" ]; then
+          echo "Test log:"
+          cat "${{ steps.strings.outputs.build-output-dir }}/Testing/Temporary/LastTest.log"
+        fi
