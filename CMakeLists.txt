@@ -12,7 +12,7 @@ if(NOT DEFINED PROJECT_VERSION)
     
     # Remove 'v' prefix if present and use as project version
     if(GIT_VERSION)
-        string(REGEX REPLACE "^v" "" PROJECT_VERSION ${GIT_VERSION})
+        string(REGEX REPLACE "^v" "" PROJECT_VERSION "${GIT_VERSION}")
     else()
         # Fallback version if no tags exist
         set(PROJECT_VERSION "0.0.0")
