@@ -44,7 +44,8 @@ jobs:
         id: current_version
         run: |
           # Get the most recent tag, or default to 0.0.0 if no tags exist
-          CURRENT_VERSION=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || echo "0.0.0")
+          RAW_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          CURRENT_VERSION="${RAW_VERSION#v}"
           echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           echo "Current version: $CURRENT_VERSION"
       
