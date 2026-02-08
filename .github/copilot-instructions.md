@@ -29,12 +29,12 @@ Particle-Viewer is a C++ OpenGL-based viewer for N-Body simulations. It allows v
 - `refactor(renderer): simplify shader loading logic`
 - `feat!: redesign configuration API` (breaking change)
 
-**Invalid PR Titles** (will fail CI):
+**Invalid PR Titles** (will produce an incorrect squash commit message and version bump):
 - ❌ "Add particle color customization" (missing type)
 - ❌ "Update camera rotation" (missing type)
 - ❌ "Implement Flatpak distribution with automated CI/CD pipeline" (missing type)
 
-When you create a PR, always start the title with the appropriate conventional commit type.
+When you create a PR, always start the title with the appropriate conventional commit type so the release workflow can compute the correct semantic version bump.
 
 ## For Copilot Agents Working on Existing Pull Requests
 
