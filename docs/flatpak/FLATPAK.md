@@ -72,6 +72,28 @@ flatpak uninstall org.particleviewer.ParticleViewer
 
 ## For Developers
 
+### Local Testing & Validation
+
+**NEW: Test your changes before pushing!** 🎯
+
+Before pushing changes to the Flatpak manifest, use our local validation tools to catch errors early:
+
+```bash
+# Quick validation (30 seconds) - checks YAML, URLs, checksums
+./scripts/validate-flatpak-manifest.sh
+
+# Full build test (5-10 minutes) - simulates CI/CD locally
+./scripts/test-flatpak-build-local.sh
+```
+
+**Benefits:**
+- ✅ Catch errors before they hit CI/CD
+- ✅ No more "fix CI" commits
+- ✅ Faster iteration cycle
+- ✅ Confidence your changes will work
+
+See [`scripts/FLATPAK_TESTING.md`](../../scripts/FLATPAK_TESTING.md) for detailed usage guide.
+
 ### Building Locally
 
 #### Prerequisites
