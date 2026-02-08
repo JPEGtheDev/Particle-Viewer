@@ -231,10 +231,45 @@ jobs:
           echo "Generated changelog entry:"
           cat /tmp/changelog_entry.md
       
+      - name: Update Flatpak metainfo version
+        if: steps.version_check.outputs.changed == 'true'
+        run: |
+          NEW_VERSION="${{ steps.new_version.outputs.version }}"
+          DATE=$(date +%Y-%m-%d)
+          METAINFO_FILE="flatpak/org.particleviewer.ParticleViewer.metainfo.xml"
+          
+          # Read the changelog entry for release description
+          CHANGELOG_ENTRY=$(cat /tmp/changelog_entry.md)
+          
+          # Extract just the changes (skip the header line with version and date)
+          RELEASE_DESC=$(echo "$CHANGELOG_ENTRY" | tail -n +3 | sed 's/^### //' | sed 's/^- /  • /')
+          
+          # Create new release entry
+          NEW_RELEASE="    <release version=\"$NEW_VERSION\" date=\"$DATE\">
+              <description>
+                <p>Release $NEW_VERSION</p>
+              </description>
+            </release>"
+          
+          # Insert the new release entry after the <releases> tag
+          sed -i "/<releases>/a\\
+          $NEW_RELEASE" "$METAINFO_FILE"
+          
+          # Commit the metainfo.xml change
+          git add "$METAINFO_FILE"
+          git commit -m "chore: update Flatpak metainfo to version $NEW_VERSION"
+          
+          echo "Updated Flatpak metainfo.xml to version $NEW_VERSION"
+      
       - name: Create Git tag
         if: steps.version_check.outputs.changed == 'true'
         run: |
           TAG="v${{ steps.new_version.outputs.version }}"
+          
+          # Push the metainfo update commit to master
+          git push origin master
+          
+          # Create and push the tag
           git tag -a "$TAG" -m "Release $TAG"
           # Push tag to remote - this must happen before creating the GitHub Release
           # because 'gh release create' expects the tag to already exist remotely
