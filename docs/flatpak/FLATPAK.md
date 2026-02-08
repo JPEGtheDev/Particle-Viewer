@@ -86,7 +86,7 @@ sudo apt install flatpak flatpak-builder
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
 # Install the Freedesktop runtime and SDK
-flatpak install flathub org.freedesktop.Platform//23.08 org.freedesktop.Sdk//23.08
+flatpak install flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
 ```
 
 #### Build Steps
@@ -129,8 +129,8 @@ flatpak run --log-session-bus org.particleviewer.ParticleViewer
 
 The Flatpak manifest (`flatpak/org.particleviewer.ParticleViewer.yaml`) defines:
 
-- **Runtime:** org.freedesktop.Platform 23.08
-- **SDK:** org.freedesktop.Sdk 23.08
+- **Runtime:** org.freedesktop.Platform 24.08
+- **SDK:** org.freedesktop.Sdk 24.08
 - **Permissions:**
   - Graphics: X11, Wayland, DRI
   - File system: home directory, documents, downloads
@@ -180,7 +180,7 @@ On every release (when version changes are detected):
 **Problem:** "Runtime not found"
 ```bash
 # Install the runtime
-flatpak install flathub org.freedesktop.Platform//23.08 org.freedesktop.Sdk//23.08
+flatpak install flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
 ```
 
 **Problem:** "Permission denied" errors

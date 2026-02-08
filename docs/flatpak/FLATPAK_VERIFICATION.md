@@ -67,7 +67,7 @@ sudo apt install flatpak flatpak-builder
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
 # Install runtime and SDK
-flatpak install flathub org.freedesktop.Platform//23.08 org.freedesktop.Sdk//23.08
+flatpak install flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
 ```
 
 ### Build and Test
@@ -116,7 +116,7 @@ sudo apt install flatpak-builder
 ### Issue: Runtime Not Found
 **Solution:**
 ```bash
-flatpak install flathub org.freedesktop.Platform//23.08 org.freedesktop.Sdk//23.08
+flatpak install flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
 ```
 
 ### Issue: Permission Denied on Build Script
@@ -128,7 +128,7 @@ chmod +x scripts/build-flatpak.sh
 ### Issue: Workflow Fails on Missing Dependencies
 **Solution:**
 - Check the Flatpak manifest for correct dependency URLs and SHA256 hashes
-- Verify runtime version (23.08) is available
+- Verify runtime version (24.08) is available
 - Check that container image is correct in workflow
 
 ### Issue: Application Won't Launch
