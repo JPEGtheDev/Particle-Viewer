@@ -1,5 +1,0 @@
-if(EXISTS "/home/runner/work/Particle-Viewer/Particle-Viewer/_codeql_build_dir/tests/ParticleViewerTests[1]_tests.cmake")
-  include("/home/runner/work/Particle-Viewer/Particle-Viewer/_codeql_build_dir/tests/ParticleViewerTests[1]_tests.cmake")
-else()
-  add_test(ParticleViewerTests_NOT_BUILT ParticleViewerTests_NOT_BUILT)
-endif()
