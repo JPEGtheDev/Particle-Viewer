@@ -38,10 +38,15 @@ class SettingsIOTest : public ::testing::Test
     }
 
     // Helper to create test settings file
+    // Note: Uses /tmp for consistency with existing tests (ShaderTests.cpp)
+    // In the future, consider using std::filesystem::temp_directory_path() for cross-platform support
     void createTestFiles()
     {
         // Create a valid test settings file
         std::ofstream statsFile("/tmp/test_RunSetup");
+        if (!statsFile.is_open()) {
+            FAIL() << "Failed to create test settings file";
+        }
         statsFile << "InitialPosition1.x=" << "100.0\n";
         statsFile << "InitialPosition1.y=" << "200.0\n";
         statsFile << "InitialPosition1.z=" << "300.0\n";
@@ -102,21 +107,26 @@ class SettingsIOTest : public ::testing::Test
         // Format: vec4 positions followed by vec4 velocities for each particle, per frame
         // Let's create 3 frames with 100 particles each
         FILE* posFile = fopen("/tmp/test_PosAndVel", "wb");
-        if (posFile) {
-            for (int frame = 0; frame < 3; frame++) {
-                // Write positions
-                for (int i = 0; i < 100; i++) {
-                    glm::vec4 pos((float)i, (float)(i + frame), (float)(i + frame * 2), 1.0f);
-                    fwrite(&pos, sizeof(glm::vec4), 1, posFile);
-                }
-                // Write velocities
-                for (int i = 0; i < 100; i++) {
-                    glm::vec4 vel((float)i * 0.1f, (float)i * 0.2f, (float)i * 0.3f, 0.0f);
-                    fwrite(&vel, sizeof(glm::vec4), 1, posFile);
-                }
-            }
-            fclose(posFile);
+        if (!posFile) {
+            FAIL() << "Failed to create test position file";
         }
+            if (!posFile) {
+            FAIL() << "Failed to create test position file";
+        }
+        
+        for (int frame = 0; frame < 3; frame++) {
+            // Write positions
+            for (int i = 0; i < 100; i++) {
+                glm::vec4 pos((float)i, (float)(i + frame), (float)(i + frame * 2), 1.0f);
+                fwrite(&pos, sizeof(glm::vec4), 1, posFile);
+            }
+            // Write velocities
+            for (int i = 0; i < 100; i++) {
+                glm::vec4 vel((float)i * 0.1f, (float)i * 0.2f, (float)i * 0.3f, 0.0f);
+                fwrite(&vel, sizeof(glm::vec4), 1, posFile);
+            }
+        }
+        fclose(posFile);
 
         // Create an empty COM file
         std::ofstream comFile("/tmp/test_COMFile");

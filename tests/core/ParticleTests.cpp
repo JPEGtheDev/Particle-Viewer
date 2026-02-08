@@ -29,6 +29,9 @@ class ParticleTest : public ::testing::Test
     {
         // Cleanup after each test
     }
+
+    // Test constants
+    static constexpr float DEFAULT_PARTICLE_SIZE = 500.0f;
 };
 
 // ============================================
@@ -67,8 +70,8 @@ TEST_F(ParticleTest, DefaultConstructor_InitializesFirstParticlePosition)
     // Arrange & Act
     Particle p;
 
-    // Assert - First particle should be at (0, 0, 0, 500)
-    EXPECT_EQ(p.translations[0], glm::vec4(0.0f, 0.0f, 0.0f, 500.0f));
+    // Assert - First particle should be at (0, 0, 0, DEFAULT_PARTICLE_SIZE)
+    EXPECT_EQ(p.translations[0], glm::vec4(0.0f, 0.0f, 0.0f, DEFAULT_PARTICLE_SIZE));
 }
 
 TEST_F(ParticleTest, DefaultConstructor_InitializesLastParticlePosition)
@@ -83,7 +86,7 @@ TEST_F(ParticleTest, DefaultConstructor_InitializesLastParticlePosition)
     EXPECT_FLOAT_EQ(p.translations[63999].x, 48.75f);
     EXPECT_FLOAT_EQ(p.translations[63999].y, 49.96875f);
     EXPECT_FLOAT_EQ(p.translations[63999].z, 49.99921875f);
-    EXPECT_FLOAT_EQ(p.translations[63999].w, 500.0f);
+    EXPECT_FLOAT_EQ(p.translations[63999].w, DEFAULT_PARTICLE_SIZE);
 }
 
 TEST_F(ParticleTest, CustomConstructor_SetsParticleCount)

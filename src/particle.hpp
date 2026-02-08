@@ -38,7 +38,7 @@ class Particle
     {
         n = N;
         translations = trans;
-        velocities = new glm::vec4[1];
+        velocities = new glm::vec4[N];
         setUpInstanceBuffer();
     }
     /*
