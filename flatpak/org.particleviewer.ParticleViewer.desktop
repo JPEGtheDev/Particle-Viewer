@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Particle Viewer
+GenericName=N-Body Simulation Viewer
+Comment=Viewer for N-Body simulations in a 3D environment
+Exec=Viewer
+Icon=org.particleviewer.ParticleViewer
+Terminal=false
+Categories=Education;Science;
+Keywords=particle;simulation;physics;viewer;3d;

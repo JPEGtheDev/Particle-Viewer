@@ -1,0 +1,110 @@
+name: Build Flatpak (PR)
+
+on:
+  pull_request:
+    branches: [ "master" ]
+    paths:
+      - 'src/**'
+      - 'CMakeLists.txt'
+      - 'flatpak/**'
+      - 'scripts/build-flatpak.sh'
+      - '.github/workflows/flatpak-pr.yml'
+
+jobs:
+  build-flatpak:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Install Flatpak and flatpak-builder
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder
+          
+      - name: Add Flathub repository
+        run: |
+          sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+      
+      - name: Install Freedesktop SDK and Platform
+        run: |
+          sudo flatpak install -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
+      
+      - name: Build Flatpak
+        run: |
+          flatpak-builder --force-clean --repo=repo build-dir flatpak/org.particleviewer.ParticleViewer.yaml
+      
+      - name: Create Flatpak bundle
+        run: |
+          flatpak build-bundle repo particle-viewer-pr-${{ github.event.pull_request.number }}.flatpak org.particleviewer.ParticleViewer
+      
+      - name: Upload Flatpak artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: particle-viewer-flatpak-pr-${{ github.event.pull_request.number }}
+          path: particle-viewer-pr-${{ github.event.pull_request.number }}.flatpak
+          retention-days: 30
+      
+      - name: Comment PR with download link
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        continue-on-error: true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const runId = context.runId;
+            const repo = context.repo;
+            
+            const commentMarker = '<!-- flatpak-build-comment -->';
+            const comment = `${commentMarker}
+## 📦 Flatpak Build Complete
+
+A beta Flatpak build has been created for this PR and is available for testing.
+
+### Download & Install
+
+1. Download the artifact from the [workflow run](https://github.com/${repo.owner}/${repo.repo}/actions/runs/${runId})
+2. Extract the zip file to get \`particle-viewer-pr-${prNumber}.flatpak\`
+3. Install: \`flatpak install --user particle-viewer-pr-${prNumber}.flatpak\`
+4. Run: \`flatpak run org.particleviewer.ParticleViewer\`
+
+### Testing
+
+Please test the following:
+- ✅ Application launches successfully
+- ✅ File loading works correctly
+- ✅ All features work in the sandboxed environment
+- ✅ No dependency errors
+
+**Note:** This is a prerelease/beta build for testing purposes.`;
+            
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              issue_number: prNumber,
+              owner: repo.owner,
+              repo: repo.repo,
+            });
+            
+            const existingComment = comments.find(c => c.body.includes(commentMarker));
+            
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                comment_id: existingComment.id,
+                owner: repo.owner,
+                repo: repo.repo,
+                body: comment
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                issue_number: prNumber,
+                owner: repo.owner,
+                repo: repo.repo,
+                body: comment
+              });
+            }

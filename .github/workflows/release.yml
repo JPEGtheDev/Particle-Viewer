@@ -258,6 +258,13 @@ jobs:
           
           echo "Created GitHub release: $TAG"
       
+      - name: Output release info
+        if: steps.version_check.outputs.changed == 'true'
+        id: release_info
+        run: |
+          echo "version=${{ steps.new_version.outputs.version }}" >> $GITHUB_OUTPUT
+          echo "tag=v${{ steps.new_version.outputs.version }}" >> $GITHUB_OUTPUT
+      
       - name: Release Summary
         if: always()
         run: |
@@ -270,3 +277,54 @@ jobs:
           else
             echo "ℹ️ No version change detected - release skipped"
           fi
+    
+    outputs:
+      version_changed: ${{ steps.version_check.outputs.changed }}
+      version: ${{ steps.new_version.outputs.version }}
+      tag: ${{ steps.release_info.outputs.tag }}
+  
+  build-flatpak:
+    needs: release
+    if: needs.release.outputs.version_changed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release.outputs.tag }}
+      
+      - name: Install Flatpak and flatpak-builder
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder
+          
+      - name: Add Flathub repository
+        run: |
+          sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+      
+      - name: Install Freedesktop SDK and Platform
+        run: |
+          sudo flatpak install -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
+      
+      - name: Build Flatpak
+        run: |
+          flatpak-builder --force-clean --repo=repo build-dir flatpak/org.particleviewer.ParticleViewer.yaml
+      
+      - name: Create Flatpak bundle
+        run: |
+          flatpak build-bundle repo particle-viewer-${{ needs.release.outputs.version }}.flatpak org.particleviewer.ParticleViewer
+      
+      - name: Upload Flatpak to Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ needs.release.outputs.tag }}"
+          FLATPAK_FILE="particle-viewer-${{ needs.release.outputs.version }}.flatpak"
+          
+          # Upload the Flatpak bundle to the release
+          gh release upload "$TAG" "$FLATPAK_FILE" --clobber
+          
+          echo "✅ Uploaded Flatpak to release: $TAG"

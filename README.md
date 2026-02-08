@@ -5,6 +5,31 @@ A viewer for N-Body simulations.
 
 ___
 
+## Installation
+
+### Linux (Flatpak - Recommended)
+
+Download the latest `.flatpak` file from [Releases](https://github.com/JPEGtheDev/Particle-Viewer/releases) and install:
+
+```bash
+flatpak install --user particle-viewer-<version>.flatpak
+flatpak run org.particleviewer.ParticleViewer
+```
+
+**Benefits:**
+- ✅ No dependency installation required
+- ✅ Sandboxed and secure
+- ✅ Works on any Linux distribution
+- ✅ Single-file distribution
+
+See [FLATPAK.md](docs/flatpak/FLATPAK.md) for detailed installation and building instructions.
+
+### Building from Source
+
+For development or other platforms, see the build instructions below.
+
+___
+
 ## Long Description:
 
 This is a project created by Jonathan Petz for Tarleton State University's Particle Modeling Group. The purpose of this application is to view N-Body simulations in a 3D environment. The secondary purpose of this application is to take screenshots, to be compiled into a video, in order to demonstrate the particle group's findings. The final purpose of this application is to allow me to create a pseudo game engine / hone in on my OpenGl programming skills, while also providing a viewer to the TSU Particle Modeling Group.
