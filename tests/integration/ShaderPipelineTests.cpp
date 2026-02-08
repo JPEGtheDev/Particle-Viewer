@@ -39,7 +39,7 @@ class ShaderPipelineTest : public ::testing::Test
         glCreateProgram = []() -> GLuint { return MockOpenGL::mockCreateProgram(); };
         glCreateShader = [](GLenum type) -> GLuint { return MockOpenGL::mockCreateShader(type); };
         glShaderSource = [](GLuint shader, GLsizei count, const GLchar* const* string, const GLint* length) {
-            MockOpenGL::mockShaderSource(shader, count, const_cast<const GLchar**>(string), length);
+            MockOpenGL::mockShaderSource(shader, count, string, length);
         };
         glCompileShader = [](GLuint shader) { MockOpenGL::mockCompileShader(shader); };
         glGetShaderiv = [](GLuint shader, GLenum pname, GLint* params) {

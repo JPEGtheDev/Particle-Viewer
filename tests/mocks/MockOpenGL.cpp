@@ -120,7 +120,7 @@ void MockOpenGL::mockUniform1f(GLint location, GLfloat v0)
     uniform1fCalls++;
 }
 
-void MockOpenGL::mockShaderSource(GLuint shader, GLsizei count, const GLchar** string, const GLint* length)
+void MockOpenGL::mockShaderSource(GLuint shader, GLsizei count, const GLchar* const* string, const GLint* length)
 {
     shaderSourceCalls++;
 }

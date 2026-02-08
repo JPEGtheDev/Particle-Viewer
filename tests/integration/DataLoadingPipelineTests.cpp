@@ -149,6 +149,10 @@ class DataLoadingPipelineTest : public ::testing::Test
 
     // Test constants - using enum as a C++11 workaround for static const int
     enum { NUM_PARTICLES = 50, NUM_FRAMES = 5 };
+    
+    // Tolerance for floating-point comparisons
+    static constexpr float FLOAT_TOLERANCE = 0.001f;
+    
     const char* posPath = "/tmp/integration_PosAndVel";
     const char* statsPath = "/tmp/integration_RunSetup";
     const char* comPath = "/tmp/integration_COMFile";
@@ -249,9 +253,9 @@ TEST_F(DataLoadingPipelineTest, LoadFrame_VelocitiesMatchExpectedPattern)
     // vx = 10 * 0.1 + 1 * 0.01 = 1.01
     // vy = 10 * 0.2 + 1 * 0.02 = 2.02
     // vz = 10 * 0.3 + 1 * 0.03 = 3.03
-    EXPECT_NEAR(part.velocities[10].x, 1.01f, 0.001f);
-    EXPECT_NEAR(part.velocities[10].y, 2.02f, 0.001f);
-    EXPECT_NEAR(part.velocities[10].z, 3.03f, 0.001f);
+    EXPECT_NEAR(part.velocities[10].x, 1.01f, FLOAT_TOLERANCE);
+    EXPECT_NEAR(part.velocities[10].y, 2.02f, FLOAT_TOLERANCE);
+    EXPECT_NEAR(part.velocities[10].z, 3.03f, FLOAT_TOLERANCE);
 }
 
 // ============================================
@@ -323,7 +327,7 @@ TEST_F(DataLoadingPipelineTest, SequentialFrameLoading_DataChangesCorrectly)
         // Verify first particle position changes with frame
         EXPECT_FLOAT_EQ(part.translations[0].x, (float)frame);
         EXPECT_FLOAT_EQ(part.translations[0].y, (float)(frame * 2));
-        EXPECT_NEAR(part.translations[0].z, (float)(frame * 0.5f), 0.001f);
+        EXPECT_NEAR(part.translations[0].z, (float)(frame * 0.5f), FLOAT_TOLERANCE);
     }
 }
 
@@ -364,7 +368,7 @@ TEST_F(DataLoadingPipelineTest, MultipleFrameReloads_DataRemainsConsistent)
         // Assert: Data should be identical each time
         EXPECT_FLOAT_EQ(part.translations[0].x, 2.0f);
         EXPECT_FLOAT_EQ(part.translations[0].y, 4.0f);
-        EXPECT_NEAR(part.translations[0].z, 1.0f, 0.001f);
+        EXPECT_NEAR(part.translations[0].z, 1.0f, FLOAT_TOLERANCE);
     }
 }
 

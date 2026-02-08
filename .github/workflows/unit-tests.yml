@@ -99,12 +99,31 @@ jobs:
         cat coverage.txt
         
         # Extract line coverage percentage from JSON for enforcement
-        LINE_COVERAGE=$(python3 -c "import json; data=json.load(open('coverage.json')); print(round(data['line_percent'], 2) if 'line_percent' in data else 0)")
+        # Handles errors gracefully and defaults to 0 if file is missing or malformed
+        LINE_COVERAGE=$(python3 -c "
+import json
+import sys
+try:
+    with open('coverage.json', 'r') as f:
+        data = json.load(f)
+    print(round(data.get('line_percent', 0), 2))
+except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
+    print('Error reading coverage.json:', e, file=sys.stderr)
+    print(0)
+" 2>&1 | tail -1)
         echo "Line coverage: ${LINE_COVERAGE}%"
         echo "line_coverage=${LINE_COVERAGE}" >> "$GITHUB_OUTPUT"
         
         # Extract branch coverage if available
-        BRANCH_COVERAGE=$(python3 -c "import json; data=json.load(open('coverage.json')); print(round(data.get('branch_percent', 0), 2))")
+        BRANCH_COVERAGE=$(python3 -c "
+import json
+try:
+    with open('coverage.json', 'r') as f:
+        data = json.load(f)
+    print(round(data.get('branch_percent', 0), 2))
+except:
+    print(0)
+" 2>&1 | tail -1)
         echo "Branch coverage: ${BRANCH_COVERAGE}%"
         echo "branch_coverage=${BRANCH_COVERAGE}" >> "$GITHUB_OUTPUT"
 
@@ -118,7 +137,18 @@ jobs:
         echo "Threshold: ${THRESHOLD}%"
         
         # Compare as integers to avoid floating point issues
-        LINE_INT=$(echo "${LINE_COVERAGE}" | cut -d. -f1)
+        # Handle case where LINE_COVERAGE might not have a decimal point
+        if [[ "${LINE_COVERAGE}" == *"."* ]]; then
+          LINE_INT="${LINE_COVERAGE%%.*}"
+        else
+          LINE_INT="${LINE_COVERAGE}"
+        fi
+        
+        # Ensure LINE_INT is numeric, default to 0 if empty or non-numeric
+        if ! [[ "${LINE_INT}" =~ ^[0-9]+$ ]]; then
+          echo "Warning: Could not parse coverage value '${LINE_COVERAGE}', defaulting to 0"
+          LINE_INT=0
+        fi
         
         if [ "${LINE_INT}" -lt "${THRESHOLD}" ]; then
           echo "❌ Coverage ${LINE_COVERAGE}% is below threshold ${THRESHOLD}%"

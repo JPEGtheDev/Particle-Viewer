@@ -150,6 +150,9 @@ class FramePlaybackTest : public ::testing::Test
         return currentFrame;
     }
 
+    // Tolerance for floating-point comparisons
+    static constexpr float FLOAT_TOLERANCE = 0.001f;
+
     // Test constants - using enum as a C++11 workaround for static const int
     enum { NUM_PARTICLES = 20, NUM_FRAMES = 10 };
     const char* posPath = "/tmp/playback_PosAndVel";
@@ -413,7 +416,7 @@ TEST_F(FramePlaybackTest, PlaybackWithVelocities_LoadsBothArrays)
     EXPECT_FLOAT_EQ(part.translations[0].x, 400.0f);  // frame 4, particle 0
     EXPECT_FLOAT_EQ(part.velocities[0].x, 0.4f);      // frame 4: vx = 4 * 0.1
     EXPECT_FLOAT_EQ(part.velocities[0].y, 0.8f);      // frame 4: vy = 4 * 0.2
-    EXPECT_NEAR(part.velocities[0].z, 1.2f, 0.001f);  // frame 4: vz = 4 * 0.3
+    EXPECT_NEAR(part.velocities[0].z, 1.2f, FLOAT_TOLERANCE);  // frame 4: vz = 4 * 0.3
 }
 
 TEST_F(FramePlaybackTest, PlaybackWithVelocities_VelocitiesUpdateWithFrame)
