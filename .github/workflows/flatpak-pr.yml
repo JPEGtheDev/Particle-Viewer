@@ -50,40 +50,20 @@ jobs:
           DATE=$(date +%Y-%m-%d)
           METAINFO_FILE="flatpak/org.particleviewer.ParticleViewer.metainfo.xml"
           
-          # Create temporary file with new prerelease entry
-          cat > /tmp/new_release.txt << RELEASE_EOF
-            <release version="$PRERELEASE_VERSION" date="$DATE" type="development">
-              <description>
-                <p>Prerelease build for PR #$PR_NUMBER</p>
-              </description>
-            </release>
-          RELEASE_EOF
+          # Create new prerelease entry directly with echo
+          echo "    <release version=\"$PRERELEASE_VERSION\" date=\"$DATE\" type=\"development\">" > /tmp/new_release.txt
+          echo "      <description>" >> /tmp/new_release.txt
+          echo "        <p>Prerelease build for PR #$PR_NUMBER</p>" >> /tmp/new_release.txt
+          echo "      </description>" >> /tmp/new_release.txt
+          echo "    </release>" >> /tmp/new_release.txt
           
           # Use awk to insert the new release entry after <releases> tag
-          awk -v new_release="$(cat /tmp/new_release.txt)" '
-          /<releases>/ { print; print new_release; next }
-          { print }
-          ' "$METAINFO_FILE" > "${METAINFO_FILE}.tmp"
+          awk 'NR == FNR { new_release = new_release $0 ORS; next } /<releases>/ { print; printf "%s", new_release; next } { print }' \
+            /tmp/new_release.txt "$METAINFO_FILE" > "${METAINFO_FILE}.tmp"
           
           mv "${METAINFO_FILE}.tmp" "$METAINFO_FILE"
           
           echo "Updated metainfo.xml with prerelease version $PRERELEASE_VERSION"
-      
-      - name: Update Flatpak manifest with prerelease version
-        run: |
-          PRERELEASE_VERSION="${{ steps.version.outputs.prerelease_version }}"
-          MANIFEST_FILE="flatpak/org.particleviewer.ParticleViewer.yaml"
-          
-          # Add PROJECT_VERSION to config-opts
-          # Use yq if available, otherwise use sed
-          if ! command -v yq &> /dev/null; then
-            # Use sed to add the PROJECT_VERSION option after BUILD_TESTS=OFF
-            sed -i "/- -DBUILD_TESTS=OFF/a\\      - -DPROJECT_VERSION=$PRERELEASE_VERSION" "$MANIFEST_FILE"
-          else
-            yq eval ".modules[-1].config-opts += [\"-DPROJECT_VERSION=$PRERELEASE_VERSION\"]" -i "$MANIFEST_FILE"
-          fi
-          
-          echo "Updated Flatpak manifest with PROJECT_VERSION=$PRERELEASE_VERSION"
       
       - name: Install Flatpak and flatpak-builder
         run: |
