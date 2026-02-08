@@ -29,7 +29,7 @@ jobs:
             cpp_compiler: clang++
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Set reusable strings
       id: strings
@@ -88,7 +88,7 @@ jobs:
 
     - name: Upload Coverage Report
       if: matrix.build_type == 'Debug' && matrix.c_compiler == 'gcc'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: coverage-report
         path: ${{ steps.strings.outputs.build-output-dir }}/coverage.txt
