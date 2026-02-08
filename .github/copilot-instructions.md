@@ -18,20 +18,19 @@ Particle-Viewer is a C++ OpenGL-based viewer for N-Body simulations. It allows v
 ### Building the Project
 
 ```bash
-# Standard build
-mkdir build && cd build
-cmake ..
-make
+# Standard build (portable, works with any generator)
+cmake -B build -S .
+cmake --build build
 
 # With all compiler warnings and coverage (development mode)
-cmake .. -Dalloutput=ON
-make
+cmake -B build -S . -Dalloutput=ON
+cmake --build build
 
 # Run the application
-./Viewer
+./build/Viewer
 
 # Install (copies binary and shader assets to bin/)
-make install
+cmake --install build
 ```
 
 ### Build Requirements
@@ -76,7 +75,7 @@ make
 **Test Organization:**
 - `tests/core/` - Unit tests for core classes (Camera, Shader, Particle, SettingsIO)
 - `tests/mocks/` - Mock implementations (MockOpenGL, etc.)
-- Each test file corresponds to a source file (e.g., `CameraTests.cpp` for `camera.cpp`)
+- Each test file corresponds to a core implementation unit (e.g., `CameraTests.cpp` for `camera.hpp`)
 
 **Example Test:**
 ```cpp
@@ -85,7 +84,7 @@ TEST(CameraTest, MoveForward_IncreasesZPosition)
     // Arrange
     Camera camera(800, 600);
     camera.cameraPos = glm::vec3(0.0f, 0.0f, 0.0f);
-    camera.speed = 1.0f;
+    camera.setSpeed(1.0f);
     
     // Act
     camera.moveForward();
@@ -118,23 +117,26 @@ find src -name "*.cpp" -o -name "*.hpp" | xargs clang-format --dry-run -Werror
 - K&R style for control structures (brace on same line)
 - Include order: C++ standard → system → external libs → project headers
 
-### Naming Conventions (clang-tidy enforced)
+### Naming Conventions (clang-tidy + style guide)
 
-- **Classes/Structs/Enums**: `PascalCase` (e.g., `ParticleSystem`, `RenderSettings`)
-- **Functions/Methods**: `camelCase` (e.g., `initializeBuffers`, `getParticleCount`)
-- **Variables/Parameters**: `snake_case` (e.g., `particle_count`, `delta_time`)
-- **Constants/Macros**: `UPPER_CASE` (e.g., `MAX_PARTICLES`, `PI`)
+- **Classes/Structs/Enums** (clang-tidy enforced): `PascalCase` (e.g., `ParticleSystem`, `RenderSettings`)
+- **Functions/Methods** (preferred, not enforced by clang-tidy): `camelCase` (e.g., `initializeBuffers`, `getParticleCount`)
+- **Variables/Parameters** (clang-tidy enforced): `snake_case` (e.g., `particle_count`, `delta_time`)
+- **Constants/Macros** (clang-tidy enforced): `UPPER_CASE` (e.g., `MAX_PARTICLES`, `PI`)
 - **File Names**: `snake_case` (e.g., `particle_system.hpp`, `particle_system.cpp`)
 - **Include Guards**: `<PROJECT>_<PATH>_<FILE>_H` (e.g., `PARTICLE_VIEWER_PARTICLE_SYSTEM_H`)
 
 ### Static Analysis (clang-tidy)
 
 ```bash
-# Analyze code
-clang-tidy src/particle.cpp -- -Isrc/glad/include
+# Analyze main translation unit
+clang-tidy src/main.cpp -- -Isrc/glad/include
+
+# Or analyze a header using the compilation database (from the build/ directory):
+# clang-tidy src/particle.hpp -p build
 
 # Auto-fix (use carefully)
-clang-tidy -fix src/particle.cpp -- -Isrc/glad/include
+clang-tidy -fix src/main.cpp -- -Isrc/glad/include
 ```
 
 Configuration in `.clang-tidy` enforces:
@@ -147,11 +149,11 @@ Configuration in `.clang-tidy` enforces:
 
 **GitHub Actions automatically check:**
 - Code formatting with clang-format
-- Static analysis with clang-tidy
+- Static analysis with clang-tidy (runs in CI as a non-blocking, informational check)
 - Unit tests pass
 - Build succeeds on multiple platforms
 
-**All checks MUST pass before merging PRs.**
+**All blocking checks (build, tests, formatting) MUST pass before merging PRs. clang-tidy is currently advisory and does not block merges.**
 
 ## Version Management and Commits
 
@@ -182,10 +184,10 @@ Configuration in `.clang-tidy` enforces:
 **Types and Version Bumps:**
 - `feat:` → MINOR version bump (0.1.0 → 0.2.0)
 - `fix:` → PATCH version bump (0.1.0 → 0.1.1)
-- `feat!:` or `BREAKING CHANGE:` → MAJOR version bump (0.1.0 → 1.0.0)
+- `<type>!:` (e.g., `feat!:`, `fix!:`) or `BREAKING CHANGE:` → MAJOR version bump (0.1.0 → 1.0.0)
 - Other types (`docs:`, `test:`, `chore:`, etc.) → PATCH version bump (default fallback)
 
-**Note**: The release workflow detects `feat:`, `fix:`, and breaking changes. Commits without these types still trigger a PATCH bump to ensure every push to master creates a release.
+**Note**: The release workflow detects `feat:`, `fix:`, and any `<type>!:` breaking changes. Commits without these types still trigger a PATCH bump to ensure every push to master creates a release.
 
 **Examples:**
 ```bash
@@ -240,10 +242,10 @@ docs/
 ### Key Source Files
 
 - `main.cpp` - Application entry point
-- `camera.hpp/cpp` - Camera system for 3D navigation
-- `shader.hpp/cpp` - Shader program management
-- `particle.hpp/cpp` - Particle data structures
-- `settingsIO.hpp/cpp` - Configuration file I/O
+- `camera.hpp` - Header-only camera system for 3D navigation
+- `shader.hpp` - Header-only shader program management
+- `particle.hpp` - Header-only particle data structures
+- `settingsIO.hpp` - Header-only configuration file I/O
 - `osFile.hpp` - OS-specific file operations
 - `clutter.hpp` - Utility functions
 
@@ -259,13 +261,12 @@ find src -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i
 find src -name "*.cpp" -o -name "*.hpp" | xargs clang-format --dry-run -Werror
 
 # Run static analysis
-clang-tidy src/*.cpp -- -Isrc/glad/include
+clang-tidy src/main.cpp -- -Isrc/glad/include
 
 # Build and test
-mkdir -p build && cd build
-cmake ..
-make
-./tests/ParticleViewerTests
+cmake -B build -S .
+cmake --build build
+./build/tests/ParticleViewerTests
 ```
 
 ### Adding a New Feature
