@@ -29,7 +29,7 @@ class MockOpenGL
     static int compileShaderCalls;
     static int attachShaderCalls;
     static int linkProgramCalls;
-    static int deleteShadercalls;
+    static int deleteShaderCalls;
     static int useProgramCalls;
     static int getUniformLocationCalls;
     static int uniformMatrix4fvCalls;

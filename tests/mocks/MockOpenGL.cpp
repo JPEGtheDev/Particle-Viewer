@@ -15,7 +15,7 @@ int MockOpenGL::createShaderCalls = 0;
 int MockOpenGL::compileShaderCalls = 0;
 int MockOpenGL::attachShaderCalls = 0;
 int MockOpenGL::linkProgramCalls = 0;
-int MockOpenGL::deleteShadercalls = 0;
+int MockOpenGL::deleteShaderCalls = 0;
 int MockOpenGL::useProgramCalls = 0;
 int MockOpenGL::getUniformLocationCalls = 0;
 int MockOpenGL::uniformMatrix4fvCalls = 0;
@@ -75,7 +75,7 @@ void MockOpenGL::mockLinkProgram(GLuint program)
 
 void MockOpenGL::mockDeleteShader(GLuint shader)
 {
-    deleteShadercalls++;
+    deleteShaderCalls++;
 }
 
 void MockOpenGL::mockUseProgram(GLuint program)
@@ -161,7 +161,7 @@ void MockOpenGL::reset()
     compileShaderCalls = 0;
     attachShaderCalls = 0;
     linkProgramCalls = 0;
-    deleteShadercalls = 0;
+    deleteShaderCalls = 0;
     useProgramCalls = 0;
     getUniformLocationCalls = 0;
     uniformMatrix4fvCalls = 0;

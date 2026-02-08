@@ -375,13 +375,13 @@ TEST_F(ShaderTest, MockGetProgramiv_DefaultLinkStatus_ReturnsTrue)
 TEST_F(ShaderTest, MockDeleteShader_IncrementsCallCounter)
 {
     // Arrange
-    int initialCalls = MockOpenGL::deleteShadercalls;
+    int initialCalls = MockOpenGL::deleteShaderCalls;
 
     // Act
     MockOpenGL::mockDeleteShader(1);
 
     // Assert
-    EXPECT_EQ(MockOpenGL::deleteShadercalls, initialCalls + 1);
+    EXPECT_EQ(MockOpenGL::deleteShaderCalls, initialCalls + 1);
 }
 
 // ============================================

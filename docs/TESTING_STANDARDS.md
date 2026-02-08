@@ -285,8 +285,8 @@ class MockOpenGL
   public:
     // Call tracking
     static int createProgramCalls;
-    static int compileShadercalls;
-    static int useProgamCalls;
+    static int compileShaderCalls;
+    static int useProgramCalls;
     
     // Mock return values
     static GLuint nextProgramId;
@@ -308,7 +308,7 @@ class MockOpenGL
     static void reset()
     {
         createProgramCalls = 0;
-        compileShadercalls = 0;
+        compileShaderCalls = 0;
         useProgramCalls = 0;
         nextProgramId = 1;
     }
@@ -505,7 +505,7 @@ TEST_F(CameraTestFixture, MoveForward_UpdatesPositionAlongFrontVector)
 }
 
 // Edge case tests
-TEST_F(CameraTestFixture, Pitch_Above89Degrees_IsCampedTo89)
+TEST_F(CameraTestFixture, Pitch_Above89Degrees_IsClampedTo89)
 {
     // Arrange
     Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT);
