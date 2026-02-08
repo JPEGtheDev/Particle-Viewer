@@ -287,9 +287,6 @@ jobs:
     needs: release
     if: needs.release.outputs.version_changed == 'true'
     runs-on: ubuntu-latest
-    container:
-      image: bilelmoussaoui/flatpak-github-actions:freedesktop-24.08
-      options: --privileged
     permissions:
       contents: write
     

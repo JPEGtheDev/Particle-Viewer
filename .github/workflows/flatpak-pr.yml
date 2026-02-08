@@ -16,9 +16,6 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    container:
-      image: bilelmoussaoui/flatpak-github-actions:freedesktop-24.08
-      options: --privileged
     
     steps:
       - name: Checkout repository
