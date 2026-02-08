@@ -99,15 +99,23 @@ When the release workflow runs:
 
 4. **Git Operations**
    - Creates annotated git tag with new version (e.g., `v0.2.0`)
-   - Pushes tag to repository
+   - **Pushes tag to remote** (required before GitHub Release creation)
 
 5. **GitHub Release**
-   - Creates GitHub release with generated changelog as description
+   - Creates GitHub release referencing the pushed tag
+   - Includes generated changelog as description
    - Tags the release with version number
    - Publishes release to GitHub Releases page
 
 6. **Version in Build**
    - CMakeLists.txt can accept version as variable from CI or read from git tags locally
+
+### Important: Tag Push Order
+
+The workflow explicitly pushes the git tag **before** creating the GitHub Release. This is required because:
+- `gh release create` expects the tag to already exist in the remote repository
+- Pushing the tag first ensures proper synchronization
+- This approach provides better error handling and transparency
 
 ## Zero-Manual Requirements
 

@@ -209,6 +209,8 @@ jobs:
         run: |
           TAG="v${{ steps.new_version.outputs.version }}"
           git tag -a "$TAG" -m "Release $TAG"
+          # Push tag to remote - this must happen before creating the GitHub Release
+          # because 'gh release create' expects the tag to already exist remotely
           git push origin "$TAG"
           echo "Created and pushed tag: $TAG"
       
@@ -221,6 +223,7 @@ jobs:
           CHANGELOG_ENTRY=$(cat /tmp/changelog_entry.md)
           
           # Create release with changelog as body
+          # Note: This references the tag that was pushed in the previous step
           gh release create "$TAG" \
             --title "Release $TAG" \
             --notes "$CHANGELOG_ENTRY" \
