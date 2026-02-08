@@ -358,10 +358,10 @@ Mock external dependencies that are:
 - Require special environment setup (GPU, hardware)
 
 **Do NOT mock:**
-- **Your unit under test** (test it directly instead)
-  - Mock dependencies of your unit, not the unit itself
-  - Example: When testing `Shader`, mock `OpenGL` (dependency), don't mock `Shader`
-  - You CAN mock your own helper classes if they're dependencies
+- **Your unit under test**
+  - When testing a class like `Shader`, test the real `Shader` class
+  - Mock its dependencies (e.g., `OpenGL`), not the class itself
+  - You CAN mock your own helper classes when they are dependencies of your unit under test
 - Simple data structures or value objects
 - Pure functions with no side effects
 

@@ -139,7 +139,7 @@ TEST_F(CameraTest, SetupCam_IdentityCase_ReturnsViewMatrixLookingAtOrigin)
 // Movement Tests
 // ============================================
 
-TEST_F(CameraTest, MoveForward_UpdatesPositionAlongFrontVector)
+TEST_F(CameraTest, MoveForward_IncreasesPositionAlongFrontVector)
 {
     // Arrange
     Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -154,7 +154,7 @@ TEST_F(CameraTest, MoveForward_UpdatesPositionAlongFrontVector)
     EXPECT_EQ(camera.cameraPos, expectedPos);
 }
 
-TEST_F(CameraTest, MoveBackward_UpdatesPositionOppositeToFrontVector)
+TEST_F(CameraTest, MoveBackward_DecreasesPositionAlongFrontVector)
 {
     // Arrange
     Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -169,7 +169,7 @@ TEST_F(CameraTest, MoveBackward_UpdatesPositionOppositeToFrontVector)
     EXPECT_EQ(camera.cameraPos, expectedPos);
 }
 
-TEST_F(CameraTest, MoveRight_UpdatesPositionAlongRightVector)
+TEST_F(CameraTest, MoveRight_IncreasesPositionAlongRightVector)
 {
     // Arrange
     Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -185,7 +185,7 @@ TEST_F(CameraTest, MoveRight_UpdatesPositionAlongRightVector)
     EXPECT_EQ(camera.cameraPos, expectedPos);
 }
 
-TEST_F(CameraTest, MoveLeft_UpdatesPositionOppositeToRightVector)
+TEST_F(CameraTest, MoveLeft_DecreasesPositionAlongRightVector)
 {
     // Arrange
     Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -400,7 +400,7 @@ TEST_F(CameraTest, UpdateSpeed_WithZeroDeltaTime_AllowsNoMovement)
 // Setter Tests
 // ============================================
 
-TEST_F(CameraTest, SetRenderDistance_UpdatesRenderDistance)
+TEST_F(CameraTest, SetRenderDistance_SetsRenderDistance)
 {
     // Arrange
     Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT);
