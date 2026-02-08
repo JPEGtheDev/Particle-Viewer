@@ -43,7 +43,9 @@ This is a project created by Jonathan Petz for Tarleton State University's Parti
 ### Embedded
 * [stb](https://github.com/nothings/stb) 
 * [Tiny File Dialogs](http://sourceforge.net/projects/tinyfiledialogs/)
-* [GLAD](https://github.com/Dav1dde/glad) 
+* [GLAD](https://github.com/Dav1dde/glad)
+
+**Note:** For detailed license information and attributions for all third-party libraries, see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). 
 
 ___
 ## Utilities Used:
