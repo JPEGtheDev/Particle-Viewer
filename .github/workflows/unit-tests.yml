@@ -65,7 +65,7 @@ jobs:
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -DBUILD_TESTS=ON
-        -Dalloutput=${{ matrix.build_type == 'Debug' && matrix.c_compiler == 'gcc' && 'ON' || 'OFF' }}
+        "-Dalloutput=${{ matrix.build_type == 'Debug' && matrix.c_compiler == 'gcc' && 'ON' || 'OFF' }}"
         -S ${{ github.workspace }}
 
     - name: Build
