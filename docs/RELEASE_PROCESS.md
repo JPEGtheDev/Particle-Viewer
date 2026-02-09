@@ -69,8 +69,7 @@ The automated release workflow can be triggered in two ways:
 When commits are pushed to the `master` branch, the workflow automatically:
 1. Analyzes commit messages since the last release
 2. Determines the appropriate version bump
-3. Updates VERSION and CHANGELOG.md
-4. Creates a git tag and GitHub release
+3. Creates a git tag and GitHub release with auto-generated changelog
 
 ### 2. Manual Workflow Dispatch
 For manual control, you can trigger a release from GitHub Actions:

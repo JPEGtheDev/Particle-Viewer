@@ -74,7 +74,7 @@ class MockOpenGL
     static void mockUniform3fv(GLint location, GLsizei count, const GLfloat* value);
     static void mockUniform1i(GLint location, GLint v0);
     static void mockUniform1f(GLint location, GLfloat v0);
-    static void mockShaderSource(GLuint shader, GLsizei count, const GLchar** string, const GLint* length);
+    static void mockShaderSource(GLuint shader, GLsizei count, const GLchar* const* string, const GLint* length);
     static void mockGetShaderiv(GLuint shader, GLenum pname, GLint* params);
     static void mockGetProgramiv(GLuint program, GLenum pname, GLint* params);
     static void mockGenVertexArrays(GLsizei n, GLuint* arrays);
