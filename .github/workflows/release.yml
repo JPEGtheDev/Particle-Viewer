@@ -60,12 +60,12 @@ jobs:
           echo "$CHANGED_FILES"
           
           # Define source file patterns (files that should trigger a release)
-          # Source files: src/, CMakeLists.txt, cmake/, shaders, flatpak manifest
+          # Source files: src/, CMakeLists.txt, cmake/, shaders
+          # Note: flatpak metadata files are NOT source files - they only trigger flatpak rebuilds
           SOURCE_PATTERNS=(
             "^src/"
             "^CMakeLists\.txt$"
             "^cmake/"
-            "^flatpak/.*\.(yaml|yml|desktop|svg|metainfo\.xml)$"
           )
           
           # Check if any changed file matches source patterns
