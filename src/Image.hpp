@@ -81,7 +81,7 @@ class Image
      * Converts RGB to RGBA internally (alpha set to 255).
      *
      * @param path Input file path
-     * @param format Source format (PPM or PNG)
+     * @param format Source format (currently only PPM is supported for loading)
      * @return Image with RGBA data, or empty Image on failure
      */
     static Image load(const std::string& path, ImageFormat format);
