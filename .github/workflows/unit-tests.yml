@@ -166,9 +166,27 @@ jobs:
         cat coverage.txt || echo "❌ No coverage.txt generated"
         echo ""
         
+        # Verify coverage.json exists and show its content structure
+        echo "=== Verifying coverage.json ==="
+        if [ -f "coverage.json" ]; then
+          echo "✓ coverage.json exists"
+          echo "File size: $(stat -c%s coverage.json) bytes"
+          echo "First 500 characters:"
+          head -c 500 coverage.json
+          echo ""
+          echo "..."
+        else
+          echo "❌ coverage.json NOT FOUND"
+          echo "Files in current directory:"
+          ls -lah
+        fi
+        echo ""
+        
         # Extract coverage metrics using dedicated script
         # Script reads coverage.json and outputs: line_coverage branch_coverage
+        echo "=== Running extract-coverage.py ==="
         COVERAGE_OUTPUT=$(python3 ${{ github.workspace }}/scripts/extract-coverage.py)
+        echo "Raw script output: '$COVERAGE_OUTPUT'"
         LINE_COVERAGE=$(echo $COVERAGE_OUTPUT | awk '{print $1}')
         BRANCH_COVERAGE=$(echo $COVERAGE_OUTPUT | awk '{print $2}')
         
