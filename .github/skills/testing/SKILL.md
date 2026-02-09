@@ -195,3 +195,15 @@ Before presenting tests, verify:
 - For visual tests: recommend `0.0f` tolerance for synthetic data, `2.0f/255.0f` for GPU-rendered
 - If a test seems to test external library behavior, suggest focusing on the wrapper/integration instead
 - If Arrange and Act seem identical, the test might be a constructor test — put expected values in Arrange, constructor call in Act
+
+---
+
+## CI Pipeline Rules
+
+When writing or modifying CI workflows:
+
+1. **NEVER commit or push from a pipeline.** Pipelines are read-only. Committing from CI creates infinite loops, race conditions, and audit trail problems.
+2. **NEVER use `data:` URIs for inline images in PR comments.** GitHub strips `data:image/png;base64,...` from `<img>` tags for security. Use artifact uploads instead.
+3. **Upload generated files** (images, reports) as workflow artifacts via `actions/upload-artifact`.
+4. **Link to artifact downloads** in PR comments for visibility.
+5. **Keep permissions minimal** — use `contents: read` unless the job needs to write checks or comments.

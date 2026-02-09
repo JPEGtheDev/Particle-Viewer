@@ -193,6 +193,18 @@ Configuration in `.clang-tidy` enforces:
 
 **All blocking checks (build, tests, formatting) MUST pass before merging PRs. clang-tidy is currently advisory and does not block merges.**
 
+### CI Pipeline Rules
+
+**NEVER do the following in CI workflows:**
+- **Never commit or push from a pipeline.** Pipelines are read-only consumers of the repository. Committing from CI creates infinite loops, race conditions, and audit trail problems.
+- **Never use `data:` URIs for inline images in PR comments.** GitHub strips `data:image/png;base64,...` from `<img>` tags in comments and step summaries for security. Use artifact uploads instead.
+
+**DO:**
+- Upload generated files (images, reports) as workflow artifacts via `actions/upload-artifact`
+- Link to artifact downloads in PR comments
+- Use `$GITHUB_STEP_SUMMARY` for rich text reports on the Actions tab
+- Keep workflow permissions minimal (`contents: read` unless writing checks/comments)
+
 ## Version Management and Commits
 
 ### Automated Semantic Versioning

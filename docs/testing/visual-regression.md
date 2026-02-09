@@ -167,28 +167,28 @@ The visual regression tests run as an integration test job **after unit tests pa
 2. **Install dependencies** — CMake, GLFW, GLM, Mesa, Xvfb
 3. **Build** — Compiles test executable
 4. **Run tests** — Under Xvfb for headless OpenGL (VisualRegressionTest.* only)
-5. **Commit images** — Generated PNG images are committed to `tests/visual-regression/output/` on the PR branch
-6. **Post PR comment** — Summary table with pass/fail counts and inline images (via raw.githubusercontent.com URLs)
+5. **Upload artifacts** — Generated images and test results uploaded as workflow artifacts
+6. **Post PR comment** — Summary table with pass/fail counts and artifact download link
 
-### Image Output
+### Artifacts
 
-Generated images are committed to `tests/visual-regression/output/` on the PR branch. This enables:
-- **Inline display in PR comments** — images referenced via `raw.githubusercontent.com` URLs
-- **PR diff review** — when baselines change, the image diff is visible in the PR files tab
-- **No zip downloads** — images are directly viewable in the repository
+Generated images are uploaded as workflow artifacts (retained for 30 days):
 
-| File Pattern | Contents | When |
-|-------------|----------|------|
-| `*_current.png` | Current test output images | Always |
-| `*_diff.png` | Pixel diff visualization (red = different) | On failure |
-| `*_baseline.png` | Expected reference image | On failure |
+| Artifact | Contents | When |
+|----------|----------|------|
+| `visual-regression-images` | `*_current.png` images | Always |
+| `visual-regression-images` | `*_diff.png`, `*_baseline.png` | On failure |
+| `visual-regression-results` | Test XML output and console log | Always |
+
+> **Note:** GitHub strips `data:image/png;base64,...` from PR comments for security, so images cannot be displayed inline. Download from the artifact link in the PR comment.
 
 ### Debugging CI Failures
 
-1. Check the PR comment for inline images (current, baseline, diff)
-2. The `*_diff.png` highlights differing pixels in red
-3. View images in `tests/visual-regression/output/` in the PR files tab
-4. Check `visual-test-output.txt` artifact for detailed similarity percentages
+1. Check the PR comment for the test summary and artifact download link
+2. Download the `visual-regression-images` artifact from the workflow run
+3. The `*_diff.png` highlights differing pixels in red
+4. Compare `*_baseline.png` with `*_current.png` side-by-side
+5. Check `visual-test-output.txt` for detailed similarity percentages
 
 ---
 
