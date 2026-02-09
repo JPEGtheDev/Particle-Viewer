@@ -84,6 +84,49 @@ TEST(CameraTest, SetupCamReturnsViewMatrix)
 
 **Visual Separation**: Use blank lines or comments to clearly separate the three phases in longer tests.
 
+### AAA Guidelines
+
+- **Do not combine Arrange and Act** into a single comment like `// Arrange & Act`. Keep them as distinct phases.
+- **If there is no meaningful Arrange step**, omit the `// Arrange` comment entirely — just start with `// Act`. Do not add an empty or redundant Arrange section.
+- **If a variable can be added to Arrange**, add expected values or test inputs as separate variables in the Arrange phase rather than inlining them in the Assert.
+- **Constructor tests**: If the constructor call is the Act, set up expected values in Arrange and perform the constructor call in Act.
+
+```cpp
+// Good: No arrange needed, just omit it
+TEST(ImageTest, DefaultConstructor_CreatesEmptyImage)
+{
+    // Act
+    Image image;
+
+    // Assert
+    EXPECT_TRUE(image.empty());
+}
+
+// Good: Separate expected values in Arrange
+TEST(ImageTest, Constructor_WithDimensions_SetsWidthAndHeight)
+{
+    // Arrange
+    uint32_t expected_width = 16;
+    uint32_t expected_height = 32;
+
+    // Act
+    Image image(expected_width, expected_height);
+
+    // Assert
+    EXPECT_EQ(image.width, expected_width);
+    EXPECT_EQ(image.height, expected_height);
+}
+
+// Bad: Redundant "Arrange & Act" combined comment
+TEST(ImageTest, DefaultConstructor_CreatesEmptyImage)
+{
+    // Arrange & Act  <-- Don't do this
+    Image image;
+    // Assert
+    EXPECT_TRUE(image.empty());
+}
+```
+
 ---
 
 ## Single Assertion Principle
@@ -232,11 +275,19 @@ tests/
 │   ├── CameraTests.cpp
 │   ├── ShaderTests.cpp
 │   └── ParticleTests.cpp
+├── integration/
+│   ├── DataLoadingPipelineTests.cpp
+│   ├── FramePlaybackTests.cpp
+│   └── ShaderPipelineTests.cpp
+├── testing/
+│   ├── PixelComparatorTests.cpp
+│   └── ImageConverterTests.cpp
+├── visual-regression/
+│   ├── VisualTestHelpers.hpp
+│   └── VisualRegressionTests.cpp
 ├── mocks/
 │   ├── MockOpenGL.hpp
-│   └── MockGLFW.hpp
-├── utils/
-│   └── TestHelpers.hpp
+│   └── MockOpenGL.cpp
 └── CMakeLists.txt
 ```
 

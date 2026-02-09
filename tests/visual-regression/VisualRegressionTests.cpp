@@ -11,10 +11,10 @@
  * They operate on synthetic test images (no GPU/OpenGL required).
  */
 
-#include <gtest/gtest.h>
-
 #include <cstdio>
 #include <string>
+
+#include <gtest/gtest.h>
 
 #include "visual-regression/VisualTestHelpers.hpp"
 
@@ -55,8 +55,8 @@ TEST_F(VisualRegressionTest, TolerantMatch_SlightlyDifferentImages_Passes)
 TEST_F(VisualRegressionTest, ExactMatch_DifferentImages_GeneratesDiffArtifacts)
 {
     // Arrange
-    Image baseline = createTestImage(8, 8, 255, 0, 0);  // Red
-    Image current = createTestImage(8, 8, 0, 255, 0);   // Green
+    Image baseline = createTestImage(8, 8, 255, 0, 0); // Red
+    Image current = createTestImage(8, 8, 0, 255, 0);  // Green
 
     // Act
     ComparisonResult result = comparator_.compare(baseline, current, 0.0f, true);

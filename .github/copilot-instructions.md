@@ -122,8 +122,16 @@ make
 4. **Mock External Dependencies**: Use `MockOpenGL` for OpenGL calls (see `tests/mocks/`)
 5. **Do NOT test external libraries**: Only test YOUR code, not std:: or third-party libraries
 
+**AAA Pattern Guidelines:**
+- Do NOT combine Arrange and Act into `// Arrange & Act`. Keep them separate.
+- If no meaningful Arrange step exists, omit `// Arrange` entirely — start with `// Act`.
+- Move expected values and test inputs into the Arrange section as named variables.
+
 **Test Organization:**
 - `tests/core/` - Unit tests for core classes (Camera, Shader, Particle, SettingsIO)
+- `tests/integration/` - Integration tests for component interactions
+- `tests/testing/` - Tests for testing utilities (PixelComparator, ImageConverter)
+- `tests/visual-regression/` - Visual regression tests and helpers
 - `tests/mocks/` - Mock implementations (MockOpenGL, etc.)
 - Each test file corresponds to a core implementation unit (e.g., `CameraTests.cpp` for `camera.hpp`)
 
@@ -141,6 +149,19 @@ TEST(CameraTest, MoveForward_IncreasesZPosition)
     
     // Assert
     EXPECT_LT(camera.cameraPos.z, 0.0f);
+}
+```
+
+**Visual Regression Test Example:**
+```cpp
+TEST_F(VisualRegressionTest, ExactMatch_IdenticalImages_Passes)
+{
+    // Arrange
+    Image baseline = createTestImage(16, 16, 255, 0, 0);
+    Image current = createTestImage(16, 16, 255, 0, 0);
+
+    // Act & Assert
+    assertVisualMatch(baseline, current, "exact_solid_red");
 }
 ```
 
@@ -268,12 +289,16 @@ BREAKING CHANGE: Config file format changed from JSON to YAML"
 ```
 src/
 ├── *.cpp, *.hpp        # Main source files
+├── testing/            # Testing utilities (PixelComparator)
 ├── shaders/            # GLSL shader files (auto-copied during build)
 ├── glad/               # GLAD OpenGL loader (embedded)
 └── tinyFileDialogs/    # File dialog library (embedded)
 
 tests/
 ├── core/               # Unit tests for main classes
+├── integration/        # Integration tests for component interactions
+├── testing/            # Tests for testing utilities
+├── visual-regression/  # Visual regression test fixture and tests
 ├── mocks/              # Mock implementations
 └── CMakeLists.txt      # Test build configuration
 
@@ -281,7 +306,10 @@ docs/
 ├── CODING_STANDARDS.md      # Detailed code standards
 ├── TESTING_STANDARDS.md     # Testing best practices
 ├── RELEASE_PROCESS.md       # Release automation details
-└── CONVENTIONAL_COMMITS.md  # Commit format quick reference
+├── CONVENTIONAL_COMMITS.md  # Commit format quick reference
+└── testing/
+    ├── integration-tests.md     # Integration test guide
+    └── visual-regression.md     # Visual regression test guide
 
 .github/
 ├── workflows/          # CI/CD pipelines
@@ -298,6 +326,8 @@ docs/
 - `settingsIO.hpp` - Header-only configuration file I/O
 - `osFile.hpp` - OS-specific file operations
 - `clutter.hpp` - Utility functions
+- `ImageConverter.hpp/.cpp` - Image format conversion (PPM ↔ PNG)
+- `testing/PixelComparator.hpp/.cpp` - Pixel-by-pixel image comparison for visual regression testing
 
 ## Common Tasks and Commands
 
@@ -379,6 +409,8 @@ cmake --build build
 
 - **Full Coding Standards**: `docs/CODING_STANDARDS.md`
 - **Testing Standards**: `docs/TESTING_STANDARDS.md`
+- **Visual Regression Testing**: `docs/testing/visual-regression.md`
+- **Integration Tests**: `docs/testing/integration-tests.md`
 - **Release Process**: `docs/RELEASE_PROCESS.md`
 - **Conventional Commits Quick Ref**: `docs/CONVENTIONAL_COMMITS.md`
 - **Microsoft C++ Core Guidelines**: https://isocpp.github.io/CppCoreGuidelines/
