@@ -167,25 +167,28 @@ The visual regression tests run as an integration test job **after unit tests pa
 2. **Install dependencies** — CMake, GLFW, GLM, Mesa, Xvfb
 3. **Build** — Compiles test executable
 4. **Run tests** — Under Xvfb for headless OpenGL (VisualRegressionTest.* only)
-5. **Upload images** — Current images are always uploaded (diffs/baselines on failure)
-6. **Post PR comment** — Summary table with pass/fail counts and inline images
+5. **Commit images** — Generated PNG images are committed to `tests/visual-regression/output/` on the PR branch
+6. **Post PR comment** — Summary table with pass/fail counts and inline images (via raw.githubusercontent.com URLs)
 
-### Artifacts
+### Image Output
 
-Current images are **always** uploaded for visibility. On failure, additional artifacts are included:
+Generated images are committed to `tests/visual-regression/output/` on the PR branch. This enables:
+- **Inline display in PR comments** — images referenced via `raw.githubusercontent.com` URLs
+- **PR diff review** — when baselines change, the image diff is visible in the PR files tab
+- **No zip downloads** — images are directly viewable in the repository
 
-| Artifact | Contents | When |
-|----------|----------|------|
-| `visual-regression-images` | `*_current.png` images | Always |
-| `visual-regression-images` | `*_diff.png`, `*_baseline.png` | On failure |
-| `visual-regression-results` | Test XML output and console log | Always |
+| File Pattern | Contents | When |
+|-------------|----------|------|
+| `*_current.png` | Current test output images | Always |
+| `*_diff.png` | Pixel diff visualization (red = different) | On failure |
+| `*_baseline.png` | Expected reference image | On failure |
 
 ### Debugging CI Failures
 
 1. Check the PR comment for inline images (current, baseline, diff)
 2. The `*_diff.png` highlights differing pixels in red
-3. Download full artifacts from the workflow run for closer inspection
-4. Check `visual-test-output.txt` for detailed similarity percentages
+3. View images in `tests/visual-regression/output/` in the PR files tab
+4. Check `visual-test-output.txt` artifact for detailed similarity percentages
 
 ---
 

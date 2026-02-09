@@ -274,7 +274,7 @@ jobs:
     needs: test
 
     permissions:
-      contents: read
+      contents: write
       checks: write
       pull-requests: write
 
@@ -282,6 +282,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+        ref: ${{ github.head_ref }}
 
     - name: Set reusable strings
       id: strings
@@ -347,16 +348,31 @@ jobs:
 
         exit ${TEST_EXIT_CODE}
 
-    - name: Upload Current Images
+    - name: Commit Visual Test Images to Branch
       if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: visual-regression-images
-        path: |
-          ${{ steps.strings.outputs.build-output-dir }}/tests/artifacts/
-          ${{ steps.strings.outputs.build-output-dir }}/tests/diffs/
-        retention-days: 7
-        if-no-files-found: ignore
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+        # Create output directory in repo
+        mkdir -p tests/visual-regression/output
+
+        # Copy generated images
+        cp -f ${{ steps.strings.outputs.build-output-dir }}/tests/artifacts/*.png tests/visual-regression/output/ 2>/dev/null || true
+        cp -f ${{ steps.strings.outputs.build-output-dir }}/tests/diffs/*.png tests/visual-regression/output/ 2>/dev/null || true
+
+        # List what we found
+        echo "=== Visual test output images ==="
+        ls -la tests/visual-regression/output/ 2>/dev/null || echo "No images found"
+
+        # Commit and push (skip CI to avoid infinite loop)
+        git add tests/visual-regression/output/
+        if git diff --staged --quiet; then
+          echo "No image changes to commit"
+        else
+          git commit -m "chore: update visual regression test images [skip ci]"
+          git push
+        fi
 
     - name: Upload Test Results
       if: always()
@@ -380,8 +396,8 @@ jobs:
           const passed = '${{ steps.visual-tests.outputs.passed_tests }}' || '0';
           const failed = '${{ steps.visual-tests.outputs.failed_tests }}' || '0';
           const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-          const artifactsDir = '${{ steps.strings.outputs.build-output-dir }}/tests/artifacts';
-          const diffsDir = '${{ steps.strings.outputs.build-output-dir }}/tests/diffs';
+          const branch = context.payload.pull_request.head.ref;
+          const rawBase = `https://raw.githubusercontent.com/${context.repo.owner}/${context.repo.repo}/${branch}/tests/visual-regression/output`;
 
           const status = testExitCode === '0' ? '✅' : '❌';
           const statusText = testExitCode === '0' ? 'All visual tests passed!' : 'Visual regression detected!';
@@ -394,17 +410,13 @@ jobs:
           body += `| Passed | ${passed} |\n`;
           body += `| Failed | ${failed} |\n\n`;
 
-          // Embed images inline if artifacts exist
+          // List image files from the output directory
+          const outputDir = 'tests/visual-regression/output';
           const imageFiles = [];
-          for (const dir of [artifactsDir, diffsDir]) {
-            if (fs.existsSync(dir)) {
-              const files = fs.readdirSync(dir).filter(f => f.endsWith('.png'));
-              for (const file of files) {
-                const filePath = path.join(dir, file);
-                const data = fs.readFileSync(filePath);
-                const base64 = data.toString('base64');
-                imageFiles.push({ name: file, base64 });
-              }
+          if (fs.existsSync(outputDir)) {
+            const files = fs.readdirSync(outputDir).filter(f => f.endsWith('.png'));
+            for (const file of files) {
+              imageFiles.push(file);
             }
           }
 
@@ -413,48 +425,40 @@ jobs:
 
             // Group by test name (strip _baseline/_current/_diff suffix)
             const groups = {};
-            for (const img of imageFiles) {
-              const match = img.name.match(/^(.+?)_(baseline|current|diff)\.png$/);
+            for (const file of imageFiles) {
+              const match = file.match(/^(.+?)_(baseline|current|diff)\.png$/);
               if (match) {
                 const testName = match[1];
                 const type = match[2];
                 if (!groups[testName]) groups[testName] = {};
-                groups[testName][type] = img;
-              } else {
-                // Ungrouped image
-                if (!groups['_other']) groups['_other'] = {};
-                groups['_other'][img.name] = img;
+                groups[testName][type] = file;
               }
             }
 
             for (const [testName, images] of Object.entries(groups)) {
-              if (testName === '_other') continue;
               body += `#### ${testName}\n\n`;
 
               // Show Current always, Baseline and Diff only if present (failure case)
               if (images.baseline || images.diff) {
                 body += `| Baseline | Current | Diff |\n`;
                 body += `|----------|---------|------|\n`;
-
                 const baseline = images.baseline
-                  ? `<img src="data:image/png;base64,${images.baseline.base64}" width="200" />`
+                  ? `![baseline](${rawBase}/${images.baseline})`
                   : 'N/A';
                 const current = images.current
-                  ? `<img src="data:image/png;base64,${images.current.base64}" width="200" />`
+                  ? `![current](${rawBase}/${images.current})`
                   : 'N/A';
                 const diff = images.diff
-                  ? `<img src="data:image/png;base64,${images.diff.base64}" width="200" />`
+                  ? `![diff](${rawBase}/${images.diff})`
                   : 'N/A';
-
                 body += `| ${baseline} | ${current} | ${diff} |\n\n`;
               } else if (images.current) {
-                body += `| Current |\n`;
-                body += `|---------|\n`;
-                body += `| <img src="data:image/png;base64,${images.current.base64}" width="200" /> |\n\n`;
+                body += `**Current:**\n\n`;
+                body += `![${testName}](${rawBase}/${images.current})\n\n`;
               }
             }
-          } else if (testExitCode === '0') {
-            body += `All images matched their baselines — no diffs generated.\n\n`;
+          } else {
+            body += `No visual test images were generated.\n\n`;
           }
 
           body += `---\n`;
