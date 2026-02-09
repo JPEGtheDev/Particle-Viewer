@@ -1,7 +1,5 @@
 # Particle-Viewer 
 
-[![Visual Regression Tests](https://github.com/JPEGtheDev/Particle-Viewer/actions/workflows/visual-regression.yml/badge.svg)](https://github.com/JPEGtheDev/Particle-Viewer/actions/workflows/visual-regression.yml)
-
 ## TL;DR: 
 A viewer for N-Body simulations.
 

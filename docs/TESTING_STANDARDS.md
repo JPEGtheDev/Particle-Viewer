@@ -87,6 +87,7 @@ TEST(CameraTest, SetupCamReturnsViewMatrix)
 ### AAA Guidelines
 
 - **Do not combine Arrange and Act** into a single comment like `// Arrange & Act`. Keep them as distinct phases.
+- **Do not combine Act and Assert** into a single comment like `// Act & Assert`. Always keep all three phases separate.
 - **If there is no meaningful Arrange step**, omit the `// Arrange` comment entirely — just start with `// Act`. Do not add an empty or redundant Arrange section.
 - **If a variable can be added to Arrange**, add expected values or test inputs as separate variables in the Arrange phase rather than inlining them in the Assert.
 - **Constructor tests**: If the constructor call is the Act, set up expected values in Arrange and perform the constructor call in Act.

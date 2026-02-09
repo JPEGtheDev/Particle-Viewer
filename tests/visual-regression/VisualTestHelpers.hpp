@@ -2,7 +2,7 @@
  * VisualTestHelpers.hpp
  *
  * Helper macros and utilities for visual regression testing.
- * Provides EXPECT_VISUAL_MATCH and CAPTURE_AND_COMPARE test macros,
+ * Provides EXPECT_VISUAL_MATCH and ASSERT_VISUAL_MATCH test macros,
  * plus a VisualRegressionTest fixture for reusable test setup/teardown.
  *
  * Uses the Image struct from PixelComparator.hpp as the base image type
@@ -13,6 +13,7 @@
 #ifndef PARTICLE_VIEWER_VISUAL_TEST_HELPERS_H
 #define PARTICLE_VIEWER_VISUAL_TEST_HELPERS_H
 
+#include <algorithm>
 #include <cstdint>
 #include <fstream>
 #include <iostream>
@@ -159,9 +160,12 @@ inline Image createGradientImage(uint32_t width, uint32_t height, uint8_t r1, ui
         for (uint32_t x = 0; x < width; ++x) {
             float t = (width > 1) ? static_cast<float>(x) / (width - 1) : 0.0f;
             uint32_t idx = (y * width + x) * 4;
-            image.pixels[idx + 0] = static_cast<uint8_t>(r1 + t * (r2 - r1));
-            image.pixels[idx + 1] = static_cast<uint8_t>(g1 + t * (g2 - g1));
-            image.pixels[idx + 2] = static_cast<uint8_t>(b1 + t * (b2 - b1));
+            float val_r = static_cast<float>(r1) + t * (static_cast<float>(r2) - static_cast<float>(r1));
+            float val_g = static_cast<float>(g1) + t * (static_cast<float>(g2) - static_cast<float>(g1));
+            float val_b = static_cast<float>(b1) + t * (static_cast<float>(b2) - static_cast<float>(b1));
+            image.pixels[idx + 0] = static_cast<uint8_t>(std::max(0.0f, std::min(255.0f, val_r)));
+            image.pixels[idx + 1] = static_cast<uint8_t>(std::max(0.0f, std::min(255.0f, val_g)));
+            image.pixels[idx + 2] = static_cast<uint8_t>(std::max(0.0f, std::min(255.0f, val_b)));
             image.pixels[idx + 3] = 255;
         }
     }
@@ -196,8 +200,8 @@ class VisualRegressionTest : public ::testing::Test
     {
         diffs_dir_ = VisualTestConfig::DIFFS_DIR;
         artifacts_dir_ = VisualTestConfig::ARTIFACTS_DIR;
-        ensureDirectory(diffs_dir_);
-        ensureDirectory(artifacts_dir_);
+        ASSERT_TRUE(ensureDirectory(diffs_dir_)) << "Failed to create diffs directory: " << diffs_dir_;
+        ASSERT_TRUE(ensureDirectory(artifacts_dir_)) << "Failed to create artifacts directory: " << artifacts_dir_;
     }
 
     void TearDown() override
@@ -274,7 +278,8 @@ class VisualRegressionTest : public ::testing::Test
         PixelComparator _comparator;                                                                                   \
         ComparisonResult _result = _comparator.compare(baseline, current, tolerance, false);                           \
         EXPECT_TRUE(_result.matches) << "Visual mismatch: similarity=" << (_result.similarity * 100.0f)                \
-                                     << "%, diff_pixels=" << _result.diff_pixels << "/" << _result.total_pixels;       \
+                                     << "%, diff_pixels=" << _result.diff_pixels << "/" << _result.total_pixels        \
+                                     << (_result.error.empty() ? "" : (", error=" + _result.error));                   \
     } while (0)
 
 /*
@@ -287,7 +292,8 @@ class VisualRegressionTest : public ::testing::Test
         PixelComparator _comparator;                                                                                   \
         ComparisonResult _result = _comparator.compare(baseline, current, tolerance, false);                           \
         ASSERT_TRUE(_result.matches) << "Visual mismatch: similarity=" << (_result.similarity * 100.0f)                \
-                                     << "%, diff_pixels=" << _result.diff_pixels << "/" << _result.total_pixels;       \
+                                     << "%, diff_pixels=" << _result.diff_pixels << "/" << _result.total_pixels        \
+                                     << (_result.error.empty() ? "" : (", error=" + _result.error));                   \
     } while (0)
 
 #endif // PARTICLE_VIEWER_VISUAL_TEST_HELPERS_H

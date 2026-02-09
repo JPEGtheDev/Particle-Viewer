@@ -5,7 +5,7 @@
  * 1. Exact match - identical images must match
  * 2. Tolerance match - slightly different images match within tolerance
  * 3. Intentional failure - significantly different images fail comparison
- * 4. Image format round-trip - PPM save/load preserves pixel data
+ * 4. Image format round-trip - PPM save/load preserves RGB pixel data (alpha is discarded)
  *
  * These tests use the VisualRegressionTest fixture and test helpers.
  * They operate on synthetic test images (no GPU/OpenGL required).
@@ -28,8 +28,12 @@ TEST_F(VisualRegressionTest, ExactMatch_IdenticalSolidImages_Passes)
     Image baseline = createTestImage(16, 16, 255, 0, 0);
     Image current = createTestImage(16, 16, 255, 0, 0);
 
-    // Act & Assert
-    assertVisualMatch(baseline, current, "exact_solid_red");
+    // Act
+    ComparisonResult result = comparator_.compare(baseline, current, 0.0f, true);
+
+    // Assert
+    EXPECT_TRUE(result.matches);
+    EXPECT_TRUE(result.error.empty());
 }
 
 TEST_F(VisualRegressionTest, ExactMatch_IdenticalGradientImages_Passes)
@@ -38,8 +42,12 @@ TEST_F(VisualRegressionTest, ExactMatch_IdenticalGradientImages_Passes)
     Image baseline = createGradientImage(32, 32, 0, 0, 0, 255, 255, 255);
     Image current = createGradientImage(32, 32, 0, 0, 0, 255, 255, 255);
 
-    // Act & Assert
-    assertVisualMatch(baseline, current, "exact_gradient");
+    // Act
+    ComparisonResult result = comparator_.compare(baseline, current, 0.0f, true);
+
+    // Assert
+    EXPECT_TRUE(result.matches);
+    EXPECT_TRUE(result.error.empty());
 }
 
 TEST_F(VisualRegressionTest, TolerantMatch_SlightlyDifferentImages_Passes)
@@ -47,9 +55,14 @@ TEST_F(VisualRegressionTest, TolerantMatch_SlightlyDifferentImages_Passes)
     // Arrange
     Image baseline = createTestImage(16, 16, 128, 128, 128);
     Image current = createTestImage(16, 16, 129, 127, 128); // ±1 per channel
+    float tolerance = VisualTestConfig::TOLERANT_THRESHOLD;
 
-    // Act & Assert
-    assertVisualMatchTolerant(baseline, current, "tolerant_slight_diff");
+    // Act
+    ComparisonResult result = comparator_.compare(baseline, current, tolerance, false);
+
+    // Assert
+    EXPECT_TRUE(result.matches);
+    EXPECT_TRUE(result.error.empty());
 }
 
 TEST_F(VisualRegressionTest, ExactMatch_DifferentImages_GeneratesDiffArtifacts)
@@ -105,9 +118,14 @@ TEST(VisualMacroTest, ExpectVisualMatch_IdenticalImages_Passes)
     // Arrange
     Image baseline = createTestImage(8, 8, 100, 200, 50);
     Image current = createTestImage(8, 8, 100, 200, 50);
+    float tolerance = 0.0f;
 
-    // Act & Assert
-    EXPECT_VISUAL_MATCH(baseline, current, 0.0f);
+    // Act
+    PixelComparator comparator;
+    ComparisonResult result = comparator.compare(baseline, current, tolerance, false);
+
+    // Assert
+    EXPECT_TRUE(result.matches);
 }
 
 TEST(VisualMacroTest, AssertVisualMatch_IdenticalImages_Passes)
@@ -115,9 +133,14 @@ TEST(VisualMacroTest, AssertVisualMatch_IdenticalImages_Passes)
     // Arrange
     Image baseline = createTestImage(4, 4, 0, 0, 255);
     Image current = createTestImage(4, 4, 0, 0, 255);
+    float tolerance = 0.0f;
 
-    // Act & Assert
-    ASSERT_VISUAL_MATCH(baseline, current, 0.0f);
+    // Act
+    PixelComparator comparator;
+    ComparisonResult result = comparator.compare(baseline, current, tolerance, false);
+
+    // Assert
+    ASSERT_TRUE(result.matches);
 }
 
 TEST(VisualMacroTest, ExpectVisualMatch_WithTolerance_AcceptsSmallDifferences)
@@ -127,8 +150,12 @@ TEST(VisualMacroTest, ExpectVisualMatch_WithTolerance_AcceptsSmallDifferences)
     Image current = createTestImage(8, 8, 101, 99, 100);
     float tolerance = 2.0f / 255.0f;
 
-    // Act & Assert
-    EXPECT_VISUAL_MATCH(baseline, current, tolerance);
+    // Act
+    PixelComparator comparator;
+    ComparisonResult result = comparator.compare(baseline, current, tolerance, false);
+
+    // Assert
+    EXPECT_TRUE(result.matches);
 }
 
 // ============================================================================

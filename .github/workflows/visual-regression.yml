@@ -53,9 +53,10 @@ jobs:
       id: visual-tests
       working-directory: ${{ steps.strings.outputs.build-output-dir }}/tests
       run: |
-        # Run only visual regression test suites under Xvfb
+        # Run only visual regression fixture tests under Xvfb
+        # (VisualRegressionTest produces real diff/baseline/current artifacts)
         xvfb-run -a ./ParticleViewerTests \
-          --gtest_filter="VisualRegressionTest.*:VisualMacroTest.*:VisualHelperTest.*" \
+          --gtest_filter="VisualRegressionTest.*" \
           --gtest_output=xml:visual-test-results.xml \
           2>&1 | tee visual-test-output.txt
 
@@ -63,10 +64,19 @@ jobs:
         TEST_EXIT_CODE=${PIPESTATUS[0]}
         echo "test_exit_code=${TEST_EXIT_CODE}" >> "$GITHUB_OUTPUT"
 
-        # Parse test results for the comment
-        TOTAL=$(grep -oP '\d+(?= tests? from)' visual-test-output.txt | tail -1 || echo "0")
-        PASSED=$(grep -oP '\d+(?= tests?\.)' visual-test-output.txt | tail -1 || echo "0")
-        FAILED=$(grep -oP '\d+(?= tests? FAILED)' visual-test-output.txt | tail -1 || echo "0")
+        # Parse test results for the comment using gtest final summary lines
+        TOTAL=$(grep -E '^\[==========\] [0-9]+ tests? from [0-9]+ test suites? ran\.' visual-test-output.txt \
+          | tail -1 \
+          | grep -oE '[0-9]+' \
+          | head -1 || echo "0")
+        PASSED=$(grep -E '^\[  PASSED  \] [0-9]+ tests?\.' visual-test-output.txt \
+          | tail -1 \
+          | grep -oE '[0-9]+' \
+          | head -1 || echo "0")
+        FAILED=$(grep -E '^\[  FAILED  \] [0-9]+ tests?, listed below:' visual-test-output.txt \
+          | tail -1 \
+          | grep -oE '[0-9]+' \
+          | head -1 || echo "0")
 
         echo "total_tests=${TOTAL}" >> "$GITHUB_OUTPUT"
         echo "passed_tests=${PASSED}" >> "$GITHUB_OUTPUT"

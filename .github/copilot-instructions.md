@@ -114,7 +114,9 @@ make
 
 ### Test Structure and Standards
 
-**CRITICAL: Read `docs/TESTING_STANDARDS.md` before writing tests.** Key requirements:
+**CRITICAL: Read `docs/TESTING_STANDARDS.md` before writing tests.** For detailed examples and patterns, use the `testing` skill (`.github/skills/testing/`).
+
+Key requirements:
 
 1. **Arrange-Act-Assert Pattern**: Every test MUST follow AAA structure
 2. **Single Assertion Principle**: Each test verifies one logical concept
@@ -124,6 +126,7 @@ make
 
 **AAA Pattern Guidelines:**
 - Do NOT combine Arrange and Act into `// Arrange & Act`. Keep them separate.
+- Do NOT combine Act and Assert into `// Act & Assert`. Always keep all three phases separate.
 - If no meaningful Arrange step exists, omit `// Arrange` entirely — start with `// Act`.
 - Move expected values and test inputs into the Arrange section as named variables.
 
@@ -160,8 +163,11 @@ TEST_F(VisualRegressionTest, ExactMatch_IdenticalImages_Passes)
     Image baseline = createTestImage(16, 16, 255, 0, 0);
     Image current = createTestImage(16, 16, 255, 0, 0);
 
-    // Act & Assert
-    assertVisualMatch(baseline, current, "exact_solid_red");
+    // Act
+    ComparisonResult result = comparator_.compare(baseline, current, 0.0f, true);
+
+    // Assert
+    EXPECT_TRUE(result.matches);
 }
 ```
 

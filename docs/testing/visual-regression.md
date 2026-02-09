@@ -85,8 +85,11 @@ TEST_F(VisualRegressionTest, RenderScene_SolidBackground_MatchesBaseline)
     Image baseline = createTestImage(64, 64, 30, 30, 30);
     Image current = createTestImage(64, 64, 30, 30, 30);
 
-    // Act & Assert
-    assertVisualMatch(baseline, current, "solid_background");
+    // Act
+    ComparisonResult result = comparator_.compare(baseline, current, 0.0f, true);
+
+    // Assert
+    EXPECT_TRUE(result.matches);
 }
 ```
 
@@ -100,10 +103,14 @@ TEST(MyTest, Rendering_MatchesExpected)
     // Arrange
     Image expected = createTestImage(16, 16, 255, 0, 0);
     Image actual = createTestImage(16, 16, 255, 0, 0);
+    float tolerance = 0.0f;
 
-    // Act & Assert
-    EXPECT_VISUAL_MATCH(expected, actual, 0.0f);       // Exact match
-    EXPECT_VISUAL_MATCH(expected, actual, 2.0f/255.0f); // ±2 tolerance
+    // Act
+    PixelComparator comparator;
+    ComparisonResult result = comparator.compare(expected, actual, tolerance, false);
+
+    // Assert
+    EXPECT_TRUE(result.matches);
 }
 ```
 
@@ -220,7 +227,8 @@ When a visual change is intentional:
 ### Test Design
 
 - **Use the Image struct** as the base type for all image data
-- **Follow AAA pattern**: Arrange (create images), Act & Assert (compare)
+- **Follow AAA pattern**: Arrange (create images), Act (run comparison), Assert (check results)
+- **Never combine Act and Assert** into `// Act & Assert` — always keep them separate
 - **Name tests descriptively**: `RenderScene_Particles_MatchesBaseline`
 - **Keep test images small** (< 64×64 for unit tests) for speed
 - **Use exact match (0.0 tolerance)** for synthetic test data
@@ -237,7 +245,7 @@ When a visual change is intentional:
 
 ### AAA Pattern for Visual Tests
 
-Follow the project's [Testing Standards](TESTING_STANDARDS.md):
+Follow the project's [Testing Standards](../TESTING_STANDARDS.md):
 
 ```cpp
 TEST_F(VisualRegressionTest, RenderParticles_DefaultConfig_MatchesBaseline)
@@ -246,9 +254,12 @@ TEST_F(VisualRegressionTest, RenderParticles_DefaultConfig_MatchesBaseline)
     Image baseline = loadImageFromPPM("baselines/particles_default.ppm");
     Image current = captureFramebuffer();  // Future: from FramebufferCapture
 
-    // Act & Assert
-    assertVisualMatch(baseline, current, "particles_default");
+    // Act
+    ComparisonResult result = comparator_.compare(baseline, current, 0.0f, true);
+
+    // Assert
+    EXPECT_TRUE(result.matches);
 }
 ```
 
-**Important**: If there is no meaningful Arrange step (e.g., no setup beyond creating images), omit the `// Arrange` comment rather than combining it with Act. See [Testing Standards](TESTING_STANDARDS.md) for details.
+**Important**: If there is no meaningful Arrange step (e.g., no setup beyond creating images), omit the `// Arrange` comment rather than combining it with Act. Never combine Act and Assert — always keep them as separate phases. See [Testing Standards](../TESTING_STANDARDS.md) for details.
