@@ -70,7 +70,7 @@ When commits are pushed to the `master` branch, the workflow automatically:
 1. **Checks for source code changes** - Skips release if only non-source files changed
 2. Analyzes commit messages since the last release
 3. Determines the appropriate version bump
-4. Updates VERSION and CHANGELOG.md
+4. Generates release notes from commit history for the GitHub Release (does not modify VERSION or CHANGELOG.md directly)
 5. Creates a git tag and GitHub release
 
 **Source File Patterns (trigger releases):**

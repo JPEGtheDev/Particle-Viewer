@@ -43,11 +43,18 @@ jobs:
       - name: Check for source code changes
         id: source_check
         run: |
-          # Get last tag or initial commit if no tags exist
-          LAST_TAG=$(git describe --tags --abbrev=0 --match "v[0-9]*" 2>/dev/null || git rev-list --max-parents=0 HEAD)
+          # Get last semantic version tag (matching vX.Y.Z). If none exists, LAST_TAG will be empty.
+          LAST_TAG=$(git describe --tags --abbrev=0 --match "v[0-9]*" 2>/dev/null || true)
           
-          # Get list of changed files since last tag
-          CHANGED_FILES=$(git diff --name-only $LAST_TAG..HEAD || git log --name-only --pretty=format: HEAD | sort -u)
+          if [ -n "$LAST_TAG" ]; then
+            echo "Using last semver tag as change base: $LAST_TAG"
+            # Get list of changed files since last tag
+            CHANGED_FILES=$(git diff --name-only "$LAST_TAG"..HEAD)
+          else
+            echo "No matching semver tags found; treating all files in HEAD as changed for initial release detection"
+            # No tags: consider all tracked files in HEAD as changed so initial source files trigger a release
+            CHANGED_FILES=$(git ls-tree -r --name-only HEAD)
+          fi
           
           echo "Changed files:"
           echo "$CHANGED_FILES"
