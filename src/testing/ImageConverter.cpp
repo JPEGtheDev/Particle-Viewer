@@ -115,7 +115,7 @@ PpmData ImageConverter::parsePPM(const std::string& ppm_path)
 ConversionResult ImageConverter::writePNG(const std::string& png_path, const uint8_t* pixels, uint32_t width,
                                           uint32_t height)
 {
-    if (pixels == NULL) {
+    if (pixels == nullptr) {
         return ConversionResult(false, "Pixel data is null");
     }
 

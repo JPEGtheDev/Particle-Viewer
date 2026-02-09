@@ -8,9 +8,40 @@
 #include <cstdio>
 #include <fstream>
 
+#include <dirent.h>
 #include <gtest/gtest.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include "testing/ImageConverter.hpp"
+
+// ============================================
+// Helper: Recursively remove a directory
+// ============================================
+
+static void removeDirectoryRecursive(const std::string& path)
+{
+    DIR* dir = opendir(path.c_str());
+    if (dir == nullptr)
+        return;
+
+    struct dirent* entry;
+    while ((entry = readdir(dir)) != nullptr) {
+        std::string name(entry->d_name);
+        if (name == "." || name == "..")
+            continue;
+
+        std::string full_path = path + "/" + name;
+        struct stat st;
+        if (stat(full_path.c_str(), &st) == 0 && S_ISDIR(st.st_mode)) {
+            removeDirectoryRecursive(full_path);
+        } else {
+            unlink(full_path.c_str());
+        }
+    }
+    closedir(dir);
+    rmdir(path.c_str());
+}
 
 // ============================================
 // Test Fixture
@@ -22,13 +53,12 @@ class ImageConverterTest : public ::testing::Test
     void SetUp() override
     {
         test_dir_ = "/tmp/image_converter_tests";
-        system(("mkdir -p " + test_dir_).c_str());
+        mkdir(test_dir_.c_str(), 0755);
     }
 
     void TearDown() override
     {
-        // Clean up test files
-        system(("rm -rf " + test_dir_).c_str());
+        removeDirectoryRecursive(test_dir_);
     }
 
     /*
