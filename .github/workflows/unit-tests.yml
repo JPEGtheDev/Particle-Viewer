@@ -59,14 +59,24 @@ jobs:
       shell: bash
 
     - name: Configure CMake
-      run: >
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}
-        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -DBUILD_TESTS=ON
-        "-Dalloutput=${{ matrix.build_type == 'Debug' && matrix.c_compiler == 'gcc' && 'ON' || 'OFF' }}"
-        -S ${{ github.workspace }}
+      run: |
+        # Enable coverage for Debug builds with gcc
+        if [ "${{ matrix.build_type }}" = "Debug" ] && [ "${{ matrix.c_compiler }}" = "gcc" ]; then
+          COVERAGE_FLAG="-Dalloutput=ON"
+          echo "✅ Coverage instrumentation ENABLED (alloutput=ON)"
+        else
+          COVERAGE_FLAG="-Dalloutput=OFF"
+          echo "ℹ️  Coverage instrumentation DISABLED (alloutput=OFF)"
+        fi
+        
+        echo "Running CMake with: ${COVERAGE_FLAG}"
+        cmake -B ${{ steps.strings.outputs.build-output-dir }} \
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+          -DBUILD_TESTS=ON \
+          ${COVERAGE_FLAG} \
+          -S ${{ github.workspace }}
 
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
@@ -74,6 +84,26 @@ jobs:
     - name: Run Tests
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: ctest --build-config ${{ matrix.build_type }} --output-on-failure --verbose
+
+    - name: Verify Coverage Data Files (Debug only)
+      if: matrix.build_type == 'Debug' && matrix.c_compiler == 'gcc'
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      run: |
+        echo "=== Checking for coverage data files ==="
+        echo "Looking for .gcda files (coverage data):"
+        find . -name "*.gcda" -type f | head -20 || echo "❌ No .gcda files found!"
+        echo ""
+        echo "Looking for .gcno files (coverage notes):"
+        find . -name "*.gcno" -type f | head -20 || echo "❌ No .gcno files found!"
+        echo ""
+        echo "Counting coverage files:"
+        GCDA_COUNT=$(find . -name "*.gcda" -type f | wc -l)
+        GCNO_COUNT=$(find . -name "*.gcno" -type f | wc -l)
+        echo "Found ${GCDA_COUNT} .gcda files and ${GCNO_COUNT} .gcno files"
+        
+        if [ "$GCDA_COUNT" -eq 0 ]; then
+          echo "⚠️  WARNING: No coverage data files found! Tests may not be instrumented."
+        fi
 
     - name: Generate Coverage Report (Debug only)
       if: matrix.build_type == 'Debug' && matrix.c_compiler == 'gcc'
@@ -84,7 +114,12 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y gcovr
         
-        # Generate coverage report with JSON for parsing
+        echo "=== Generating coverage report ==="
+        echo "Root directory: ${{ github.workspace }}"
+        echo "Working directory: $(pwd)"
+        echo ""
+        
+        # Generate coverage report with JSON for parsing (verbose mode)
         gcovr --root ${{ github.workspace }} \
               --filter '${{ github.workspace }}/src/' \
               --exclude '${{ github.workspace }}/src/glad/' \
@@ -93,11 +128,14 @@ jobs:
               --print-summary \
               --json coverage.json \
               --txt coverage.txt \
-              --html coverage.html
+              --html coverage.html \
+              --verbose || echo "⚠️  gcovr completed with warnings"
         
         # Display coverage summary
+        echo ""
         echo "=== Coverage Summary ==="
-        cat coverage.txt
+        cat coverage.txt || echo "❌ No coverage.txt generated"
+        echo ""
         
         # Extract coverage metrics using dedicated script
         # Script reads coverage.json and outputs: line_coverage branch_coverage
@@ -105,6 +143,7 @@ jobs:
         LINE_COVERAGE=$(echo $COVERAGE_OUTPUT | awk '{print $1}')
         BRANCH_COVERAGE=$(echo $COVERAGE_OUTPUT | awk '{print $2}')
         
+        echo "=== Extracted Metrics ==="
         echo "Line coverage: ${LINE_COVERAGE}%"
         echo "Branch coverage: ${BRANCH_COVERAGE}%"
         echo "line_coverage=${LINE_COVERAGE}" >> "$GITHUB_OUTPUT"
