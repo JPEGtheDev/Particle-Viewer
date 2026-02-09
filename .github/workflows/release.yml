@@ -40,7 +40,65 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
       
+      - name: Check for source code changes
+        id: source_check
+        run: |
+          # Get last semantic version tag (matching vX.Y.Z). If none exists, LAST_TAG will be empty.
+          LAST_TAG=$(git describe --tags --abbrev=0 --match "v[0-9]*" 2>/dev/null || true)
+          
+          if [ -n "$LAST_TAG" ]; then
+            echo "Using last semver tag as change base: $LAST_TAG"
+            # Get list of changed files since last tag
+            CHANGED_FILES=$(git diff --name-only "$LAST_TAG"..HEAD)
+          else
+            echo "No matching semver tags found; treating all files in HEAD as changed for initial release detection"
+            # No tags: consider all tracked files in HEAD as changed so initial source files trigger a release
+            CHANGED_FILES=$(git ls-tree -r --name-only HEAD)
+          fi
+          
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          
+          # Define source file patterns (files that should trigger a release)
+          # Source files: src/, CMakeLists.txt, cmake/, shaders, flatpak manifest
+          SOURCE_PATTERNS=(
+            "^src/"
+            "^CMakeLists\.txt$"
+            "^cmake/"
+            "^flatpak/.*\.(yaml|yml|desktop|svg|metainfo\.xml)$"
+          )
+          
+          # Check if any changed file matches source patterns
+          SOURCE_CHANGED=false
+          while IFS= read -r file; do
+            # Skip empty lines
+            [ -z "$file" ] && continue
+            
+            for pattern in "${SOURCE_PATTERNS[@]}"; do
+              if echo "$file" | grep -qE "$pattern"; then
+                echo "Source file changed: $file (matched pattern: $pattern)"
+                SOURCE_CHANGED=true
+                break 2
+              fi
+            done
+          done <<< "$CHANGED_FILES"
+          
+          if [ "$SOURCE_CHANGED" = "true" ]; then
+            echo "has_source_changes=true" >> $GITHUB_OUTPUT
+            echo "✅ Source files changed - release will be created"
+          else
+            echo "has_source_changes=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ Only non-source files changed (tests, docs, CI) - skipping release"
+          fi
+      
+      - name: Skip if no source changes
+        if: steps.source_check.outputs.has_source_changes == 'false'
+        run: |
+          echo "::notice::Skipping release - only non-source files changed (tests, docs, CI configs, etc.)"
+          exit 0
+      
       - name: Read current version from git tags
+        if: steps.source_check.outputs.has_source_changes == 'true'
         id: current_version
         run: |
           # Get the most recent tag that matches semantic versioning pattern (vX.Y.Z)
@@ -63,6 +121,7 @@ jobs:
           echo "Current version: $CURRENT_VERSION"
       
       - name: Get commit messages since last tag
+        if: steps.source_check.outputs.has_source_changes == 'true'
         id: commits
         run: |
           # Get last tag that matches semantic versioning pattern (vX.Y.Z) or use initial commit if no valid tags exist
@@ -92,6 +151,7 @@ jobs:
           cat /tmp/commits.txt
       
       - name: Determine version bump
+        if: steps.source_check.outputs.has_source_changes == 'true'
         id: bump
         run: |
           # Check for manual override
@@ -124,6 +184,7 @@ jobs:
           fi
       
       - name: Calculate new version
+        if: steps.source_check.outputs.has_source_changes == 'true'
         id: new_version
         run: |
           CURRENT="${{ steps.current_version.outputs.version }}"
@@ -153,6 +214,7 @@ jobs:
           echo "New version: $NEW_VERSION (bump type: $BUMP)"
       
       - name: Check if version changed
+        if: steps.source_check.outputs.has_source_changes == 'true'
         id: version_check
         run: |
           if [ "${{ steps.current_version.outputs.version }}" == "${{ steps.new_version.outputs.version }}" ]; then
@@ -164,7 +226,7 @@ jobs:
           fi
       
       - name: Generate changelog entry
-        if: steps.version_check.outputs.changed == 'true'
+        if: steps.source_check.outputs.has_source_changes == 'true' && steps.version_check.outputs.changed == 'true'
         id: changelog
         run: |
           LAST_TAG="${{ steps.commits.outputs.last_tag }}"
@@ -232,7 +294,7 @@ jobs:
           cat /tmp/changelog_entry.md
       
       - name: Create Git tag
-        if: steps.version_check.outputs.changed == 'true'
+        if: steps.source_check.outputs.has_source_changes == 'true' && steps.version_check.outputs.changed == 'true'
         run: |
           TAG="v${{ steps.new_version.outputs.version }}"
           
@@ -244,7 +306,7 @@ jobs:
           echo "Created and pushed tag: $TAG"
       
       - name: Create GitHub Release
-        if: steps.version_check.outputs.changed == 'true'
+        if: steps.source_check.outputs.has_source_changes == 'true' && steps.version_check.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -261,7 +323,7 @@ jobs:
           echo "Created GitHub release: $TAG"
       
       - name: Output release info
-        if: steps.version_check.outputs.changed == 'true'
+        if: steps.source_check.outputs.has_source_changes == 'true' && steps.version_check.outputs.changed == 'true'
         id: release_info
         run: |
           echo "version=${{ steps.new_version.outputs.version }}" >> $GITHUB_OUTPUT
@@ -270,7 +332,10 @@ jobs:
       - name: Release Summary
         if: always()
         run: |
-          if [ "${{ steps.version_check.outputs.changed }}" == "true" ]; then
+          if [ "${{ steps.source_check.outputs.has_source_changes }}" == "false" ]; then
+            echo "ℹ️ No source code changes detected - release skipped"
+            echo "   Only non-source files changed (tests, docs, CI configs)"
+          elif [ "${{ steps.version_check.outputs.changed }}" == "true" ]; then
             echo "✅ Release completed successfully!"
             echo "   - Previous version: ${{ steps.current_version.outputs.version }}"
             echo "   - New version: ${{ steps.new_version.outputs.version }}"
@@ -281,13 +346,14 @@ jobs:
           fi
     
     outputs:
+      source_changed: ${{ steps.source_check.outputs.has_source_changes }}
       version_changed: ${{ steps.version_check.outputs.changed }}
       version: ${{ steps.new_version.outputs.version }}
       tag: ${{ steps.release_info.outputs.tag }}
   
   build-flatpak:
     needs: release
-    if: needs.release.outputs.version_changed == 'true'
+    if: needs.release.outputs.source_changed == 'true' && needs.release.outputs.version_changed == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write

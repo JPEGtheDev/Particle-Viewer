@@ -67,9 +67,25 @@ The automated release workflow can be triggered in two ways:
 
 ### 1. Automatic on Push to Master (Recommended)
 When commits are pushed to the `master` branch, the workflow automatically:
-1. Analyzes commit messages since the last release
-2. Determines the appropriate version bump
-3. Creates a git tag and GitHub release with auto-generated changelog
+1. **Checks for source code changes** - Skips release if only non-source files changed
+2. Analyzes commit messages since the last release
+3. Determines the appropriate version bump
+4. Generates release notes from commit history for the GitHub Release (does not modify VERSION or CHANGELOG.md directly)
+5. Creates a git tag and GitHub release
+
+**Source File Patterns (trigger releases):**
+- `src/` - All C++ source code, headers, and shaders
+- `CMakeLists.txt` - Build configuration
+- `cmake/` - CMake modules
+- `flatpak/*.yaml`, `flatpak/*.yml`, `flatpak/*.desktop`, `flatpak/*.svg`, `flatpak/*.metainfo.xml` - Flatpak packaging
+
+**Non-Source Files (skip releases):**
+- `tests/` - Unit tests and test infrastructure
+- `docs/` - Documentation
+- `.github/` - CI/CD workflows and configurations
+- `README.md`, `CHANGELOG.md` - Project documentation
+- `.clang-format`, `.clang-tidy` - Code quality tools
+- `scripts/` - Development and build scripts
 
 ### 2. Manual Workflow Dispatch
 For manual control, you can trigger a release from GitHub Actions:
@@ -82,31 +98,37 @@ For manual control, you can trigger a release from GitHub Actions:
 
 When the release workflow runs:
 
-1. **Version Detection**
+1. **Source Change Detection**
+   - Compares files changed since last release tag
+   - Checks against source file patterns (src/, CMakeLists.txt, cmake/, flatpak manifests)
+   - **Skips release** if only tests, docs, or CI configs changed
+   - **Proceeds with release** if any source files were modified
+
+2. **Version Detection**
    - Reads current version from most recent git tag
    - Analyzes commits since last tag using conventional commit format
    - Determines version bump type (major/minor/patch)
 
-2. **Version Calculation**
+3. **Version Calculation**
    - Calculates new version number based on bump type
    - Validates version format (MAJOR.MINOR.PATCH)
 
-3. **Changelog Generation**
+4. **Changelog Generation**
    - Parses all commits since last release
    - Groups changes by type (Added, Fixed, Breaking Changes, Changed)
    - Generates formatted changelog entry with date
 
-4. **Git Operations**
+5. **Git Operations**
    - Creates annotated git tag with new version (e.g., `v0.2.0`)
    - **Pushes tag to remote** (required before GitHub Release creation)
 
-5. **GitHub Release**
+6. **GitHub Release**
    - Creates GitHub release referencing the pushed tag
    - Includes generated changelog as description
    - Tags the release with version number
    - Publishes release to GitHub Releases page
 
-6. **Version in Build**
+7. **Version in Build**
    - CMakeLists.txt can accept version as variable from CI or read from git tags locally
 
 ### Important: Tag Push Order
@@ -151,6 +173,8 @@ The release workflow is defined in `.github/workflows/release.yml` with:
 
 ### Release didn't trigger automatically
 - Verify commits are pushed to `master` branch
+- **Check if only non-source files changed** (tests, docs, CI) - release will be skipped
+- Review GitHub Actions logs for skip messages
 - Review GitHub Actions logs for errors
 
 ### Wrong version bump detected
@@ -193,10 +217,29 @@ git commit -m "docs: update API documentation"
 git push origin master
 
 # Workflow automatically:
-# 1. Detects 1 feature + 1 fix → minor bump (0.1.0 → 0.2.0)
-# 2. Generates release notes from commits
-# 3. Creates tag v0.2.0
-# 4. Publishes GitHub release with notes
+# 1. Detects source file changes (src/main.cpp changed)
+# 2. Analyzes commits: 1 feature + 1 fix → minor bump (0.1.0 → 0.2.0)
+# 3. Generates release notes from commits
+# 4. Creates tag v0.2.0
+# 5. Publishes GitHub release with notes
+```
+
+### When Release is Skipped
+
+If only non-source files are changed:
+
+```bash
+# Make test and documentation changes
+git commit -m "test: add unit tests for camera rotation"
+git commit -m "docs: improve README examples"
+
+# Push to master
+git push origin master
+
+# Workflow automatically:
+# 1. Detects only tests/ and docs/ files changed
+# 2. Skips release creation (no source code changes)
+# 3. Shows info message: "Only non-source files changed"
 ```
 
 ## Future Enhancements
