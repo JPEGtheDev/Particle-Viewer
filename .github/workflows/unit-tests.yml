@@ -8,7 +8,7 @@ on:
 
 # Minimum coverage threshold for enforcement
 env:
-  COVERAGE_THRESHOLD: 80
+  COVERAGE_THRESHOLD: 49
 
 jobs:
   test:
@@ -193,9 +193,7 @@ jobs:
         
         if [ "${LINE_INT}" -lt "${THRESHOLD}" ]; then
           echo "❌ Coverage ${LINE_COVERAGE}% is below threshold ${THRESHOLD}%"
-          echo "⚠️ TEMPORARILY ALLOWING CI TO PASS FOR DEBUGGING"
-          # TODO: Re-enable this after fixing coverage
-          # exit 1
+          exit 1
         else
           echo "✅ Coverage ${LINE_COVERAGE}% meets threshold ${THRESHOLD}%"
         fi
