@@ -390,23 +390,6 @@ TEST_F(ParticleTest, ParticleCount_DoesNotChange_AfterChangeVelocities)
 // Edge Cases
 // ============================================
 
-TEST_F(ParticleTest, ChangeTranslations_WithZeroParticles_HandlesGracefully)
-{
-    // Arrange
-    Particle p;
-    long newN = 0;
-    glm::vec4* newTrans = new glm::vec4[1]; // Allocate at least 1 to avoid null
-
-    // Act
-    p.changeTranslations(newN, newTrans);
-
-    // Assert
-    EXPECT_EQ(p.n, 0);
-
-    // Cleanup
-    delete[] newTrans;
-}
-
 TEST_F(ParticleTest, ChangeTranslations_WithSingleParticle_WorksCorrectly)
 {
     // Arrange

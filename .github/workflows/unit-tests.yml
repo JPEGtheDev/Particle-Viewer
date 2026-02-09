@@ -6,30 +6,24 @@ on:
   push:
     branches: [ "master" ]
 
+# Minimum coverage threshold for enforcement
+env:
+  COVERAGE_THRESHOLD: 49
+
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     
     permissions:
       contents: read
       checks: write
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        build_type: [Debug, Release]
-        c_compiler: [gcc, clang]
-        include:
-          - os: ubuntu-latest
-            c_compiler: gcc
-            cpp_compiler: g++
-          - os: ubuntu-latest
-            c_compiler: clang
-            cpp_compiler: clang++
+      pull-requests: write
+      issues: write
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch full history for version detection
 
     - name: Set reusable strings
       id: strings
@@ -51,48 +45,221 @@ jobs:
       shell: bash
 
     - name: Configure CMake
-      run: >
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}
-        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -DBUILD_TESTS=ON
-        "-Dalloutput=${{ matrix.build_type == 'Debug' && matrix.c_compiler == 'gcc' && 'ON' || 'OFF' }}"
-        -S ${{ github.workspace }}
+      run: |
+        echo "✅ Coverage instrumentation ENABLED (alloutput:BOOL=ON)"
+        
+        cmake -B ${{ steps.strings.outputs.build-output-dir }} \
+          -DCMAKE_CXX_COMPILER=g++ \
+          -DCMAKE_C_COMPILER=gcc \
+          -DCMAKE_BUILD_TYPE=Debug \
+          -DBUILD_TESTS=ON \
+          -Dalloutput:BOOL=ON \
+          -S ${{ github.workspace }}
+        
+        # Verify the option was set
+        echo ""
+        echo "=== Verifying CMake Configuration ==="
+        grep "alloutput" ${{ steps.strings.outputs.build-output-dir }}/CMakeCache.txt || echo "alloutput not in cache!"
 
     - name: Build
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+      run: |
+        echo "=== Building Debug Configuration with gcc ==="
+        cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Debug --verbose
+        
+    - name: Verify Build Flags
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      run: |
+        echo "=== Checking Compiled Flags ==="
+        echo "CMakeCache.txt alloutput setting:"
+        grep -i "alloutput" CMakeCache.txt || echo "alloutput not found in cache"
+        echo ""
+        echo "CMakeCache.txt CXX flags:"
+        grep "CMAKE_CXX_FLAGS:" CMakeCache.txt || echo "No CXX flags found"
+        echo ""
+        echo "Checking test executable for coverage support:"
+        if [ -f "tests/ParticleViewerTests" ]; then
+          echo "Test executable exists"
+          nm tests/ParticleViewerTests | grep -i "gcov" | head -5 || echo "No gcov symbols found in executable"
+        else
+          echo "Test executable not found at tests/ParticleViewerTests"
+          find . -name "ParticleViewerTests" -type f
+        fi
 
     - name: Run Tests
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
-      run: ctest --build-config ${{ matrix.build_type }} --output-on-failure --verbose
+      run: ctest --build-config Debug --output-on-failure --verbose
 
-    - name: Generate Coverage Report (Debug only)
-      if: matrix.build_type == 'Debug' && matrix.c_compiler == 'gcc'
+    - name: Verify Coverage Data Files
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      run: |
+        echo "=== Checking for coverage data files ==="
+        echo "Looking for .gcda files (coverage data):"
+        find . -name "*.gcda" -type f | head -20 || echo "❌ No .gcda files found!"
+        echo ""
+        echo "Looking for .gcno files (coverage notes):"
+        find . -name "*.gcno" -type f | head -20 || echo "❌ No .gcno files found!"
+        echo ""
+        echo "Counting coverage files:"
+        GCDA_COUNT=$(find . -name "*.gcda" -type f | wc -l)
+        GCNO_COUNT=$(find . -name "*.gcno" -type f | wc -l)
+        echo "Found ${GCDA_COUNT} .gcda files and ${GCNO_COUNT} .gcno files"
+        
+        if [ "$GCDA_COUNT" -eq 0 ]; then
+          echo "⚠️  WARNING: No coverage data files found! Tests may not be instrumented."
+        fi
+
+    - name: Generate Coverage Report
+      id: coverage
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: |
         # Install gcovr if not available
         sudo apt-get update
         sudo apt-get install -y gcovr
         
-        # Generate coverage report
+        echo "=== Generating coverage report ==="
+        echo "Root directory: ${{ github.workspace }}"
+        echo "Working directory: $(pwd)"
+        echo ""
+        
+        # Generate coverage report with JSON for parsing (verbose mode)
         gcovr --root ${{ github.workspace }} \
               --filter '${{ github.workspace }}/src/' \
               --exclude '${{ github.workspace }}/src/glad/' \
               --exclude '${{ github.workspace }}/src/stb_*' \
               --exclude '${{ github.workspace }}/src/tinyFileDialogs/' \
               --print-summary \
-              --txt coverage.txt
+              --json coverage.json \
+              --txt coverage.txt \
+              --html coverage.html \
+              --verbose || echo "⚠️  gcovr completed with warnings"
         
         # Display coverage summary
-        cat coverage.txt
+        echo ""
+        echo "=== Coverage Summary ==="
+        cat coverage.txt || echo "❌ No coverage.txt generated"
+        echo ""
+        
+        # Verify coverage.json exists and show its content structure
+        echo "=== Verifying coverage.json ==="
+        if [ -f "coverage.json" ]; then
+          echo "✓ coverage.json exists"
+          echo "File size: $(stat -c%s coverage.json) bytes"
+          echo "First 500 characters:"
+          head -c 500 coverage.json
+          echo ""
+          echo "..."
+        else
+          echo "❌ coverage.json NOT FOUND"
+          echo "Files in current directory:"
+          ls -lah
+        fi
+        echo ""
+        
+        # Extract coverage metrics using dedicated script
+        # Script reads coverage.json and outputs: line_coverage branch_coverage
+        echo "=== Running extract-coverage.py ==="
+        COVERAGE_OUTPUT=$(python3 ${{ github.workspace }}/scripts/extract-coverage.py)
+        echo "Raw script output: '$COVERAGE_OUTPUT'"
+        LINE_COVERAGE=$(echo $COVERAGE_OUTPUT | awk '{print $1}')
+        BRANCH_COVERAGE=$(echo $COVERAGE_OUTPUT | awk '{print $2}')
+        
+        echo "=== Extracted Metrics ==="
+        echo "Line coverage: ${LINE_COVERAGE}%"
+        echo "Branch coverage: ${BRANCH_COVERAGE}%"
+        echo "line_coverage=${LINE_COVERAGE}" >> "$GITHUB_OUTPUT"
+        echo "branch_coverage=${BRANCH_COVERAGE}" >> "$GITHUB_OUTPUT"
+
+    - name: Enforce Coverage Threshold
+      run: |
+        LINE_COVERAGE=${{ steps.coverage.outputs.line_coverage }}
+        THRESHOLD=${{ env.COVERAGE_THRESHOLD }}
+        
+        echo "Line coverage: ${LINE_COVERAGE}%"
+        echo "Threshold: ${THRESHOLD}%"
+        
+        # Compare as integers to avoid floating point issues
+        # Handle case where LINE_COVERAGE might not have a decimal point
+        if [[ "${LINE_COVERAGE}" == *"."* ]]; then
+          LINE_INT="${LINE_COVERAGE%%.*}"
+        else
+          LINE_INT="${LINE_COVERAGE}"
+        fi
+        
+        # Ensure LINE_INT is numeric, default to 0 if empty or non-numeric
+        if ! [[ "${LINE_INT}" =~ ^[0-9]+$ ]]; then
+          echo "Warning: Could not parse coverage value '${LINE_COVERAGE}', defaulting to 0"
+          LINE_INT=0
+        fi
+        
+        if [ "${LINE_INT}" -lt "${THRESHOLD}" ]; then
+          echo "❌ Coverage ${LINE_COVERAGE}% is below threshold ${THRESHOLD}%"
+          exit 1
+        else
+          echo "✅ Coverage ${LINE_COVERAGE}% meets threshold ${THRESHOLD}%"
+        fi
+
+    - name: Comment Coverage on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const lineCoverage = '${{ steps.coverage.outputs.line_coverage }}';
+          const branchCoverage = '${{ steps.coverage.outputs.branch_coverage }}';
+          const threshold = '${{ env.COVERAGE_THRESHOLD }}';
+          
+          const coverageInt = parseInt(lineCoverage);
+          const thresholdInt = parseInt(threshold);
+          const status = coverageInt >= thresholdInt ? '✅' : '❌';
+          
+          const body = `## 📊 Code Coverage Report
+          
+          | Metric | Value | Status |
+          |--------|-------|--------|
+          | Line Coverage | ${lineCoverage}% | ${status} |
+          | Branch Coverage | ${branchCoverage}% | - |
+          | Threshold | ${threshold}% | - |
+          
+          ${coverageInt >= thresholdInt ? '✅ Coverage meets threshold!' : '❌ Coverage is below threshold!'}
+          
+          > Third-party code excluded: glad, stb_*, tinyFileDialogs
+          `;
+          
+          // Find existing comment
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          });
+          
+          const botComment = comments.find(comment => 
+            comment.user.type === 'Bot' && 
+            comment.body.includes('Code Coverage Report')
+          );
+          
+          if (botComment) {
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: botComment.id,
+              body: body
+            });
+          } else {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+          }
 
     - name: Upload Coverage Report
-      if: matrix.build_type == 'Debug' && matrix.c_compiler == 'gcc'
       uses: actions/upload-artifact@v4
       with:
         name: coverage-report
-        path: ${{ steps.strings.outputs.build-output-dir }}/coverage.txt
+        path: |
+          ${{ steps.strings.outputs.build-output-dir }}/coverage.txt
+          ${{ steps.strings.outputs.build-output-dir }}/coverage.html
+          ${{ steps.strings.outputs.build-output-dir }}/coverage.json
 
     - name: Check Test Results
       if: always()

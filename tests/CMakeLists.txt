@@ -4,10 +4,12 @@
 #   rm -rf build && mkdir build && cd build && cmake ..
 file(GLOB TEST_CORE_FILES core/*Tests.cpp)
 file(GLOB TEST_MOCK_FILES mocks/*.cpp)
+file(GLOB TEST_INTEGRATION_FILES integration/*Tests.cpp)
 
 add_executable(ParticleViewerTests
     ${TEST_CORE_FILES}
     ${TEST_MOCK_FILES}
+    ${TEST_INTEGRATION_FILES}
 )
 
 # Link Google Test and required libraries
