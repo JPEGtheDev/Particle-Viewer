@@ -5,11 +5,19 @@
 file(GLOB TEST_CORE_FILES core/*Tests.cpp)
 file(GLOB TEST_MOCK_FILES mocks/*.cpp)
 file(GLOB TEST_INTEGRATION_FILES integration/*Tests.cpp)
+file(GLOB TEST_TESTING_FILES testing/*Tests.cpp)
+
+# Testing utility sources (PixelComparator in src/testing/, ImageConverter in src/)
+file(GLOB TESTING_UTILITY_SOURCES ${CMAKE_SOURCE_DIR}/src/testing/*.cpp)
 
 add_executable(ParticleViewerTests
     ${TEST_CORE_FILES}
     ${TEST_MOCK_FILES}
     ${TEST_INTEGRATION_FILES}
+    ${TEST_TESTING_FILES}
+    ${TESTING_UTILITY_SOURCES}
+    ${CMAKE_SOURCE_DIR}/src/ImageConverter.cpp
+    stb_image_write_impl.cpp
 )
 
 # Link Google Test and required libraries
