@@ -128,6 +128,16 @@ class VisualRegressionTest : public ::testing::Test
     }
 
     /*
+     * Save a current image to artifacts/ for CI visibility.
+     * Called explicitly in tests so images are always uploaded, even on pass.
+     */
+    void saveCurrentImage(const Image& image, const std::string& test_name)
+    {
+        std::string path = artifacts_dir_ + "/" + test_name + "_current.png";
+        image.save(path, ImageFormat::PNG);
+    }
+
+    /*
      * Compare two images and assert they match within tolerance.
      * On failure, saves diff image to diffs/ directory and logs details.
      *
@@ -139,6 +149,10 @@ class VisualRegressionTest : public ::testing::Test
     void assertVisualMatch(const Image& baseline, const Image& current, const std::string& test_name,
                            float tolerance = VisualTestConfig::DEFAULT_TOLERANCE)
     {
+        // Always save current image for visibility in CI
+        std::string current_path = artifacts_dir_ + "/" + test_name + "_current.png";
+        current.save(current_path, ImageFormat::PNG);
+
         ComparisonResult result = comparator_.compare(baseline, current, tolerance, true);
 
         if (!result.error.empty()) {
@@ -152,10 +166,6 @@ class VisualRegressionTest : public ::testing::Test
             if (result.diff_image.valid()) {
                 result.diff_image.save(diff_path, ImageFormat::PNG);
             }
-
-            // Save current image for comparison
-            std::string current_path = artifacts_dir_ + "/" + test_name + "_current.png";
-            current.save(current_path, ImageFormat::PNG);
 
             // Save baseline for comparison
             std::string baseline_path = artifacts_dir_ + "/" + test_name + "_baseline.png";

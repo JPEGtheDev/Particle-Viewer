@@ -22,7 +22,7 @@ Visual regression testing catches unintended rendering changes by comparing imag
 - **Image** (`src/Image.hpp`) — Core RGBA image class with `save()`/`load()` for PPM and PNG formats
 - **PixelComparator** (`src/testing/PixelComparator.hpp`) — RGBA image comparison with configurable tolerance
 - **VisualTestHelpers** (`tests/visual-regression/VisualTestHelpers.hpp`) — Test fixture, macros, and helper functions
-- **GitHub Actions Workflow** (`.github/workflows/visual-regression.yml`) — CI pipeline with inline image display
+- **GitHub Actions Workflow** (`.github/workflows/unit-tests.yml (visual-regression job)`) — CI pipeline with inline image display
 
 ### Data Types
 
@@ -50,7 +50,7 @@ tests/
     └── VisualRegressionTests.cpp    # Visual regression tests
 
 .github/workflows/
-└── visual-regression.yml            # CI workflow
+└── unit-tests.yml                   # CI workflow (visual-regression job runs after unit tests)
 ```
 
 ### Comparison Workflow
@@ -159,32 +159,33 @@ xvfb-run -a ./build/tests/ParticleViewerTests \
 
 ## CI Integration
 
-### Workflow: `.github/workflows/visual-regression.yml`
+### Workflow: `.github/workflows/unit-tests.yml` (visual-regression job)
 
-The workflow runs automatically on every PR and supports manual dispatch:
+The visual regression tests run as an integration test job **after unit tests pass**:
 
-1. **Install dependencies** — CMake, GLFW, GLM, Mesa, Xvfb
-2. **Build** — Compiles test executable
-3. **Run tests** — Under Xvfb for headless OpenGL
-4. **Upload artifacts** — Test results XML and diff images (on failure)
-5. **Post PR comment** — Summary table with pass/fail counts and artifact links
+1. **Unit tests pass** — The `test` job must succeed first
+2. **Install dependencies** — CMake, GLFW, GLM, Mesa, Xvfb
+3. **Build** — Compiles test executable
+4. **Run tests** — Under Xvfb for headless OpenGL (VisualRegressionTest.* only)
+5. **Upload images** — Current images are always uploaded (diffs/baselines on failure)
+6. **Post PR comment** — Summary table with pass/fail counts and inline images
 
 ### Artifacts
 
-On test failure, these artifacts are uploaded:
+Current images are **always** uploaded for visibility. On failure, additional artifacts are included:
 
-| Artifact | Contents |
-|----------|----------|
-| `visual-regression-results` | Test XML output and console log |
-| `visual-regression-diffs` | `*_diff.png`, `*_baseline.png`, `*_current.png` |
+| Artifact | Contents | When |
+|----------|----------|------|
+| `visual-regression-images` | `*_current.png` images | Always |
+| `visual-regression-images` | `*_diff.png`, `*_baseline.png` | On failure |
+| `visual-regression-results` | Test XML output and console log | Always |
 
 ### Debugging CI Failures
 
-1. Check the PR comment for the test summary
-2. Download diff artifacts from the workflow run
-3. Compare `*_baseline.png` with `*_current.png`
-4. The `*_diff.png` highlights differing pixels in red
-5. Check `visual-test-output.txt` for detailed similarity percentages
+1. Check the PR comment for inline images (current, baseline, diff)
+2. The `*_diff.png` highlights differing pixels in red
+3. Download full artifacts from the workflow run for closer inspection
+4. Check `visual-test-output.txt` for detailed similarity percentages
 
 ---
 

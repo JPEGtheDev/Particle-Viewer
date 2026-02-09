@@ -155,7 +155,7 @@ The visual regression testing infrastructure is now in place:
 - **Image** (`src/Image.hpp`) — Core RGBA image class with `save()`/`load()` for PPM and PNG formats
 - **PixelComparator** (`src/testing/PixelComparator.hpp`) — RGBA image comparison with configurable tolerance
 - **VisualTestHelpers** (`tests/visual-regression/VisualTestHelpers.hpp`) — Test fixture, EXPECT_VISUAL_MATCH macros, test image helpers
-- **GitHub Actions Workflow** (`.github/workflows/visual-regression.yml`) — CI with Xvfb, inline image display, PR comments
+- **GitHub Actions Workflow** (`.github/workflows/unit-tests.yml (visual-regression job)`) — CI with Xvfb, inline image display, PR comments
 
 The `Image` class is the base type for all image operations. Use it for creating, comparing, saving, and loading test images.
 
@@ -185,7 +185,7 @@ Stories involving visual regression testing should:
 6. **CI Integration**  
    - Artifacts (diff images) uploaded to GitHub Actions
    - Comment on PR with visual diff summary
-   - See `.github/workflows/visual-regression.yml`
+   - See `.github/workflows/unit-tests.yml (visual-regression job)`
 
 ### Example Visual Regression Story
 

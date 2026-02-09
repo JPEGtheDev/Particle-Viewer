@@ -30,6 +30,7 @@ TEST_F(VisualRegressionTest, ExactMatch_IdenticalSolidImages_Passes)
 
     // Act
     ComparisonResult result = comparator_.compare(baseline, current, 0.0f, true);
+    saveCurrentImage(current, "exact_solid_red");
 
     // Assert
     EXPECT_TRUE(result.matches);
@@ -44,6 +45,7 @@ TEST_F(VisualRegressionTest, ExactMatch_IdenticalGradientImages_Passes)
 
     // Act
     ComparisonResult result = comparator_.compare(baseline, current, 0.0f, true);
+    saveCurrentImage(current, "exact_gradient_bw");
 
     // Assert
     EXPECT_TRUE(result.matches);
@@ -59,6 +61,7 @@ TEST_F(VisualRegressionTest, TolerantMatch_SlightlyDifferentImages_Passes)
 
     // Act
     ComparisonResult result = comparator_.compare(baseline, current, tolerance, false);
+    saveCurrentImage(current, "tolerant_slight_diff");
 
     // Assert
     EXPECT_TRUE(result.matches);
