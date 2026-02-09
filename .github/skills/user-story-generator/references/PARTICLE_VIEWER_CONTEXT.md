@@ -152,12 +152,12 @@ The project should follow a layering approach (target state):
 
 The visual regression testing infrastructure is now in place:
 
+- **Image** (`src/Image.hpp`) — Core RGBA image class with `save()`/`load()` for PPM and PNG formats
 - **PixelComparator** (`src/testing/PixelComparator.hpp`) — RGBA image comparison with configurable tolerance
-- **ImageConverter** (`src/ImageConverter.hpp`) — PPM ↔ PNG format conversion using stb_image_write
-- **VisualTestHelpers** (`tests/visual-regression/VisualTestHelpers.hpp`) — Test fixture, EXPECT_VISUAL_MATCH macros, helper functions
-- **GitHub Actions Workflow** (`.github/workflows/visual-regression.yml`) — CI with Xvfb, artifact upload, PR comments
+- **VisualTestHelpers** (`tests/visual-regression/VisualTestHelpers.hpp`) — Test fixture, EXPECT_VISUAL_MATCH macros, test image helpers
+- **GitHub Actions Workflow** (`.github/workflows/visual-regression.yml`) — CI with Xvfb, inline image display, PR comments
 
-The `Image` struct is the base type for all image operations. Use it for creating, comparing, and converting test images.
+The `Image` class is the base type for all image operations. Use it for creating, comparing, saving, and loading test images.
 
 ### Particle-Viewer-Specific Requirements
 

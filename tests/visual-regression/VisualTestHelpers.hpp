@@ -5,9 +5,9 @@
  * Provides EXPECT_VISUAL_MATCH and ASSERT_VISUAL_MATCH test macros,
  * plus a VisualRegressionTest fixture for reusable test setup/teardown.
  *
- * Uses the Image struct from PixelComparator.hpp as the base image type
- * and integrates PixelComparator for comparison and ImageConverter for
- * format conversion.
+ * Uses the Image class from Image.hpp as the base image type
+ * and integrates PixelComparator for comparison.
+ * Image read/write is handled by Image::save() and Image::load().
  */
 
 #ifndef PARTICLE_VIEWER_VISUAL_TEST_HELPERS_H
@@ -15,7 +15,6 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -23,7 +22,7 @@
 #include <gtest/gtest.h>
 #include <sys/stat.h>
 
-#include "ImageConverter.hpp"
+#include "Image.hpp"
 #include "testing/PixelComparator.hpp"
 
 /*
@@ -39,62 +38,6 @@ static const std::string ARTIFACTS_DIR = "artifacts";  // For CI artifact upload
 } // namespace VisualTestConfig
 
 /*
- * Write an RGBA Image to a PPM file (RGB only, drops alpha).
- * Used to save baseline and diff images for inspection.
- *
- * @param path Output PPM file path
- * @param image The Image to write
- * @return true on success
- */
-inline bool writeImageToPPM(const std::string& path, const Image& image)
-{
-    if (!image.valid()) {
-        return false;
-    }
-
-    std::ofstream file(path, std::ios::binary);
-    if (!file.is_open()) {
-        return false;
-    }
-
-    file << "P6\n" << image.width << " " << image.height << "\n255\n";
-
-    for (uint32_t i = 0; i < image.width * image.height; ++i) {
-        file.put(static_cast<char>(image.pixels[i * 4 + 0])); // R
-        file.put(static_cast<char>(image.pixels[i * 4 + 1])); // G
-        file.put(static_cast<char>(image.pixels[i * 4 + 2])); // B
-    }
-
-    return file.good();
-}
-
-/*
- * Write an RGBA Image directly to a PNG file using ImageConverter.
- * Converts RGBA (4 bpp) to RGB (3 bpp) before writing.
- *
- * @param path Output PNG file path
- * @param image The Image to write
- * @return true on success
- */
-inline bool writeImageToPNG(const std::string& path, const Image& image)
-{
-    if (!image.valid()) {
-        return false;
-    }
-
-    // Convert RGBA to RGB for stb_image_write
-    std::vector<uint8_t> rgb(image.width * image.height * 3);
-    for (uint32_t i = 0; i < image.width * image.height; ++i) {
-        rgb[i * 3 + 0] = image.pixels[i * 4 + 0];
-        rgb[i * 3 + 1] = image.pixels[i * 4 + 1];
-        rgb[i * 3 + 2] = image.pixels[i * 4 + 2];
-    }
-
-    ConversionResult result = ImageConverter::writePNG(path, rgb.data(), image.width, image.height);
-    return result.success;
-}
-
-/*
  * Create a directory if it does not exist.
  * @param path Directory path
  * @return true if directory exists or was created
@@ -106,31 +49,6 @@ inline bool ensureDirectory(const std::string& path)
         return S_ISDIR(st.st_mode);
     }
     return mkdir(path.c_str(), 0755) == 0;
-}
-
-/*
- * Load a PPM file and convert to RGBA Image for comparison.
- * Uses ImageConverter::parsePPM() then converts RGB→RGBA.
- *
- * @param path Path to PPM file
- * @return Image in RGBA format (empty Image on failure)
- */
-inline Image loadImageFromPPM(const std::string& path)
-{
-    PpmData ppm = ImageConverter::parsePPM(path);
-    if (!ppm.valid()) {
-        return Image();
-    }
-
-    Image image(ppm.width, ppm.height);
-    for (uint32_t i = 0; i < ppm.width * ppm.height; ++i) {
-        image.pixels[i * 4 + 0] = ppm.pixels[i * 3 + 0]; // R
-        image.pixels[i * 4 + 1] = ppm.pixels[i * 3 + 1]; // G
-        image.pixels[i * 4 + 2] = ppm.pixels[i * 3 + 2]; // B
-        image.pixels[i * 4 + 3] = 255;                   // A
-    }
-
-    return image;
 }
 
 /*
@@ -232,16 +150,16 @@ class VisualRegressionTest : public ::testing::Test
             // Save diff image for inspection
             std::string diff_path = diffs_dir_ + "/" + test_name + "_diff.png";
             if (result.diff_image.valid()) {
-                writeImageToPNG(diff_path, result.diff_image);
+                result.diff_image.save(diff_path, ImageFormat::PNG);
             }
 
             // Save current image for comparison
             std::string current_path = artifacts_dir_ + "/" + test_name + "_current.png";
-            writeImageToPNG(current_path, current);
+            current.save(current_path, ImageFormat::PNG);
 
             // Save baseline for comparison
             std::string baseline_path = artifacts_dir_ + "/" + test_name + "_baseline.png";
-            writeImageToPNG(baseline_path, baseline);
+            baseline.save(baseline_path, ImageFormat::PNG);
 
             FAIL() << "Visual regression detected for '" << test_name << "':\n"
                    << "  Similarity: " << (result.similarity * 100.0f) << "%\n"

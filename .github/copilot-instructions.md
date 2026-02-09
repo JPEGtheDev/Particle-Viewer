@@ -114,62 +114,23 @@ make
 
 ### Test Structure and Standards
 
-**CRITICAL: Read `docs/TESTING_STANDARDS.md` before writing tests.** For detailed examples and patterns, use the `testing` skill (`.github/skills/testing/`).
+**CRITICAL: Read `docs/TESTING_STANDARDS.md` before writing tests.** For detailed guidelines, examples, and patterns, use the `testing` skill (`.github/skills/testing/`).
 
 Key requirements:
 
-1. **Arrange-Act-Assert Pattern**: Every test MUST follow AAA structure
+1. **Arrange-Act-Assert Pattern**: Every test MUST follow AAA structure with all three phases separate
 2. **Single Assertion Principle**: Each test verifies one logical concept
 3. **Test Naming**: Use format `UnitName_StateUnderTest_ExpectedResult`
 4. **Mock External Dependencies**: Use `MockOpenGL` for OpenGL calls (see `tests/mocks/`)
 5. **Do NOT test external libraries**: Only test YOUR code, not std:: or third-party libraries
 
-**AAA Pattern Guidelines:**
-- Do NOT combine Arrange and Act into `// Arrange & Act`. Keep them separate.
-- Do NOT combine Act and Assert into `// Act & Assert`. Always keep all three phases separate.
-- If no meaningful Arrange step exists, omit `// Arrange` entirely — start with `// Act`.
-- Move expected values and test inputs into the Arrange section as named variables.
-
 **Test Organization:**
 - `tests/core/` - Unit tests for core classes (Camera, Shader, Particle, SettingsIO)
 - `tests/integration/` - Integration tests for component interactions
-- `tests/testing/` - Tests for testing utilities (PixelComparator, ImageConverter)
+- `tests/testing/` - Tests for testing utilities (PixelComparator, Image)
 - `tests/visual-regression/` - Visual regression tests and helpers
 - `tests/mocks/` - Mock implementations (MockOpenGL, etc.)
 - Each test file corresponds to a core implementation unit (e.g., `CameraTests.cpp` for `camera.hpp`)
-
-**Example Test:**
-```cpp
-TEST(CameraTest, MoveForward_IncreasesZPosition)
-{
-    // Arrange
-    Camera camera(800, 600);
-    camera.cameraPos = glm::vec3(0.0f, 0.0f, 0.0f);
-    camera.setSpeed(1.0f);
-    
-    // Act
-    camera.moveForward();
-    
-    // Assert
-    EXPECT_LT(camera.cameraPos.z, 0.0f);
-}
-```
-
-**Visual Regression Test Example:**
-```cpp
-TEST_F(VisualRegressionTest, ExactMatch_IdenticalImages_Passes)
-{
-    // Arrange
-    Image baseline = createTestImage(16, 16, 255, 0, 0);
-    Image current = createTestImage(16, 16, 255, 0, 0);
-
-    // Act
-    ComparisonResult result = comparator_.compare(baseline, current, 0.0f, true);
-
-    // Assert
-    EXPECT_TRUE(result.matches);
-}
-```
 
 **Coverage Target**: ≥80% for tested modules, prioritizing core logic, public APIs, and error handling.
 
@@ -332,7 +293,7 @@ docs/
 - `settingsIO.hpp` - Header-only configuration file I/O
 - `osFile.hpp` - OS-specific file operations
 - `clutter.hpp` - Utility functions
-- `ImageConverter.hpp/.cpp` - Image format conversion (PPM ↔ PNG)
+- `Image.hpp/.cpp` - Core RGBA image class with save/load (PPM, PNG)
 - `testing/PixelComparator.hpp/.cpp` - Pixel-by-pixel image comparison for visual regression testing
 
 ## Common Tasks and Commands

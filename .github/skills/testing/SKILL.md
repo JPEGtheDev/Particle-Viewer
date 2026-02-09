@@ -150,7 +150,7 @@ TEST_F(VisualRegressionTest, Compare_IdenticalImages_ReturnsMatch)
 
 - `tests/core/` — Unit tests for `src/*.hpp` classes
 - `tests/integration/` — Multi-component tests
-- `tests/testing/` — Tests for test utilities (PixelComparator, ImageConverter)
+- `tests/testing/` — Tests for test utilities (PixelComparator, Image)
 - `tests/visual-regression/` — Visual regression tests
 - `tests/mocks/` — Mock implementations
 
@@ -182,11 +182,10 @@ Before presenting tests, verify:
 
 | Type | Location | Purpose |
 |------|----------|---------|
-| `Image` | `src/testing/PixelComparator.hpp` | RGBA pixel buffer (4 bytes/pixel) |
+| `Image` | `src/Image.hpp` | RGBA pixel buffer with save/load (PPM, PNG) |
 | `ComparisonResult` | `src/testing/PixelComparator.hpp` | Match status, similarity, diff image |
 | `PixelComparator` | `src/testing/PixelComparator.hpp` | Pixel comparison engine |
-| `ImageConverter` | `src/ImageConverter.hpp` | PPM ↔ PNG format conversion |
-| `PpmData` | `src/ImageConverter.hpp` | Parsed PPM data (RGB, 3 bytes/pixel) |
+| `ImageFormat` | `src/Image.hpp` | Format enum (PPM, PNG) for Image::save/load |
 
 ---
 

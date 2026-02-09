@@ -1,7 +1,7 @@
 /*
  * VisualRegressionTests.cpp
  *
- * Example visual regression tests demonstrating:
+ * Visual regression tests demonstrating:
  * 1. Exact match - identical images must match
  * 2. Tolerance match - slightly different images match within tolerance
  * 3. Intentional failure - significantly different images fail comparison
@@ -244,42 +244,42 @@ TEST(VisualHelperTest, CreateGradientImage_ChecksGradientValues_LastPixelIsEnd)
     EXPECT_EQ(image.pixels[last_idx + 2], end_b);
 }
 
-TEST(VisualHelperTest, WriteImageToPPM_ValidImage_Succeeds)
+TEST(VisualHelperTest, ImageSave_PPM_ValidImage_Succeeds)
 {
     // Arrange
     Image image = createTestImage(4, 4, 255, 128, 0);
     std::string path = "/tmp/visual_test_write.ppm";
 
     // Act
-    bool result = writeImageToPPM(path, image);
+    bool result = image.save(path, ImageFormat::PPM);
 
     // Assert
     EXPECT_TRUE(result);
     std::remove(path.c_str());
 }
 
-TEST(VisualHelperTest, WriteImageToPPM_EmptyImage_ReturnsFalse)
+TEST(VisualHelperTest, ImageSave_PPM_EmptyImage_ReturnsFalse)
 {
     // Arrange
     Image empty_image;
     std::string path = "/tmp/visual_test_empty.ppm";
 
     // Act
-    bool result = writeImageToPPM(path, empty_image);
+    bool result = empty_image.save(path, ImageFormat::PPM);
 
     // Assert
     EXPECT_FALSE(result);
 }
 
-TEST(VisualHelperTest, LoadImageFromPPM_RoundTrip_PreservesPixels)
+TEST(VisualHelperTest, ImageLoad_PPM_RoundTrip_PreservesPixels)
 {
     // Arrange
     Image original = createTestImage(4, 4, 200, 100, 50);
     std::string path = "/tmp/visual_test_roundtrip.ppm";
-    writeImageToPPM(path, original);
+    original.save(path, ImageFormat::PPM);
 
     // Act
-    Image loaded = loadImageFromPPM(path);
+    Image loaded = Image::load(path, ImageFormat::PPM);
 
     // Assert
     EXPECT_TRUE(loaded.valid());
@@ -293,37 +293,37 @@ TEST(VisualHelperTest, LoadImageFromPPM_RoundTrip_PreservesPixels)
     std::remove(path.c_str());
 }
 
-TEST(VisualHelperTest, LoadImageFromPPM_NonexistentFile_ReturnsEmptyImage)
+TEST(VisualHelperTest, ImageLoad_PPM_NonexistentFile_ReturnsEmptyImage)
 {
     // Act
-    Image loaded = loadImageFromPPM("/tmp/nonexistent_test_file.ppm");
+    Image loaded = Image::load("/tmp/nonexistent_test_file.ppm", ImageFormat::PPM);
 
     // Assert
     EXPECT_TRUE(loaded.empty());
 }
 
-TEST(VisualHelperTest, WriteImageToPNG_ValidImage_Succeeds)
+TEST(VisualHelperTest, ImageSave_PNG_ValidImage_Succeeds)
 {
     // Arrange
     Image image = createTestImage(4, 4, 255, 0, 128);
     std::string path = "/tmp/visual_test_write.png";
 
     // Act
-    bool result = writeImageToPNG(path, image);
+    bool result = image.save(path, ImageFormat::PNG);
 
     // Assert
     EXPECT_TRUE(result);
     std::remove(path.c_str());
 }
 
-TEST(VisualHelperTest, WriteImageToPNG_EmptyImage_ReturnsFalse)
+TEST(VisualHelperTest, ImageSave_PNG_EmptyImage_ReturnsFalse)
 {
     // Arrange
     Image empty_image;
     std::string path = "/tmp/visual_test_empty.png";
 
     // Act
-    bool result = writeImageToPNG(path, empty_image);
+    bool result = empty_image.save(path, ImageFormat::PNG);
 
     // Assert
     EXPECT_FALSE(result);

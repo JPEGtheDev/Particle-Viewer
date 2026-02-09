@@ -110,11 +110,15 @@ jobs:
       uses: actions/github-script@v7
       with:
         script: |
+          const fs = require('fs');
+          const path = require('path');
           const testExitCode = '${{ steps.visual-tests.outputs.test_exit_code }}';
           const total = '${{ steps.visual-tests.outputs.total_tests }}' || '0';
           const passed = '${{ steps.visual-tests.outputs.passed_tests }}' || '0';
           const failed = '${{ steps.visual-tests.outputs.failed_tests }}' || '0';
           const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+          const artifactsDir = '${{ steps.strings.outputs.build-output-dir }}/tests/artifacts';
+          const diffsDir = '${{ steps.strings.outputs.build-output-dir }}/tests/diffs';
 
           const status = testExitCode === '0' ? '✅' : '❌';
           const statusText = testExitCode === '0' ? 'All visual tests passed!' : 'Visual regression detected!';
@@ -127,13 +131,59 @@ jobs:
           body += `| Passed | ${passed} |\n`;
           body += `| Failed | ${failed} |\n\n`;
 
-          if (testExitCode !== '0') {
-            body += `### 📸 Diff Artifacts\n\n`;
-            body += `Download diff images from the [workflow run artifacts](${runUrl}).\n\n`;
-            body += `**Artifacts include:**\n`;
-            body += `- \`*_diff.png\` — Highlighted pixel differences\n`;
-            body += `- \`*_baseline.png\` — Expected baseline image\n`;
-            body += `- \`*_current.png\` — Actual rendered image\n\n`;
+          // Embed images inline if artifacts exist
+          const imageFiles = [];
+          for (const dir of [artifactsDir, diffsDir]) {
+            if (fs.existsSync(dir)) {
+              const files = fs.readdirSync(dir).filter(f => f.endsWith('.png'));
+              for (const file of files) {
+                const filePath = path.join(dir, file);
+                const data = fs.readFileSync(filePath);
+                const base64 = data.toString('base64');
+                imageFiles.push({ name: file, base64 });
+              }
+            }
+          }
+
+          if (imageFiles.length > 0) {
+            body += `### 📸 Visual Test Images\n\n`;
+
+            // Group by test name (strip _baseline/_current/_diff suffix)
+            const groups = {};
+            for (const img of imageFiles) {
+              const match = img.name.match(/^(.+?)_(baseline|current|diff)\.png$/);
+              if (match) {
+                const testName = match[1];
+                const type = match[2];
+                if (!groups[testName]) groups[testName] = {};
+                groups[testName][type] = img;
+              } else {
+                // Ungrouped image
+                if (!groups['_other']) groups['_other'] = {};
+                groups['_other'][img.name] = img;
+              }
+            }
+
+            for (const [testName, images] of Object.entries(groups)) {
+              if (testName === '_other') continue;
+              body += `#### ${testName}\n\n`;
+              body += `| Baseline | Current | Diff |\n`;
+              body += `|----------|---------|------|\n`;
+
+              const baseline = images.baseline
+                ? `<img src="data:image/png;base64,${images.baseline.base64}" width="200" />`
+                : 'N/A';
+              const current = images.current
+                ? `<img src="data:image/png;base64,${images.current.base64}" width="200" />`
+                : 'N/A';
+              const diff = images.diff
+                ? `<img src="data:image/png;base64,${images.diff.base64}" width="200" />`
+                : 'N/A';
+
+              body += `| ${baseline} | ${current} | ${diff} |\n\n`;
+            }
+          } else if (testExitCode === '0') {
+            body += `All images matched their baselines — no diffs generated.\n\n`;
           }
 
           body += `---\n`;

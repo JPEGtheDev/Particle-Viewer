@@ -19,21 +19,20 @@ This document explains how to write, run, and maintain visual regression tests f
 
 Visual regression testing catches unintended rendering changes by comparing images pixel-by-pixel. The infrastructure consists of:
 
+- **Image** (`src/Image.hpp`) — Core RGBA image class with `save()`/`load()` for PPM and PNG formats
 - **PixelComparator** (`src/testing/PixelComparator.hpp`) — RGBA image comparison with configurable tolerance
-- **ImageConverter** (`src/ImageConverter.hpp`) — Image format conversion (PPM ↔ PNG)
 - **VisualTestHelpers** (`tests/visual-regression/VisualTestHelpers.hpp`) — Test fixture, macros, and helper functions
-- **GitHub Actions Workflow** (`.github/workflows/visual-regression.yml`) — CI pipeline with artifact upload
+- **GitHub Actions Workflow** (`.github/workflows/visual-regression.yml`) — CI pipeline with inline image display
 
 ### Data Types
 
 | Type | Purpose | Location |
 |------|---------|----------|
-| `Image` | RGBA pixel buffer (4 bytes/pixel) | `PixelComparator.hpp` |
+| `Image` | RGBA pixel buffer with save/load (PPM, PNG) | `src/Image.hpp` |
+| `ImageFormat` | Format enum (PPM, PNG) for Image::save/load | `src/Image.hpp` |
 | `ComparisonResult` | Match status, similarity, diff image | `PixelComparator.hpp` |
-| `PpmData` | Parsed PPM file (RGB, 3 bytes/pixel) | `ImageConverter.hpp` |
-| `ConversionResult` | Success/error for format conversion | `ImageConverter.hpp` |
 
-The `Image` struct is the base type for all visual regression operations. It stores RGBA data in row-major order and provides `valid()` and `empty()` checks.
+The `Image` class is the base type for all image operations. It stores RGBA data in row-major order, provides `valid()` and `empty()` checks, and handles format-specific I/O internally via `Image::save()` and `Image::load()`.
 
 ---
 
@@ -41,14 +40,14 @@ The `Image` struct is the base type for all visual regression operations. It sto
 
 ```
 src/
+├── Image.hpp/.cpp                   # Core RGBA image class with save/load
 ├── testing/
 │   └── PixelComparator.hpp/.cpp    # Image comparison engine
-├── ImageConverter.hpp/.cpp          # PPM ↔ PNG conversion
 
 tests/
 └── visual-regression/
-    ├── VisualTestHelpers.hpp        # Fixture + macros + helpers
-    └── VisualRegressionTests.cpp    # Example tests
+    ├── VisualTestHelpers.hpp        # Fixture + macros + test image helpers
+    └── VisualRegressionTests.cpp    # Visual regression tests
 
 .github/workflows/
 └── visual-regression.yml            # CI workflow
@@ -57,11 +56,11 @@ tests/
 ### Comparison Workflow
 
 ```
-1. Create/load baseline image (Image struct)
-2. Create/capture current image (Image struct)
+1. Create/load baseline image (Image class)
+2. Create/capture current image (Image class)
 3. Compare with PixelComparator
-4. On failure: save diff/baseline/current as PNG artifacts
-5. CI uploads artifacts and posts PR comment
+4. On failure: save diff/baseline/current with Image::save()
+5. CI embeds images inline in PR comment
 ```
 
 ---
@@ -127,9 +126,8 @@ TEST(MyTest, Rendering_MatchesExpected)
 |----------|-------------|
 | `createTestImage(w, h, r, g, b, a)` | Create solid-color RGBA image |
 | `createGradientImage(w, h, r1, g1, b1, r2, g2, b2)` | Create horizontal gradient |
-| `writeImageToPPM(path, image)` | Save RGBA Image as PPM |
-| `writeImageToPNG(path, image)` | Save RGBA Image as PNG |
-| `loadImageFromPPM(path)` | Load PPM file as RGBA Image |
+| `Image::save(path, format)` | Save image to file (PPM or PNG) |
+| `Image::load(path, format)` | Load image from file (PPM or PNG) |
 
 ---
 

@@ -4,6 +4,15 @@ This reference provides concrete examples of correct and incorrect test patterns
 
 ---
 
+## AAA Pattern — Critical Rules
+
+1. **NEVER combine phases.** Do not write `// Arrange & Act` or `// Act & Assert`. Each phase gets its own comment and section.
+2. **If no Arrange is needed**, omit `// Arrange` entirely — start with `// Act`.
+3. **Move expected values to Arrange** as named variables, not inline in Assert.
+4. **One logical concept per test** — split if testing multiple behaviors.
+
+---
+
 ## AAA Pattern — Correct Examples
 
 ### Unit Test: Camera Movement
@@ -92,58 +101,18 @@ TEST_F(VisualRegressionTest, TolerantMatch_SlightlyDifferentImages_Passes)
 }
 ```
 
-### Visual Regression: Detecting Differences
+### Image Save/Load: Round-Trip (RGB preserved, alpha discarded)
 
 ```cpp
-TEST_F(VisualRegressionTest, ExactMatch_DifferentImages_GeneratesDiffArtifacts)
-{
-    // Arrange
-    Image baseline = createTestImage(8, 8, 255, 0, 0); // Red
-    Image current = createTestImage(8, 8, 0, 255, 0);  // Green
-
-    // Act
-    ComparisonResult result = comparator_.compare(baseline, current, 0.0f, true);
-
-    // Assert
-    EXPECT_FALSE(result.matches);
-    EXPECT_EQ(result.diff_pixels, 64u);
-    EXPECT_GT(result.total_pixels, 0u);
-    EXPECT_TRUE(result.diff_image.valid());
-}
-```
-
-### Integration Test: Data Pipeline
-
-```cpp
-TEST(DataLoadingPipelineTest, LoadFrame_ValidData_PopulatesTranslations)
-{
-    // Arrange
-    SettingsIO settings;
-    std::string test_file = createTestDataFile(10); // 10 particles
-    settings.loadSettings(test_file);
-    Particle particle;
-
-    // Act
-    bool loaded = particle.loadTranslations(settings.getTranslationData());
-
-    // Assert
-    EXPECT_TRUE(loaded);
-    EXPECT_EQ(particle.getCount(), 10u);
-}
-```
-
-### Helper Test: PPM Round-Trip (RGB only, alpha discarded)
-
-```cpp
-TEST(VisualHelperTest, LoadImageFromPPM_RoundTrip_PreservesPixels)
+TEST(VisualHelperTest, ImageLoad_PPM_RoundTrip_PreservesPixels)
 {
     // Arrange
     Image original = createTestImage(4, 4, 200, 100, 50);
     std::string path = "/tmp/visual_test_roundtrip.ppm";
-    writeImageToPPM(path, original);
+    original.save(path, ImageFormat::PPM);
 
     // Act
-    Image loaded = loadImageFromPPM(path);
+    Image loaded = Image::load(path, ImageFormat::PPM);
 
     // Assert
     EXPECT_TRUE(loaded.valid());
@@ -246,11 +215,12 @@ TEST(CameraTest, Update)            // <-- WRONG
 
 ## Key Types Reference
 
-### Image (src/testing/PixelComparator.hpp)
+### Image (src/Image.hpp)
 
 ```cpp
-struct Image
+class Image
 {
+  public:
     uint32_t width;
     uint32_t height;
     std::vector<uint8_t> pixels; // RGBA, 4 bytes per pixel
@@ -259,7 +229,15 @@ struct Image
     Image(uint32_t w, uint32_t h);    // Allocates w*h*4 bytes, zeroed
     bool empty() const;
     bool valid() const;
+
+    // Save to file (drops alpha, writes RGB)
+    bool save(const std::string& path, ImageFormat format) const;
+
+    // Load from file (sets alpha to 255)
+    static Image load(const std::string& path, ImageFormat format);
 };
+
+enum class ImageFormat { PPM, PNG };
 ```
 
 ### ComparisonResult (src/testing/PixelComparator.hpp)
@@ -291,21 +269,6 @@ class PixelComparator
 };
 ```
 
-### ImageConverter (src/ImageConverter.hpp)
-
-```cpp
-class ImageConverter
-{
-  public:
-    ImageConverter(int compression_level = 6);
-    ConversionResult convert(const std::string& input, const std::string& output,
-                            ImageFormat from, ImageFormat to) const;
-    static PpmData parsePPM(const std::string& path);
-    static ConversionResult writePNG(const std::string& path, const uint8_t* pixels,
-                                     uint32_t width, uint32_t height);
-};
-```
-
 ### Visual Test Helpers (tests/visual-regression/VisualTestHelpers.hpp)
 
 ```cpp
@@ -316,15 +279,6 @@ Image createTestImage(uint32_t w, uint32_t h, uint8_t r, uint8_t g, uint8_t b, u
 Image createGradientImage(uint32_t w, uint32_t h,
                           uint8_t r1, uint8_t g1, uint8_t b1,
                           uint8_t r2, uint8_t g2, uint8_t b2);
-
-// Save RGBA Image as PPM (drops alpha)
-bool writeImageToPPM(const std::string& path, const Image& image);
-
-// Save RGBA Image as PNG (drops alpha)
-bool writeImageToPNG(const std::string& path, const Image& image);
-
-// Load PPM as RGBA Image (alpha set to 255)
-Image loadImageFromPPM(const std::string& path);
 ```
 
 ---
@@ -335,7 +289,7 @@ Image loadImageFromPPM(const std::string& path);
 tests/
 ├── core/               # Unit tests (CameraTests.cpp, ShaderTests.cpp, etc.)
 ├── integration/        # Multi-component tests
-├── testing/            # Tests for PixelComparator, ImageConverter
+├── testing/            # Tests for PixelComparator, Image
 ├── visual-regression/  # Visual comparison tests
 │   ├── VisualTestHelpers.hpp
 │   └── VisualRegressionTests.cpp

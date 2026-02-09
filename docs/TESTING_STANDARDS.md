@@ -282,7 +282,7 @@ tests/
 │   └── ShaderPipelineTests.cpp
 ├── testing/
 │   ├── PixelComparatorTests.cpp
-│   └── ImageConverterTests.cpp
+│   └── ImageTests.cpp
 ├── visual-regression/
 │   ├── VisualTestHelpers.hpp
 │   └── VisualRegressionTests.cpp
