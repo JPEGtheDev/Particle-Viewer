@@ -85,7 +85,7 @@ struct ComparisonResult
  */
 enum class ComparisonMode
 {
-    EXACT,    // Tolerance = 0, early exit on first diff
+    EXACT,    // Tolerance = 0 (exact match required)
     TOLERANT, // Per-channel tolerance comparison
     // PERCEPTUAL  // Future extension point
 };

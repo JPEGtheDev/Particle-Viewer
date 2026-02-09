@@ -31,7 +31,7 @@ static Image createSolidImage(uint32_t width, uint32_t height, uint8_t r, uint8_
 
 TEST(ImageTest, DefaultConstructor_CreatesEmptyImage)
 {
-    // Arrange & Act
+    // Act
     Image img;
 
     // Assert
@@ -40,7 +40,7 @@ TEST(ImageTest, DefaultConstructor_CreatesEmptyImage)
 
 TEST(ImageTest, SizedConstructor_CreatesValidImage)
 {
-    // Arrange & Act
+    // Act
     Image img(4, 4);
 
     // Assert
@@ -49,11 +49,14 @@ TEST(ImageTest, SizedConstructor_CreatesValidImage)
 
 TEST(ImageTest, SizedConstructor_AllocatesCorrectPixelCount)
 {
-    // Arrange & Act
+    // Arrange
+    size_t expected_size = 10 * 20 * 4;
+
+    // Act
     Image img(10, 20);
 
     // Assert
-    EXPECT_EQ(img.pixels.size(), static_cast<size_t>(10 * 20 * 4));
+    EXPECT_EQ(img.pixels.size(), expected_size);
 }
 
 TEST(ImageTest, DataConstructor_StoresProvidedPixels)
@@ -479,7 +482,7 @@ TEST(PixelComparatorTest, Compare_4x4Image_TotalPixelsIs16)
 
 TEST(PixelComparatorTest, DefaultMode_IsTolerant)
 {
-    // Arrange & Act
+    // Act
     PixelComparator comparator;
 
     // Assert

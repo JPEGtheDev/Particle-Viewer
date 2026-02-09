@@ -1,16 +1,28 @@
 /*
  * ImageConverter.hpp
  *
- * Image format conversion utility for visual regression testing.
- * Converts PPM (P6 binary) images to PNG using stb_image_write.
+ * Image format conversion utility.
+ * Supports conversion between image formats (PPM, PNG) using stb_image_write.
+ * Can be used for visual regression testing and general-purpose image conversion.
  */
 
-#ifndef PARTICLE_VIEWER_TESTING_IMAGE_CONVERTER_H
-#define PARTICLE_VIEWER_TESTING_IMAGE_CONVERTER_H
+#ifndef PARTICLE_VIEWER_IMAGE_CONVERTER_H
+#define PARTICLE_VIEWER_IMAGE_CONVERTER_H
 
 #include <cstdint>
 #include <string>
 #include <vector>
+
+/*
+ * Supported image formats for conversion.
+ */
+enum class ImageFormat
+{
+    PPM, // PPM P6 binary format
+    PNG, // PNG format (via stb_image_write)
+    // TGA,  // Future: TGA format
+    // BMP,  // Future: BMP format
+};
 
 /*
  * Result of an image conversion operation.
@@ -49,14 +61,13 @@ struct PpmData
 };
 
 /*
- * ImageConverter provides format conversion for images used in visual
- * regression testing. Currently supports PPM (P6 binary) to PNG conversion.
- *
- * Uses stb_image_write for PNG encoding (already available in the project).
+ * ImageConverter provides format conversion for images.
+ * Currently supports PPM (P6 binary) to PNG conversion via stb_image_write.
  *
  * Usage:
  *   ImageConverter converter;
- *   ConversionResult result = converter.convertPPMtoPNG("capture.ppm", "capture.png");
+ *   ConversionResult result = converter.convert("capture.ppm", "capture.png",
+ *                                               ImageFormat::PPM, ImageFormat::PNG);
  *   if (!result.success) { std::cerr << result.error << std::endl; }
  */
 class ImageConverter
@@ -69,13 +80,16 @@ class ImageConverter
     ImageConverter(int compression_level = 6);
 
     /*
-     * Convert a PPM (P6 binary) file to PNG format.
+     * Convert an image file from one format to another.
      *
-     * @param ppm_path Path to the input PPM file
-     * @param png_path Path for the output PNG file
+     * @param input_path Path to the input image file
+     * @param output_path Path for the output image file
+     * @param from Source image format
+     * @param to Target image format
      * @return ConversionResult with success status and error message
      */
-    ConversionResult convertPPMtoPNG(const std::string& ppm_path, const std::string& png_path) const;
+    ConversionResult convert(const std::string& input_path, const std::string& output_path, ImageFormat from,
+                             ImageFormat to) const;
 
     /*
      * Parse a PPM P6 binary file into raw pixel data.
@@ -104,6 +118,12 @@ class ImageConverter
 
   private:
     int compression_level_;
+
+    /*
+     * Read a PPM header token, skipping comments and whitespace.
+     * Comments start with '#' and extend to end of line.
+     */
+    static bool readToken(std::ifstream& file, std::string& token);
 };
 
-#endif // PARTICLE_VIEWER_TESTING_IMAGE_CONVERTER_H
+#endif // PARTICLE_VIEWER_IMAGE_CONVERTER_H

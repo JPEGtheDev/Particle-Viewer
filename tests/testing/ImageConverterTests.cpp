@@ -13,7 +13,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "testing/ImageConverter.hpp"
+#include "ImageConverter.hpp"
 
 // ============================================
 // Helper: Recursively remove a directory
@@ -79,7 +79,7 @@ class ImageConverterTest : public ::testing::Test
     }
 
     /*
-     * Create a PPM file with a comment in the header.
+     * Create a PPM file with a comment in the header (before dimensions).
      */
     std::string createPPMWithComment(const std::string& name, uint32_t width, uint32_t height)
     {
@@ -95,6 +95,25 @@ class ImageConverterTest : public ::testing::Test
         return path;
     }
 
+    /*
+     * Create a PPM file with comments between all header tokens.
+     */
+    std::string createPPMWithInterleavedComments(const std::string& name, uint32_t width, uint32_t height)
+    {
+        std::string path = test_dir_ + "/" + name;
+        std::ofstream file(path.c_str(), std::ios::binary);
+        file << "P6\n# comment before width\n"
+             << width << "\n# comment between width and height\n"
+             << height << "\n# comment before max_val\n255\n";
+        for (uint32_t i = 0; i < width * height; ++i) {
+            file.put(static_cast<char>(64));
+            file.put(static_cast<char>(128));
+            file.put(static_cast<char>(192));
+        }
+        file.close();
+        return path;
+    }
+
     std::string test_dir_;
 };
 
@@ -104,38 +123,50 @@ class ImageConverterTest : public ::testing::Test
 
 TEST_F(ImageConverterTest, DefaultConstructor_SetsCompressionToSix)
 {
-    // Arrange & Act
+    // Arrange
+    int expected_level = 6;
+
+    // Act
     ImageConverter converter;
 
     // Assert
-    EXPECT_EQ(converter.getCompressionLevel(), 6);
+    EXPECT_EQ(converter.getCompressionLevel(), expected_level);
 }
 
 TEST_F(ImageConverterTest, Constructor_WithCustomCompression_SetsLevel)
 {
-    // Arrange & Act
-    ImageConverter converter(3);
+    // Arrange
+    int expected_level = 3;
+
+    // Act
+    ImageConverter converter(expected_level);
 
     // Assert
-    EXPECT_EQ(converter.getCompressionLevel(), 3);
+    EXPECT_EQ(converter.getCompressionLevel(), expected_level);
 }
 
 TEST_F(ImageConverterTest, Constructor_NegativeCompression_ClampsToZero)
 {
-    // Arrange & Act
+    // Arrange
+    int expected_level = 0;
+
+    // Act
     ImageConverter converter(-5);
 
     // Assert
-    EXPECT_EQ(converter.getCompressionLevel(), 0);
+    EXPECT_EQ(converter.getCompressionLevel(), expected_level);
 }
 
 TEST_F(ImageConverterTest, Constructor_ExcessiveCompression_ClampsToNine)
 {
-    // Arrange & Act
+    // Arrange
+    int expected_level = 9;
+
+    // Act
     ImageConverter converter(99);
 
     // Assert
-    EXPECT_EQ(converter.getCompressionLevel(), 9);
+    EXPECT_EQ(converter.getCompressionLevel(), expected_level);
 }
 
 // ============================================
@@ -204,9 +235,34 @@ TEST_F(ImageConverterTest, ParsePPM_WithComment_ParsesCorrectly)
     EXPECT_TRUE(data.valid());
 }
 
+TEST_F(ImageConverterTest, ParsePPM_WithInterleavedComments_ParsesCorrectly)
+{
+    // Arrange
+    std::string path = createPPMWithInterleavedComments("interleaved.ppm", 4, 4);
+
+    // Act
+    PpmData data = ImageConverter::parsePPM(path);
+
+    // Assert
+    EXPECT_TRUE(data.valid());
+}
+
+TEST_F(ImageConverterTest, ParsePPM_WithInterleavedComments_CorrectDimensions)
+{
+    // Arrange
+    std::string path = createPPMWithInterleavedComments("interleaved.ppm", 8, 6);
+
+    // Act
+    PpmData data = ImageConverter::parsePPM(path);
+
+    // Assert
+    EXPECT_EQ(data.width, 8u);
+    EXPECT_EQ(data.height, 6u);
+}
+
 TEST_F(ImageConverterTest, ParsePPM_MissingFile_ReturnsInvalidData)
 {
-    // Arrange & Act
+    // Act
     PpmData data = ImageConverter::parsePPM("/tmp/nonexistent_file.ppm");
 
     // Assert
@@ -248,10 +304,10 @@ TEST_F(ImageConverterTest, ParsePPM_TruncatedData_ReturnsInvalidData)
 }
 
 // ============================================
-// PPM to PNG Conversion Tests
+// Conversion Tests (enum-based API)
 // ============================================
 
-TEST_F(ImageConverterTest, ConvertPPMtoPNG_ValidFile_Succeeds)
+TEST_F(ImageConverterTest, Convert_PPMtoPNG_ValidFile_Succeeds)
 {
     // Arrange
     ImageConverter converter;
@@ -259,13 +315,13 @@ TEST_F(ImageConverterTest, ConvertPPMtoPNG_ValidFile_Succeeds)
     std::string png_path = test_dir_ + "/test.png";
 
     // Act
-    ConversionResult result = converter.convertPPMtoPNG(ppm_path, png_path);
+    ConversionResult result = converter.convert(ppm_path, png_path, ImageFormat::PPM, ImageFormat::PNG);
 
     // Assert
     EXPECT_TRUE(result.success);
 }
 
-TEST_F(ImageConverterTest, ConvertPPMtoPNG_ValidFile_CreatesPNGFile)
+TEST_F(ImageConverterTest, Convert_PPMtoPNG_ValidFile_CreatesPNGFile)
 {
     // Arrange
     ImageConverter converter;
@@ -273,14 +329,14 @@ TEST_F(ImageConverterTest, ConvertPPMtoPNG_ValidFile_CreatesPNGFile)
     std::string png_path = test_dir_ + "/test.png";
 
     // Act
-    converter.convertPPMtoPNG(ppm_path, png_path);
+    converter.convert(ppm_path, png_path, ImageFormat::PPM, ImageFormat::PNG);
 
-    // Assert - PNG file should exist
+    // Assert
     std::ifstream check(png_path.c_str());
     EXPECT_TRUE(check.good());
 }
 
-TEST_F(ImageConverterTest, ConvertPPMtoPNG_ValidFile_PNGHasContent)
+TEST_F(ImageConverterTest, Convert_PPMtoPNG_ValidFile_PNGHasContent)
 {
     // Arrange
     ImageConverter converter;
@@ -288,58 +344,85 @@ TEST_F(ImageConverterTest, ConvertPPMtoPNG_ValidFile_PNGHasContent)
     std::string png_path = test_dir_ + "/test.png";
 
     // Act
-    converter.convertPPMtoPNG(ppm_path, png_path);
+    converter.convert(ppm_path, png_path, ImageFormat::PPM, ImageFormat::PNG);
 
-    // Assert - PNG file should have nonzero size
+    // Assert
     std::ifstream check(png_path.c_str(), std::ios::binary | std::ios::ate);
     EXPECT_GT(check.tellg(), 0);
 }
 
-TEST_F(ImageConverterTest, ConvertPPMtoPNG_MissingPPM_Fails)
+TEST_F(ImageConverterTest, Convert_MissingInputFile_Fails)
 {
     // Arrange
     ImageConverter converter;
     std::string png_path = test_dir_ + "/test.png";
 
     // Act
-    ConversionResult result = converter.convertPPMtoPNG("/tmp/nonexistent.ppm", png_path);
+    ConversionResult result = converter.convert("/tmp/nonexistent.ppm", png_path, ImageFormat::PPM, ImageFormat::PNG);
 
     // Assert
     EXPECT_FALSE(result.success);
 }
 
-TEST_F(ImageConverterTest, ConvertPPMtoPNG_EmptyPPMPath_Fails)
+TEST_F(ImageConverterTest, Convert_EmptyInputPath_Fails)
 {
     // Arrange
     ImageConverter converter;
 
     // Act
-    ConversionResult result = converter.convertPPMtoPNG("", test_dir_ + "/test.png");
+    ConversionResult result = converter.convert("", test_dir_ + "/test.png", ImageFormat::PPM, ImageFormat::PNG);
 
     // Assert
     EXPECT_FALSE(result.success);
 }
 
-TEST_F(ImageConverterTest, ConvertPPMtoPNG_EmptyPNGPath_Fails)
+TEST_F(ImageConverterTest, Convert_EmptyOutputPath_Fails)
 {
     // Arrange
     ImageConverter converter;
     std::string ppm_path = createPPM("test.ppm", 4, 4, 0, 0, 0);
 
     // Act
-    ConversionResult result = converter.convertPPMtoPNG(ppm_path, "");
+    ConversionResult result = converter.convert(ppm_path, "", ImageFormat::PPM, ImageFormat::PNG);
 
     // Assert
     EXPECT_FALSE(result.success);
 }
 
-TEST_F(ImageConverterTest, ConvertPPMtoPNG_MissingPPM_HasErrorMessage)
+TEST_F(ImageConverterTest, Convert_MissingInput_HasErrorMessage)
 {
     // Arrange
     ImageConverter converter;
 
     // Act
-    ConversionResult result = converter.convertPPMtoPNG("/tmp/nonexistent.ppm", test_dir_ + "/test.png");
+    ConversionResult result =
+        converter.convert("/tmp/nonexistent.ppm", test_dir_ + "/test.png", ImageFormat::PPM, ImageFormat::PNG);
+
+    // Assert
+    EXPECT_FALSE(result.error.empty());
+}
+
+TEST_F(ImageConverterTest, Convert_UnsupportedFormat_Fails)
+{
+    // Arrange
+    ImageConverter converter;
+    std::string ppm_path = createPPM("test.ppm", 4, 4, 0, 0, 0);
+
+    // Act - PNG to PPM is not supported
+    ConversionResult result = converter.convert(ppm_path, test_dir_ + "/out.ppm", ImageFormat::PNG, ImageFormat::PPM);
+
+    // Assert
+    EXPECT_FALSE(result.success);
+}
+
+TEST_F(ImageConverterTest, Convert_UnsupportedFormat_HasErrorMessage)
+{
+    // Arrange
+    ImageConverter converter;
+    std::string ppm_path = createPPM("test.ppm", 4, 4, 0, 0, 0);
+
+    // Act
+    ConversionResult result = converter.convert(ppm_path, test_dir_ + "/out.ppm", ImageFormat::PNG, ImageFormat::PPM);
 
     // Assert
     EXPECT_FALSE(result.error.empty());
@@ -351,8 +434,11 @@ TEST_F(ImageConverterTest, ConvertPPMtoPNG_MissingPPM_HasErrorMessage)
 
 TEST_F(ImageConverterTest, WritePNG_NullPixels_Fails)
 {
-    // Arrange & Act
-    ConversionResult result = ImageConverter::writePNG(test_dir_ + "/null.png", NULL, 4, 4);
+    // Arrange
+    std::string path = test_dir_ + "/null.png";
+
+    // Act
+    ConversionResult result = ImageConverter::writePNG(path, nullptr, 4, 4);
 
     // Assert
     EXPECT_FALSE(result.success);
@@ -388,7 +474,7 @@ TEST_F(ImageConverterTest, WritePNG_ZeroHeight_Fails)
 
 TEST(PpmDataTest, DefaultConstructor_IsInvalid)
 {
-    // Arrange & Act
+    // Act
     PpmData data;
 
     // Assert
