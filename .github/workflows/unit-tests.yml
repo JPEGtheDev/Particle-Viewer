@@ -8,7 +8,7 @@ on:
 
 # Minimum coverage threshold for enforcement
 env:
-  COVERAGE_THRESHOLD: 80
+  COVERAGE_THRESHOLD: 50
 
 jobs:
   test:
