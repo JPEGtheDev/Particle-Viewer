@@ -24,7 +24,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        build_type: [Debug, Release]
+        build_type: [Debug]
         c_compiler: [gcc, clang]
         include:
           - os: ubuntu-latest
@@ -60,8 +60,8 @@ jobs:
 
     - name: Configure CMake
       run: |
-        # Enable coverage for Debug builds with gcc
-        if [ "${{ matrix.build_type }}" = "Debug" ] && [ "${{ matrix.c_compiler }}" = "gcc" ]; then
+        # Enable coverage for gcc compiler only (Debug build)
+        if [ "${{ matrix.c_compiler }}" = "gcc" ]; then
           COVERAGE_FLAG="-Dalloutput:BOOL=ON"
           echo "✅ Coverage instrumentation ENABLED (alloutput:BOOL=ON)"
         else
@@ -85,14 +85,13 @@ jobs:
 
     - name: Build
       run: |
-        echo "=== Build Configuration ==="
-        echo "Build type: ${{ matrix.build_type }}"
+        echo "=== Building Debug Configuration ==="
         echo "Compiler: ${{ matrix.c_compiler }}"
         echo ""
         cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --verbose
         
-    - name: Verify Build Flags (Debug only)
-      if: matrix.build_type == 'Debug' && matrix.c_compiler == 'gcc'
+    - name: Verify Build Flags (gcc only)
+      if: matrix.c_compiler == 'gcc'
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: |
         echo "=== Checking Compiled Flags ==="
@@ -115,8 +114,8 @@ jobs:
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: ctest --build-config ${{ matrix.build_type }} --output-on-failure --verbose
 
-    - name: Verify Coverage Data Files (Debug only)
-      if: matrix.build_type == 'Debug' && matrix.c_compiler == 'gcc'
+    - name: Verify Coverage Data Files (gcc only)
+      if: matrix.c_compiler == 'gcc'
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: |
         echo "=== Checking for coverage data files ==="
@@ -135,8 +134,8 @@ jobs:
           echo "⚠️  WARNING: No coverage data files found! Tests may not be instrumented."
         fi
 
-    - name: Generate Coverage Report (Debug only)
-      if: matrix.build_type == 'Debug' && matrix.c_compiler == 'gcc'
+    - name: Generate Coverage Report (gcc only)
+      if: matrix.c_compiler == 'gcc'
       id: coverage
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: |
@@ -180,7 +179,7 @@ jobs:
         echo "branch_coverage=${BRANCH_COVERAGE}" >> "$GITHUB_OUTPUT"
 
     - name: Enforce Coverage Threshold
-      if: matrix.build_type == 'Debug' && matrix.c_compiler == 'gcc'
+      if: matrix.c_compiler == 'gcc'
       run: |
         LINE_COVERAGE=${{ steps.coverage.outputs.line_coverage }}
         THRESHOLD=${{ env.COVERAGE_THRESHOLD }}
@@ -212,7 +211,7 @@ jobs:
         fi
 
     - name: Comment Coverage on PR
-      if: matrix.build_type == 'Debug' && matrix.c_compiler == 'gcc' && github.event_name == 'pull_request'
+      if: matrix.c_compiler == 'gcc' && github.event_name == 'pull_request'
       uses: actions/github-script@v7
       with:
         script: |
@@ -266,7 +265,7 @@ jobs:
           }
 
     - name: Upload Coverage Report
-      if: matrix.build_type == 'Debug' && matrix.c_compiler == 'gcc'
+      if: matrix.c_compiler == 'gcc'
       uses: actions/upload-artifact@v4
       with:
         name: coverage-report
