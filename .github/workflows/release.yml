@@ -61,7 +61,7 @@ jobs:
           
           # Define source file patterns (files that should trigger a release)
           # Source files: src/, CMakeLists.txt, cmake/, shaders
-          # Note: flatpak metadata files are NOT source files - they only trigger flatpak rebuilds
+          # Note: flatpak metadata files are NOT source files and do not trigger releases
           SOURCE_PATTERNS=(
             "^src/"
             "^CMakeLists\.txt$"
@@ -88,7 +88,7 @@ jobs:
             echo "✅ Source files changed - release will be created"
           else
             echo "has_source_changes=false" >> $GITHUB_OUTPUT
-            echo "ℹ️ Only non-source files changed (tests, docs, CI) - skipping release"
+            echo "ℹ️ Only non-source files changed (tests, docs, CI, flatpak metadata) - skipping release"
           fi
       
       - name: Skip if no source changes
@@ -334,7 +334,7 @@ jobs:
         run: |
           if [ "${{ steps.source_check.outputs.has_source_changes }}" == "false" ]; then
             echo "ℹ️ No source code changes detected - release skipped"
-            echo "   Only non-source files changed (tests, docs, CI configs)"
+            echo "   Only non-source files changed (tests, docs, CI configs, flatpak metadata)"
           elif [ "${{ steps.version_check.outputs.changed }}" == "true" ]; then
             echo "✅ Release completed successfully!"
             echo "   - Previous version: ${{ steps.current_version.outputs.version }}"
