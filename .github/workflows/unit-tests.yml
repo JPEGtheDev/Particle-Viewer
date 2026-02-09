@@ -99,33 +99,15 @@ jobs:
         echo "=== Coverage Summary ==="
         cat coverage.txt
         
-        # Extract line coverage percentage from JSON for enforcement
-        # Handles errors gracefully and defaults to 0 if file is missing or malformed
-        LINE_COVERAGE=$(python3 -c "
-import json
-import sys
-try:
-    with open('coverage.json', 'r') as f:
-        data = json.load(f)
-    print(round(data.get('line_percent', 0), 2))
-except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
-    print('Error reading coverage.json:', e, file=sys.stderr)
-    print(0)
-" 2>&1 | tail -1)
-        echo "Line coverage: ${LINE_COVERAGE}%"
-        echo "line_coverage=${LINE_COVERAGE}" >> "$GITHUB_OUTPUT"
+        # Extract coverage metrics using dedicated script
+        # Script reads coverage.json and outputs: line_coverage branch_coverage
+        COVERAGE_OUTPUT=$(python3 ${{ github.workspace }}/scripts/extract-coverage.py)
+        LINE_COVERAGE=$(echo $COVERAGE_OUTPUT | awk '{print $1}')
+        BRANCH_COVERAGE=$(echo $COVERAGE_OUTPUT | awk '{print $2}')
         
-        # Extract branch coverage if available
-        BRANCH_COVERAGE=$(python3 -c "
-import json
-try:
-    with open('coverage.json', 'r') as f:
-        data = json.load(f)
-    print(round(data.get('branch_percent', 0), 2))
-except:
-    print(0)
-" 2>&1 | tail -1)
+        echo "Line coverage: ${LINE_COVERAGE}%"
         echo "Branch coverage: ${BRANCH_COVERAGE}%"
+        echo "line_coverage=${LINE_COVERAGE}" >> "$GITHUB_OUTPUT"
         echo "branch_coverage=${BRANCH_COVERAGE}" >> "$GITHUB_OUTPUT"
 
     - name: Enforce Coverage Threshold
