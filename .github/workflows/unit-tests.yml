@@ -101,30 +101,12 @@ jobs:
         
         # Extract line coverage percentage from JSON for enforcement
         # Handles errors gracefully and defaults to 0 if file is missing or malformed
-        LINE_COVERAGE=$(python3 -c "
-import json
-import sys
-try:
-    with open('coverage.json', 'r') as f:
-        data = json.load(f)
-    print(round(data.get('line_percent', 0), 2))
-except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
-    print('Error reading coverage.json:', e, file=sys.stderr)
-    print(0)
-" 2>&1 | tail -1)
+        LINE_COVERAGE=$(python3 -c 'import json, sys; data=json.load(open("coverage.json")) if __import__("os").path.exists("coverage.json") else {}; print(round(data.get("line_percent", 0), 2))' 2>/dev/null || echo "0")
         echo "Line coverage: ${LINE_COVERAGE}%"
         echo "line_coverage=${LINE_COVERAGE}" >> "$GITHUB_OUTPUT"
         
         # Extract branch coverage if available
-        BRANCH_COVERAGE=$(python3 -c "
-import json
-try:
-    with open('coverage.json', 'r') as f:
-        data = json.load(f)
-    print(round(data.get('branch_percent', 0), 2))
-except:
-    print(0)
-" 2>&1 | tail -1)
+        BRANCH_COVERAGE=$(python3 -c 'import json; data=json.load(open("coverage.json")) if __import__("os").path.exists("coverage.json") else {}; print(round(data.get("branch_percent", 0), 2))' 2>/dev/null || echo "0")
         echo "Branch coverage: ${BRANCH_COVERAGE}%"
         echo "branch_coverage=${BRANCH_COVERAGE}" >> "$GITHUB_OUTPUT"
 
