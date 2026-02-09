@@ -353,7 +353,8 @@ jobs:
   
   build-flatpak:
     needs: release
-    if: needs.release.outputs.source_changed == 'true' && needs.release.outputs.version_changed == 'true'
+    # Only build flatpak if a release was actually created (tag exists)
+    if: needs.release.outputs.tag != '' && needs.release.outputs.tag != null
     runs-on: ubuntu-latest
     permissions:
       contents: write
