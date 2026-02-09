@@ -62,11 +62,11 @@ jobs:
       run: |
         # Enable coverage for Debug builds with gcc
         if [ "${{ matrix.build_type }}" = "Debug" ] && [ "${{ matrix.c_compiler }}" = "gcc" ]; then
-          COVERAGE_FLAG="-Dalloutput=ON"
-          echo "✅ Coverage instrumentation ENABLED (alloutput=ON)"
+          COVERAGE_FLAG="-Dalloutput:BOOL=ON"
+          echo "✅ Coverage instrumentation ENABLED (alloutput:BOOL=ON)"
         else
-          COVERAGE_FLAG="-Dalloutput=OFF"
-          echo "ℹ️  Coverage instrumentation DISABLED (alloutput=OFF)"
+          COVERAGE_FLAG="-Dalloutput:BOOL=OFF"
+          echo "ℹ️  Coverage instrumentation DISABLED (alloutput:BOOL=OFF)"
         fi
         
         echo "Running CMake with: ${COVERAGE_FLAG}"
@@ -77,9 +77,39 @@ jobs:
           -DBUILD_TESTS=ON \
           ${COVERAGE_FLAG} \
           -S ${{ github.workspace }}
+        
+        # Verify the option was set
+        echo ""
+        echo "=== Verifying CMake Configuration ==="
+        grep "alloutput" ${{ steps.strings.outputs.build-output-dir }}/CMakeCache.txt || echo "alloutput not in cache!"
 
     - name: Build
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+      run: |
+        echo "=== Build Configuration ==="
+        echo "Build type: ${{ matrix.build_type }}"
+        echo "Compiler: ${{ matrix.c_compiler }}"
+        echo ""
+        cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --verbose
+        
+    - name: Verify Build Flags (Debug only)
+      if: matrix.build_type == 'Debug' && matrix.c_compiler == 'gcc'
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      run: |
+        echo "=== Checking Compiled Flags ==="
+        echo "CMakeCache.txt alloutput setting:"
+        grep -i "alloutput" CMakeCache.txt || echo "alloutput not found in cache"
+        echo ""
+        echo "CMakeCache.txt CXX flags:"
+        grep "CMAKE_CXX_FLAGS:" CMakeCache.txt || echo "No CXX flags found"
+        echo ""
+        echo "Checking test executable for coverage support:"
+        if [ -f "tests/ParticleViewerTests" ]; then
+          echo "Test executable exists"
+          nm tests/ParticleViewerTests | grep -i "gcov" | head -5 || echo "No gcov symbols found in executable"
+        else
+          echo "Test executable not found at tests/ParticleViewerTests"
+          find . -name "ParticleViewerTests" -type f
+        fi
 
     - name: Run Tests
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
