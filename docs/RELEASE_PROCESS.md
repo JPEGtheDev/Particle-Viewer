@@ -77,6 +77,7 @@ When commits are pushed to the `master` branch, the workflow automatically:
 - `src/` - All C++ source code, headers, and shaders
 - `CMakeLists.txt` - Build configuration
 - `cmake/` - CMake modules
+- `flatpak/*.yaml`, `flatpak/*.yml`, `flatpak/*.desktop`, `flatpak/*.svg`, `flatpak/*.metainfo.xml` - Flatpak packaging
 
 **Non-Source Files (skip releases):**
 - `tests/` - Unit tests and test infrastructure
@@ -85,12 +86,6 @@ When commits are pushed to the `master` branch, the workflow automatically:
 - `README.md`, `CHANGELOG.md` - Project documentation
 - `.clang-format`, `.clang-tidy` - Code quality tools
 - `scripts/` - Development and build scripts
-- `flatpak/` - Flatpak packaging metadata (manifest, desktop file, metainfo, icons)
-
-**Note on Flatpak files:** Changes to flatpak packaging metadata do not trigger automatic releases or flatpak builds. If you need to rebuild the flatpak package with updated metadata but no source code changes, you can:
-1. Test the flatpak changes in a PR (the `flatpak-pr.yml` workflow will build it)
-2. After merging, manually trigger the release workflow if a new flatpak build is needed
-3. Or combine the flatpak metadata changes with actual source code changes in the same commit
 
 ### 2. Manual Workflow Dispatch
 For manual control, you can trigger a release from GitHub Actions:
@@ -105,8 +100,8 @@ When the release workflow runs:
 
 1. **Source Change Detection**
    - Compares files changed since last release tag
-   - Checks against source file patterns (src/, CMakeLists.txt, cmake/)
-   - **Skips release** if only tests, docs, CI configs, or flatpak metadata changed
+   - Checks against source file patterns (src/, CMakeLists.txt, cmake/, flatpak manifests)
+   - **Skips release** if only tests, docs, or CI configs changed
    - **Proceeds with release** if any source files were modified
 
 2. **Version Detection**
