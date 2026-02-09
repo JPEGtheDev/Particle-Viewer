@@ -12,27 +12,13 @@ env:
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     
     permissions:
       contents: read
       checks: write
       pull-requests: write
       issues: write
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        build_type: [Debug]
-        c_compiler: [gcc, clang]
-        include:
-          - os: ubuntu-latest
-            c_compiler: gcc
-            cpp_compiler: g++
-          - os: ubuntu-latest
-            c_compiler: clang
-            cpp_compiler: clang++
 
     steps:
     - uses: actions/checkout@v4
@@ -60,22 +46,14 @@ jobs:
 
     - name: Configure CMake
       run: |
-        # Enable coverage for gcc compiler only (Debug build)
-        if [ "${{ matrix.c_compiler }}" = "gcc" ]; then
-          COVERAGE_FLAG="-Dalloutput:BOOL=ON"
-          echo "✅ Coverage instrumentation ENABLED (alloutput:BOOL=ON)"
-        else
-          COVERAGE_FLAG="-Dalloutput:BOOL=OFF"
-          echo "ℹ️  Coverage instrumentation DISABLED (alloutput:BOOL=OFF)"
-        fi
+        echo "✅ Coverage instrumentation ENABLED (alloutput:BOOL=ON)"
         
-        echo "Running CMake with: ${COVERAGE_FLAG}"
         cmake -B ${{ steps.strings.outputs.build-output-dir }} \
-          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
-          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+          -DCMAKE_CXX_COMPILER=g++ \
+          -DCMAKE_C_COMPILER=gcc \
+          -DCMAKE_BUILD_TYPE=Debug \
           -DBUILD_TESTS=ON \
-          ${COVERAGE_FLAG} \
+          -Dalloutput:BOOL=ON \
           -S ${{ github.workspace }}
         
         # Verify the option was set
@@ -85,13 +63,10 @@ jobs:
 
     - name: Build
       run: |
-        echo "=== Building Debug Configuration ==="
-        echo "Compiler: ${{ matrix.c_compiler }}"
-        echo ""
-        cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --verbose
+        echo "=== Building Debug Configuration with gcc ==="
+        cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Debug --verbose
         
-    - name: Verify Build Flags (gcc only)
-      if: matrix.c_compiler == 'gcc'
+    - name: Verify Build Flags
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: |
         echo "=== Checking Compiled Flags ==="
@@ -112,10 +87,9 @@ jobs:
 
     - name: Run Tests
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
-      run: ctest --build-config ${{ matrix.build_type }} --output-on-failure --verbose
+      run: ctest --build-config Debug --output-on-failure --verbose
 
-    - name: Verify Coverage Data Files (gcc only)
-      if: matrix.c_compiler == 'gcc'
+    - name: Verify Coverage Data Files
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: |
         echo "=== Checking for coverage data files ==="
@@ -134,8 +108,7 @@ jobs:
           echo "⚠️  WARNING: No coverage data files found! Tests may not be instrumented."
         fi
 
-    - name: Generate Coverage Report (gcc only)
-      if: matrix.c_compiler == 'gcc'
+    - name: Generate Coverage Report
       id: coverage
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: |
@@ -197,7 +170,6 @@ jobs:
         echo "branch_coverage=${BRANCH_COVERAGE}" >> "$GITHUB_OUTPUT"
 
     - name: Enforce Coverage Threshold
-      if: matrix.c_compiler == 'gcc'
       run: |
         LINE_COVERAGE=${{ steps.coverage.outputs.line_coverage }}
         THRESHOLD=${{ env.COVERAGE_THRESHOLD }}
@@ -229,7 +201,7 @@ jobs:
         fi
 
     - name: Comment Coverage on PR
-      if: matrix.c_compiler == 'gcc' && github.event_name == 'pull_request'
+      if: github.event_name == 'pull_request'
       uses: actions/github-script@v7
       with:
         script: |
@@ -283,7 +255,6 @@ jobs:
           }
 
     - name: Upload Coverage Report
-      if: matrix.c_compiler == 'gcc'
       uses: actions/upload-artifact@v4
       with:
         name: coverage-report
