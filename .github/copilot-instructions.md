@@ -398,6 +398,7 @@ cmake --build build
 - **Full Coding Standards**: `docs/CODING_STANDARDS.md`
 - **Testing Standards**: `docs/TESTING_STANDARDS.md`
 - **Visual Regression Testing**: `docs/testing/visual-regression.md`
+- **Visual Regression Camera Positioning**: `docs/visual-regression/camera-positioning-lessons-learned.md` ⚠️
 - **Integration Tests**: `docs/testing/integration-tests.md`
 - **Release Process**: `docs/RELEASE_PROCESS.md`
 - **Conventional Commits Quick Ref**: `docs/CONVENTIONAL_COMMITS.md`
@@ -422,6 +423,26 @@ cmake --build build
 - Use GLAD for OpenGL function loading
 - Shaders are loaded from `Viewer-Assets/shaders/` directory
 - Vertex data should use modern VBO/VAO patterns
+
+### Visual Regression Tests ⚠️ IMPORTANT
+
+**Camera Positioning Pitfall:**
+When creating visual regression tests using debug camera output:
+
+❌ **DON'T**: Blindly copy debug coordinates
+- Debug shows camera state during user interaction
+- May be zoomed in/out for inspection, not ideal framing
+- Distance may not produce desired composition
+
+✓ **DO**: Calculate camera distance for composition
+1. Extract viewing **direction** from debug (angle preserved)
+2. Calculate **distance** based on desired viewport coverage
+3. Formula: `distance = subject_size / (coverage_% * tan(FOV/2))`
+4. Typical scale factors: 1.5x - 2.0x from initial distance
+
+**Key lesson**: Debug output shows WHERE you're looking, not WHAT you're framing.
+
+See `docs/visual-regression/camera-positioning-lessons-learned.md` for full analysis and formulas.
 
 ## Tips for Efficient Work
 
