@@ -27,6 +27,8 @@ target_link_libraries(ParticleViewerTests
     gtest
     gtest_main
     ${CMAKE_DL_LIBS}
+    glfw
+    OpenGL::GL
 )
 
 # Include directories for tests
