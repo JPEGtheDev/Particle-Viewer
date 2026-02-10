@@ -302,6 +302,7 @@ docs/
 | `workflow` | CI/CD pipelines, artifacts, permissions | CI Pipeline Rules section |
 | `documentation` | Docs conventions, linking, formatting | This section |
 | `user-story-generator` | Story creation, INVEST framework | Project planning |
+| `self-evaluation` | End-of-session review, lessons learned | This section |
 
 When a skill needs rules from another domain, it references the other skill by path rather than duplicating the rules.
 
@@ -386,6 +387,9 @@ cmake --build build
 **Problem**: clang-tidy warnings
 **Solution**: Review `.clang-tidy` configuration and fix issues or suppress false positives with `// NOLINT`
 
+**Problem**: Header file not self-contained (relies on transitive includes)
+**Solution**: Every header must include all headers it directly uses. Don't rely on other headers pulling in dependencies. Mark functions defined in headers as `inline` to avoid multiple-definition linker errors.
+
 ### Version/Release Issues
 
 **Problem**: Need to create a release
@@ -466,6 +470,7 @@ See `docs/visual-regression/camera-positioning-lessons-learned.md` for full anal
 5. **Commit properly**: Use conventional commits - your commit messages become release notes
 6. **Check CI early**: Run local formatting/tidy checks before pushing to catch CI failures early
 7. **Self-review before finishing**: Run code_review tool, check AAA pattern compliance, verify no resource leaks, ensure documentation is updated for any architectural changes
+8. **Run self-evaluation**: Before finalizing any session, run the `self-evaluation` skill (`.github/skills/self-evaluation/`) to capture lessons learned and improve project knowledge
 
 ## When in Doubt
 
