@@ -20,10 +20,11 @@
 
 #include <gtest/gtest.h>
 
-// NOLINT(modernize-deprecated-headers,llvm-include-order) - GLAD must come
-// before GLFW to properly initialize OpenGL functions
+// clang-format off
+// GLAD must come before GLFW to properly initialize OpenGL functions
 #include "glad/glad.h"       // NOLINT(llvm-include-order)
 #include <GLFW/glfw3.h>      // NOLINT(llvm-include-order)
+// clang-format on
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -188,6 +189,16 @@ class ParticleRenderer
     ~ParticleRenderer()
     {
         cleanup();
+    }
+
+    /*
+     * Create particles from custom data.
+     * Each vec4 contains (x, y, z, colorValue) matching the shader's offset layout.
+     */
+    void createCustomParticles(const std::vector<glm::vec4>& data)
+    {
+        particleData_ = data;
+        setupBuffers();
     }
 
     /*
@@ -392,8 +403,8 @@ TEST_F(RenderingRegressionTest, RenderDefaultCube_AngledView_MatchesBaseline)
     std::string fragmentShaderPath = getShaderPath("sphereFragment.frag");
 
     Shader particleShader(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
-    ASSERT_TRUE(particleShader.Program != 0) << "Failed to compile particle shader. "
-                                             << "Vertex: " << vertexShaderPath << ", Fragment: " << fragmentShaderPath;
+    ASSERT_TRUE(particleShader.Program != 0) << "Failed to compile particle shader. " << "Vertex: " << vertexShaderPath
+                                             << ", Fragment: " << fragmentShaderPath;
 
     // Arrange - Create default particle cube
     ParticleRenderer particles;
@@ -454,5 +465,171 @@ TEST_F(RenderingRegressionTest, RenderDefaultCube_AngledView_MatchesBaseline)
                << "  Similarity: " << (result.similarity * 100.0f) << "%\n"
                << "  Diff image saved to: artifacts/particle_cube_angle_diff.png\n"
                << "  Current image saved to: artifacts/particle_cube_angle_current.png";
+    }
+}
+
+/*
+ * Test: RenderSingleParticle_CenteredView_MatchesBaseline
+ *
+ * Renders a single red particle centered in the viewport, filling approximately
+ * 50% of the screen height. Validates the most basic rendering case: one particle
+ * with correct shader coloring, sphere shading, and lighting.
+ *
+ * Camera Configuration:
+ * - Particle at origin (0, 0, 0) with colVal=0 (red)
+ * - Camera at (0, 0, 1.1) looking at origin
+ * - Projection: Perspective, FOV=45°, Near=0.1, Far=3000.0
+ *
+ * The camera distance of 1.1 units produces a point size of ~350 pixels,
+ * which is approximately 49% of the 720px viewport height.
+ */
+TEST_F(RenderingRegressionTest, RenderSingleParticle_CenteredView_MatchesBaseline)
+{
+    // Arrange - Set up shaders
+    std::string vertexShaderPath = getShaderPath("sphereVertex.vs");
+    std::string fragmentShaderPath = getShaderPath("sphereFragment.frag");
+
+    Shader particleShader(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
+    ASSERT_TRUE(particleShader.Program != 0) << "Failed to compile particle shader. " << "Vertex: " << vertexShaderPath
+                                             << ", Fragment: " << fragmentShaderPath;
+
+    // Arrange - Create single particle at origin with red color (colVal=0)
+    ParticleRenderer particles;
+    std::vector<glm::vec4> singleParticle = {glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)};
+    particles.createCustomParticles(singleParticle);
+    ASSERT_EQ(particles.getParticleCount(), 1u) << "Should have exactly 1 particle";
+
+    // Arrange - Camera positioned along Z axis looking at origin
+    // Distance of 1.1 units gives ~49% viewport height coverage for 50% target
+    glm::vec3 cameraPos(0.0f, 0.0f, 1.1f);
+    glm::vec3 cameraTarget(0.0f, 0.0f, 0.0f);
+    glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
+
+    glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
+    glm::mat4 projection = glm::perspective(
+        glm::radians(45.0f), (float)RenderingTestConfig::RENDER_WIDTH / (float)RenderingTestConfig::RENDER_HEIGHT, 0.1f,
+        3000.0f);
+
+    // Act - Render scene
+    glContext_.bindFramebuffer();
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    particles.render(particleShader, view, projection);
+
+    // Act - Capture framebuffer
+    Image currentImage = glContext_.captureFramebuffer();
+    ASSERT_TRUE(currentImage.valid()) << "Failed to capture framebuffer";
+
+    // Assert - Compare with baseline
+    std::string baselinePath = getBaselinePath("single_particle_baseline.png");
+    Image baseline = Image::load(baselinePath, ImageFormat::PNG);
+
+    if (baseline.empty()) {
+        std::string localBaselinePath = RenderingTestConfig::BASELINES_DIR + "/single_particle_baseline.png";
+        currentImage.save(localBaselinePath, ImageFormat::PNG);
+        GTEST_SKIP() << "Baseline image not found. Current render saved to: " << localBaselinePath
+                     << "\nPlease review and commit this baseline if correct.";
+    }
+
+    currentImage.save("artifacts/single_particle_current.png", ImageFormat::PNG);
+
+    PixelComparator comparator;
+    ComparisonResult result = comparator.compare(baseline, currentImage, RenderingTestConfig::PARTICLE_TOLERANCE, true);
+
+    if (!result.matches) {
+        result.diff_image.save("artifacts/single_particle_diff.png", ImageFormat::PNG);
+        FAIL() << "Visual mismatch detected:\n"
+               << "  Diff pixels: " << result.diff_pixels << " / " << result.total_pixels << " ("
+               << ((result.diff_pixels * 100.0f) / result.total_pixels) << "%)\n"
+               << "  Similarity: " << (result.similarity * 100.0f) << "%\n"
+               << "  Diff image saved to: artifacts/single_particle_diff.png\n"
+               << "  Current image saved to: artifacts/single_particle_current.png";
+    }
+}
+
+/*
+ * Test: RenderParticleGroup_ThreeParticles_MatchesBaseline
+ *
+ * Renders three particles side by side with different colors to validate
+ * multi-particle rendering and the shader's color pipeline.
+ *
+ * Particle Configuration:
+ * - Left:   (-4, 0, 0) colVal=0 → Red
+ * - Center: ( 0, 0, 0) colVal=1 → Blue
+ * - Right:  ( 4, 0, 0) colVal=2 → Magenta
+ *
+ * With transScale=0.25, world positions are (-1, 0, 0), (0, 0, 0), (1, 0, 0).
+ *
+ * Camera Configuration:
+ * - Position: (0, 0, 4) looking at origin
+ * - All three particles visible with clear spacing
+ * - Projection: Perspective, FOV=45°, Near=0.1, Far=3000.0
+ */
+TEST_F(RenderingRegressionTest, RenderParticleGroup_ThreeParticles_MatchesBaseline)
+{
+    // Arrange - Set up shaders
+    std::string vertexShaderPath = getShaderPath("sphereVertex.vs");
+    std::string fragmentShaderPath = getShaderPath("sphereFragment.frag");
+
+    Shader particleShader(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
+    ASSERT_TRUE(particleShader.Program != 0) << "Failed to compile particle shader. " << "Vertex: " << vertexShaderPath
+                                             << ", Fragment: " << fragmentShaderPath;
+
+    // Arrange - Create three particles with different colors
+    // Positions chosen so particles are clearly separated after transScale=0.25
+    ParticleRenderer particles;
+    std::vector<glm::vec4> threeParticles = {
+        glm::vec4(-4.0f, 0.0f, 0.0f, 0.0f), // Red (colVal=0), world pos: (-1, 0, 0)
+        glm::vec4(0.0f, 0.0f, 0.0f, 1.0f),  // Blue (colVal=1), world pos: (0, 0, 0)
+        glm::vec4(4.0f, 0.0f, 0.0f, 2.0f)   // Magenta (colVal=2), world pos: (1, 0, 0)
+    };
+    particles.createCustomParticles(threeParticles);
+    ASSERT_EQ(particles.getParticleCount(), 3u) << "Should have exactly 3 particles";
+
+    // Arrange - Camera pulled back to see all three particles with spacing
+    // At z=4, each particle is ~91px (~12.6% of height), total group spans ~68% of width
+    glm::vec3 cameraPos(0.0f, 0.0f, 4.0f);
+    glm::vec3 cameraTarget(0.0f, 0.0f, 0.0f);
+    glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
+
+    glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
+    glm::mat4 projection = glm::perspective(
+        glm::radians(45.0f), (float)RenderingTestConfig::RENDER_WIDTH / (float)RenderingTestConfig::RENDER_HEIGHT, 0.1f,
+        3000.0f);
+
+    // Act - Render scene
+    glContext_.bindFramebuffer();
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    particles.render(particleShader, view, projection);
+
+    // Act - Capture framebuffer
+    Image currentImage = glContext_.captureFramebuffer();
+    ASSERT_TRUE(currentImage.valid()) << "Failed to capture framebuffer";
+
+    // Assert - Compare with baseline
+    std::string baselinePath = getBaselinePath("particle_group_baseline.png");
+    Image baseline = Image::load(baselinePath, ImageFormat::PNG);
+
+    if (baseline.empty()) {
+        std::string localBaselinePath = RenderingTestConfig::BASELINES_DIR + "/particle_group_baseline.png";
+        currentImage.save(localBaselinePath, ImageFormat::PNG);
+        GTEST_SKIP() << "Baseline image not found. Current render saved to: " << localBaselinePath
+                     << "\nPlease review and commit this baseline if correct.";
+    }
+
+    currentImage.save("artifacts/particle_group_current.png", ImageFormat::PNG);
+
+    PixelComparator comparator;
+    ComparisonResult result = comparator.compare(baseline, currentImage, RenderingTestConfig::PARTICLE_TOLERANCE, true);
+
+    if (!result.matches) {
+        result.diff_image.save("artifacts/particle_group_diff.png", ImageFormat::PNG);
+        FAIL() << "Visual mismatch detected:\n"
+               << "  Diff pixels: " << result.diff_pixels << " / " << result.total_pixels << " ("
+               << ((result.diff_pixels * 100.0f) / result.total_pixels) << "%)\n"
+               << "  Similarity: " << (result.similarity * 100.0f) << "%\n"
+               << "  Diff image saved to: artifacts/particle_group_diff.png\n"
+               << "  Current image saved to: artifacts/particle_group_current.png";
     }
 }
