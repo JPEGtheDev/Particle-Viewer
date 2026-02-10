@@ -28,17 +28,18 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "visual-regression/VisualTestHelpers.hpp"
 #include "Image.hpp"
 #include "shader.hpp"
 #include "testing/FramebufferCapture.hpp"
+#include "testing/PixelComparator.hpp"
 
 // Test configuration
 namespace RenderingTestConfig
 {
-static const uint32_t RENDER_WIDTH = 1280;  // Default 720p width
-static const uint32_t RENDER_HEIGHT = 720;  // Default 720p height
-static const float PARTICLE_TOLERANCE = VisualTestConfig::TOLERANT_THRESHOLD; // ±2/255 (~0.8%) for Mesa compatibility
+static const uint32_t RENDER_WIDTH = 1280;   // Default 720p width
+static const uint32_t RENDER_HEIGHT = 720;   // Default 720p height
+static const float PARTICLE_TOLERANCE = 2.0f / 255.0f;  // ±2/255 (~0.8%) for Mesa compatibility
+static const std::string BASELINES_DIR = "baselines";   // Baseline images directory
 } // namespace RenderingTestConfig
 
 /*
@@ -283,20 +284,22 @@ class ParticleRenderer
 
 /*
  * Test fixture for rendering regression tests.
- * Extends VisualRegressionTest with OpenGL rendering capabilities.
+ * Provides OpenGL rendering capabilities for visual regression testing.
  */
-class RenderingRegressionTest : public VisualRegressionTest
+class RenderingRegressionTest : public testing::Test
 {
   protected:
     OpenGLTestContext glContext_;
 
     void SetUp() override
     {
-        VisualRegressionTest::SetUp();
-
         // Ensure baselines directory exists
-        std::string baselines_dir = VisualTestConfig::BASELINES_DIR;
-        ASSERT_TRUE(ensureDirectory(baselines_dir)) << "Failed to create baselines directory: " << baselines_dir;
+        std::string baselines_dir = RenderingTestConfig::BASELINES_DIR;
+        
+        // Create directory if it doesn't exist
+        std::string command = "mkdir -p " + baselines_dir;
+        int result = std::system(command.c_str());
+        ASSERT_EQ(result, 0) << "Failed to create baselines directory: " << baselines_dir;
 
         // Initialize OpenGL context
         bool initialized = glContext_.initialize();
@@ -309,7 +312,6 @@ class RenderingRegressionTest : public VisualRegressionTest
     void TearDown() override
     {
         glContext_.cleanup();
-        VisualRegressionTest::TearDown();
     }
 
     /*
@@ -346,7 +348,7 @@ class RenderingRegressionTest : public VisualRegressionTest
     {
         // Try multiple possible locations (from build/tests/ working directory)
         std::vector<std::string> possiblePaths = {
-            VisualTestConfig::BASELINES_DIR + "/" + baselineName,           // baselines/ (local)
+            RenderingTestConfig::BASELINES_DIR + "/" + baselineName,           // baselines/ (local)
             "../../tests/visual-regression/baselines/" + baselineName,     // From build/tests/ to source
             "../tests/visual-regression/baselines/" + baselineName,        // From build/ to source
             "../../../tests/visual-regression/baselines/" + baselineName   // Alternative path
@@ -431,13 +433,30 @@ TEST_F(RenderingRegressionTest, RenderDefaultCube_AngledView_MatchesBaseline)
 
     if (baseline.empty()) {
         // Baseline doesn't exist yet - save current as baseline for review
-        std::string localBaselinePath = VisualTestConfig::BASELINES_DIR + "/particle_cube_angle_baseline.png";
+        std::string localBaselinePath = RenderingTestConfig::BASELINES_DIR + "/particle_cube_angle_baseline.png";
         currentImage.save(localBaselinePath, ImageFormat::PNG);
         GTEST_SKIP() << "Baseline image not found. Current render saved to: " << localBaselinePath
                      << "\nPlease review and commit this baseline if correct.";
     }
 
     // Use tolerant comparison for Mesa software rendering compatibility
-    assertVisualMatch(baseline, currentImage, "particle_cube_angle", RenderingTestConfig::PARTICLE_TOLERANCE);
+    // Save current image as artifact for inspection (always, even on pass)
+    currentImage.save("artifacts/particle_cube_angle_current.png", ImageFormat::PNG);
+    
+    // Compare images
+    PixelComparator comparator;
+    ComparisonResult result = comparator.compare(baseline, currentImage, RenderingTestConfig::PARTICLE_TOLERANCE, true);
+    
+    // Save diff image if there's a mismatch
+    if (!result.matches) {
+        result.diff_image.save("artifacts/particle_cube_angle_diff.png", ImageFormat::PNG);
+        FAIL() << "Visual mismatch detected:\n"
+               << "  Diff pixels: " << result.diff_pixels 
+               << " / " << result.total_pixels
+               << " (" << ((result.diff_pixels * 100.0f) / result.total_pixels) << "%)\n"
+               << "  Similarity: " << (result.similarity * 100.0f) << "%\n"
+               << "  Diff image saved to: artifacts/particle_cube_angle_diff.png\n"
+               << "  Current image saved to: artifacts/particle_cube_angle_current.png";
+    }
 }
 
