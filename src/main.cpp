@@ -54,8 +54,8 @@ int main(int argc, char* argv[])
 {
     // Parse resolution early so we can create the context with the right size
     std::string resolution = parseResolution(argc, argv);
-    int width = 0;
-    int height = 0;
+    int width = 1280;
+    int height = 720;
     getWindowSize(resolution, width, height);
 
     // Create the OpenGL context (GLFW window + GLAD initialization)

@@ -25,7 +25,7 @@ GLFWContext::GLFWContext(int width, int height, const char* title) : window_(nul
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    window_ = glfwCreateWindow(width, height, title, NULL, NULL);
+    window_ = glfwCreateWindow(width, height, title, nullptr, nullptr);
     if (!window_) {
         glfwTerminate();
         return;
