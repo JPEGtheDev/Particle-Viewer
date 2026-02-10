@@ -20,6 +20,17 @@
 #include "camera.hpp"
 #include "stb_easy_font.h"
 
+// Constants for debug overlay rendering
+// stb_easy_font uses approximately 270 bytes per character
+// Maximum expected text is ~150 characters, so 99999 bytes provides ample buffer
+constexpr size_t DEBUG_TEXT_BUFFER_SIZE = 99999;
+
+// Background rectangle dimensions and position (top-left corner)
+constexpr float DEBUG_BG_X = 5.0f;
+constexpr float DEBUG_BG_Y = 5.0f;
+constexpr float DEBUG_BG_WIDTH = 330.0f;
+constexpr float DEBUG_BG_HEIGHT = 120.0f;
+
 // Simple shader for rendering 2D text overlay
 const char* debugOverlayVertexShader = R"(
 #version 410 core
@@ -134,8 +145,8 @@ void renderCameraDebugOverlay(Camera* cam, int screenWidth, int screenHeight)
 
     std::string text = debugText.str();
 
-    // Allocate buffer for vertex data (stb_easy_font uses ~270 bytes per char)
-    static char buffer[99999];
+    // Allocate buffer for vertex data
+    static char buffer[DEBUG_TEXT_BUFFER_SIZE];
     int numQuads = stb_easy_font_print(10.0f, 10.0f, const_cast<char*>(text.c_str()), nullptr, buffer, sizeof(buffer));
 
     if (numQuads == 0) {
@@ -160,7 +171,18 @@ void renderCameraDebugOverlay(Camera* cam, int screenWidth, int screenHeight)
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
     // Render background rectangle for better readability
-    float bgVertices[] = {5.0f, 5.0f, 330.0f, 5.0f, 330.0f, 120.0f, 5.0f, 5.0f, 330.0f, 120.0f, 5.0f, 120.0f};
+    float bgVertices[] = {DEBUG_BG_X,
+                          DEBUG_BG_Y,
+                          DEBUG_BG_X + DEBUG_BG_WIDTH,
+                          DEBUG_BG_Y,
+                          DEBUG_BG_X + DEBUG_BG_WIDTH,
+                          DEBUG_BG_Y + DEBUG_BG_HEIGHT,
+                          DEBUG_BG_X,
+                          DEBUG_BG_Y,
+                          DEBUG_BG_X + DEBUG_BG_WIDTH,
+                          DEBUG_BG_Y + DEBUG_BG_HEIGHT,
+                          DEBUG_BG_X,
+                          DEBUG_BG_Y + DEBUG_BG_HEIGHT};
 
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);

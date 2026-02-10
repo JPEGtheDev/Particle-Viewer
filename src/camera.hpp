@@ -36,6 +36,8 @@ class Camera
     GLfloat pitch;
     GLfloat sphereYaw;
     GLfloat spherePitch;
+    GLfloat fov;
+    GLfloat nearPlane;
     GLuint VAO;
     GLuint VAO2;
     bool rotLock;
@@ -95,9 +97,11 @@ class Camera
         this->pitch = 0.0f;
         this->sphereYaw = -90.0f;
         this->spherePitch = 0.0f;
+        this->fov = 45.0f;
+        this->nearPlane = 0.1f;
         this->renderDistance = 3000.0f;
-        this->projection =
-            glm::perspective(45.0f, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, renderDistance);
+        this->projection = glm::perspective(this->fov, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, this->nearPlane,
+                                            renderDistance);
         this->renderSphere = false;
         this->rotateState = 0;
         this->sphereColor = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -151,7 +155,7 @@ class Camera
      */
     float getFOV() const
     {
-        return 45.0f; // FOV is hardcoded in constructor
+        return fov;
     }
 
     /*
@@ -159,7 +163,7 @@ class Camera
      */
     float getNearPlane() const
     {
-        return 0.1f; // Near plane is hardcoded in constructor
+        return nearPlane;
     }
 
     /*
