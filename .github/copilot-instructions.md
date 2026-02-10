@@ -195,15 +195,7 @@ Configuration in `.clang-tidy` enforces:
 
 ### CI Pipeline Rules
 
-**NEVER do the following in CI workflows:**
-- **Never commit or push from a pipeline.** Pipelines are read-only consumers of the repository. Committing from CI creates infinite loops, race conditions, and audit trail problems.
-- **Never use `data:` URIs for inline images in PR comments.** GitHub strips `data:image/png;base64,...` from `<img>` tags in comments and step summaries for security. Use artifact uploads instead.
-
-**DO:**
-- Upload generated files (images, reports) as workflow artifacts via `actions/upload-artifact`
-- Link to artifact downloads in PR comments
-- Use `$GITHUB_STEP_SUMMARY` for rich text reports on the Actions tab
-- Keep workflow permissions minimal (`contents: read` unless writing checks/comments)
+**NEVER commit or push from a pipeline.** For detailed CI/CD rules and patterns, use the `workflow` skill (`.github/skills/workflow/`).
 
 ## Version Management and Commits
 
@@ -294,7 +286,24 @@ docs/
 ├── workflows/          # CI/CD pipelines
 ├── copilot-instructions.md  # This file
 └── skills/             # Custom Copilot skills
+    ├── testing/        # Test writing (AAA, naming, visual regression)
+    ├── workflow/       # CI/CD pipeline rules and patterns
+    ├── documentation/  # Documentation conventions and templates
+    └── user-story-generator/  # INVEST-aligned story creation
 ```
+
+### Skill Architecture
+
+**Rule: Minimize duplication across skills.** Each skill owns one domain. Skills reference each other instead of repeating content.
+
+| Skill | Domain | Reference From |
+|-------|--------|----------------|
+| `testing` | Test writing, AAA pattern, mocking | `docs/TESTING_STANDARDS.md` |
+| `workflow` | CI/CD pipelines, artifacts, permissions | CI Pipeline Rules section |
+| `documentation` | Docs conventions, linking, formatting | This section |
+| `user-story-generator` | Story creation, INVEST framework | Project planning |
+
+When a skill needs rules from another domain, it references the other skill by path rather than duplicating the rules.
 
 ### Key Source Files
 

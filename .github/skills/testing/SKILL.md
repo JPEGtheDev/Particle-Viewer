@@ -200,10 +200,4 @@ Before presenting tests, verify:
 
 ## CI Pipeline Rules
 
-When writing or modifying CI workflows:
-
-1. **NEVER commit or push from a pipeline.** Pipelines are read-only. Committing from CI creates infinite loops, race conditions, and audit trail problems.
-2. **NEVER use `data:` URIs for inline images in PR comments.** GitHub strips `data:image/png;base64,...` from `<img>` tags for security. Use artifact uploads instead.
-3. **Upload generated files** (images, reports) as workflow artifacts via `actions/upload-artifact`.
-4. **Link to artifact downloads** in PR comments for visibility.
-5. **Keep permissions minimal** — use `contents: read` unless the job needs to write checks or comments.
+For CI workflow rules (artifact uploads, permissions, PR comments), see the `workflow` skill (`.github/skills/workflow/`).
