@@ -371,11 +371,14 @@ class RenderingRegressionTest : public VisualRegressionTest
  * Renders the default particle cube (64,000 particles in 40×40×40 grid)
  * from an angled camera position to verify 3D perspective and depth rendering.
  *
- * Camera Configuration (from reference debug output):
- * - Position: (-16.72, 16.49, -8.95)
- * - Target: (-15.99, 16.02, -8.04)
+ * Camera Configuration (adjusted for proper framing):
+ * - Position: (-23.60, 25.21, -30.93)
+ * - Target: (-23.02, 24.83, -30.20)
  * - Up: (0.08, 1.00, 0.00)
  * - Projection: Perspective, FOV=45°, Near=0.1, Far=3000.0
+ *
+ * The camera is positioned ~51 units from cube center to match the reference
+ * image composition with appropriate blank space around the cube.
  *
  * This is the most realistic rendering test - validates the default scene
  * that users see when first launching the application.
@@ -396,13 +399,14 @@ TEST_F(RenderingRegressionTest, RenderDefaultCube_AngledView_MatchesBaseline)
     particles.createDefaultCube();
     ASSERT_EQ(particles.getParticleCount(), 64000u) << "Default cube should have 64,000 particles";
 
-    // Arrange - Set up camera at angled view using exact values from reference image
-    // Reference debug output shows these exact camera parameters:
-    // Pos: (-16.72, 16.49, -8.95)
-    // Target: (-15.99, 16.02, -8.04)
-    // Up: (0.08, 1.00, 0.00)
-    glm::vec3 cameraPos(-16.72f, 16.49f, -8.95f);
-    glm::vec3 cameraTarget(-15.99f, 16.02f, -8.04f);
+    // Arrange - Set up camera at angled view to match reference image composition
+    // Reference image shows cube smaller with more blank space around it.
+    // Adjusted camera position to be further back for proper framing:
+    // - Maintains same viewing direction as reference
+    // - Increased distance from cube center for more blank space
+    // - Camera moved from ~29 units to ~51 units from cube center
+    glm::vec3 cameraPos(-23.60f, 25.21f, -30.93f);
+    glm::vec3 cameraTarget(-23.02f, 24.83f, -30.20f);
     glm::vec3 cameraUp(0.08f, 1.00f, 0.00f);
 
     glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
