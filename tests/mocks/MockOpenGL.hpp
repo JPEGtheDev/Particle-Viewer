@@ -8,10 +8,11 @@
 #ifndef MOCK_OPENGL_HPP
 #define MOCK_OPENGL_HPP
 
-#include <glad/glad.h>
 #include <map>
 #include <string>
 #include <vector>
+
+#include <glad/glad.h>
 
 /*
  * MockOpenGL provides a lightweight mock of OpenGL functionality

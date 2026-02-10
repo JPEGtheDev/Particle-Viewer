@@ -244,7 +244,8 @@ static void APIENTRY mock_glBufferData(GLenum target, GLsizeiptr size, const voi
     // No-op for testing
 }
 
-static void APIENTRY mock_glVertexAttribPointer(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void* pointer)
+static void APIENTRY mock_glVertexAttribPointer(GLuint index, GLint size, GLenum type, GLboolean normalized,
+                                                GLsizei stride, const void* pointer)
 {
     // No-op for testing
 }
@@ -286,8 +287,10 @@ static void APIENTRY mock_glGetShaderiv(GLuint shader, GLenum pname, GLint* para
 static void APIENTRY mock_glGetShaderInfoLog(GLuint shader, GLsizei maxLength, GLsizei* length, GLchar* infoLog)
 {
     // Return empty info log for successful compilation
-    if (length) *length = 0;
-    if (infoLog && maxLength > 0) infoLog[0] = '\0';
+    if (length)
+        *length = 0;
+    if (infoLog && maxLength > 0)
+        infoLog[0] = '\0';
 }
 
 static void APIENTRY mock_glAttachShader(GLuint program, GLuint shader)
@@ -307,8 +310,10 @@ static void APIENTRY mock_glGetProgramiv(GLuint program, GLenum pname, GLint* pa
 
 static void APIENTRY mock_glGetProgramInfoLog(GLuint program, GLsizei maxLength, GLsizei* length, GLchar* infoLog)
 {
-    if (length) *length = 0;
-    if (infoLog && maxLength > 0) infoLog[0] = '\0';
+    if (length)
+        *length = 0;
+    if (infoLog && maxLength > 0)
+        infoLog[0] = '\0';
 }
 
 static void APIENTRY mock_glDeleteShader(GLuint shader)
@@ -325,7 +330,7 @@ void MockOpenGL::initGLAD()
 {
     // Initialize GLAD function pointers with mock implementations
     // This allows testing without a real OpenGL context
-    
+
     // Buffer functions
     glGenBuffers = mock_glGenBuffers;
     glDeleteBuffers = mock_glDeleteBuffers;
@@ -333,7 +338,7 @@ void MockOpenGL::initGLAD()
     glBufferData = mock_glBufferData;
     glVertexAttribPointer = mock_glVertexAttribPointer;
     glVertexAttribDivisor = mock_glVertexAttribDivisor;
-    
+
     // Shader functions (using APIENTRY for Windows compatibility)
     glCreateProgram = mock_glCreateProgram;
     glCreateShader = mock_glCreateShader;

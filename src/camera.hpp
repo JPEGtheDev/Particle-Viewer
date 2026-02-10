@@ -127,6 +127,14 @@ class Camera
     GLfloat sphereDistance;
 
     /*
+     * Get the camera's projection matrix.
+     */
+    const glm::mat4& getProjection() const
+    {
+        return projection;
+    }
+
+    /*
      * Get the camera's lookat target position (where the camera is looking at).
      */
     glm::vec3 getTarget() const
