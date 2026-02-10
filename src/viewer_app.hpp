@@ -28,6 +28,68 @@
 #include "shader.hpp"
 
 /*
+ * Window configuration and GLFW state.
+ */
+struct WindowConfig
+{
+    GLFWwindow* handle = nullptr;
+    GLint width = 0;
+    GLint height = 0;
+    GLint fullscreen = 0;
+    bool debug_camera = false;
+};
+
+/*
+ * GL object handles for the framebuffer-based rendering pipeline.
+ * Includes the offscreen FBO, fullscreen quad, and particle circle VAO/VBO.
+ */
+struct RenderResources
+{
+    GLuint quad_vao = 0;
+    GLuint quad_vbo = 0;
+    GLuint framebuffer = 0;
+    GLuint rbo = 0;
+    GLuint texture_colorbuffer = 0;
+    GLuint circle_vao = 0;
+    GLuint circle_vbo = 0;
+    Shader sphere_shader;
+    Shader screen_shader;
+};
+
+/*
+ * Sphere rendering parameters that scale with resolution.
+ */
+struct SphereParams
+{
+    GLfloat scale = 0.0f;
+    GLfloat base_radius = 250.0f;
+    GLfloat radius = 0.0f;
+};
+
+/*
+ * State for recording frames to disk.
+ */
+struct RecordingState
+{
+    bool is_active = false;
+    std::string folder;
+    int error_count = 0;
+    int error_max = 5;
+};
+
+/*
+ * Paths to shader assets on disk.
+ */
+struct ShaderPaths
+{
+    std::string exe;
+    std::string sphere_vertex = "/Viewer-Assets/shaders/sphereVertex.vs";
+    std::string sphere_fragment = "/Viewer-Assets/shaders/sphereFragment.frag";
+    std::string screen_vertex = "/Viewer-Assets/shaders/screenshader.vs";
+    std::string screen_fragment = "/Viewer-Assets/shaders/screenshader.frag";
+};
+
+/*
  * ViewerApp owns all application state and manages the main loop.
  *
  * Replaces the global state previously in clutter.hpp with proper encapsulation.
@@ -69,13 +131,13 @@ class ViewerApp
 
   private:
     // ============================================
-    // Window State
+    // Grouped State
     // ============================================
-    GLFWwindow* window_;
-    GLint screen_width_;
-    GLint screen_height_;
-    GLint screen_fullscreen_;
-    bool debug_camera_;
+    WindowConfig window_;
+    RenderResources render_;
+    SphereParams sphere_;
+    RecordingState recording_;
+    ShaderPaths paths_;
 
     // ============================================
     // Timing
@@ -89,19 +151,6 @@ class ViewerApp
     GLboolean keys_[1024];
 
     // ============================================
-    // Rendering Objects
-    // ============================================
-    GLuint quad_vao_;
-    GLuint quad_vbo_;
-    GLuint framebuffer_;
-    GLuint rbo_;
-    GLuint texture_colorbuffer_;
-    GLuint circle_vao_;
-    GLuint circle_vbo_;
-    Shader sphere_shader_;
-    Shader screen_shader_;
-
-    // ============================================
     // Scene Objects
     // ============================================
     Camera* cam_;
@@ -109,30 +158,6 @@ class ViewerApp
     SettingsIO* set_;
     glm::mat4 view_;
     glm::vec3 com_;
-
-    // ============================================
-    // Sphere Rendering Parameters
-    // ============================================
-    GLfloat sphere_scale_;
-    GLfloat sphere_base_radius_;
-    GLfloat sphere_radius_;
-
-    // ============================================
-    // Recording State
-    // ============================================
-    bool is_recording_;
-    std::string record_folder_;
-    int image_error_;
-    int image_error_max_;
-
-    // ============================================
-    // Asset Paths
-    // ============================================
-    std::string exe_path_;
-    std::string sphere_vertex_shader_path_;
-    std::string sphere_fragment_shader_path_;
-    std::string screen_vertex_shader_path_;
-    std::string screen_fragment_shader_path_;
 
     // ============================================
     // Frame Playback State

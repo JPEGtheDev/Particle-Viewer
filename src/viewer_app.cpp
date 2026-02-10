@@ -37,14 +37,8 @@ static const QuadVertex QUAD_VERTICES[] = {{-1.0f, 1.0f, 0.0f, 1.0f}, {-1.0f, -1
 // ============================================================================
 
 ViewerApp::ViewerApp()
-    : window_(nullptr), screen_width_(0), screen_height_(0), screen_fullscreen_(0), debug_camera_(false),
-      delta_time_(0.0f), last_frame_(0.0f), quad_vao_(0), quad_vbo_(0), framebuffer_(0), rbo_(0),
-      texture_colorbuffer_(0), circle_vao_(0), circle_vbo_(0), cam_(nullptr), part_(nullptr), set_(nullptr), view_(),
-      com_(), sphere_scale_(0.0f), sphere_base_radius_(250.0f), sphere_radius_(0.0f), is_recording_(false),
-      image_error_(0), image_error_max_(5), sphere_vertex_shader_path_("/Viewer-Assets/shaders/sphereVertex.vs"),
-      sphere_fragment_shader_path_("/Viewer-Assets/shaders/sphereFragment.frag"),
-      screen_vertex_shader_path_("/Viewer-Assets/shaders/screenshader.vs"),
-      screen_fragment_shader_path_("/Viewer-Assets/shaders/screenshader.frag"), cur_frame_(0), pixels_(nullptr)
+    : delta_time_(0.0f), last_frame_(0.0f), cam_(nullptr), part_(nullptr), set_(nullptr), view_(), com_(),
+      cur_frame_(0), pixels_(nullptr)
 {
     for (int i = 0; i < 1024; i++) {
         keys_[i] = false;
@@ -71,7 +65,7 @@ void ViewerApp::parseArgs(int argc, char* argv[])
                 resolution = argv[++i];
             }
         } else if (arg == "--debug-camera" || arg == "-d") {
-            debug_camera_ = true;
+            window_.debug_camera = true;
         }
     }
     setResolution(resolution);
@@ -85,7 +79,7 @@ bool ViewerApp::initialize()
 {
     initPaths();
     initScreen("Particle-Viewer");
-    if (!window_) {
+    if (!window_.handle) {
         return false;
     }
     cam_->initGL();
@@ -97,17 +91,17 @@ bool ViewerApp::initialize()
 
 void ViewerApp::initPaths()
 {
-    exe_path_ = ExePath();
-    sphere_vertex_shader_path_ = exe_path_ + sphere_vertex_shader_path_;
-    sphere_fragment_shader_path_ = exe_path_ + sphere_fragment_shader_path_;
-    screen_vertex_shader_path_ = exe_path_ + screen_vertex_shader_path_;
-    screen_fragment_shader_path_ = exe_path_ + screen_fragment_shader_path_;
+    paths_.exe = ExePath();
+    paths_.sphere_vertex = paths_.exe + paths_.sphere_vertex;
+    paths_.sphere_fragment = paths_.exe + paths_.sphere_fragment;
+    paths_.screen_vertex = paths_.exe + paths_.screen_vertex;
+    paths_.screen_fragment = paths_.exe + paths_.screen_fragment;
 }
 
 void ViewerApp::initScreen(const char* title)
 {
-    pixels_ = new unsigned char[screen_width_ * screen_height_ * 3];
-    cam_ = new Camera(screen_width_, screen_height_);
+    pixels_ = new unsigned char[window_.width * window_.height * 3];
+    cam_ = new Camera(window_.width, window_.height);
     glfwSetErrorCallback(errorCallbackStatic);
     if (!glfwInit()) {
         return;
@@ -120,27 +114,27 @@ void ViewerApp::initScreen(const char* title)
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    window_ = glfwCreateWindow(screen_width_, screen_height_, title, NULL, NULL);
-    if (!window_) {
+    window_.handle = glfwCreateWindow(window_.width, window_.height, title, NULL, NULL);
+    if (!window_.handle) {
         glfwTerminate();
         return;
     }
 
     // Store 'this' pointer for GLFW callbacks
-    glfwSetWindowUserPointer(window_, this);
-    glfwSetKeyCallback(window_, keyCallbackStatic);
-    glfwMakeContextCurrent(window_);
+    glfwSetWindowUserPointer(window_.handle, this);
+    glfwSetKeyCallback(window_.handle, keyCallbackStatic);
+    glfwMakeContextCurrent(window_.handle);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         std::cerr << "Failed to initialize GLAD: unable to load OpenGL function pointers." << std::endl;
-        glfwDestroyWindow(window_);
-        window_ = nullptr;
+        glfwDestroyWindow(window_.handle);
+        window_.handle = nullptr;
         glfwTerminate();
         return;
     }
 
     glfwSwapInterval(1);
-    glViewport(0, 0, screen_width_, screen_height_);
+    glViewport(0, 0, window_.width, window_.height);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     stbi_flip_vertically_on_write(true);
 }
@@ -152,26 +146,26 @@ void ViewerApp::setResolution(const std::string& resolution)
     // TODO: make rendering resolution-independent on the shader side
     GLfloat scale;
     if (resolution == "4k") {
-        screen_width_ = 3840;
-        screen_height_ = 2160;
+        window_.width = 3840;
+        window_.height = 2160;
         scale = 1.75;
     } else if (resolution == "1080" || resolution == "1080p" || resolution == "HD") {
-        screen_width_ = 1920;
-        screen_height_ = 1080;
+        window_.width = 1920;
+        window_.height = 1080;
         scale = 1.25;
     } else {
-        screen_width_ = 1280;
-        screen_height_ = 720;
+        window_.width = 1280;
+        window_.height = 720;
         scale = 1.0;
     }
-    std::cout << "Setting resolution to:" << screen_width_ << "x" << screen_height_ << std::endl;
+    std::cout << "Setting resolution to:" << window_.width << "x" << window_.height << std::endl;
     setSphereScale(scale);
 }
 
 void ViewerApp::setSphereScale(GLfloat scale)
 {
-    sphere_scale_ = scale;
-    sphere_radius_ = sphere_base_radius_ * sphere_scale_;
+    sphere_.scale = scale;
+    sphere_.radius = sphere_.base_radius * sphere_.scale;
 }
 
 // ============================================================================
@@ -180,7 +174,7 @@ void ViewerApp::setSphereScale(GLfloat scale)
 
 void ViewerApp::run()
 {
-    while (!glfwWindowShouldClose(window_)) {
+    while (!glfwWindowShouldClose(window_.handle)) {
         glfwPollEvents();
         cam_->Move();
 
@@ -189,11 +183,11 @@ void ViewerApp::run()
         cam_->RenderSphere();
         drawFBO();
 
-        if (debug_camera_) {
-            renderCameraDebugOverlay(cam_, screen_width_, screen_height_);
+        if (window_.debug_camera) {
+            renderCameraDebugOverlay(cam_, window_.width, window_.height);
         }
 
-        glfwSwapBuffers(window_);
+        glfwSwapBuffers(window_.handle);
 
         if (set_->frames > 1) {
             set_->readPosVelFile(cur_frame_, part_, false);
@@ -220,13 +214,13 @@ void ViewerApp::setupGLStuff()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_PROGRAM_POINT_SIZE);
     glEnable(GL_MULTISAMPLE);
-    sphere_shader_ = Shader(sphere_vertex_shader_path_.c_str(), sphere_fragment_shader_path_.c_str());
-    screen_shader_ = Shader(screen_vertex_shader_path_.c_str(), screen_fragment_shader_path_.c_str());
+    render_.sphere_shader = Shader(paths_.sphere_vertex.c_str(), paths_.sphere_fragment.c_str());
+    render_.screen_shader = Shader(paths_.screen_vertex.c_str(), paths_.screen_fragment.c_str());
 
-    glGenVertexArrays(1, &circle_vao_);
-    glGenBuffers(1, &circle_vbo_);
-    glBindVertexArray(circle_vao_);
-    glBindBuffer(GL_ARRAY_BUFFER, circle_vbo_);
+    glGenVertexArrays(1, &render_.circle_vao);
+    glGenBuffers(1, &render_.circle_vbo);
+    glBindVertexArray(render_.circle_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, render_.circle_vbo);
 
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
     glEnableVertexAttribArray(0);
@@ -236,10 +230,10 @@ void ViewerApp::setupGLStuff()
 
 void ViewerApp::setupScreenFBO()
 {
-    glGenVertexArrays(1, &quad_vao_);
-    glGenBuffers(1, &quad_vbo_);
-    glBindVertexArray(quad_vao_);
-    glBindBuffer(GL_ARRAY_BUFFER, quad_vbo_);
+    glGenVertexArrays(1, &render_.quad_vao);
+    glGenBuffers(1, &render_.quad_vbo);
+    glBindVertexArray(render_.quad_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, render_.quad_vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(QUAD_VERTICES), QUAD_VERTICES, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
@@ -247,15 +241,15 @@ void ViewerApp::setupScreenFBO()
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)(2 * sizeof(GLfloat)));
     glBindVertexArray(0);
 
-    glGenFramebuffers(1, &framebuffer_);
-    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
-    texture_colorbuffer_ = generateAttachmentTexture(false, false);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_colorbuffer_, 0);
-    glGenRenderbuffers(1, &rbo_);
-    glBindRenderbuffer(GL_RENDERBUFFER, rbo_);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, screen_width_, screen_height_);
+    glGenFramebuffers(1, &render_.framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, render_.framebuffer);
+    render_.texture_colorbuffer = generateAttachmentTexture(false, false);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, render_.texture_colorbuffer, 0);
+    glGenRenderbuffers(1, &render_.rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, render_.rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, window_.width, window_.height);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo_);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, render_.rbo);
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
     }
@@ -277,10 +271,10 @@ GLuint ViewerApp::generateAttachmentTexture(GLboolean depth, GLboolean stencil)
     glGenTextures(1, &texture_id);
     glBindTexture(GL_TEXTURE_2D, texture_id);
     if (!depth && !stencil) {
-        glTexImage2D(GL_TEXTURE_2D, 0, attachment_type, screen_width_, screen_height_, 0, attachment_type,
+        glTexImage2D(GL_TEXTURE_2D, 0, attachment_type, window_.width, window_.height, 0, attachment_type,
                      GL_UNSIGNED_BYTE, NULL);
     } else {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, screen_width_, screen_height_, 0, GL_DEPTH_STENCIL,
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, window_.width, window_.height, 0, GL_DEPTH_STENCIL,
                      GL_UNSIGNED_INT_24_8, NULL);
     }
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -300,7 +294,7 @@ void ViewerApp::updateDeltaTime()
 void ViewerApp::beforeDraw()
 {
     glEnable(GL_DEPTH_TEST);
-    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
+    glBindFramebuffer(GL_FRAMEBUFFER, render_.framebuffer);
     cam_->update(delta_time_);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     updateDeltaTime();
@@ -311,30 +305,30 @@ void ViewerApp::drawScene()
 {
     set_->getCOM(cur_frame_, com_);
     cam_->setSphereCenter(com_);
-    sphere_shader_.Use();
+    render_.sphere_shader.Use();
     part_->pushVBO();
-    glBindVertexArray(circle_vao_);
+    glBindVertexArray(render_.circle_vao);
     glBindBuffer(GL_ARRAY_BUFFER, part_->instanceVBO);
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glUniformMatrix4fv(glGetUniformLocation(sphere_shader_.Program, "view"), 1, GL_FALSE, glm::value_ptr(view_));
-    glUniformMatrix4fv(glGetUniformLocation(sphere_shader_.Program, "projection"), 1, GL_FALSE,
+    glUniformMatrix4fv(glGetUniformLocation(render_.sphere_shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view_));
+    glUniformMatrix4fv(glGetUniformLocation(render_.sphere_shader.Program, "projection"), 1, GL_FALSE,
                        glm::value_ptr(cam_->getProjection()));
-    glUniform1f(glGetUniformLocation(sphere_shader_.Program, "radius"), sphere_radius_);
-    glUniform1f(glGetUniformLocation(sphere_shader_.Program, "scale"), sphere_scale_);
+    glUniform1f(glGetUniformLocation(render_.sphere_shader.Program, "radius"), sphere_.radius);
+    glUniform1f(glGetUniformLocation(render_.sphere_shader.Program, "scale"), sphere_.scale);
     glDrawArraysInstanced(GL_POINTS, 0, 1, part_->n);
     glBindVertexArray(0);
 
-    if (set_->isPlaying && is_recording_) {
-        glReadPixels(0, 0, (int)screen_width_, (int)screen_height_, GL_RGB, GL_UNSIGNED_BYTE, pixels_);
-        if (!stbi_write_tga(std::string(record_folder_ + "/" + std::to_string(cur_frame_) + ".tga").c_str(),
-                            (int)screen_width_, (int)screen_height_, 3, pixels_)) {
-            if (image_error_ < image_error_max_) {
-                image_error_++;
-                std::cout << "Unable to save image: Error " << image_error_ << std::endl;
+    if (set_->isPlaying && recording_.is_active) {
+        glReadPixels(0, 0, (int)window_.width, (int)window_.height, GL_RGB, GL_UNSIGNED_BYTE, pixels_);
+        if (!stbi_write_tga(std::string(recording_.folder + "/" + std::to_string(cur_frame_) + ".tga").c_str(),
+                            (int)window_.width, (int)window_.height, 3, pixels_)) {
+            if (recording_.error_count < recording_.error_max) {
+                recording_.error_count++;
+                std::cout << "Unable to save image: Error " << recording_.error_count << std::endl;
             } else {
                 std::cout << "Max Image Error Count Reached! Ending Recording!" << std::endl;
-                is_recording_ = false;
+                recording_.is_active = false;
             }
         }
     }
@@ -346,9 +340,9 @@ void ViewerApp::drawFBO()
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glDisable(GL_DEPTH_TEST);
-    screen_shader_.Use();
-    glBindVertexArray(quad_vao_);
-    glBindTexture(GL_TEXTURE_2D, texture_colorbuffer_);
+    render_.screen_shader.Use();
+    glBindVertexArray(render_.quad_vao);
+    glBindTexture(GL_TEXTURE_2D, render_.texture_colorbuffer);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
 }
@@ -391,10 +385,10 @@ void ViewerApp::keyCallback(int key, int scancode, int action, int mods)
         }
     }
 
-    cam_->KeyReader(window_, key, scancode, action, mods);
+    cam_->KeyReader(window_.handle, key, scancode, action, mods);
 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window_, GLFW_TRUE);
+        glfwSetWindowShouldClose(window_.handle, GLFW_TRUE);
     }
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
         set_->togglePlay();
@@ -414,8 +408,8 @@ void ViewerApp::keyCallback(int key, int scancode, int action, int mods)
         seekFrame(1, false);
     }
     if (key == GLFW_KEY_R && action == GLFW_PRESS) {
-        if (!is_recording_) {
-            image_error_ = 0;
+        if (!recording_.is_active) {
+            recording_.error_count = 0;
             std::string dialog = "Select Folder";
             const char* fol = tinyfd_selectFolderDialog(dialog.c_str(), "");
 
@@ -427,15 +421,15 @@ void ViewerApp::keyCallback(int key, int scancode, int action, int mods)
             }
 
             if (folder != "") {
-                record_folder_ = folder;
-                is_recording_ = true;
+                recording_.folder = folder;
+                recording_.is_active = true;
                 return;
             }
             std::cout << "Folder not selected" << std::endl;
-            is_recording_ = false;
+            recording_.is_active = false;
         } else {
-            record_folder_ = "";
-            is_recording_ = false;
+            recording_.folder = "";
+            recording_.is_active = false;
         }
     }
 }
@@ -452,42 +446,42 @@ void ViewerApp::cleanup()
     pixels_ = nullptr;
 
     // Delete all GL resources
-    if (rbo_ != 0) {
-        glDeleteRenderbuffers(1, &rbo_);
-        rbo_ = 0;
+    if (render_.rbo != 0) {
+        glDeleteRenderbuffers(1, &render_.rbo);
+        render_.rbo = 0;
     }
-    if (texture_colorbuffer_ != 0) {
-        glDeleteTextures(1, &texture_colorbuffer_);
-        texture_colorbuffer_ = 0;
+    if (render_.texture_colorbuffer != 0) {
+        glDeleteTextures(1, &render_.texture_colorbuffer);
+        render_.texture_colorbuffer = 0;
     }
-    if (framebuffer_ != 0) {
-        glDeleteFramebuffers(1, &framebuffer_);
-        framebuffer_ = 0;
+    if (render_.framebuffer != 0) {
+        glDeleteFramebuffers(1, &render_.framebuffer);
+        render_.framebuffer = 0;
     }
-    if (quad_vbo_ != 0) {
-        glDeleteBuffers(1, &quad_vbo_);
-        quad_vbo_ = 0;
+    if (render_.quad_vbo != 0) {
+        glDeleteBuffers(1, &render_.quad_vbo);
+        render_.quad_vbo = 0;
     }
-    if (quad_vao_ != 0) {
-        glDeleteVertexArrays(1, &quad_vao_);
-        quad_vao_ = 0;
+    if (render_.quad_vao != 0) {
+        glDeleteVertexArrays(1, &render_.quad_vao);
+        render_.quad_vao = 0;
     }
-    if (circle_vbo_ != 0) {
-        glDeleteBuffers(1, &circle_vbo_);
-        circle_vbo_ = 0;
+    if (render_.circle_vbo != 0) {
+        glDeleteBuffers(1, &render_.circle_vbo);
+        render_.circle_vbo = 0;
     }
-    if (circle_vao_ != 0) {
-        glDeleteVertexArrays(1, &circle_vao_);
-        circle_vao_ = 0;
+    if (render_.circle_vao != 0) {
+        glDeleteVertexArrays(1, &render_.circle_vao);
+        render_.circle_vao = 0;
     }
 
     delete set_;
     set_ = nullptr;
     delete cam_;
     cam_ = nullptr;
-    if (window_) {
-        glfwDestroyWindow(window_);
-        window_ = nullptr;
+    if (window_.handle) {
+        glfwDestroyWindow(window_.handle);
+        window_.handle = nullptr;
         glfwTerminate();
     }
 }
