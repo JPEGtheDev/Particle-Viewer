@@ -12,10 +12,9 @@
 
 #include "IOpenGLContext.hpp"
 
-// clang-format off
-#include <glad/glad.h>       // NOLINT(llvm-include-order)
-#include <GLFW/glfw3.h>      // NOLINT(llvm-include-order)
-// clang-format on
+// Forward declare GLFWwindow to avoid including <GLFW/glfw3.h> here.
+// Details in IOpenGLContext::getNativeWindowHandle() comment.
+struct GLFWwindow;
 
 class GLFWContext : public IOpenGLContext
 {

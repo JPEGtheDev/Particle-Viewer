@@ -386,8 +386,11 @@ void ViewerApp::keyCallback(int key, int scancode, int action, int mods)
         }
     }
 
-    GLFWwindow* native_window = static_cast<GLFWwindow*>(context_->getNativeWindowHandle());
-    cam_->KeyReader(native_window, key, scancode, action, mods);
+    // Only forward to camera if key is in valid range (GLFW_KEY_UNKNOWN is -1).
+    if (key >= 0 && key < 1024) {
+        GLFWwindow* native_window = static_cast<GLFWwindow*>(context_->getNativeWindowHandle());
+        cam_->KeyReader(native_window, key, scancode, action, mods);
+    }
 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         context_->setShouldClose(true);

@@ -7,6 +7,11 @@
 
 #include "GLFWContext.hpp"
 
+// clang-format off
+#include <glad/glad.h>       // NOLINT(llvm-include-order)
+#include <GLFW/glfw3.h>      // NOLINT(llvm-include-order)
+// clang-format on
+
 #include <cstdio>
 #include <iostream>
 

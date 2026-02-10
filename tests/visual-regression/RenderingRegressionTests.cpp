@@ -85,9 +85,17 @@ class OpenGLTestContext
         }
 
         context_->makeCurrent();
-        glViewport(0, 0, RenderingTestConfig::RENDER_WIDTH, RenderingTestConfig::RENDER_HEIGHT);
 
-        framebuffer_ = new FramebufferCapture(RenderingTestConfig::RENDER_WIDTH, RenderingTestConfig::RENDER_HEIGHT);
+        // Use the actual framebuffer size from the context (handles HiDPI/platform scaling).
+        // This ensures glViewport and FramebufferCapture match the real framebuffer.
+        auto fb_size = context_->getFramebufferSize();
+        int framebuffer_width = fb_size.first;
+        int framebuffer_height = fb_size.second;
+
+        glViewport(0, 0, framebuffer_width, framebuffer_height);
+
+        framebuffer_ = new FramebufferCapture(static_cast<uint32_t>(framebuffer_width),
+                                              static_cast<uint32_t>(framebuffer_height));
         if (!framebuffer_->initialize()) {
             cleanup();
             return false;
