@@ -8,12 +8,12 @@
 // Include glad first to avoid OpenGL header conflicts
 #define GLFW_INCLUDE_NONE
 #include <glad/glad.h>
-
 #include <gtest/gtest.h>
+
 #include <glm/glm.hpp>
 
-#include "particle.hpp"
 #include "MockOpenGL.hpp"
+#include "particle.hpp"
 
 // Test fixture for Particle tests
 class ParticleTest : public ::testing::Test
@@ -125,13 +125,11 @@ TEST_F(ParticleTest, ChangeTranslations_UpdatesParticleCount)
     // Arrange
     Particle p;
     long newN = 5;
-    glm::vec4* newTrans = new glm::vec4[5]{
-        {1.0f, 0.0f, 0.0f, 1.0f},
-        {0.0f, 1.0f, 0.0f, 1.0f},
-        {0.0f, 0.0f, 1.0f, 1.0f},
-        {1.0f, 1.0f, 0.0f, 1.0f},
-        {1.0f, 1.0f, 1.0f, 1.0f}
-    };
+    glm::vec4* newTrans = new glm::vec4[5]{{1.0f, 0.0f, 0.0f, 1.0f},
+                                           {0.0f, 1.0f, 0.0f, 1.0f},
+                                           {0.0f, 0.0f, 1.0f, 1.0f},
+                                           {1.0f, 1.0f, 0.0f, 1.0f},
+                                           {1.0f, 1.0f, 1.0f, 1.0f}};
 
     // Act
     p.changeTranslations(newN, newTrans);
@@ -148,11 +146,8 @@ TEST_F(ParticleTest, ChangeTranslations_CopiesDataCorrectly)
     // Arrange
     Particle p;
     long newN = 3;
-    glm::vec4* newTrans = new glm::vec4[3]{
-        {5.0f, 6.0f, 7.0f, 8.0f},
-        {9.0f, 10.0f, 11.0f, 12.0f},
-        {13.0f, 14.0f, 15.0f, 16.0f}
-    };
+    glm::vec4* newTrans =
+        new glm::vec4[3]{{5.0f, 6.0f, 7.0f, 8.0f}, {9.0f, 10.0f, 11.0f, 12.0f}, {13.0f, 14.0f, 15.0f, 16.0f}};
 
     // Act
     p.changeTranslations(newN, newTrans);
@@ -169,11 +164,8 @@ TEST_F(ParticleTest, ChangeTranslations_CopiesAllElements)
     // Arrange
     Particle p;
     long newN = 3;
-    glm::vec4* newTrans = new glm::vec4[3]{
-        {1.0f, 2.0f, 3.0f, 4.0f},
-        {5.0f, 6.0f, 7.0f, 8.0f},
-        {9.0f, 10.0f, 11.0f, 12.0f}
-    };
+    glm::vec4* newTrans =
+        new glm::vec4[3]{{1.0f, 2.0f, 3.0f, 4.0f}, {5.0f, 6.0f, 7.0f, 8.0f}, {9.0f, 10.0f, 11.0f, 12.0f}};
 
     // Act
     p.changeTranslations(newN, newTrans);

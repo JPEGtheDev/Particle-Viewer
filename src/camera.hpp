@@ -36,6 +36,8 @@ class Camera
     GLfloat pitch;
     GLfloat sphereYaw;
     GLfloat spherePitch;
+    GLfloat fov;
+    GLfloat nearPlane;
     GLuint VAO;
     GLuint VAO2;
     bool rotLock;
@@ -95,9 +97,11 @@ class Camera
         this->pitch = 0.0f;
         this->sphereYaw = -90.0f;
         this->spherePitch = 0.0f;
+        this->fov = 45.0f;
+        this->nearPlane = 0.1f;
         this->renderDistance = 3000.0f;
-        this->projection =
-            glm::perspective(45.0f, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, renderDistance);
+        this->projection = glm::perspective(this->fov, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, this->nearPlane,
+                                            renderDistance);
         this->renderSphere = false;
         this->rotateState = 0;
         this->sphereColor = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -121,6 +125,54 @@ class Camera
     GLuint rotateState;
     glm::vec3 sphereColor;
     GLfloat sphereDistance;
+
+    /*
+     * Get the camera's lookat target position (where the camera is looking at).
+     */
+    glm::vec3 getTarget() const
+    {
+        return cameraPos + cameraFront;
+    }
+
+    /*
+     * Get the camera's position.
+     */
+    glm::vec3 getPosition() const
+    {
+        return cameraPos;
+    }
+
+    /*
+     * Get the camera's up vector.
+     */
+    glm::vec3 getUpVector() const
+    {
+        return cameraUp;
+    }
+
+    /*
+     * Get the camera's field of view in degrees.
+     */
+    float getFOV() const
+    {
+        return fov;
+    }
+
+    /*
+     * Get the camera's near plane distance.
+     */
+    float getNearPlane() const
+    {
+        return nearPlane;
+    }
+
+    /*
+     * Get the camera's far plane distance.
+     */
+    float getFarPlane() const
+    {
+        return renderDistance;
+    }
 
     /*
      * Initializes Vertex Array Objects for the rotation sphere and the Center Of Mass sphere.

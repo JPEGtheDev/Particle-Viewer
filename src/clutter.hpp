@@ -13,6 +13,7 @@
 #include <glad/glad.h>
 
 #include "camera.hpp"
+#include "debugOverlay.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
@@ -48,7 +49,7 @@ void checkArgs(int argc, char* argv[]);
 void setSphereScale(GLfloat scale);
 // variables
 GLint SCREEN_FULLSCREEN = 0, SCREEN_WIDTH, SCREEN_HEIGHT;
-GLboolean quit = false, isRecording = false,
+GLboolean quit = false, isRecording = false, debugCamera = false,
           keys[1024];  // Array of keys that have been pressed since the last call
 GLint curFrame = 0,    // Current frame number (must be > 0)
     imageError = 0,    // Number of errors when trying to save a frame
@@ -372,6 +373,8 @@ void checkArgs(int argc, char* argv[])
         if (arg == "--resolution" || arg == "--res") {
             if (i + 1 < argc)
                 resolution = argv[++i];
+        } else if (arg == "--debug-camera" || arg == "-d") {
+            debugCamera = true;
         }
     }
     setResolution(resolution);

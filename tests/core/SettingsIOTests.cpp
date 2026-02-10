@@ -7,16 +7,17 @@
 
 // Include glad first to avoid OpenGL header conflicts
 #define GLFW_INCLUDE_NONE
-#include <glad/glad.h>
-
-#include <gtest/gtest.h>
-#include <glm/glm.hpp>
-#include <fstream>
 #include <cstdio>
+#include <fstream>
 
-#include "settingsIO.hpp"
-#include "particle.hpp"
+#include <glad/glad.h>
+#include <gtest/gtest.h>
+
+#include <glm/glm.hpp>
+
 #include "MockOpenGL.hpp"
+#include "particle.hpp"
+#include "settingsIO.hpp"
 
 // Test fixture for SettingsIO tests
 class SettingsIOTest : public ::testing::Test
@@ -26,7 +27,7 @@ class SettingsIOTest : public ::testing::Test
     {
         MockOpenGL::reset();
         MockOpenGL::initGLAD();
-        
+
         // Create test data files in /tmp
         createTestFiles();
     }
@@ -110,7 +111,7 @@ class SettingsIOTest : public ::testing::Test
         if (!posFile) {
             FAIL() << "Failed to create test position file";
         }
-        
+
         for (int frame = 0; frame < 3; frame++) {
             // Write positions
             for (int i = 0; i < 100; i++) {
@@ -159,7 +160,7 @@ TEST_F(SettingsIOTest, DefaultConstructor_SetsDefaultFilePaths)
 {
     // Arrange & Act
     SettingsIO settings;
-    
+
     // Initialize internal state to avoid undefined behavior in togglePlay
     settings.isPlaying = false;
     settings.errorCount = 0;
@@ -251,7 +252,7 @@ TEST_F(SettingsIOTest, TogglePlay_ChangesPlaybackState)
 {
     // Arrange
     SettingsIO settings;
-    
+
     // Initialize internal state to avoid undefined behavior
     settings.isPlaying = false;
     settings.errorCount = 0;

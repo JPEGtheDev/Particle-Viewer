@@ -8,12 +8,13 @@
  * Full integration tests with actual OpenGL context are beyond the scope of unit tests.
  */
 
-#include <gtest/gtest.h>
 #include <fstream>
 #include <string>
 
-#include "shader.hpp"
+#include <gtest/gtest.h>
+
 #include "MockOpenGL.hpp"
+#include "shader.hpp"
 
 // Test fixture for Shader tests
 class ShaderTest : public ::testing::Test
