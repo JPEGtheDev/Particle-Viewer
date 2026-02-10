@@ -24,8 +24,10 @@ class GLFWContext : public IOpenGLContext
      * Create a GLFW window and initialize the OpenGL context.
      * Calls glfwInit(), creates a window, makes the context current,
      * and loads GLAD. Check isValid() after construction.
+     *
+     * If visible is false, creates a hidden window (for off-screen rendering/testing).
      */
-    GLFWContext(int width, int height, const char* title);
+    GLFWContext(int width, int height, const char* title, bool visible = true);
 
     ~GLFWContext() override;
 

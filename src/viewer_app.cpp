@@ -105,10 +105,21 @@ void ViewerApp::initScreen()
     // Ensure context is current before any GL calls
     context_->makeCurrent();
 
-    // Derive actual dimensions from the context (handles HiDPI and removes duplication)
+    // Derive actual dimensions from the context.
+    // Use live framebuffer size if available (handles HiDPI), but fall back
+    // to the requested window size if the framebuffer reports 0×0 (can happen
+    // on Wayland before the window surface is committed).
     auto fb_size = context_->getFramebufferSize();
     window_.width = fb_size.first;
     window_.height = fb_size.second;
+
+    if (window_.width <= 0 || window_.height <= 0) {
+        std::cerr << "Warning: framebuffer size is " << window_.width << "x" << window_.height
+                  << ", falling back to default 1280x720" << std::endl;
+        window_.width = 1280;
+        window_.height = 720;
+    }
+
     std::cout << "Framebuffer resolution: " << window_.width << "x" << window_.height << std::endl;
 
     pixels_ = new unsigned char[window_.width * window_.height * 3];

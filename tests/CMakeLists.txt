@@ -19,6 +19,7 @@ add_executable(ParticleViewerTests
     ${TEST_VISUAL_REGRESSION_FILES}
     ${TESTING_UTILITY_SOURCES}
     ${CMAKE_SOURCE_DIR}/src/Image.cpp
+    ${CMAKE_SOURCE_DIR}/src/graphics/GLFWContext.cpp
     stb_image_write_impl.cpp
 )
 

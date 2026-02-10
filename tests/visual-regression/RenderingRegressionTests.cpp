@@ -5,8 +5,8 @@
  * These tests verify that the OpenGL rendering pipeline produces consistent output
  * for various camera angles and particle configurations.
  *
- * Uses the production Particle class directly for data setup, ensuring tests
- * stay in sync with the actual rendering pipeline.
+ * Uses the production GLFWContext and Particle classes directly, ensuring tests
+ * exercise the same code paths as the real application.
  *
  * Tests require:
  * - GLFW for window/context creation (headless mode with Xvfb in CI)
@@ -34,6 +34,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Image.hpp"
+#include "graphics/GLFWContext.hpp"
 #include "particle.hpp"
 #include "shader.hpp"
 #include "testing/FramebufferCapture.hpp"
@@ -50,18 +51,18 @@ static const std::string BASELINES_DIR = "baselines";  // Baseline images direct
 
 /*
  * Helper class for OpenGL rendering test setup.
- * Manages GLFW window and OpenGL context for off-screen rendering.
- * Uses FramebufferCapture utility for framebuffer management.
+ * Uses the production GLFWContext (hidden window) to ensure tests exercise
+ * the same context creation path as the real application.
+ * Adds FramebufferCapture for off-screen rendering.
  */
 class OpenGLTestContext
 {
   private:
-    GLFWwindow* window_;
+    GLFWContext* context_;
     FramebufferCapture* framebuffer_;
-    bool initialized_;
 
   public:
-    OpenGLTestContext() : window_(nullptr), framebuffer_(nullptr), initialized_(false)
+    OpenGLTestContext() : context_(nullptr), framebuffer_(nullptr)
     {
     }
 
@@ -71,40 +72,19 @@ class OpenGLTestContext
     }
 
     /*
-     * Initialize GLFW, create window, and set up framebuffer for off-screen rendering.
+     * Initialize production GLFWContext (hidden), then set up framebuffer for off-screen rendering.
      * @return true if initialization succeeds
      */
     bool initialize()
     {
-        if (!glfwInit()) {
-            return false;
-        }
-
-        initialized_ = true;
-
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-
-#ifdef __APPLE__
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-
-        window_ = glfwCreateWindow(RenderingTestConfig::RENDER_WIDTH, RenderingTestConfig::RENDER_HEIGHT,
-                                   "Rendering Test", NULL, NULL);
-        if (!window_) {
+        context_ = new GLFWContext(RenderingTestConfig::RENDER_WIDTH, RenderingTestConfig::RENDER_HEIGHT,
+                                   "Rendering Test", false);
+        if (!context_->isValid()) {
             cleanup();
             return false;
         }
 
-        glfwMakeContextCurrent(window_);
-
-        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-            cleanup();
-            return false;
-        }
-
+        context_->makeCurrent();
         glViewport(0, 0, RenderingTestConfig::RENDER_WIDTH, RenderingTestConfig::RENDER_HEIGHT);
 
         framebuffer_ = new FramebufferCapture(RenderingTestConfig::RENDER_WIDTH, RenderingTestConfig::RENDER_HEIGHT);
@@ -140,19 +120,15 @@ class OpenGLTestContext
             delete framebuffer_;
             framebuffer_ = nullptr;
         }
-        if (window_ != nullptr) {
-            glfwDestroyWindow(window_);
-            window_ = nullptr;
-        }
-        if (initialized_) {
-            glfwTerminate();
-            initialized_ = false;
+        if (context_ != nullptr) {
+            delete context_;
+            context_ = nullptr;
         }
     }
 
     bool isInitialized() const
     {
-        return initialized_;
+        return context_ != nullptr && context_->isValid();
     }
 };
 

@@ -10,7 +10,8 @@
 #include <cstdio>
 #include <iostream>
 
-GLFWContext::GLFWContext(int width, int height, const char* title) : window_(nullptr), width_(width), height_(height)
+GLFWContext::GLFWContext(int width, int height, const char* title, bool visible)
+    : window_(nullptr), width_(width), height_(height)
 {
     glfwSetErrorCallback(errorCallback);
     if (!glfwInit()) {
@@ -21,6 +22,9 @@ GLFWContext::GLFWContext(int width, int height, const char* title) : window_(nul
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
     glfwWindowHint(GLFW_SAMPLES, 4);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    if (!visible) {
+        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+    }
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
@@ -76,7 +80,11 @@ std::pair<int, int> GLFWContext::getFramebufferSize() const
         int framebuffer_width = 0;
         int framebuffer_height = 0;
         glfwGetFramebufferSize(window_, &framebuffer_width, &framebuffer_height);
-        return std::make_pair(framebuffer_width, framebuffer_height);
+        // On Wayland, glfwGetFramebufferSize() may return 0×0 before the
+        // window surface is committed. Fall back to the requested size.
+        if (framebuffer_width > 0 && framebuffer_height > 0) {
+            return std::make_pair(framebuffer_width, framebuffer_height);
+        }
     }
     return std::make_pair(width_, height_);
 }
