@@ -137,13 +137,13 @@ static Image loadPNG(const std::string& path)
     }
 
     Image image(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
-    
+
     // Copy loaded data to image pixels
     size_t data_size = width * height * 4;
     std::copy(data, data + data_size, image.pixels.begin());
-    
+
     stbi_image_free(data);
-    
+
     return image;
 }
 

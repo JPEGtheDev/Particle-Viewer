@@ -21,7 +21,6 @@
 #include <gtest/gtest.h>
 
 // Include GLAD before GLFW to properly load OpenGL functions
-#include "glad/glad.h"
 #include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>
@@ -29,6 +28,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Image.hpp"
+#include "glad/glad.h"
 #include "shader.hpp"
 #include "testing/FramebufferCapture.hpp"
 #include "testing/PixelComparator.hpp"
@@ -36,10 +36,10 @@
 // Test configuration
 namespace RenderingTestConfig
 {
-static const uint32_t RENDER_WIDTH = 1280;   // Default 720p width
-static const uint32_t RENDER_HEIGHT = 720;   // Default 720p height
-static const float PARTICLE_TOLERANCE = 2.0f / 255.0f;  // ±2/255 (~0.8%) for Mesa compatibility
-static const std::string BASELINES_DIR = "baselines";   // Baseline images directory
+static const uint32_t RENDER_WIDTH = 1280;             // Default 720p width
+static const uint32_t RENDER_HEIGHT = 720;             // Default 720p height
+static const float PARTICLE_TOLERANCE = 2.0f / 255.0f; // ±2/255 (~0.8%) for Mesa compatibility
+static const std::string BASELINES_DIR = "baselines";  // Baseline images directory
 } // namespace RenderingTestConfig
 
 /*
@@ -74,7 +74,7 @@ class OpenGLTestContext
         if (!glfwInit()) {
             return false;
         }
-        
+
         // Track that GLFW was initialized so cleanup() will terminate it on failure
         initialized_ = true;
 
@@ -90,7 +90,7 @@ class OpenGLTestContext
 
         // Create window
         window_ = glfwCreateWindow(RenderingTestConfig::RENDER_WIDTH, RenderingTestConfig::RENDER_HEIGHT,
-                                    "Rendering Test", NULL, NULL);
+                                   "Rendering Test", NULL, NULL);
         if (!window_) {
             cleanup();
             return false;
@@ -243,8 +243,7 @@ class ParticleRenderer
 
         // Set uniforms
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
-        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "projection"), 1, GL_FALSE,
-                           glm::value_ptr(projection));
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
         // Render parameters (matching main.cpp defaults)
         glUniform1f(glGetUniformLocation(shader.Program, "radius"), 100.0f);
@@ -295,7 +294,7 @@ class RenderingRegressionTest : public testing::Test
     {
         // Ensure baselines directory exists
         std::string baselines_dir = RenderingTestConfig::BASELINES_DIR;
-        
+
         // Create directory if it doesn't exist
         std::string command = "mkdir -p " + baselines_dir;
         int result = std::system(command.c_str());
@@ -348,10 +347,10 @@ class RenderingRegressionTest : public testing::Test
     {
         // Try multiple possible locations (from build/tests/ working directory)
         std::vector<std::string> possiblePaths = {
-            RenderingTestConfig::BASELINES_DIR + "/" + baselineName,           // baselines/ (local)
-            "../../tests/visual-regression/baselines/" + baselineName,     // From build/tests/ to source
-            "../tests/visual-regression/baselines/" + baselineName,        // From build/ to source
-            "../../../tests/visual-regression/baselines/" + baselineName   // Alternative path
+            RenderingTestConfig::BASELINES_DIR + "/" + baselineName,     // baselines/ (local)
+            "../../tests/visual-regression/baselines/" + baselineName,   // From build/tests/ to source
+            "../tests/visual-regression/baselines/" + baselineName,      // From build/ to source
+            "../../../tests/visual-regression/baselines/" + baselineName // Alternative path
         };
 
         for (const auto& path : possiblePaths) {
@@ -393,8 +392,7 @@ TEST_F(RenderingRegressionTest, RenderDefaultCube_AngledView_MatchesBaseline)
 
     Shader particleShader(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
     ASSERT_TRUE(particleShader.Program != 0) << "Failed to compile particle shader. "
-                                             << "Vertex: " << vertexShaderPath
-                                             << ", Fragment: " << fragmentShaderPath;
+                                             << "Vertex: " << vertexShaderPath << ", Fragment: " << fragmentShaderPath;
 
     // Arrange - Create default particle cube
     ParticleRenderer particles;
@@ -412,10 +410,9 @@ TEST_F(RenderingRegressionTest, RenderDefaultCube_AngledView_MatchesBaseline)
     glm::vec3 cameraUp(0.08f, 1.00f, 0.00f);
 
     glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f),
-                                            (float)RenderingTestConfig::RENDER_WIDTH /
-                                                (float)RenderingTestConfig::RENDER_HEIGHT,
-                                            0.1f, 3000.0f); // Near=0.1, Far=3000 from reference
+    glm::mat4 projection = glm::perspective(
+        glm::radians(45.0f), (float)RenderingTestConfig::RENDER_WIDTH / (float)RenderingTestConfig::RENDER_HEIGHT, 0.1f,
+        3000.0f); // Near=0.1, Far=3000 from reference
 
     // Act - Render scene
     glContext_.bindFramebuffer();
@@ -442,21 +439,19 @@ TEST_F(RenderingRegressionTest, RenderDefaultCube_AngledView_MatchesBaseline)
     // Use tolerant comparison for Mesa software rendering compatibility
     // Save current image as artifact for inspection (always, even on pass)
     currentImage.save("artifacts/particle_cube_angle_current.png", ImageFormat::PNG);
-    
+
     // Compare images
     PixelComparator comparator;
     ComparisonResult result = comparator.compare(baseline, currentImage, RenderingTestConfig::PARTICLE_TOLERANCE, true);
-    
+
     // Save diff image if there's a mismatch
     if (!result.matches) {
         result.diff_image.save("artifacts/particle_cube_angle_diff.png", ImageFormat::PNG);
         FAIL() << "Visual mismatch detected:\n"
-               << "  Diff pixels: " << result.diff_pixels 
-               << " / " << result.total_pixels
-               << " (" << ((result.diff_pixels * 100.0f) / result.total_pixels) << "%)\n"
+               << "  Diff pixels: " << result.diff_pixels << " / " << result.total_pixels << " ("
+               << ((result.diff_pixels * 100.0f) / result.total_pixels) << "%)\n"
                << "  Similarity: " << (result.similarity * 100.0f) << "%\n"
                << "  Diff image saved to: artifacts/particle_cube_angle_diff.png\n"
                << "  Current image saved to: artifacts/particle_cube_angle_current.png";
     }
 }
-

@@ -495,10 +495,10 @@ TEST_F(ImageIOTest, Load_PNG_ValidFile_CorrectPixelData)
     Image loaded = Image::load(path, ImageFormat::PNG);
 
     // Assert - PNG only stores RGB, alpha is set to 255
-    EXPECT_EQ(loaded.pixels[0], 200u);  // R preserved
-    EXPECT_EQ(loaded.pixels[1], 100u);  // G preserved
-    EXPECT_EQ(loaded.pixels[2], 50u);   // B preserved
-    EXPECT_EQ(loaded.pixels[3], 255u);  // A set to 255
+    EXPECT_EQ(loaded.pixels[0], 200u); // R preserved
+    EXPECT_EQ(loaded.pixels[1], 100u); // G preserved
+    EXPECT_EQ(loaded.pixels[2], 50u);  // B preserved
+    EXPECT_EQ(loaded.pixels[3], 255u); // A set to 255
 }
 
 TEST_F(ImageIOTest, Load_PNG_RoundTrip_PreservesRGBData)
