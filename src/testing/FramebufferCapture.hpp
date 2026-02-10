@@ -44,8 +44,7 @@ class FramebufferCapture
      * Construct framebuffer capture for specified dimensions.
      * Call initialize() to create OpenGL resources.
      */
-    FramebufferCapture(uint32_t width, uint32_t height)
-        : width_(width), height_(height)
+    FramebufferCapture(uint32_t width, uint32_t height) : width_(width), height_(height)
     {
     }
 
@@ -76,7 +75,8 @@ class FramebufferCapture
         // Create color attachment texture
         glGenTextures(1, &colorTexture_);
         glBindTexture(GL_TEXTURE_2D, colorTexture_);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, static_cast<GLsizei>(width_), static_cast<GLsizei>(height_), 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, static_cast<GLsizei>(width_), static_cast<GLsizei>(height_), 0, GL_RGBA,
+                     GL_UNSIGNED_BYTE, nullptr);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexture_, 0);
@@ -84,7 +84,8 @@ class FramebufferCapture
         // Create depth attachment renderbuffer
         glGenRenderbuffers(1, &depthRenderbuffer_);
         glBindRenderbuffer(GL_RENDERBUFFER, depthRenderbuffer_);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, static_cast<GLsizei>(width_), static_cast<GLsizei>(height_));
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, static_cast<GLsizei>(width_),
+                              static_cast<GLsizei>(height_));
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderbuffer_);
 
         // Check framebuffer completeness
@@ -125,7 +126,8 @@ class FramebufferCapture
         Image image(width_, height_);
 
         glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
-        glReadPixels(0, 0, static_cast<GLsizei>(width_), static_cast<GLsizei>(height_), GL_RGBA, GL_UNSIGNED_BYTE, image.pixels.data());
+        glReadPixels(0, 0, static_cast<GLsizei>(width_), static_cast<GLsizei>(height_), GL_RGBA, GL_UNSIGNED_BYTE,
+                     image.pixels.data());
 
         // Normalize alpha channel to 255 (framebuffer alpha values may be inconsistent)
         for (size_t i = 3; i < image.pixels.size(); i += 4) {
