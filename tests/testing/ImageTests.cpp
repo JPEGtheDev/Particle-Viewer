@@ -436,3 +436,102 @@ TEST_F(ImageIOTest, Save_PNG_EmptyImage_ReturnsFalse)
     // Assert
     EXPECT_FALSE(result);
 }
+
+// ============================================
+// PNG Load Tests
+// ============================================
+
+TEST_F(ImageIOTest, Load_PNG_ValidFile_ReturnsValidImage)
+{
+    // Arrange
+    Image original(8, 8);
+    for (uint32_t i = 0; i < 8 * 8 * 4; i += 4) {
+        original.pixels[i] = 128;
+        original.pixels[i + 1] = 64;
+        original.pixels[i + 2] = 32;
+        original.pixels[i + 3] = 255;
+    }
+    std::string path = test_dir_ + "/test_load.png";
+    original.save(path, ImageFormat::PNG);
+
+    // Act
+    Image loaded = Image::load(path, ImageFormat::PNG);
+
+    // Assert
+    EXPECT_TRUE(loaded.valid());
+}
+
+TEST_F(ImageIOTest, Load_PNG_ValidFile_CorrectDimensions)
+{
+    // Arrange
+    uint32_t expected_width = 16;
+    uint32_t expected_height = 12;
+    Image original(expected_width, expected_height);
+    std::string path = test_dir_ + "/test_dimensions.png";
+    original.save(path, ImageFormat::PNG);
+
+    // Act
+    Image loaded = Image::load(path, ImageFormat::PNG);
+
+    // Assert
+    EXPECT_EQ(loaded.width, expected_width);
+    EXPECT_EQ(loaded.height, expected_height);
+}
+
+TEST_F(ImageIOTest, Load_PNG_ValidFile_CorrectPixelData)
+{
+    // Arrange
+    Image original(4, 4);
+    for (uint32_t i = 0; i < 4 * 4 * 4; i += 4) {
+        original.pixels[i] = 200;
+        original.pixels[i + 1] = 100;
+        original.pixels[i + 2] = 50;
+        original.pixels[i + 3] = 255;
+    }
+    std::string path = test_dir_ + "/test_pixels.png";
+    original.save(path, ImageFormat::PNG);
+
+    // Act
+    Image loaded = Image::load(path, ImageFormat::PNG);
+
+    // Assert - PNG only stores RGB, alpha is set to 255
+    EXPECT_EQ(loaded.pixels[0], 200u);  // R preserved
+    EXPECT_EQ(loaded.pixels[1], 100u);  // G preserved
+    EXPECT_EQ(loaded.pixels[2], 50u);   // B preserved
+    EXPECT_EQ(loaded.pixels[3], 255u);  // A set to 255
+}
+
+TEST_F(ImageIOTest, Load_PNG_RoundTrip_PreservesRGBData)
+{
+    // Arrange
+    Image original(8, 8);
+    for (uint32_t i = 0; i < 8 * 8 * 4; i += 4) {
+        original.pixels[i] = 150;
+        original.pixels[i + 1] = 200;
+        original.pixels[i + 2] = 250;
+        original.pixels[i + 3] = 255;
+    }
+    std::string path = test_dir_ + "/test_roundtrip.png";
+    original.save(path, ImageFormat::PNG);
+
+    // Act
+    Image loaded = Image::load(path, ImageFormat::PNG);
+
+    // Assert - RGB should match exactly after round-trip
+    EXPECT_EQ(loaded.width, original.width);
+    EXPECT_EQ(loaded.height, original.height);
+    for (uint32_t i = 0; i < loaded.width * loaded.height; ++i) {
+        EXPECT_EQ(loaded.pixels[i * 4 + 0], original.pixels[i * 4 + 0]) << "R mismatch at pixel " << i;
+        EXPECT_EQ(loaded.pixels[i * 4 + 1], original.pixels[i * 4 + 1]) << "G mismatch at pixel " << i;
+        EXPECT_EQ(loaded.pixels[i * 4 + 2], original.pixels[i * 4 + 2]) << "B mismatch at pixel " << i;
+    }
+}
+
+TEST_F(ImageIOTest, Load_PNG_NonexistentFile_ReturnsEmptyImage)
+{
+    // Act
+    Image loaded = Image::load(test_dir_ + "/nonexistent.png", ImageFormat::PNG);
+
+    // Assert
+    EXPECT_TRUE(loaded.empty());
+}

@@ -9,6 +9,7 @@
 
 #include "Image.hpp"
 
+#include <algorithm>
 #include <cstdlib>
 #include <fstream>
 

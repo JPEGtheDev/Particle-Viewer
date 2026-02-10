@@ -31,30 +31,30 @@
 #include "visual-regression/VisualTestHelpers.hpp"
 #include "Image.hpp"
 #include "shader.hpp"
+#include "testing/FramebufferCapture.hpp"
 
 // Test configuration
 namespace RenderingTestConfig
 {
-static const uint32_t RENDER_WIDTH = 800;
-static const uint32_t RENDER_HEIGHT = 600;
-static const float PARTICLE_TOLERANCE = VisualTestConfig::TOLERANT_THRESHOLD; // 2% for Mesa compatibility
+static const uint32_t RENDER_WIDTH = 1280;  // Default 720p width
+static const uint32_t RENDER_HEIGHT = 720;  // Default 720p height
+static const float PARTICLE_TOLERANCE = VisualTestConfig::TOLERANT_THRESHOLD; // ±2/255 (~0.8%) for Mesa compatibility
 } // namespace RenderingTestConfig
 
 /*
  * Helper class for OpenGL rendering test setup.
- * Manages GLFW window, OpenGL context, and framebuffer for off-screen rendering.
+ * Manages GLFW window and OpenGL context for off-screen rendering.
+ * Uses FramebufferCapture utility for framebuffer management.
  */
 class OpenGLTestContext
 {
   private:
     GLFWwindow* window_;
-    GLuint fbo_;
-    GLuint colorTexture_;
-    GLuint depthRenderbuffer_;
+    FramebufferCapture* framebuffer_;
     bool initialized_;
 
   public:
-    OpenGLTestContext() : window_(nullptr), fbo_(0), colorTexture_(0), depthRenderbuffer_(0), initialized_(false)
+    OpenGLTestContext() : window_(nullptr), framebuffer_(nullptr), initialized_(false)
     {
     }
 
@@ -73,6 +73,9 @@ class OpenGLTestContext
         if (!glfwInit()) {
             return false;
         }
+        
+        // Track that GLFW was initialized so cleanup() will terminate it on failure
+        initialized_ = true;
 
         // Set OpenGL version and profile
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -88,7 +91,7 @@ class OpenGLTestContext
         window_ = glfwCreateWindow(RenderingTestConfig::RENDER_WIDTH, RenderingTestConfig::RENDER_HEIGHT,
                                     "Rendering Test", NULL, NULL);
         if (!window_) {
-            glfwTerminate();
+            cleanup();
             return false;
         }
 
@@ -96,47 +99,24 @@ class OpenGLTestContext
 
         // Initialize GLAD
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-            glfwDestroyWindow(window_);
-            glfwTerminate();
-            return false;
-        }
-
-        // Set up framebuffer
-        glViewport(0, 0, RenderingTestConfig::RENDER_WIDTH, RenderingTestConfig::RENDER_HEIGHT);
-
-        // Create framebuffer
-        glGenFramebuffers(1, &fbo_);
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
-
-        // Create color attachment texture
-        glGenTextures(1, &colorTexture_);
-        glBindTexture(GL_TEXTURE_2D, colorTexture_);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, RenderingTestConfig::RENDER_WIDTH, RenderingTestConfig::RENDER_HEIGHT,
-                     0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexture_, 0);
-
-        // Create depth attachment renderbuffer
-        glGenRenderbuffers(1, &depthRenderbuffer_);
-        glBindRenderbuffer(GL_RENDERBUFFER, depthRenderbuffer_);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, RenderingTestConfig::RENDER_WIDTH,
-                              RenderingTestConfig::RENDER_HEIGHT);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderbuffer_);
-
-        // Check framebuffer completeness
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
             cleanup();
             return false;
         }
 
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        // Set up viewport
+        glViewport(0, 0, RenderingTestConfig::RENDER_WIDTH, RenderingTestConfig::RENDER_HEIGHT);
+
+        // Create framebuffer using FramebufferCapture utility
+        framebuffer_ = new FramebufferCapture(RenderingTestConfig::RENDER_WIDTH, RenderingTestConfig::RENDER_HEIGHT);
+        if (!framebuffer_->initialize()) {
+            cleanup();
+            return false;
+        }
 
         // Enable OpenGL features
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_PROGRAM_POINT_SIZE); // Required for gl_PointSize in shader
 
-        initialized_ = true;
         return true;
     }
 
@@ -145,8 +125,9 @@ class OpenGLTestContext
      */
     void bindFramebuffer()
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
-        glViewport(0, 0, RenderingTestConfig::RENDER_WIDTH, RenderingTestConfig::RENDER_HEIGHT);
+        if (framebuffer_) {
+            framebuffer_->bind();
+        }
     }
 
     /*
@@ -155,21 +136,10 @@ class OpenGLTestContext
      */
     Image captureFramebuffer()
     {
-        Image image(RenderingTestConfig::RENDER_WIDTH, RenderingTestConfig::RENDER_HEIGHT);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
-        glReadPixels(0, 0, RenderingTestConfig::RENDER_WIDTH, RenderingTestConfig::RENDER_HEIGHT, GL_RGBA,
-                     GL_UNSIGNED_BYTE, image.pixels.data());
-
-        // Normalize alpha channel to 255 (framebuffer alpha values may be inconsistent)
-        for (size_t i = 3; i < image.pixels.size(); i += 4) {
-            image.pixels[i] = 255;
+        if (framebuffer_) {
+            return framebuffer_->capture();
         }
-
-        // Flip image vertically (OpenGL origin is bottom-left, image origin is top-left)
-        flipImageVertically(image);
-
-        return image;
+        return Image();
     }
 
     /*
@@ -177,17 +147,9 @@ class OpenGLTestContext
      */
     void cleanup()
     {
-        if (depthRenderbuffer_ != 0) {
-            glDeleteRenderbuffers(1, &depthRenderbuffer_);
-            depthRenderbuffer_ = 0;
-        }
-        if (colorTexture_ != 0) {
-            glDeleteTextures(1, &colorTexture_);
-            colorTexture_ = 0;
-        }
-        if (fbo_ != 0) {
-            glDeleteFramebuffers(1, &fbo_);
-            fbo_ = 0;
+        if (framebuffer_ != nullptr) {
+            delete framebuffer_;
+            framebuffer_ = nullptr;
         }
         if (window_ != nullptr) {
             glfwDestroyWindow(window_);
@@ -202,27 +164,6 @@ class OpenGLTestContext
     bool isInitialized() const
     {
         return initialized_;
-    }
-
-  private:
-    /*
-     * Flip image vertically (OpenGL Y axis is bottom-up, Image Y axis is top-down).
-     */
-    void flipImageVertically(Image& image)
-    {
-        uint32_t rowSize = image.width * 4; // 4 bytes per pixel (RGBA)
-        std::vector<uint8_t> rowBuffer(rowSize);
-
-        for (uint32_t y = 0; y < image.height / 2; ++y) {
-            uint32_t topRow = y * rowSize;
-            uint32_t bottomRow = (image.height - 1 - y) * rowSize;
-
-            // Swap rows
-            std::copy(image.pixels.begin() + topRow, image.pixels.begin() + topRow + rowSize, rowBuffer.begin());
-            std::copy(image.pixels.begin() + bottomRow, image.pixels.begin() + bottomRow + rowSize,
-                      image.pixels.begin() + topRow);
-            std::copy(rowBuffer.begin(), rowBuffer.end(), image.pixels.begin() + bottomRow);
-        }
     }
 };
 
@@ -396,6 +337,32 @@ class RenderingRegressionTest : public VisualRegressionTest
         // If not found, return first path and let shader loading fail with error
         return possiblePaths[0];
     }
+
+    /*
+     * Helper to get baseline image paths relative to the test working directory.
+     * Baselines are committed in tests/visual-regression/baselines/ in the source tree.
+     */
+    std::string getBaselinePath(const std::string& baselineName)
+    {
+        // Try multiple possible locations (from build/tests/ working directory)
+        std::vector<std::string> possiblePaths = {
+            VisualTestConfig::BASELINES_DIR + "/" + baselineName,           // baselines/ (local)
+            "../../tests/visual-regression/baselines/" + baselineName,     // From build/tests/ to source
+            "../tests/visual-regression/baselines/" + baselineName,        // From build/ to source
+            "../../../tests/visual-regression/baselines/" + baselineName   // Alternative path
+        };
+
+        for (const auto& path : possiblePaths) {
+            FILE* file = fopen(path.c_str(), "r");
+            if (file) {
+                fclose(file);
+                return path;
+            }
+        }
+
+        // If not found, return first path (will trigger baseline generation)
+        return possiblePaths[0];
+    }
 };
 
 /*
@@ -451,13 +418,14 @@ TEST_F(RenderingRegressionTest, RenderDefaultCube_AngledView_MatchesBaseline)
     ASSERT_TRUE(currentImage.valid()) << "Failed to capture framebuffer";
 
     // Assert - Compare with baseline
-    std::string baselinePath = VisualTestConfig::BASELINES_DIR + "/particle_cube_angle_baseline.png";
+    std::string baselinePath = getBaselinePath("particle_cube_angle_baseline.png");
     Image baseline = Image::load(baselinePath, ImageFormat::PNG);
 
     if (baseline.empty()) {
         // Baseline doesn't exist yet - save current as baseline for review
-        currentImage.save(baselinePath, ImageFormat::PNG);
-        GTEST_SKIP() << "Baseline image not found. Current render saved to: " << baselinePath
+        std::string localBaselinePath = VisualTestConfig::BASELINES_DIR + "/particle_cube_angle_baseline.png";
+        currentImage.save(localBaselinePath, ImageFormat::PNG);
+        GTEST_SKIP() << "Baseline image not found. Current render saved to: " << localBaselinePath
                      << "\nPlease review and commit this baseline if correct.";
     }
 
