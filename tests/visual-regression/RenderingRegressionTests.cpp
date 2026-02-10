@@ -490,8 +490,8 @@ TEST_F(RenderingRegressionTest, RenderSingleParticle_CenteredView_MatchesBaselin
     std::string fragmentShaderPath = getShaderPath("sphereFragment.frag");
 
     Shader particleShader(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
-    ASSERT_TRUE(particleShader.Program != 0) << "Failed to compile particle shader. " << "Vertex: " << vertexShaderPath
-                                             << ", Fragment: " << fragmentShaderPath;
+    ASSERT_TRUE(particleShader.Program != 0)
+        << "Failed to compile particle shader. Vertex: " << vertexShaderPath << ", Fragment: " << fragmentShaderPath;
 
     // Arrange - Create single particle at origin with red color (colVal=0)
     ParticleRenderer particles;
@@ -572,8 +572,8 @@ TEST_F(RenderingRegressionTest, RenderParticleGroup_ThreeParticles_MatchesBaseli
     std::string fragmentShaderPath = getShaderPath("sphereFragment.frag");
 
     Shader particleShader(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
-    ASSERT_TRUE(particleShader.Program != 0) << "Failed to compile particle shader. " << "Vertex: " << vertexShaderPath
-                                             << ", Fragment: " << fragmentShaderPath;
+    ASSERT_TRUE(particleShader.Program != 0)
+        << "Failed to compile particle shader. Vertex: " << vertexShaderPath << ", Fragment: " << fragmentShaderPath;
 
     // Arrange - Create three particles with different colors
     // Positions chosen so particles are clearly separated after transScale=0.25
