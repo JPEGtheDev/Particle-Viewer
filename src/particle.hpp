@@ -25,8 +25,8 @@ class Particle
     {
         n = 64000;
         instanceVBO = 0;
-        translations.resize(n);
-        velocities.resize(1);
+        translations.resize(n); // value-initialized to vec4(0) by std::vector
+        velocities.resize(1);   // value-initialized to vec4(0) by std::vector
         for (int i = 0; i < n; i++) {
             translations[i] = glm::vec4(i % 40 * 1.25, i % 1600 / 40.0f * 1.25, i % 64000 / 1600.0f * 1.25, 500);
         }
@@ -34,15 +34,15 @@ class Particle
     }
 
     /*
-     * Creates a new particle structure containing an N number of particles.
+     * Creates a new particle structure for the given number of bodies.
      * Copies the provided position data into internal storage.
      */
-    Particle(long count, const glm::vec4* positions)
+    Particle(long number_of_bodies, const glm::vec4* positions)
     {
-        n = count;
+        n = number_of_bodies;
         instanceVBO = 0;
-        translations.assign(positions, positions + count);
-        velocities.resize(count);
+        translations.assign(positions, positions + number_of_bodies);
+        velocities.resize(number_of_bodies); // value-initialized to vec4(0) by std::vector
         setUpInstanceBuffer();
     }
 

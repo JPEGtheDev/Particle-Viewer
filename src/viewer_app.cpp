@@ -18,9 +18,19 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
-// Quad vertices for fullscreen FBO pass (positions + tex coords)
-static const GLfloat QUAD_VERTICES[] = {-1.0f, 1.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f, 0.0f,
-                                        -1.0f, 1.0f, 0.0f, 1.0f, 1.0f,  -1.0f, 1.0f, 0.0f, 1.0f, 1.0f,  1.0f, 1.0f};
+/*
+ * Fullscreen quad vertex — positions (xy) + texture coords (uv).
+ */
+struct QuadVertex
+{
+    GLfloat x, y;
+    GLfloat u, v;
+};
+
+// Fullscreen quad for FBO blit pass (two triangles covering NDC [-1,1])
+static const QuadVertex QUAD_VERTICES[] = {{-1.0f, 1.0f, 0.0f, 1.0f}, {-1.0f, -1.0f, 0.0f, 0.0f},
+                                           {1.0f, -1.0f, 1.0f, 0.0f}, {-1.0f, 1.0f, 0.0f, 1.0f},
+                                           {1.0f, -1.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}};
 
 // ============================================================================
 // Construction / Destruction
@@ -112,6 +122,7 @@ void ViewerApp::initScreen(const char* title)
 
     window_ = glfwCreateWindow(screen_width_, screen_height_, title, NULL, NULL);
     if (!window_) {
+        glfwTerminate();
         return;
     }
 
@@ -119,7 +130,15 @@ void ViewerApp::initScreen(const char* title)
     glfwSetWindowUserPointer(window_, this);
     glfwSetKeyCallback(window_, keyCallbackStatic);
     glfwMakeContextCurrent(window_);
-    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        std::cerr << "Failed to initialize GLAD: unable to load OpenGL function pointers." << std::endl;
+        glfwDestroyWindow(window_);
+        window_ = nullptr;
+        glfwTerminate();
+        return;
+    }
+
     glfwSwapInterval(1);
     glViewport(0, 0, screen_width_, screen_height_);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -128,6 +147,9 @@ void ViewerApp::initScreen(const char* title)
 
 void ViewerApp::setResolution(const std::string& resolution)
 {
+    // Sphere scale is computed as: scale = (screen_height / 720.0) ^ 0.6
+    // This approximates the hand-tuned values: 720→1.0, 1080→1.25, 2160→1.75
+    // TODO: make rendering resolution-independent on the shader side
     GLfloat scale;
     if (resolution == "4k") {
         screen_width_ = 3840;
@@ -360,10 +382,13 @@ void ViewerApp::processMinorKeys()
 
 void ViewerApp::keyCallback(int key, int scancode, int action, int mods)
 {
-    if (action == GLFW_PRESS) {
-        keys_[key] = true;
-    } else if (action == GLFW_RELEASE) {
-        keys_[key] = false;
+    // Guard against out-of-bounds access (GLFW_KEY_UNKNOWN is -1)
+    if (key >= 0 && key < 1024) {
+        if (action == GLFW_PRESS) {
+            keys_[key] = true;
+        } else if (action == GLFW_RELEASE) {
+            keys_[key] = false;
+        }
     }
 
     cam_->KeyReader(window_, key, scancode, action, mods);
@@ -375,7 +400,11 @@ void ViewerApp::keyCallback(int key, int scancode, int action, int mods)
         set_->togglePlay();
     }
     if (key == GLFW_KEY_T && action == GLFW_PRESS) {
-        set_ = set_->loadFile(part_, false);
+        SettingsIO* new_set = set_->loadFile(part_, false);
+        if (new_set && new_set != set_) {
+            delete set_;
+            set_ = new_set;
+        }
         cur_frame_ = 0;
     }
     if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
@@ -421,10 +450,37 @@ void ViewerApp::cleanup()
     part_ = nullptr;
     delete[] pixels_;
     pixels_ = nullptr;
+
+    // Delete all GL resources
+    if (rbo_ != 0) {
+        glDeleteRenderbuffers(1, &rbo_);
+        rbo_ = 0;
+    }
+    if (texture_colorbuffer_ != 0) {
+        glDeleteTextures(1, &texture_colorbuffer_);
+        texture_colorbuffer_ = 0;
+    }
     if (framebuffer_ != 0) {
         glDeleteFramebuffers(1, &framebuffer_);
         framebuffer_ = 0;
     }
+    if (quad_vbo_ != 0) {
+        glDeleteBuffers(1, &quad_vbo_);
+        quad_vbo_ = 0;
+    }
+    if (quad_vao_ != 0) {
+        glDeleteVertexArrays(1, &quad_vao_);
+        quad_vao_ = 0;
+    }
+    if (circle_vbo_ != 0) {
+        glDeleteBuffers(1, &circle_vbo_);
+        circle_vbo_ = 0;
+    }
+    if (circle_vao_ != 0) {
+        glDeleteVertexArrays(1, &circle_vao_);
+        circle_vao_ = 0;
+    }
+
     delete set_;
     set_ = nullptr;
     delete cam_;

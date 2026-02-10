@@ -129,7 +129,7 @@ class Camera
     /*
      * Get the camera's projection matrix.
      */
-    glm::mat4 getProjection() const
+    const glm::mat4& getProjection() const
     {
         return projection;
     }

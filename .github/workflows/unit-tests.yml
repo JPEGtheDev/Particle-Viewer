@@ -127,6 +127,8 @@ jobs:
               --exclude '${{ github.workspace }}/src/glad/' \
               --exclude '${{ github.workspace }}/src/stb_*' \
               --exclude '${{ github.workspace }}/src/tinyFileDialogs/' \
+              --exclude '${{ github.workspace }}/src/main\.cpp' \
+              --exclude '${{ github.workspace }}/src/viewer_app\.cpp' \
               --print-summary \
               --json coverage.json \
               --txt coverage.txt \

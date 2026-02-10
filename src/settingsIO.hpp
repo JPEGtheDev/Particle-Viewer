@@ -513,13 +513,13 @@ class SettingsIO
     void getCOM(long frame, glm::vec3& value)
     {
         if (checkCOM()) {
-            FILE* COMFile = fopen(comName.c_str(), "r");
+            FILE* COMFile = fopen(comName.c_str(), "rb");
             if (COMFile) {
                 fseek(COMFile, frame * sizeof(glm::vec4), SEEK_CUR);
                 glm::vec4 read_val;
-                fread(&read_val, sizeof(glm::vec4), 1, COMFile);
+                size_t items_read = fread(&read_val, sizeof(glm::vec4), 1, COMFile);
                 fclose(COMFile);
-                if ((long)read_val.w == frame) {
+                if (items_read == 1 && (long)read_val.w == frame) {
                     value.x = read_val.x * .25;
                     value.y = read_val.y * .25;
                     value.z = read_val.z * .25;
