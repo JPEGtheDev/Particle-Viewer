@@ -317,9 +317,9 @@ jobs:
       id: visual-tests
       working-directory: ${{ steps.strings.outputs.build-output-dir }}/tests
       run: |
-        # Run only visual regression fixture tests under Xvfb
+        # Run visual regression and rendering regression tests under Xvfb
         xvfb-run -a ./ParticleViewerTests \
-          --gtest_filter="VisualRegressionTest.*" \
+          --gtest_filter="VisualRegressionTest.*:RenderingRegressionTest.*" \
           --gtest_output=xml:visual-test-results.xml \
           2>&1 | tee visual-test-output.txt
 
