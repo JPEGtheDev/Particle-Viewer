@@ -12,38 +12,7 @@
 #include <string>
 #include <vector>
 
-/*
- * Represents an RGBA image stored as a flat pixel buffer.
- * Pixel data is stored in row-major order, 4 bytes per pixel (R, G, B, A).
- */
-struct Image
-{
-    uint32_t width;
-    uint32_t height;
-    std::vector<uint8_t> pixels; // RGBA, 4 bytes per pixel
-
-    Image() : width(0), height(0)
-    {
-    }
-
-    Image(uint32_t w, uint32_t h) : width(w), height(h), pixels(w * h * 4, 0)
-    {
-    }
-
-    Image(uint32_t w, uint32_t h, const std::vector<uint8_t>& data) : width(w), height(h), pixels(data)
-    {
-    }
-
-    bool empty() const
-    {
-        return width == 0 || height == 0 || pixels.empty();
-    }
-
-    bool valid() const
-    {
-        return !empty() && pixels.size() == static_cast<size_t>(width) * height * 4;
-    }
-};
+#include "Image.hpp"
 
 /*
  * Axis-aligned bounding box for the region containing pixel differences.

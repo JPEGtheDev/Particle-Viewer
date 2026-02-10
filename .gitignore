@@ -43,3 +43,7 @@ cmake-build-debug/
 *.flatpak
 flatpak-build/
 repo/
+
+# Visual regression test artifacts (generated at runtime)
+artifacts/
+diffs/

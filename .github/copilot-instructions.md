@@ -114,9 +114,11 @@ make
 
 ### Test Structure and Standards
 
-**CRITICAL: Read `docs/TESTING_STANDARDS.md` before writing tests.** Key requirements:
+**CRITICAL: Read `docs/TESTING_STANDARDS.md` before writing tests.** For detailed guidelines, examples, and patterns, use the `testing` skill (`.github/skills/testing/`).
 
-1. **Arrange-Act-Assert Pattern**: Every test MUST follow AAA structure
+Key requirements:
+
+1. **Arrange-Act-Assert Pattern**: Every test MUST follow AAA structure with all three phases separate
 2. **Single Assertion Principle**: Each test verifies one logical concept
 3. **Test Naming**: Use format `UnitName_StateUnderTest_ExpectedResult`
 4. **Mock External Dependencies**: Use `MockOpenGL` for OpenGL calls (see `tests/mocks/`)
@@ -124,25 +126,11 @@ make
 
 **Test Organization:**
 - `tests/core/` - Unit tests for core classes (Camera, Shader, Particle, SettingsIO)
+- `tests/integration/` - Integration tests for component interactions
+- `tests/testing/` - Tests for testing utilities (PixelComparator, Image)
+- `tests/visual-regression/` - Visual regression tests and helpers
 - `tests/mocks/` - Mock implementations (MockOpenGL, etc.)
 - Each test file corresponds to a core implementation unit (e.g., `CameraTests.cpp` for `camera.hpp`)
-
-**Example Test:**
-```cpp
-TEST(CameraTest, MoveForward_IncreasesZPosition)
-{
-    // Arrange
-    Camera camera(800, 600);
-    camera.cameraPos = glm::vec3(0.0f, 0.0f, 0.0f);
-    camera.setSpeed(1.0f);
-    
-    // Act
-    camera.moveForward();
-    
-    // Assert
-    EXPECT_LT(camera.cameraPos.z, 0.0f);
-}
-```
 
 **Coverage Target**: ≥80% for tested modules, prioritizing core logic, public APIs, and error handling.
 
@@ -204,6 +192,10 @@ Configuration in `.clang-tidy` enforces:
 - Build succeeds on multiple platforms
 
 **All blocking checks (build, tests, formatting) MUST pass before merging PRs. clang-tidy is currently advisory and does not block merges.**
+
+### CI Pipeline Rules
+
+**NEVER commit or push from a pipeline.** For detailed CI/CD rules and patterns, use the `workflow` skill (`.github/skills/workflow/`).
 
 ## Version Management and Commits
 
@@ -268,12 +260,16 @@ BREAKING CHANGE: Config file format changed from JSON to YAML"
 ```
 src/
 ├── *.cpp, *.hpp        # Main source files
+├── testing/            # Testing utilities (PixelComparator)
 ├── shaders/            # GLSL shader files (auto-copied during build)
 ├── glad/               # GLAD OpenGL loader (embedded)
 └── tinyFileDialogs/    # File dialog library (embedded)
 
 tests/
 ├── core/               # Unit tests for main classes
+├── integration/        # Integration tests for component interactions
+├── testing/            # Tests for testing utilities
+├── visual-regression/  # Visual regression test fixture and tests
 ├── mocks/              # Mock implementations
 └── CMakeLists.txt      # Test build configuration
 
@@ -281,13 +277,33 @@ docs/
 ├── CODING_STANDARDS.md      # Detailed code standards
 ├── TESTING_STANDARDS.md     # Testing best practices
 ├── RELEASE_PROCESS.md       # Release automation details
-└── CONVENTIONAL_COMMITS.md  # Commit format quick reference
+├── CONVENTIONAL_COMMITS.md  # Commit format quick reference
+└── testing/
+    ├── integration-tests.md     # Integration test guide
+    └── visual-regression.md     # Visual regression test guide
 
 .github/
 ├── workflows/          # CI/CD pipelines
 ├── copilot-instructions.md  # This file
 └── skills/             # Custom Copilot skills
+    ├── testing/        # Test writing (AAA, naming, visual regression)
+    ├── workflow/       # CI/CD pipeline rules and patterns
+    ├── documentation/  # Documentation conventions and templates
+    └── user-story-generator/  # INVEST-aligned story creation
 ```
+
+### Skill Architecture
+
+**Rule: Minimize duplication across skills.** Each skill owns one domain. Skills reference each other instead of repeating content.
+
+| Skill | Domain | Reference From |
+|-------|--------|----------------|
+| `testing` | Test writing, AAA pattern, mocking | `docs/TESTING_STANDARDS.md` |
+| `workflow` | CI/CD pipelines, artifacts, permissions | CI Pipeline Rules section |
+| `documentation` | Docs conventions, linking, formatting | This section |
+| `user-story-generator` | Story creation, INVEST framework | Project planning |
+
+When a skill needs rules from another domain, it references the other skill by path rather than duplicating the rules.
 
 ### Key Source Files
 
@@ -298,6 +314,8 @@ docs/
 - `settingsIO.hpp` - Header-only configuration file I/O
 - `osFile.hpp` - OS-specific file operations
 - `clutter.hpp` - Utility functions
+- `Image.hpp/.cpp` - Core RGBA image class with save/load (PPM, PNG)
+- `testing/PixelComparator.hpp/.cpp` - Pixel-by-pixel image comparison for visual regression testing
 
 ## Common Tasks and Commands
 
@@ -379,6 +397,8 @@ cmake --build build
 
 - **Full Coding Standards**: `docs/CODING_STANDARDS.md`
 - **Testing Standards**: `docs/TESTING_STANDARDS.md`
+- **Visual Regression Testing**: `docs/testing/visual-regression.md`
+- **Integration Tests**: `docs/testing/integration-tests.md`
 - **Release Process**: `docs/RELEASE_PROCESS.md`
 - **Conventional Commits Quick Ref**: `docs/CONVENTIONAL_COMMITS.md`
 - **Microsoft C++ Core Guidelines**: https://isocpp.github.io/CppCoreGuidelines/
