@@ -13,6 +13,8 @@
 #ifndef MOCK_OPENGL_CONTEXT_HPP
 #define MOCK_OPENGL_CONTEXT_HPP
 
+#include <utility>
+
 #include "graphics/IOpenGLContext.hpp"
 
 class MockOpenGLContext : public IOpenGLContext

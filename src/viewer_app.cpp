@@ -77,6 +77,11 @@ void ViewerApp::parseArgs(int argc, char* argv[])
 
 bool ViewerApp::initialize()
 {
+    if (!context_) {
+        std::cerr << "ViewerApp::initialize() called with null context" << std::endl;
+        return false;
+    }
+
     initPaths();
     initScreen();
     cam_->initGL();
@@ -97,10 +102,17 @@ void ViewerApp::initPaths()
 
 void ViewerApp::initScreen()
 {
+    // Ensure context is current before any GL calls
+    context_->makeCurrent();
+
+    // Derive actual dimensions from the context (handles HiDPI and removes duplication)
+    auto fb_size = context_->getFramebufferSize();
+    window_.width = fb_size.first;
+    window_.height = fb_size.second;
+
     pixels_ = new unsigned char[window_.width * window_.height * 3];
     cam_ = new Camera(window_.width, window_.height);
 
-    // Context is already initialized (created by caller via DI).
     // Set up GL state that ViewerApp owns.
     context_->setSwapInterval(1);
     glViewport(0, 0, window_.width, window_.height);
@@ -125,21 +137,17 @@ void ViewerApp::setResolution(const std::string& resolution)
     // Sphere scale values are hand-tuned per resolution for visual consistency.
     // Approximate fit: scale ≈ (screen_height / 720.0) ^ 0.55
     // TODO: make rendering resolution-independent on the shader side
+    //
+    // Dimensions are derived from the injected context in initScreen(),
+    // so only the sphere scale needs to be set here.
     GLfloat scale;
     if (resolution == "4k") {
-        window_.width = 3840;
-        window_.height = 2160;
         scale = 1.75;
     } else if (resolution == "1080" || resolution == "1080p" || resolution == "HD") {
-        window_.width = 1920;
-        window_.height = 1080;
         scale = 1.25;
     } else {
-        window_.width = 1280;
-        window_.height = 720;
         scale = 1.0;
     }
-    std::cout << "Setting resolution to:" << window_.width << "x" << window_.height << std::endl;
     setSphereScale(scale);
 }
 

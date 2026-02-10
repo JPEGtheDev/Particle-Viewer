@@ -96,9 +96,9 @@ struct ShaderPaths
  * ViewerApp owns all application state and manages the main loop.
  *
  * Replaces the global state previously in clutter.hpp with proper encapsulation.
- * Supports dependency injection: pass an IOpenGLContext* to the constructor
- * for testability. If no context is provided, GLFWContext is created during
- * initialize().
+ * Requires a non-null IOpenGLContext* passed to the constructor for testability.
+ * Production code typically uses GLFWContext; tests use MockOpenGLContext.
+ * ViewerApp does not create or own the OpenGL context itself.
  *
  * GLFW callbacks use the window user pointer to delegate to instance methods.
  *
@@ -119,7 +119,8 @@ class ViewerApp
   public:
     /*
      * Construct with an injected OpenGL context (dependency injection).
-     * The context must outlive the ViewerApp. ViewerApp does not own it.
+     * The context must be non-null and must outlive the ViewerApp.
+     * ViewerApp does not own the context.
      */
     explicit ViewerApp(IOpenGLContext* context);
 

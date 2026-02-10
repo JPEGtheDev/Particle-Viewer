@@ -72,6 +72,12 @@ void GLFWContext::swapBuffers()
 
 std::pair<int, int> GLFWContext::getFramebufferSize() const
 {
+    if (window_) {
+        int framebuffer_width = 0;
+        int framebuffer_height = 0;
+        glfwGetFramebufferSize(window_, &framebuffer_width, &framebuffer_height);
+        return std::make_pair(framebuffer_width, framebuffer_height);
+    }
     return std::make_pair(width_, height_);
 }
 

@@ -10,6 +10,8 @@
  *                                     target, up vector, projection info, and viewport
  */
 
+#include <string>
+
 #include "graphics/GLFWContext.hpp"
 #include "viewer_app.hpp"
 
