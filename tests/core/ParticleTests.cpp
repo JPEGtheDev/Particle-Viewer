@@ -42,7 +42,7 @@ class ParticleTest : public ::testing::Test
 
 TEST_F(ParticleTest, DefaultConstructor_Creates64000Particles)
 {
-    // Arrange & Act
+    // Act
     Particle p;
 
     // Assert
@@ -51,7 +51,7 @@ TEST_F(ParticleTest, DefaultConstructor_Creates64000Particles)
 
 TEST_F(ParticleTest, DefaultConstructor_AllocatesTranslations)
 {
-    // Arrange & Act
+    // Act
     Particle p;
 
     // Assert
@@ -60,7 +60,7 @@ TEST_F(ParticleTest, DefaultConstructor_AllocatesTranslations)
 
 TEST_F(ParticleTest, DefaultConstructor_AllocatesVelocities)
 {
-    // Arrange & Act
+    // Act
     Particle p;
 
     // Assert
@@ -69,25 +69,33 @@ TEST_F(ParticleTest, DefaultConstructor_AllocatesVelocities)
 
 TEST_F(ParticleTest, DefaultConstructor_InitializesFirstParticlePosition)
 {
-    // Arrange & Act
+    // Arrange
+    glm::vec4 expected_position(0.0f, 0.0f, 0.0f, DEFAULT_PARTICLE_SIZE);
+
+    // Act
     Particle p;
 
-    // Assert - First particle should be at (0, 0, 0, DEFAULT_PARTICLE_SIZE)
-    EXPECT_EQ(p.translations[0], glm::vec4(0.0f, 0.0f, 0.0f, DEFAULT_PARTICLE_SIZE));
+    // Assert
+    EXPECT_EQ(p.translations[0], expected_position);
 }
 
 TEST_F(ParticleTest, DefaultConstructor_InitializesLastParticlePosition)
 {
-    // Arrange & Act
-    Particle p;
-
-    // Assert - Last particle position calculation
+    // Arrange
     // i = 63999: x = (63999 % 40) * 1.25 = 39 * 1.25 = 48.75
     // y = (63999 % 1600) / 40.0 * 1.25 = 1599 / 40.0 * 1.25 = 49.96875
     // z = (63999 % 64000) / 1600.0 * 1.25 = 63999 / 1600.0 * 1.25 = 49.99921875
-    EXPECT_FLOAT_EQ(p.translations[63999].x, 48.75f);
-    EXPECT_FLOAT_EQ(p.translations[63999].y, 49.96875f);
-    EXPECT_FLOAT_EQ(p.translations[63999].z, 49.99921875f);
+    float expected_x = 48.75f;
+    float expected_y = 49.96875f;
+    float expected_z = 49.99921875f;
+
+    // Act
+    Particle p;
+
+    // Assert
+    EXPECT_FLOAT_EQ(p.translations[63999].x, expected_x);
+    EXPECT_FLOAT_EQ(p.translations[63999].y, expected_y);
+    EXPECT_FLOAT_EQ(p.translations[63999].z, expected_z);
     EXPECT_FLOAT_EQ(p.translations[63999].w, DEFAULT_PARTICLE_SIZE);
 }
 
@@ -198,7 +206,7 @@ TEST_F(ParticleTest, ChangeTranslations_WithNullPointer_PrintsError)
     // Arrange
     Particle p;
 
-    // Act & Assert - Should not crash
+    // Act & Assert
     EXPECT_NO_THROW(p.changeTranslations(10, nullptr));
 }
 
@@ -267,7 +275,7 @@ TEST_F(ParticleTest, ChangeVelocities_WithNullPointer_DoesNotCrash)
     // Arrange
     Particle p;
 
-    // Act & Assert - Should not crash
+    // Act & Assert
     EXPECT_NO_THROW(p.changeVelocities(nullptr));
 }
 
@@ -289,11 +297,11 @@ TEST_F(ParticleTest, ChangeVelocities_WithNullPointer_PrintsError)
 
 TEST_F(ParticleTest, Destructor_FreesMemoryWithoutCrash)
 {
-    // Arrange & Act & Assert - Should not crash
-    EXPECT_NO_THROW({
-        Particle* p = new Particle();
-        delete p;
-    });
+    // Act
+    Particle* p = new Particle();
+
+    // Assert
+    EXPECT_NO_THROW(delete p);
 }
 
 TEST_F(ParticleTest, Destructor_AfterChangeTranslations_FreesMemoryWithoutCrash)
@@ -305,7 +313,7 @@ TEST_F(ParticleTest, Destructor_AfterChangeTranslations_FreesMemoryWithoutCrash)
     p->changeTranslations(newN, newTrans);
     delete[] newTrans;
 
-    // Act & Assert - Should not crash or leak
+    // Act & Assert
     EXPECT_NO_THROW(delete p);
 }
 
@@ -317,7 +325,7 @@ TEST_F(ParticleTest, Destructor_AfterChangeVelocities_FreesMemoryWithoutCrash)
     p->changeVelocities(newVel);
     delete[] newVel;
 
-    // Act & Assert - Should not crash or leak
+    // Act & Assert
     EXPECT_NO_THROW(delete p);
 }
 

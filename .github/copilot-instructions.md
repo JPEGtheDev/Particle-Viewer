@@ -408,24 +408,36 @@ cmake --build build
 
 ## Project-Specific Patterns
 
+### Data Organization
+- Group related member variables into POCOs/structs (e.g., `WindowConfig`, `RenderResources`, `SphereParams`)
+- Structs should provide their own defaults to reduce constructor initializer lists
+- Use structs for vertex data instead of raw float arrays (e.g., `QuadVertex` with named x, y, u, v fields)
+
 ### Error Handling
 - Check return values from OpenGL and file I/O operations
 - Log errors to console with descriptive messages
 - Use assertions for preconditions and invariants
+- Open binary data files with `"rb"` mode (not `"r"`) for cross-platform correctness
 
 ### Memory Management
 - Prefer stack allocation over heap when possible
 - Use RAII for resource management
 - Smart pointers for dynamic memory (when C++11 features are used)
-- Let OpenGL manage buffer lifecycle
+- Clean up ALL GL resources in destructors (VAOs, VBOs, FBOs, RBOs, textures)
+- Prevent copy of classes that own GL resources (delete copy ctor/assignment)
 
 ### OpenGL Usage
 - Check OpenGL errors after major operations
-- Use GLAD for OpenGL function loading
+- Use GLAD for OpenGL function loading — check return value of `gladLoadGLLoader`
 - Shaders are loaded from `Viewer-Assets/shaders/` directory
 - Vertex data should use modern VBO/VAO patterns
+- Bounds-check GLFW key callbacks (GLFW_KEY_UNKNOWN is -1)
 
 ### Visual Regression Tests ⚠️ IMPORTANT
+
+**Use production classes in tests:**
+- Visual regression tests should use `Particle` directly, not duplicate its logic in test helpers
+- This ensures tests stay in sync with production code automatically
 
 **Camera Positioning Pitfall:**
 When creating visual regression tests using debug camera output:
@@ -453,6 +465,7 @@ See `docs/visual-regression/camera-positioning-lessons-learned.md` for full anal
 4. **Test incrementally**: Run tests frequently during development
 5. **Commit properly**: Use conventional commits - your commit messages become release notes
 6. **Check CI early**: Run local formatting/tidy checks before pushing to catch CI failures early
+7. **Self-review before finishing**: Run code_review tool, check AAA pattern compliance, verify no resource leaks, ensure documentation is updated for any architectural changes
 
 ## When in Doubt
 
