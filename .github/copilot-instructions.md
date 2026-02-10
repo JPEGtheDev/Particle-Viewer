@@ -307,13 +307,14 @@ When a skill needs rules from another domain, it references the other skill by p
 
 ### Key Source Files
 
-- `main.cpp` - Application entry point
+- `main.cpp` - Application entry point (creates and runs `ViewerApp`)
+- `viewer_app.hpp/.cpp` - Main application class; owns window, rendering pipeline, and all state
 - `camera.hpp` - Header-only camera system for 3D navigation
 - `shader.hpp` - Header-only shader program management
-- `particle.hpp` - Header-only particle data structures
+- `particle.hpp` - Header-only particle data structures (uses `std::vector<glm::vec4>`)
 - `settingsIO.hpp` - Header-only configuration file I/O
 - `osFile.hpp` - OS-specific file operations
-- `clutter.hpp` - Utility functions
+- `debugOverlay.hpp` - Camera debug overlay for development
 - `Image.hpp/.cpp` - Core RGBA image class with save/load (PPM, PNG)
 - `testing/PixelComparator.hpp/.cpp` - Pixel-by-pixel image comparison for visual regression testing
 

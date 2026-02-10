@@ -382,17 +382,15 @@ private:
 
 ## Testing Expectations
 
-While formal unit testing infrastructure is still being developed, follow these practices:
+The project uses **Google Test** for unit, integration, and visual regression testing.
 
-1. **Manual Testing**: Test your changes manually before submitting
-2. **Build Verification**: Ensure code builds without warnings on multiple platforms
-3. **Smoke Tests**: Verify basic functionality works (application starts, renders, etc.)
-4. **Edge Cases**: Consider boundary conditions and error cases
+1. **Unit Tests**: Test core classes in isolation using mocks (see `tests/core/`)
+2. **Integration Tests**: Test component interactions (see `tests/integration/`)
+3. **Visual Regression Tests**: Compare rendered output against baseline images (see `tests/visual-regression/`)
+4. **Test Naming**: Use `UnitName_StateUnderTest_ExpectedResult` format
+5. **AAA Pattern**: All tests follow Arrange-Act-Assert structure
 
-Future additions:
-- Unit tests for core algorithms
-- Integration tests for rendering pipeline
-- Performance benchmarks
+For full testing guidelines, see `docs/TESTING_STANDARDS.md`.
 
 ---
 
