@@ -136,10 +136,19 @@ void renderCameraDebugOverlay(Camera* cam, int screenWidth, int screenHeight)
     float yaw = cam->getYaw();
     float pitch = cam->getPitch();
 
+    // Check if COM is being used (non-zero)
+    bool comActive = (glm::length(com) > 0.001f);
+
     // Calculate useful distances and metrics
     float distToTarget = glm::length(target - pos);
-    float distToCOM = glm::length(com - pos);
-    glm::vec3 directionToCOM = (distToCOM > 0.001f) ? glm::normalize(com - pos) : glm::vec3(0.0f);
+    
+    // COM-related metrics (only if COM is active)
+    float distToCOM = 0.0f;
+    glm::vec3 directionToCOM = glm::vec3(0.0f);
+    if (comActive) {
+        distToCOM = glm::length(com - pos);
+        directionToCOM = (distToCOM > 0.001f) ? glm::normalize(com - pos) : glm::vec3(0.0f);
+    }
     
     // Calculate composition metrics for visual regression tests
     // Estimated subject size (assuming typical particle cube ~12 units after transScale)
@@ -148,9 +157,11 @@ void renderCameraDebugOverlay(Camera* cam, int screenWidth, int screenHeight)
     float tanHalfFov = std::tan(fovRadians / 2.0f);
     
     // Estimate viewport coverage percentage (simplified, assumes subject centered)
+    // Use COM distance if available, otherwise use a default reference distance
+    float referenceDistance = comActive ? distToCOM : 50.0f;
     float estimatedCoverage = 0.0f;
-    if (distToCOM > 0.001f) {
-        estimatedCoverage = (estimatedSubjectSize / distToCOM) / tanHalfFov;
+    if (referenceDistance > 0.001f) {
+        estimatedCoverage = (estimatedSubjectSize / referenceDistance) / tanHalfFov;
         estimatedCoverage = std::min(estimatedCoverage * 100.0f, 100.0f);
     }
     
@@ -165,16 +176,27 @@ void renderCameraDebugOverlay(Camera* cam, int screenWidth, int screenHeight)
     debugText << "[DEBUG CAMERA]\n";
     debugText << "Pos: (" << pos.x << ", " << pos.y << ", " << pos.z << ")\n";
     debugText << "Target: (" << target.x << ", " << target.y << ", " << target.z << ")\n";
+    debugText << "  (lookat point: Pos + Front)\n";
     debugText << "Up: (" << up.x << ", " << up.y << ", " << up.z << ")\n";
     debugText << "Front: (" << front.x << ", " << front.y << ", " << front.z << ")\n";
     debugText << "Yaw: " << yaw << " deg  Pitch: " << pitch << " deg\n";
     debugText << "Dist to Target: " << distToTarget << " units\n";
-    debugText << "COM: (" << com.x << ", " << com.y << ", " << com.z << ")\n";
-    debugText << "Dist to COM: " << distToCOM << " units\n";
-    debugText << "Dir to COM: (" << directionToCOM.x << ", " << directionToCOM.y << ", " << directionToCOM.z << ")\n";
-    debugText << "Est. Coverage: ~" << static_cast<int>(estimatedCoverage) << "% of viewport\n";
+    
+    // Only show COM metrics if COM is active (non-zero)
+    if (comActive) {
+        debugText << "--- Simulation Tracking ---\n";
+        debugText << "COM: (" << com.x << ", " << com.y << ", " << com.z << ")\n";
+        debugText << "Dist to COM: " << distToCOM << " units\n";
+        debugText << "Dir to COM: (" << directionToCOM.x << ", " << directionToCOM.y << ", " << directionToCOM.z << ")\n";
+        debugText << "--- Composition (using COM) ---\n";
+        debugText << "Est. Coverage: ~" << static_cast<int>(estimatedCoverage) << "% of viewport\n";
+    } else {
+        debugText << "--- Composition (est.) ---\n";
+        debugText << "Est. Coverage: ~" << static_cast<int>(estimatedCoverage) << "% (ref=" << referenceDistance << "u)\n";
+    }
     debugText << "For 50% coverage: dist=" << distFor50Pct << " units\n";
     debugText << "For 40% coverage: dist=" << distFor40Pct << " units\n";
+    debugText << "--- Projection ---\n";
     debugText << "Proj: Perspective FOV=" << fov << " deg\n";
     debugText << "      Near=" << nearPlane << " Far=" << farPlane << "\n";
     debugText << "View: " << screenWidth << "x" << screenHeight;
