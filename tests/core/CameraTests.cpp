@@ -35,6 +35,39 @@ class CameraTest : public ::testing::Test
     const int SCREEN_HEIGHT = 600;
 };
 
+TEST_F(CameraTest, Constructor_InitializesKeysToFalse)
+{
+    // Arrange & Act
+    Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    // Assert — all keys must start as false to prevent unintended movement
+    for (int i = 0; i < 1024; i++) {
+        EXPECT_FALSE(camera.keys[i]) << "keys[" << i << "] should be false after construction";
+    }
+}
+
+TEST_F(CameraTest, Move_NoKeysPressed_CameraDoesNotSpin)
+{
+    // Arrange
+    Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT);
+    camera.update(1.0f / 60.0f); // initial update to set front vector
+    glm::vec3 initial_front = camera.getFrontVector();
+    glm::vec3 initial_pos = camera.getPosition();
+
+    // Act — simulate 10 frames with no keys pressed
+    for (int frame = 0; frame < 10; frame++) {
+        camera.Move();
+        camera.update(1.0f / 60.0f);
+    }
+
+    // Assert — camera direction and position should not change
+    glm::vec3 final_front = camera.getFrontVector();
+    EXPECT_NEAR(final_front.x, initial_front.x, 1e-5f);
+    EXPECT_NEAR(final_front.y, initial_front.y, 1e-5f);
+    EXPECT_NEAR(final_front.z, initial_front.z, 1e-5f);
+    EXPECT_EQ(camera.getPosition(), initial_pos);
+}
+
 // ============================================
 // Constructor Tests
 // ============================================

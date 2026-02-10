@@ -36,9 +36,9 @@ static const QuadVertex QUAD_VERTICES[] = {{-1.0f, 1.0f, 0.0f, 1.0f}, {-1.0f, -1
 // Construction / Destruction
 // ============================================================================
 
-ViewerApp::ViewerApp()
-    : delta_time_(0.0f), last_frame_(0.0f), cam_(nullptr), part_(nullptr), set_(nullptr), view_(), com_(),
-      cur_frame_(0), pixels_(nullptr)
+ViewerApp::ViewerApp(IOpenGLContext* context)
+    : context_(context), delta_time_(0.0f), last_frame_(0.0f), cam_(nullptr), part_(nullptr), set_(nullptr), view_(),
+      com_(), cur_frame_(0), pixels_(nullptr)
 {
     for (int i = 0; i < 1024; i++) {
         keys_[i] = false;
@@ -77,11 +77,13 @@ void ViewerApp::parseArgs(int argc, char* argv[])
 
 bool ViewerApp::initialize()
 {
-    initPaths();
-    initScreen("Particle-Viewer");
-    if (!window_.handle) {
+    if (!context_) {
+        std::cerr << "ViewerApp::initialize() called with null context" << std::endl;
         return false;
     }
+
+    initPaths();
+    initScreen();
     cam_->initGL();
     part_ = new Particle();
     setupGLStuff();
@@ -98,45 +100,48 @@ void ViewerApp::initPaths()
     paths_.screen_fragment = paths_.exe + paths_.screen_fragment;
 }
 
-void ViewerApp::initScreen(const char* title)
+void ViewerApp::initScreen()
 {
+    // Ensure context is current before any GL calls
+    context_->makeCurrent();
+
+    // Derive actual dimensions from the context.
+    // Use live framebuffer size if available (handles HiDPI), but fall back
+    // to the requested window size if the framebuffer reports 0×0 (can happen
+    // on Wayland before the window surface is committed).
+    auto fb_size = context_->getFramebufferSize();
+    window_.width = fb_size.first;
+    window_.height = fb_size.second;
+
+    if (window_.width <= 0 || window_.height <= 0) {
+        std::cerr << "Warning: framebuffer size is " << window_.width << "x" << window_.height
+                  << ", falling back to default 1280x720" << std::endl;
+        window_.width = 1280;
+        window_.height = 720;
+    }
+
+    std::cout << "Framebuffer resolution: " << window_.width << "x" << window_.height << std::endl;
+
     pixels_ = new unsigned char[window_.width * window_.height * 3];
     cam_ = new Camera(window_.width, window_.height);
-    glfwSetErrorCallback(errorCallbackStatic);
-    if (!glfwInit()) {
-        return;
-    }
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-    glfwWindowHint(GLFW_SAMPLES, 4);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
 
-    window_.handle = glfwCreateWindow(window_.width, window_.height, title, NULL, NULL);
-    if (!window_.handle) {
-        glfwTerminate();
-        return;
-    }
-
-    // Store 'this' pointer for GLFW callbacks
-    glfwSetWindowUserPointer(window_.handle, this);
-    glfwSetKeyCallback(window_.handle, keyCallbackStatic);
-    glfwMakeContextCurrent(window_.handle);
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        std::cerr << "Failed to initialize GLAD: unable to load OpenGL function pointers." << std::endl;
-        glfwDestroyWindow(window_.handle);
-        window_.handle = nullptr;
-        glfwTerminate();
-        return;
-    }
-
-    glfwSwapInterval(1);
+    // Set up GL state that ViewerApp owns.
+    context_->setSwapInterval(1);
     glViewport(0, 0, window_.width, window_.height);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     stbi_flip_vertically_on_write(true);
+
+    // Register GLFW-specific callbacks if a native window is available
+    setupCallbacks();
+}
+
+void ViewerApp::setupCallbacks()
+{
+    GLFWwindow* native_window = static_cast<GLFWwindow*>(context_->getNativeWindowHandle());
+    if (native_window) {
+        glfwSetWindowUserPointer(native_window, this);
+        glfwSetKeyCallback(native_window, keyCallbackStatic);
+    }
 }
 
 void ViewerApp::setResolution(const std::string& resolution)
@@ -144,21 +149,17 @@ void ViewerApp::setResolution(const std::string& resolution)
     // Sphere scale values are hand-tuned per resolution for visual consistency.
     // Approximate fit: scale ≈ (screen_height / 720.0) ^ 0.55
     // TODO: make rendering resolution-independent on the shader side
+    //
+    // Dimensions are derived from the injected context in initScreen(),
+    // so only the sphere scale needs to be set here.
     GLfloat scale;
     if (resolution == "4k") {
-        window_.width = 3840;
-        window_.height = 2160;
         scale = 1.75;
     } else if (resolution == "1080" || resolution == "1080p" || resolution == "HD") {
-        window_.width = 1920;
-        window_.height = 1080;
         scale = 1.25;
     } else {
-        window_.width = 1280;
-        window_.height = 720;
         scale = 1.0;
     }
-    std::cout << "Setting resolution to:" << window_.width << "x" << window_.height << std::endl;
     setSphereScale(scale);
 }
 
@@ -174,8 +175,8 @@ void ViewerApp::setSphereScale(GLfloat scale)
 
 void ViewerApp::run()
 {
-    while (!glfwWindowShouldClose(window_.handle)) {
-        glfwPollEvents();
+    while (!context_->shouldClose()) {
+        context_->pollEvents();
         cam_->Move();
 
         beforeDraw();
@@ -187,7 +188,7 @@ void ViewerApp::run()
             renderCameraDebugOverlay(cam_, window_.width, window_.height);
         }
 
-        glfwSwapBuffers(window_.handle);
+        context_->swapBuffers();
 
         if (set_->frames > 1) {
             set_->readPosVelFile(cur_frame_, part_, false);
@@ -286,7 +287,7 @@ GLuint ViewerApp::generateAttachmentTexture(GLboolean depth, GLboolean stencil)
 
 void ViewerApp::updateDeltaTime()
 {
-    GLfloat current_frame = glfwGetTime();
+    GLfloat current_frame = context_->getTime();
     delta_time_ = current_frame - last_frame_;
     last_frame_ = current_frame;
 }
@@ -385,10 +386,14 @@ void ViewerApp::keyCallback(int key, int scancode, int action, int mods)
         }
     }
 
-    cam_->KeyReader(window_.handle, key, scancode, action, mods);
+    // Only forward to camera if key is in valid range (GLFW_KEY_UNKNOWN is -1).
+    if (key >= 0 && key < 1024) {
+        GLFWwindow* native_window = static_cast<GLFWwindow*>(context_->getNativeWindowHandle());
+        cam_->KeyReader(native_window, key, scancode, action, mods);
+    }
 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window_.handle, GLFW_TRUE);
+        context_->setShouldClose(true);
     }
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
         set_->togglePlay();
@@ -479,11 +484,7 @@ void ViewerApp::cleanup()
     set_ = nullptr;
     delete cam_;
     cam_ = nullptr;
-    if (window_.handle) {
-        glfwDestroyWindow(window_.handle);
-        window_.handle = nullptr;
-        glfwTerminate();
-    }
+    // Context cleanup is handled by the context's owner (caller), not ViewerApp.
 }
 
 // ============================================================================
@@ -496,9 +497,4 @@ void ViewerApp::keyCallbackStatic(GLFWwindow* window, int key, int scancode, int
     if (app) {
         app->keyCallback(key, scancode, action, mods);
     }
-}
-
-void ViewerApp::errorCallbackStatic(int error, const char* description)
-{
-    fprintf(stderr, "Error: %s\n", description);
 }

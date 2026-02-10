@@ -87,6 +87,9 @@ class Camera
      */
     Camera(const int SCREEN_WIDTH, const int SCREEN_HEIGHT)
     {
+        for (int i = 0; i < 1024; i++) {
+            keys[i] = false;
+        }
         std::string exePath = ExePath();
         this->cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
         this->cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);

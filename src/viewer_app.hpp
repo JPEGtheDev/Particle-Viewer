@@ -5,6 +5,9 @@
  * Encapsulates all application state that was previously global in clutter.hpp.
  * Owns the main loop, window, rendering pipeline, and scene objects.
  *
+ * Supports dependency injection: accepts an IOpenGLContext* for testability.
+ * Production code uses GLFWContext; tests use MockOpenGLContext.
+ *
  * Architecture: Input → Data Loading → Rendering
  */
 
@@ -23,16 +26,16 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
+#include "graphics/IOpenGLContext.hpp"
 #include "particle.hpp"
 #include "settingsIO.hpp"
 #include "shader.hpp"
 
 /*
- * Window configuration and GLFW state.
+ * Window configuration.
  */
 struct WindowConfig
 {
-    GLFWwindow* handle = nullptr;
     GLint width = 0;
     GLint height = 0;
     GLint fullscreen = 0;
@@ -93,19 +96,34 @@ struct ShaderPaths
  * ViewerApp owns all application state and manages the main loop.
  *
  * Replaces the global state previously in clutter.hpp with proper encapsulation.
+ * Requires a non-null IOpenGLContext* passed to the constructor for testability.
+ * Production code typically uses GLFWContext; tests use MockOpenGLContext.
+ * ViewerApp does not create or own the OpenGL context itself.
+ *
  * GLFW callbacks use the window user pointer to delegate to instance methods.
  *
- * Usage:
- *   ViewerApp app;
+ * Usage (production):
+ *   GLFWContext context(1280, 720, "Particle-Viewer");
+ *   ViewerApp app(&context);
  *   app.parseArgs(argc, argv);
  *   if (app.initialize()) {
  *       app.run();
  *   }
+ *
+ * Usage (testing):
+ *   MockOpenGLContext context(1280, 720);
+ *   ViewerApp app(&context);
  */
 class ViewerApp
 {
   public:
-    ViewerApp();
+    /*
+     * Construct with an injected OpenGL context (dependency injection).
+     * The context must be non-null and must outlive the ViewerApp.
+     * ViewerApp does not own the context.
+     */
+    explicit ViewerApp(IOpenGLContext* context);
+
     ~ViewerApp();
 
     // Prevent copying (owns GL and GLFW resources)
@@ -133,6 +151,7 @@ class ViewerApp
     // ============================================
     // Grouped State
     // ============================================
+    IOpenGLContext* context_; // non-owning; managed by caller
     WindowConfig window_;
     RenderResources render_;
     SphereParams sphere_;
@@ -172,10 +191,11 @@ class ViewerApp
     // ============================================
     // Initialization Methods
     // ============================================
-    void initScreen(const char* title);
+    void initScreen();
     void initPaths();
     void setResolution(const std::string& resolution);
     void setSphereScale(GLfloat scale);
+    void setupCallbacks();
 
     // ============================================
     // Rendering Pipeline
@@ -208,7 +228,6 @@ class ViewerApp
     // Static GLFW Callbacks (delegate to instance via user pointer)
     // ============================================
     static void keyCallbackStatic(GLFWwindow* window, int key, int scancode, int action, int mods);
-    static void errorCallbackStatic(int error, const char* description);
 };
 
 #endif // PARTICLE_VIEWER_VIEWER_APP_H

@@ -37,10 +37,14 @@ message("CXX Flags:" ${CMAKE_CXX_FLAGS})
 file(GLOB DIALOG src/tinyFileDialogs/*.c)
 file(GLOB srcCPP src/*.cpp)
 file(GLOB srcHPP src/*.hpp)
+file(GLOB graphicsCPP src/graphics/*.cpp)
+file(GLOB graphicsHPP src/graphics/*.hpp)
 add_executable(Viewer
 	${DIALOG}
 	${srcCPP}
 	${srcHPP}
+	${graphicsCPP}
+	${graphicsHPP}
 	src/glad/src/glad.c
 	src/glad/include/glad/glad.h
 	src/glad/include/KHR/khrplatform.h
