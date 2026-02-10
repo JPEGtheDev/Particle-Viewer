@@ -175,6 +175,38 @@ class Camera
     }
 
     /*
+     * Get the camera's yaw angle in degrees.
+     */
+    float getYaw() const
+    {
+        return yaw;
+    }
+
+    /*
+     * Get the camera's pitch angle in degrees.
+     */
+    float getPitch() const
+    {
+        return pitch;
+    }
+
+    /*
+     * Get the camera's front direction vector (normalized).
+     */
+    glm::vec3 getFrontVector() const
+    {
+        return cameraFront;
+    }
+
+    /*
+     * Get the center of mass position.
+     */
+    glm::vec3 getCenterOfMass() const
+    {
+        return centerOfMass;
+    }
+
+    /*
      * Initializes Vertex Array Objects for the rotation sphere and the Center Of Mass sphere.
      */
     void initGL()
