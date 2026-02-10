@@ -371,11 +371,11 @@ class RenderingRegressionTest : public VisualRegressionTest
  * Renders the default particle cube (64,000 particles in 40×40×40 grid)
  * from an angled camera position to verify 3D perspective and depth rendering.
  *
- * Camera Configuration (from debug output):
+ * Camera Configuration (from reference debug output):
  * - Position: (-16.72, 16.49, -8.95)
  * - Target: (-15.99, 16.02, -8.04)
  * - Up: (0.08, 1.00, 0.00)
- * - Projection: Perspective, FOV=45°, Near=0.1, Far=5.0
+ * - Projection: Perspective, FOV=45°, Near=0.1, Far=3000.0
  *
  * This is the most realistic rendering test - validates the default scene
  * that users see when first launching the application.
@@ -396,16 +396,20 @@ TEST_F(RenderingRegressionTest, RenderDefaultCube_AngledView_MatchesBaseline)
     particles.createDefaultCube();
     ASSERT_EQ(particles.getParticleCount(), 64000u) << "Default cube should have 64,000 particles";
 
-    // Arrange - Set up camera at angled view (from debug image)
+    // Arrange - Set up camera at angled view using exact values from reference image
+    // Reference debug output shows these exact camera parameters:
+    // Pos: (-16.72, 16.49, -8.95)
+    // Target: (-15.99, 16.02, -8.04)
+    // Up: (0.08, 1.00, 0.00)
     glm::vec3 cameraPos(-16.72f, 16.49f, -8.95f);
     glm::vec3 cameraTarget(-15.99f, 16.02f, -8.04f);
     glm::vec3 cameraUp(0.08f, 1.00f, 0.00f);
 
-    glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, glm::normalize(cameraUp));
+    glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
     glm::mat4 projection = glm::perspective(glm::radians(45.0f),
                                             (float)RenderingTestConfig::RENDER_WIDTH /
                                                 (float)RenderingTestConfig::RENDER_HEIGHT,
-                                            0.1f, 5000.0f); // Increased far plane to 5000 for full cube visibility
+                                            0.1f, 3000.0f); // Near=0.1, Far=3000 from reference
 
     // Act - Render scene
     glContext_.bindFramebuffer();
