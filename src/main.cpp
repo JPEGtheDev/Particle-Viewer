@@ -3,6 +3,10 @@
  *
  * contains main function
  *
+ * Command-line flags:
+ *   --resolution, --res <resolution>  Set display resolution (4k, 1080, 720)
+ *   --debug-camera, -d                Enable debug camera overlay showing position,
+ *                                     target, up vector, projection info, and viewport
  */
 
 #include "clutter.hpp"
@@ -28,6 +32,11 @@ int main(int argc, char* argv[])
         cam->RenderSphere();
         drawFBO();
         // render GUI
+
+        // Render debug camera overlay if flag is enabled
+        if (debugCamera) {
+            renderCameraDebugOverlay(cam, SCREEN_WIDTH, SCREEN_HEIGHT);
+        }
 
         glfwSwapBuffers(window);
 

@@ -8,13 +8,13 @@
 // Include glad first to avoid OpenGL header conflicts
 #define GLFW_INCLUDE_NONE
 #include <glad/glad.h>
-
 #include <gtest/gtest.h>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "camera.hpp"
 #include "MockOpenGL.hpp"
+#include "camera.hpp"
 
 // Test fixture for Camera tests
 class CameraTest : public ::testing::Test
@@ -440,4 +440,95 @@ TEST_F(CameraTest, SetSphereCenter_StoresNewCenterOfMass)
 
     // Assert - Can't directly test private member, but method should not crash
     EXPECT_NO_THROW({ camera.setSphereCenter(newCenter); });
+}
+
+// ============================================
+// Getter Method Tests
+// ============================================
+
+TEST_F(CameraTest, GetPosition_ReturnsCurrentCameraPosition)
+{
+    // Arrange
+    Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    // Act
+    glm::vec3 position = camera.getPosition();
+
+    // Assert
+    EXPECT_EQ(position, glm::vec3(0.0f, 0.0f, 3.0f));
+}
+
+TEST_F(CameraTest, GetTarget_ReturnsLookatPosition)
+{
+    // Arrange
+    Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    // Act
+    glm::vec3 target = camera.getTarget();
+
+    // Assert - Target is position + front vector
+    glm::vec3 expectedTarget = camera.cameraPos + camera.cameraFront;
+    EXPECT_EQ(target, expectedTarget);
+}
+
+TEST_F(CameraTest, GetUpVector_ReturnsCurrentUpVector)
+{
+    // Arrange
+    Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    // Act
+    glm::vec3 up = camera.getUpVector();
+
+    // Assert
+    EXPECT_EQ(up, glm::vec3(0.0f, 1.0f, 0.0f));
+}
+
+TEST_F(CameraTest, GetFOV_ReturnsFieldOfView)
+{
+    // Arrange
+    Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    // Act
+    float fov = camera.getFOV();
+
+    // Assert
+    EXPECT_FLOAT_EQ(fov, 45.0f);
+}
+
+TEST_F(CameraTest, GetNearPlane_ReturnsNearPlaneDistance)
+{
+    // Arrange
+    Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    // Act
+    float nearPlane = camera.getNearPlane();
+
+    // Assert
+    EXPECT_FLOAT_EQ(nearPlane, 0.1f);
+}
+
+TEST_F(CameraTest, GetFarPlane_ReturnsRenderDistance)
+{
+    // Arrange
+    Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    // Act
+    float farPlane = camera.getFarPlane();
+
+    // Assert
+    EXPECT_FLOAT_EQ(farPlane, 3000.0f);
+}
+
+TEST_F(CameraTest, GetFarPlane_AfterSetRenderDistance_ReturnsNewDistance)
+{
+    // Arrange
+    Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT);
+    float newDistance = 5000.0f;
+    camera.setRenderDistance(newDistance);
+
+    // Act
+    float farPlane = camera.getFarPlane();
+
+    // Assert
+    EXPECT_FLOAT_EQ(farPlane, newDistance);
 }

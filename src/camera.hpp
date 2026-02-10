@@ -123,6 +123,54 @@ class Camera
     GLfloat sphereDistance;
 
     /*
+     * Get the camera's lookat target position (where the camera is looking at).
+     */
+    glm::vec3 getTarget() const
+    {
+        return cameraPos + cameraFront;
+    }
+
+    /*
+     * Get the camera's position.
+     */
+    glm::vec3 getPosition() const
+    {
+        return cameraPos;
+    }
+
+    /*
+     * Get the camera's up vector.
+     */
+    glm::vec3 getUpVector() const
+    {
+        return cameraUp;
+    }
+
+    /*
+     * Get the camera's field of view in degrees.
+     */
+    float getFOV() const
+    {
+        return 45.0f; // FOV is hardcoded in constructor
+    }
+
+    /*
+     * Get the camera's near plane distance.
+     */
+    float getNearPlane() const
+    {
+        return 0.1f; // Near plane is hardcoded in constructor
+    }
+
+    /*
+     * Get the camera's far plane distance.
+     */
+    float getFarPlane() const
+    {
+        return renderDistance;
+    }
+
+    /*
      * Initializes Vertex Array Objects for the rotation sphere and the Center Of Mass sphere.
      */
     void initGL()
