@@ -29,8 +29,8 @@ constexpr size_t DEBUG_TEXT_BUFFER_SIZE = 99999;
 // Background rectangle dimensions and position (top-left corner)
 constexpr float DEBUG_BG_X = 5.0f;
 constexpr float DEBUG_BG_Y = 5.0f;
-constexpr float DEBUG_BG_WIDTH = 330.0f;
-constexpr float DEBUG_BG_HEIGHT = 120.0f;
+constexpr float DEBUG_BG_WIDTH = 400.0f;
+constexpr float DEBUG_BG_HEIGHT = 290.0f;
 
 // Simple shader for rendering 2D text overlay
 const char* debugOverlayVertexShader = R"(

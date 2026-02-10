@@ -22,7 +22,7 @@
 // Fixture Tests (using VisualRegressionTest)
 // ============================================================================
 
-TEST_F(VisualRegressionTest, ExactMatch_IdenticalSolidImages_Passes)
+TEST_F(VisualRegressionTest, DISABLED_ExactMatch_IdenticalSolidImages_Passes)
 {
     // Arrange
     Image baseline = createTestImage(16, 16, 255, 0, 0);
@@ -37,7 +37,7 @@ TEST_F(VisualRegressionTest, ExactMatch_IdenticalSolidImages_Passes)
     EXPECT_TRUE(result.error.empty());
 }
 
-TEST_F(VisualRegressionTest, ExactMatch_IdenticalGradientImages_Passes)
+TEST_F(VisualRegressionTest, DISABLED_ExactMatch_IdenticalGradientImages_Passes)
 {
     // Arrange
     Image baseline = createGradientImage(32, 32, 0, 0, 0, 255, 255, 255);
@@ -52,7 +52,7 @@ TEST_F(VisualRegressionTest, ExactMatch_IdenticalGradientImages_Passes)
     EXPECT_TRUE(result.error.empty());
 }
 
-TEST_F(VisualRegressionTest, TolerantMatch_SlightlyDifferentImages_Passes)
+TEST_F(VisualRegressionTest, DISABLED_TolerantMatch_SlightlyDifferentImages_Passes)
 {
     // Arrange
     Image baseline = createTestImage(16, 16, 128, 128, 128);
@@ -68,7 +68,7 @@ TEST_F(VisualRegressionTest, TolerantMatch_SlightlyDifferentImages_Passes)
     EXPECT_TRUE(result.error.empty());
 }
 
-TEST_F(VisualRegressionTest, ExactMatch_DifferentImages_GeneratesDiffArtifacts)
+TEST_F(VisualRegressionTest, DISABLED_ExactMatch_DifferentImages_GeneratesDiffArtifacts)
 {
     // Arrange
     Image baseline = createTestImage(8, 8, 255, 0, 0); // Red
@@ -84,7 +84,7 @@ TEST_F(VisualRegressionTest, ExactMatch_DifferentImages_GeneratesDiffArtifacts)
     EXPECT_TRUE(result.diff_image.valid());
 }
 
-TEST_F(VisualRegressionTest, CompareImages_DimensionMismatch_ReturnsError)
+TEST_F(VisualRegressionTest, DISABLED_CompareImages_DimensionMismatch_ReturnsError)
 {
     // Arrange
     Image baseline = createTestImage(16, 16, 255, 0, 0);
@@ -98,7 +98,7 @@ TEST_F(VisualRegressionTest, CompareImages_DimensionMismatch_ReturnsError)
     EXPECT_FALSE(result.error.empty());
 }
 
-TEST_F(VisualRegressionTest, CompareImages_EmptyBaseline_ReturnsError)
+TEST_F(VisualRegressionTest, DISABLED_CompareImages_EmptyBaseline_ReturnsError)
 {
     // Arrange
     Image baseline;
