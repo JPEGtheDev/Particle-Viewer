@@ -147,8 +147,8 @@ void ViewerApp::initScreen(const char* title)
 
 void ViewerApp::setResolution(const std::string& resolution)
 {
-    // Sphere scale is computed as: scale = (screen_height / 720.0) ^ 0.6
-    // This approximates the hand-tuned values: 720→1.0, 1080→1.25, 2160→1.75
+    // Sphere scale values are hand-tuned per resolution for visual consistency.
+    // Approximate fit: scale ≈ (screen_height / 720.0) ^ 0.55
     // TODO: make rendering resolution-independent on the shader side
     GLfloat scale;
     if (resolution == "4k") {

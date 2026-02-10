@@ -26,7 +26,7 @@ class Particle
         n = 64000;
         instanceVBO = 0;
         translations.resize(n); // value-initialized to vec4(0) by std::vector
-        velocities.resize(1);   // value-initialized to vec4(0) by std::vector
+        velocities.resize(1);   // single placeholder; resized when data is loaded
         for (int i = 0; i < n; i++) {
             translations[i] = glm::vec4(i % 40 * 1.25, i % 1600 / 40.0f * 1.25, i % 64000 / 1600.0f * 1.25, 500);
         }
