@@ -20,15 +20,16 @@
 
 #include <gtest/gtest.h>
 
-// Include GLAD before GLFW to properly load OpenGL functions
-#include <GLFW/glfw3.h>
+// NOLINT(modernize-deprecated-headers,llvm-include-order) - GLAD must come
+// before GLFW to properly initialize OpenGL functions
+#include "glad/glad.h"       // NOLINT(llvm-include-order)
+#include <GLFW/glfw3.h>      // NOLINT(llvm-include-order)
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Image.hpp"
-#include "glad/glad.h"
 #include "shader.hpp"
 #include "testing/FramebufferCapture.hpp"
 #include "testing/PixelComparator.hpp"
