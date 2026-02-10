@@ -183,10 +183,8 @@ void renderParticle(Particle& particle, Shader& shader, const glm::mat4& view, c
     GLuint vao;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
-    glBindBuffer(GL_ARRAY_BUFFER, particle.instanceVBO);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribDivisor(0, 1);
+    particle.setUpInstanceArray();
 
     glDrawArraysInstanced(GL_POINTS, 0, 1, particle.n);
     glBindVertexArray(0);
