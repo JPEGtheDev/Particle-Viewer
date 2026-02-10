@@ -516,16 +516,14 @@ class SettingsIO
             FILE* COMFile = fopen(comName.c_str(), "r");
             if (COMFile) {
                 fseek(COMFile, frame * sizeof(glm::vec4), SEEK_CUR);
-                glm::vec4* readVal = new glm::vec4[1];
-                fread(readVal, sizeof(glm::vec4), 1, COMFile);
+                glm::vec4 read_val;
+                fread(&read_val, sizeof(glm::vec4), 1, COMFile);
                 fclose(COMFile);
-                if ((long)readVal[0].w == frame) {
-                    value.x = readVal[0].x * .25;
-                    value.y = readVal[0].y * .25;
-                    value.z = readVal[0].z * .25;
+                if ((long)read_val.w == frame) {
+                    value.x = read_val.x * .25;
+                    value.y = read_val.y * .25;
+                    value.z = read_val.z * .25;
                 }
-
-                return;
             }
         }
     }

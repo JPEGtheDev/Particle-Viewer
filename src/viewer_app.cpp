@@ -19,46 +19,22 @@
 #include "stb_image_write.h"
 
 // Quad vertices for fullscreen FBO pass (positions + tex coords)
-static const GLfloat QUAD_VERTICES[] = {
-    -1.0f, 1.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f, 0.0f,
-    -1.0f, 1.0f, 0.0f, 1.0f, 1.0f,  -1.0f, 1.0f, 0.0f, 1.0f, 1.0f,  1.0f, 1.0f};
+static const GLfloat QUAD_VERTICES[] = {-1.0f, 1.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f, 0.0f,
+                                        -1.0f, 1.0f, 0.0f, 1.0f, 1.0f,  -1.0f, 1.0f, 0.0f, 1.0f, 1.0f,  1.0f, 1.0f};
 
 // ============================================================================
 // Construction / Destruction
 // ============================================================================
 
 ViewerApp::ViewerApp()
-    : window_(nullptr),
-      screen_width_(0),
-      screen_height_(0),
-      screen_fullscreen_(0),
-      debug_camera_(false),
-      delta_time_(0.0f),
-      last_frame_(0.0f),
-      quad_vao_(0),
-      quad_vbo_(0),
-      framebuffer_(0),
-      rbo_(0),
-      texture_colorbuffer_(0),
-      circle_vao_(0),
-      circle_vbo_(0),
-      cam_(nullptr),
-      part_(nullptr),
-      set_(nullptr),
-      view_(),
-      com_(),
-      sphere_scale_(0.0f),
-      sphere_base_radius_(250.0f),
-      sphere_radius_(0.0f),
-      is_recording_(false),
-      image_error_(0),
-      image_error_max_(5),
-      sphere_vertex_shader_path_("/Viewer-Assets/shaders/sphereVertex.vs"),
+    : window_(nullptr), screen_width_(0), screen_height_(0), screen_fullscreen_(0), debug_camera_(false),
+      delta_time_(0.0f), last_frame_(0.0f), quad_vao_(0), quad_vbo_(0), framebuffer_(0), rbo_(0),
+      texture_colorbuffer_(0), circle_vao_(0), circle_vbo_(0), cam_(nullptr), part_(nullptr), set_(nullptr), view_(),
+      com_(), sphere_scale_(0.0f), sphere_base_radius_(250.0f), sphere_radius_(0.0f), is_recording_(false),
+      image_error_(0), image_error_max_(5), sphere_vertex_shader_path_("/Viewer-Assets/shaders/sphereVertex.vs"),
       sphere_fragment_shader_path_("/Viewer-Assets/shaders/sphereFragment.frag"),
       screen_vertex_shader_path_("/Viewer-Assets/shaders/screenshader.vs"),
-      screen_fragment_shader_path_("/Viewer-Assets/shaders/screenshader.frag"),
-      cur_frame_(0),
-      pixels_(nullptr)
+      screen_fragment_shader_path_("/Viewer-Assets/shaders/screenshader.frag"), cur_frame_(0), pixels_(nullptr)
 {
     for (int i = 0; i < 1024; i++) {
         keys_[i] = false;
@@ -321,7 +297,7 @@ void ViewerApp::drawScene()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glUniformMatrix4fv(glGetUniformLocation(sphere_shader_.Program, "view"), 1, GL_FALSE, glm::value_ptr(view_));
     glUniformMatrix4fv(glGetUniformLocation(sphere_shader_.Program, "projection"), 1, GL_FALSE,
-                       glm::value_ptr(cam_->projection));
+                       glm::value_ptr(cam_->getProjection()));
     glUniform1f(glGetUniformLocation(sphere_shader_.Program, "radius"), sphere_radius_);
     glUniform1f(glGetUniformLocation(sphere_shader_.Program, "scale"), sphere_scale_);
     glDrawArraysInstanced(GL_POINTS, 0, 1, part_->n);

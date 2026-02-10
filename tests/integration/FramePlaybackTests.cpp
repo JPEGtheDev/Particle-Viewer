@@ -10,16 +10,17 @@
 
 // Include glad first to avoid OpenGL header conflicts
 #define GLFW_INCLUDE_NONE
-#include <glad/glad.h>
-
-#include <gtest/gtest.h>
-#include <glm/glm.hpp>
 #include <cstdio>
 #include <fstream>
 
-#include "settingsIO.hpp"
-#include "particle.hpp"
+#include <glad/glad.h>
+#include <gtest/gtest.h>
+
+#include <glm/glm.hpp>
+
 #include "MockOpenGL.hpp"
+#include "particle.hpp"
+#include "settingsIO.hpp"
 
 // Test fixture for frame playback integration tests
 class FramePlaybackTest : public ::testing::Test
@@ -111,11 +112,10 @@ class FramePlaybackTest : public ::testing::Test
         for (int frame = 0; frame < NUM_FRAMES; frame++) {
             // Write positions - frame number encoded in first particle's x position
             for (int i = 0; i < NUM_PARTICLES; i++) {
-                glm::vec4 pos(
-                    (float)(frame * 100 + i),    // x: frame*100 + particle index
-                    (float)(frame * 10),         // y: frame*10 (same for all particles in frame)
-                    (float)i,                    // z: particle index
-                    1.0f                         // w: always 1
+                glm::vec4 pos((float)(frame * 100 + i), // x: frame*100 + particle index
+                              (float)(frame * 10),      // y: frame*10 (same for all particles in frame)
+                              (float)i,                 // z: particle index
+                              1.0f                      // w: always 1
                 );
                 fwrite(&pos, sizeof(glm::vec4), 1, posFile);
             }
@@ -154,7 +154,11 @@ class FramePlaybackTest : public ::testing::Test
     static constexpr float FLOAT_TOLERANCE = 0.001f;
 
     // Test constants - using enum as a C++11 workaround for static const int
-    enum { NUM_PARTICLES = 20, NUM_FRAMES = 10 };
+    enum
+    {
+        NUM_PARTICLES = 20,
+        NUM_FRAMES = 10
+    };
     const char* posPath = "/tmp/playback_PosAndVel";
     const char* statsPath = "/tmp/playback_RunSetup";
     const char* comPath = "/tmp/playback_COMFile";
@@ -200,8 +204,8 @@ TEST_F(FramePlaybackTest, PlaybackSequence_FrameToFrame_DataChangesCorrectly)
 
     // Assert: Data changed between frames
     EXPECT_NE(frame0_y, frame5_y);
-    EXPECT_FLOAT_EQ(frame0_y, 0.0f);   // frame 0: y = 0 * 10 = 0
-    EXPECT_FLOAT_EQ(frame5_y, 50.0f);  // frame 5: y = 5 * 10 = 50
+    EXPECT_FLOAT_EQ(frame0_y, 0.0f);  // frame 0: y = 0 * 10 = 0
+    EXPECT_FLOAT_EQ(frame5_y, 50.0f); // frame 5: y = 5 * 10 = 50
 }
 
 TEST_F(FramePlaybackTest, PlaybackSequence_AllParticles_UpdatedEachFrame)
@@ -216,7 +220,7 @@ TEST_F(FramePlaybackTest, PlaybackSequence_AllParticles_UpdatedEachFrame)
     // Assert: All particles have correct frame-specific data
     for (int i = 0; i < NUM_PARTICLES; i++) {
         EXPECT_FLOAT_EQ(part.translations[i].x, (float)(3 * 100 + i));
-        EXPECT_FLOAT_EQ(part.translations[i].y, 30.0f);  // frame 3: y = 30
+        EXPECT_FLOAT_EQ(part.translations[i].y, 30.0f); // frame 3: y = 30
         EXPECT_FLOAT_EQ(part.translations[i].z, (float)i);
     }
 }
@@ -253,10 +257,10 @@ TEST_F(FramePlaybackTest, PlaybackState_PlayingMode_CanLoadFrames)
     EXPECT_TRUE(settings.isPlaying);
 
     settings.readPosVelFile(0, &part, false);
-    EXPECT_TRUE(settings.isPlaying);  // Still playing within valid range
+    EXPECT_TRUE(settings.isPlaying); // Still playing within valid range
 
     settings.readPosVelFile(5, &part, false);
-    EXPECT_TRUE(settings.isPlaying);  // Still playing
+    EXPECT_TRUE(settings.isPlaying); // Still playing
 }
 
 TEST_F(FramePlaybackTest, PlaybackState_ReachesEnd_StopsPlayback)
@@ -302,7 +306,7 @@ TEST_F(FramePlaybackTest, FrameBoundary_FirstFrame_LoadsCorrectly)
 
     // Assert
     EXPECT_EQ(part.n, NUM_PARTICLES);
-    EXPECT_FLOAT_EQ(part.translations[0].x, 0.0f);  // frame 0, particle 0
+    EXPECT_FLOAT_EQ(part.translations[0].x, 0.0f); // frame 0, particle 0
 }
 
 TEST_F(FramePlaybackTest, FrameBoundary_LastFrame_LoadsCorrectly)
@@ -348,7 +352,7 @@ TEST_F(FramePlaybackTest, FrameBoundary_OneAboveMax_ClampsToPrevious)
     // Assert: Clamped to last valid frame
     EXPECT_FALSE(settings.isPlaying);
     // Should have loaded frame NUM_FRAMES-1 = 9
-    EXPECT_FLOAT_EQ(part.translations[0].x, 900.0f);  // frame 9, particle 0
+    EXPECT_FLOAT_EQ(part.translations[0].x, 900.0f); // frame 9, particle 0
 }
 
 // ============================================
@@ -413,10 +417,10 @@ TEST_F(FramePlaybackTest, PlaybackWithVelocities_LoadsBothArrays)
     settings.readPosVelFile(4, &part, true);
 
     // Assert: Both positions and velocities are populated
-    EXPECT_FLOAT_EQ(part.translations[0].x, 400.0f);  // frame 4, particle 0
-    EXPECT_FLOAT_EQ(part.velocities[0].x, 0.4f);      // frame 4: vx = 4 * 0.1
-    EXPECT_FLOAT_EQ(part.velocities[0].y, 0.8f);      // frame 4: vy = 4 * 0.2
-    EXPECT_NEAR(part.velocities[0].z, 1.2f, FLOAT_TOLERANCE);  // frame 4: vz = 4 * 0.3
+    EXPECT_FLOAT_EQ(part.translations[0].x, 400.0f);          // frame 4, particle 0
+    EXPECT_FLOAT_EQ(part.velocities[0].x, 0.4f);              // frame 4: vx = 4 * 0.1
+    EXPECT_FLOAT_EQ(part.velocities[0].y, 0.8f);              // frame 4: vy = 4 * 0.2
+    EXPECT_NEAR(part.velocities[0].z, 1.2f, FLOAT_TOLERANCE); // frame 4: vz = 4 * 0.3
 }
 
 TEST_F(FramePlaybackTest, PlaybackWithVelocities_VelocitiesUpdateWithFrame)

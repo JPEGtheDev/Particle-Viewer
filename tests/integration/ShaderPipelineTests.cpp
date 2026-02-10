@@ -8,13 +8,14 @@
  * using mocked OpenGL functions to avoid requiring a GPU.
  */
 
-#include <gtest/gtest.h>
+#include <cstdio>
 #include <fstream>
 #include <string>
-#include <cstdio>
 
-#include "shader.hpp"
+#include <gtest/gtest.h>
+
 #include "MockOpenGL.hpp"
+#include "shader.hpp"
 
 // Test fixture for shader pipeline integration tests
 class ShaderPipelineTest : public ::testing::Test
@@ -23,7 +24,7 @@ class ShaderPipelineTest : public ::testing::Test
     void SetUp() override
     {
         MockOpenGL::reset();
-        MockOpenGL::initGLAD();  // Use centralized mock initialization for Windows compatibility
+        MockOpenGL::initGLAD(); // Use centralized mock initialization for Windows compatibility
         createTestShaderFiles();
     }
 
@@ -288,9 +289,7 @@ TEST_F(ShaderPipelineTest, ShaderConstruction_WithCompileFailure_ContinuesExecut
     MockOpenGL::setLinkStatus(GL_TRUE);
 
     // Act: Create shader (should print error but not crash)
-    EXPECT_NO_THROW({
-        Shader shader(validVertexPath, validFragmentPath);
-    });
+    EXPECT_NO_THROW({ Shader shader(validVertexPath, validFragmentPath); });
 
     // Assert: Pipeline attempted all stages
     EXPECT_EQ(MockOpenGL::compileShaderCalls, 2);
@@ -303,9 +302,7 @@ TEST_F(ShaderPipelineTest, ShaderConstruction_WithLinkFailure_ContinuesExecution
     MockOpenGL::setLinkStatus(GL_FALSE);
 
     // Act: Create shader (should print error but not crash)
-    EXPECT_NO_THROW({
-        Shader shader(validVertexPath, validFragmentPath);
-    });
+    EXPECT_NO_THROW({ Shader shader(validVertexPath, validFragmentPath); });
 
     // Assert: Link was attempted
     EXPECT_EQ(MockOpenGL::linkProgramCalls, 1);
@@ -328,9 +325,7 @@ TEST_F(ShaderPipelineTest, ShaderConstruction_ReadsFileContents)
     MockOpenGL::setLinkStatus(GL_TRUE);
 
     // Act
-    EXPECT_NO_THROW({
-        Shader shader("/tmp/integration_test_content.vs", minimalFragmentPath);
-    });
+    EXPECT_NO_THROW({ Shader shader("/tmp/integration_test_content.vs", minimalFragmentPath); });
 
     // Cleanup
     std::remove("/tmp/integration_test_content.vs");

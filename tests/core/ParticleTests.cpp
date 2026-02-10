@@ -7,11 +7,12 @@
 
 // Include glad first to avoid OpenGL header conflicts
 #define GLFW_INCLUDE_NONE
+#include <vector>
+
 #include <glad/glad.h>
 #include <gtest/gtest.h>
 
 #include <glm/glm.hpp>
-#include <vector>
 
 #include "MockOpenGL.hpp"
 #include "particle.hpp"

@@ -106,10 +106,10 @@ class Particle
         std::cout << "Error Loading New Velocities" << std::endl;
     }
 
-    long n;                                 // number of objects
-    GLuint instanceVBO;                     // the instance VBO for OpenGL rendering
-    std::vector<glm::vec4> translations;    // the positions of the particles
-    std::vector<glm::vec4> velocities;      // the velocity data
+    long n;                              // number of objects
+    GLuint instanceVBO;                  // the instance VBO for OpenGL rendering
+    std::vector<glm::vec4> translations; // the positions of the particles
+    std::vector<glm::vec4> velocities;   // the velocity data
 
   private:
     /*

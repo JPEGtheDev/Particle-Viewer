@@ -10,17 +10,18 @@
 
 // Include glad first to avoid OpenGL header conflicts
 #define GLFW_INCLUDE_NONE
-#include <glad/glad.h>
-
-#include <gtest/gtest.h>
-#include <glm/glm.hpp>
+#include <cmath>
 #include <cstdio>
 #include <fstream>
-#include <cmath>
 
-#include "settingsIO.hpp"
-#include "particle.hpp"
+#include <glad/glad.h>
+#include <gtest/gtest.h>
+
+#include <glm/glm.hpp>
+
 #include "MockOpenGL.hpp"
+#include "particle.hpp"
+#include "settingsIO.hpp"
 
 // Test fixture for data loading pipeline integration tests
 class DataLoadingPipelineTest : public ::testing::Test
@@ -114,21 +115,19 @@ class DataLoadingPipelineTest : public ::testing::Test
         for (int frame = 0; frame < NUM_FRAMES; frame++) {
             // Write positions - each particle has position based on frame and index
             for (int i = 0; i < NUM_PARTICLES; i++) {
-                glm::vec4 pos(
-                    (float)(i * 10.0f + frame),           // x: increases by 10 per particle, 1 per frame
-                    (float)(i * 5.0f + frame * 2),        // y: increases by 5 per particle, 2 per frame
-                    (float)(i * 2.0f + frame * 0.5f),     // z: increases by 2 per particle, 0.5 per frame
-                    1.0f                                   // w: always 1
+                glm::vec4 pos((float)(i * 10.0f + frame),       // x: increases by 10 per particle, 1 per frame
+                              (float)(i * 5.0f + frame * 2),    // y: increases by 5 per particle, 2 per frame
+                              (float)(i * 2.0f + frame * 0.5f), // z: increases by 2 per particle, 0.5 per frame
+                              1.0f                              // w: always 1
                 );
                 fwrite(&pos, sizeof(glm::vec4), 1, posFile);
             }
             // Write velocities
             for (int i = 0; i < NUM_PARTICLES; i++) {
-                glm::vec4 vel(
-                    (float)i * 0.1f + frame * 0.01f,       // vx
-                    (float)i * 0.2f + frame * 0.02f,       // vy
-                    (float)i * 0.3f + frame * 0.03f,       // vz
-                    0.0f                                    // w: always 0 for velocity
+                glm::vec4 vel((float)i * 0.1f + frame * 0.01f, // vx
+                              (float)i * 0.2f + frame * 0.02f, // vy
+                              (float)i * 0.3f + frame * 0.03f, // vz
+                              0.0f                             // w: always 0 for velocity
                 );
                 fwrite(&vel, sizeof(glm::vec4), 1, posFile);
             }
@@ -148,11 +147,15 @@ class DataLoadingPipelineTest : public ::testing::Test
     }
 
     // Test constants - using enum as a C++11 workaround for static const int
-    enum { NUM_PARTICLES = 50, NUM_FRAMES = 5 };
-    
+    enum
+    {
+        NUM_PARTICLES = 50,
+        NUM_FRAMES = 5
+    };
+
     // Tolerance for floating-point comparisons
     static constexpr float FLOAT_TOLERANCE = 0.001f;
-    
+
     const char* posPath = "/tmp/integration_PosAndVel";
     const char* statsPath = "/tmp/integration_RunSetup";
     const char* comPath = "/tmp/integration_COMFile";
@@ -345,7 +348,7 @@ TEST_F(DataLoadingPipelineTest, FramePlaybackSimulation_PlayToggleWorks)
 
     // Load a frame while playing
     settings.readPosVelFile(0, &part, false);
-    EXPECT_TRUE(settings.isPlaying);  // Should still be playing
+    EXPECT_TRUE(settings.isPlaying); // Should still be playing
 
     settings.togglePlay();
     EXPECT_FALSE(settings.isPlaying);

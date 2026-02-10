@@ -13,15 +13,16 @@
 
 #include <string>
 
-#include <glad/glad.h>
+// clang-format off
+// GLAD must come before GLFW to properly initialize OpenGL functions
+#include <glad/glad.h>       // NOLINT(llvm-include-order)
+#include <GLFW/glfw3.h>      // NOLINT(llvm-include-order)
+// clang-format on
 
-#include <GLFW/glfw3.h>
-
+#include "camera.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
-
-#include "camera.hpp"
 #include "particle.hpp"
 #include "settingsIO.hpp"
 #include "shader.hpp"
