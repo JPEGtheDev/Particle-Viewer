@@ -261,8 +261,8 @@ class ParticleRenderer
 
         for (int i = 0; i < numParticles; i++) {
             float x = (i % 40) * spacing;
-            float y = (i % 1600 / 40.0f) * spacing;
-            float z = (i % 64000 / 1600.0f) * spacing;
+            float y = (i % 1600) / 40.0f * spacing;
+            float z = (i % 64000) / 1600.0f * spacing;
             particleData_[i] = glm::vec4(x, y, z, colorVal);
         }
 
