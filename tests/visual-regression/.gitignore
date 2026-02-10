@@ -1,0 +1,5 @@
+# Test artifacts - generated during test runs
+artifacts/
+diffs/
+
+# Note: baselines/ is committed to the repository

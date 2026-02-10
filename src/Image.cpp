@@ -9,9 +9,12 @@
 
 #include "Image.hpp"
 
+#include <algorithm>
 #include <cstdlib>
 #include <fstream>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 #include "stb_image_write.h"
 
 // ============================================================================
@@ -124,6 +127,26 @@ static bool savePPM(const std::string& path, const Image& image)
 // PNG Read/Write (internal helpers)
 // ============================================================================
 
+static Image loadPNG(const std::string& path)
+{
+    int width, height, channels;
+    unsigned char* data = stbi_load(path.c_str(), &width, &height, &channels, 4); // Force RGBA
+
+    if (!data) {
+        return Image();
+    }
+
+    Image image(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
+
+    // Copy loaded data to image pixels
+    size_t data_size = width * height * 4;
+    std::copy(data, data + data_size, image.pixels.begin());
+
+    stbi_image_free(data);
+
+    return image;
+}
+
 static bool savePNG(const std::string& path, const Image& image)
 {
     // Convert RGBA to RGB for stb_image_write
@@ -165,8 +188,7 @@ Image Image::load(const std::string& path, ImageFormat format)
         case ImageFormat::PPM:
             return loadPPM(path);
         case ImageFormat::PNG:
-            // PNG loading not yet implemented
-            return Image();
+            return loadPNG(path);
         default:
             return Image();
     }

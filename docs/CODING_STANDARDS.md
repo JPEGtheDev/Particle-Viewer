@@ -108,6 +108,27 @@ Includes are automatically sorted and grouped:
 #include "camera.hpp"
 ```
 
+**CRITICAL: GLAD must come before GLFW**
+
+When using GLAD (OpenGL loader) with GLFW, GLAD **must be included first**. GLAD populates OpenGL function pointers, and GLFW's headers depend on them being available. Violating this order causes compilation errors with undefined references to OpenGL functions.
+
+```cpp
+// ✓ CORRECT - GLAD before GLFW
+#include "glad/glad.h"
+#include <GLFW/glfw3.h>
+
+// ✗ WRONG - Do not put GLFW before GLAD
+#include <GLFW/glfw3.h>
+#include "glad/glad.h"  // Too late - OpenGL functions not yet defined
+```
+
+Use `// NOLINT(llvm-include-order)` to suppress clang-tidy warnings about this intentional deviation from standard ordering:
+
+```cpp
+#include "glad/glad.h"       // NOLINT(llvm-include-order)
+#include <GLFW/glfw3.h>      // NOLINT(llvm-include-order)
+```
+
 ---
 
 ## Naming Conventions
