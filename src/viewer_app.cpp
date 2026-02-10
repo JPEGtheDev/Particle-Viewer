@@ -109,6 +109,7 @@ void ViewerApp::initScreen()
     auto fb_size = context_->getFramebufferSize();
     window_.width = fb_size.first;
     window_.height = fb_size.second;
+    std::cout << "Framebuffer resolution: " << window_.width << "x" << window_.height << std::endl;
 
     pixels_ = new unsigned char[window_.width * window_.height * 3];
     cam_ = new Camera(window_.width, window_.height);
