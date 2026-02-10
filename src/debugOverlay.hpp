@@ -50,9 +50,9 @@ static GLuint compileDebugShader(GLenum type, const char* source)
     glShaderSource(shader, 1, &source, nullptr);
     glCompileShader(shader);
 
-    GLint success;
+    GLint success = 0;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-    if (!success) {
+    if (success == 0) {
         char infoLog[512];
         glGetShaderInfoLog(shader, 512, nullptr, infoLog);
         std::cerr << "Debug overlay shader compilation failed: " << infoLog << std::endl;
@@ -73,9 +73,9 @@ static GLuint createDebugOverlayShaderProgram()
     glAttachShader(program, fragmentShader);
     glLinkProgram(program);
 
-    GLint success;
+    GLint success = 0;
     glGetProgramiv(program, GL_LINK_STATUS, &success);
-    if (!success) {
+    if (success == 0) {
         char infoLog[512];
         glGetProgramInfoLog(program, 512, nullptr, infoLog);
         std::cerr << "Debug overlay shader linking failed: " << infoLog << std::endl;
