@@ -11,6 +11,7 @@
 #include <gtest/gtest.h>
 
 #include <glm/glm.hpp>
+#include <vector>
 
 #include "MockOpenGL.hpp"
 #include "particle.hpp"
@@ -53,7 +54,7 @@ TEST_F(ParticleTest, DefaultConstructor_AllocatesTranslations)
     Particle p;
 
     // Assert
-    EXPECT_NE(p.translations, nullptr);
+    EXPECT_FALSE(p.translations.empty());
 }
 
 TEST_F(ParticleTest, DefaultConstructor_AllocatesVelocities)
@@ -62,7 +63,7 @@ TEST_F(ParticleTest, DefaultConstructor_AllocatesVelocities)
     Particle p;
 
     // Assert
-    EXPECT_NE(p.velocities, nullptr);
+    EXPECT_FALSE(p.velocities.empty());
 }
 
 TEST_F(ParticleTest, DefaultConstructor_InitializesFirstParticlePosition)
@@ -93,24 +94,24 @@ TEST_F(ParticleTest, CustomConstructor_SetsParticleCount)
 {
     // Arrange
     long N = 10;
-    glm::vec4* trans = new glm::vec4[N];
+    std::vector<glm::vec4> trans(N);
 
     // Act
-    Particle p(N, trans);
+    Particle p(N, trans.data());
 
     // Assert
     EXPECT_EQ(p.n, 10);
 }
 
-TEST_F(ParticleTest, CustomConstructor_StoresTranslationPointer)
+TEST_F(ParticleTest, CustomConstructor_CopiesTranslationData)
 {
     // Arrange
     long N = 5;
-    glm::vec4* trans = new glm::vec4[N];
+    std::vector<glm::vec4> trans(N);
     trans[0] = glm::vec4(1.0f, 2.0f, 3.0f, 4.0f);
 
     // Act
-    Particle p(N, trans);
+    Particle p(N, trans.data());
 
     // Assert
     EXPECT_EQ(p.translations[0], glm::vec4(1.0f, 2.0f, 3.0f, 4.0f));
@@ -254,7 +255,7 @@ TEST_F(ParticleTest, ChangeVelocities_AllocatesNewArray)
     p.changeVelocities(newVel);
 
     // Assert
-    EXPECT_NE(p.velocities, nullptr);
+    EXPECT_FALSE(p.velocities.empty());
 
     // Cleanup
     delete[] newVel;
@@ -277,8 +278,8 @@ TEST_F(ParticleTest, ChangeVelocities_WithNullPointer_PrintsError)
     // Act
     p.changeVelocities(nullptr);
 
-    // Assert - Can't directly test console output, but ensures no crash
-    EXPECT_NE(p.velocities, nullptr); // Original velocities should still exist
+    // Assert - Original velocities should still exist
+    EXPECT_FALSE(p.velocities.empty());
 }
 
 // ============================================

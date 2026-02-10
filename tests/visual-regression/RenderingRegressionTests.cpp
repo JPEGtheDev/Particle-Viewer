@@ -225,9 +225,12 @@ class ParticleRenderer
 
     /*
      * Set up OpenGL buffers for instanced rendering.
+     * Cleans up any existing buffers first to prevent GL object leaks.
      */
     void setupBuffers()
     {
+        cleanup();
+
         glGenVertexArrays(1, &vao_);
         glGenBuffers(1, &vbo_);
 
@@ -306,11 +309,13 @@ class RenderingRegressionTest : public testing::Test
     {
         // Ensure baselines directory exists
         std::string baselines_dir = RenderingTestConfig::BASELINES_DIR;
-
-        // Create directory if it doesn't exist
         std::string command = "mkdir -p " + baselines_dir;
         int result = std::system(command.c_str());
         ASSERT_EQ(result, 0) << "Failed to create baselines directory: " << baselines_dir;
+
+        // Ensure artifacts directory exists for test output
+        result = std::system("mkdir -p artifacts");
+        ASSERT_EQ(result, 0) << "Failed to create artifacts directory";
 
         // Initialize OpenGL context
         bool initialized = glContext_.initialize();
@@ -450,7 +455,8 @@ TEST_F(RenderingRegressionTest, RenderDefaultCube_AngledView_MatchesBaseline)
 
     // Use tolerant comparison for Mesa software rendering compatibility
     // Save current image as artifact for inspection (always, even on pass)
-    currentImage.save("artifacts/particle_cube_angle_current.png", ImageFormat::PNG);
+    ASSERT_TRUE(currentImage.save("artifacts/particle_cube_angle_current.png", ImageFormat::PNG))
+        << "Failed to save current render artifact";
 
     // Compare images
     PixelComparator comparator;
@@ -531,7 +537,8 @@ TEST_F(RenderingRegressionTest, RenderSingleParticle_CenteredView_MatchesBaselin
                      << "\nPlease review and commit this baseline if correct.";
     }
 
-    currentImage.save("artifacts/single_particle_current.png", ImageFormat::PNG);
+    ASSERT_TRUE(currentImage.save("artifacts/single_particle_current.png", ImageFormat::PNG))
+        << "Failed to save current render artifact";
 
     PixelComparator comparator;
     ComparisonResult result = comparator.compare(baseline, currentImage, RenderingTestConfig::PARTICLE_TOLERANCE, true);
@@ -618,7 +625,8 @@ TEST_F(RenderingRegressionTest, RenderParticleGroup_ThreeParticles_MatchesBaseli
                      << "\nPlease review and commit this baseline if correct.";
     }
 
-    currentImage.save("artifacts/particle_group_current.png", ImageFormat::PNG);
+    ASSERT_TRUE(currentImage.save("artifacts/particle_group_current.png", ImageFormat::PNG))
+        << "Failed to save current render artifact";
 
     PixelComparator comparator;
     ComparisonResult result = comparator.compare(baseline, currentImage, RenderingTestConfig::PARTICLE_TOLERANCE, true);
