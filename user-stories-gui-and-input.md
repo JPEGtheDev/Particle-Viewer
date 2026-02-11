@@ -187,14 +187,23 @@ Given the size (L), this story should be broken into smaller independent stories
 ### Comments
 
 **Question for User:**
-- Should this support PlayStation controllers (DualShock/DualSense) as well, or Xbox only?
+- Should this support PlayStation controllers (DualShock/DualSense) as well, or Xbox only? 
+
+It should be all standard controllers, but target xbox 360 for the layout in the documentation. If GLFW is agnostic, just keep it standard i.e. xinput.
+
 - Target platform priority: Linux first, then Windows? Or both simultaneously?
+Since we are targeting flatpak for distribution, windows is quickly becoming a second class citizen. This should still work with WSL2 right?
+
 - Do you want the controller mapping to be configurable (remappable buttons), or hardcoded as specified?
+
+Good question, lets keep it hardcoded for now. Estimate effort for a hard coded config file, including keyboard mappings and we will go from there.
 
 **Future Work:**
 - Custom button remapping via config file
 - Haptic feedback (rumble on frame boundaries, collisions in simulation)
+rumble would be cool, but if GLFW doesn't support it natively, nix it
 - Multi-controller support (unlikely needed for viewer)
+not needed, remove
 
 ---
 
@@ -305,10 +314,14 @@ float particleRadius = particleScreenHeight * projectionScale; // Adjusted for p
 ### Comments
 
 **Question for User:**
-- What percentage of the viewport should a "standard" particle occupy at reference resolution? 
+- What percentage of the viewport should a "standard" particle occupy at reference resolution?
   - Suggestion: 1-3% of viewport height for typical particles
   - Allows user to configure via settings file later
+  since we can change our position, the number of particles on screen can vary greatly. the issue I have had in the past is that I need to adjust spacing as well as paricle size to get something that looks eyeball correct.
 - Should this affect ALL particles uniformly, or should different particle types have different scaling factors?
+we may want to have particle scale in there, but that does depend on the simulation and shell depth (too much technical jargon to go into)
+
+Ideally, NO images will need to be regenerated for 1280x720 because things should be the same. The cube image should be the same on all resolutions, just higher quality. to verify, you can eyeball it by scaling down a higher res image to get an approximation.
 
 **Visual Regression Test Impact:**
 - Baseline images will need regeneration after this change
@@ -459,11 +472,14 @@ float particleRadius = particleScreenHeight * projectionScale; // Adjusted for p
 **Question for User:**
 - Should resolution changes be available via:
   - GUI menu only? (preferred, wait for Story 4)
+      menu only
   - Temporary hotkey (e.g., Ctrl+R) for now?
-  - Command-line argument to set resolution before startup?
+  - Command-line argument to set resolution before startup? 
+      we have this
 - Should the application support fullscreen mode toggle (Alt+Enter)?
+   yes
 - Should resolution changes persist across application restarts (saved to config)?
-
+   yes
 **Integration with Story 4 (GUI Menu):**
 - If GUI menu implemented first, resolution selector can be dropdown in menu
 - If this implemented first, add temporary keyboard shortcut, migrate to GUI later
@@ -692,11 +708,16 @@ Given the size (L), this story should be broken into smaller independent stories
 
 **Question for User:**
 - Do you want the menu visible by default, or hidden (press F1 to show)?
+   visible, hidden in framebuffer screenshots. we should also have a configuration to show what is visible. We have a really old gui branch where we showed simulation time inside our screenshots, so maybe have something where we can configure what is visible in screenshots.
 - Should the menu include FPS counter or performance stats?
+ debug mode, yes
 - Future menu items to plan for:
   - Playback controls (play/pause, speed slider)?
+  This is going to be an interesting one, noting at the bottom of this file. 
   - Visual settings (background color, particle colors)?
+   Yes
   - Export/screenshot options?
+   Yes
 
 **Alternative GUI Options (if you want to reconsider):**
 
@@ -722,8 +743,10 @@ Given the size (L), this story should be broken into smaller independent stories
 
 Please answer these questions so I can refine the stories:
 
+Questions were answered iinline
+
 ### Gamepad Support (Story 1)
-1. **Platform priority:** Should gamepad support work on Linux first, Windows first, or both simultaneously?
+1. **Platform priority:** Should gamepad support work on Linux first, Windows first, or both simultaneously? 
 2. **Controller types:** Xbox only, or should we also support PlayStation controllers (DualShock/DualSense)?
 3. **Button remapping:** Should the button mapping be configurable by users, or hardcoded as specified?
 4. **Timing:** Is this feature high priority, or can it come after the GUI menu?
@@ -754,7 +777,7 @@ Please answer these questions so I can refine the stories:
     - **Phase 2:** Story 2 (Resolution Scaling) - Improves core UX
     - **Phase 3:** Story 3 (Runtime Resolution) - Integrates with GUI
     - **Phase 4:** Story 1 (Gamepad) - Advanced feature, can come later
-14. **Breaking down large stories:** Stories 1 and 4 are L-sized. Should I create separate GitHub issues for each subtask, or keep them as single issues with subtask checklists?
+14. **Breaking down large stories:** Stories 1 and 4 are L-sized. Should I create separate GitHub issues for each subtask, or keep them as single issues with subtask checklists? subtask checklists, I plan on feeding opus each of theses stories to work.
 
 ---
 
@@ -818,3 +841,7 @@ Each story includes:
 ---
 
 **Questions or feedback? Let me know what you'd like to adjust!**
+
+Keep IMGUI
+
+As mentioned inline in the IMGUI story there is a plan for an interesting feature. I would like to have a movie editor where I can load a simulation and create keyframes where I can follow a simulation as it progresses. That was the original goal of the COMLock, so we are able to follow a simulation as it moved away from the origin. All of these steps build up to this goal. I want to be able to have a low resolution monitor track a simulation, save the camera position data to a file and then play back at 8K or higher to export it as a video. I also want to be able to pause the simulation, rotate smoothly to another angle and have that translation saved. This is an extremely lofty goal and its an idea I've wanted to execute for the past decade, but didn't have the tools, time, or skillset. What I have done in the last 4 days is more than I would have been able to accomplish working full time in 6 months.
