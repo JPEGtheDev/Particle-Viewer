@@ -376,6 +376,12 @@ cmake --build build
 **Problem**: Tests fail due to missing OpenGL context
 **Solution**: Tests should use `MockOpenGL` from `tests/mocks/` - NEVER require actual GPU/OpenGL
 
+**Problem**: Multiple GLFWContexts in tests cause segfaults
+**Solution**: `~GLFWContext()` calls `glfwTerminate()`, which kills all GLFW state. Never create/destroy multiple GLFWContext objects in a single test. For multi-resolution testing, use different-sized `FramebufferCapture` objects within a single GL context instead.
+
+**Problem**: Visual regression baseline fails with 1-pixel diff across Mesa versions
+**Solution**: Different Mesa/llvmpipe versions may produce sprite-boundary rounding differences. Use a `MAX_DIFF_RATIO` (e.g., 0.01%) instead of requiring 100% pixel match. Always assert artifact `save()` results so debug images are not silently lost.
+
 **Problem**: Test name doesn't follow convention
 **Solution**: Use format `UnitName_StateUnderTest_ExpectedResult` (e.g., `MoveForward_IncreasesPosition`)
 
@@ -436,6 +442,8 @@ cmake --build build
 - Shaders are loaded from `Viewer-Assets/shaders/` directory
 - Vertex data should use modern VBO/VAO patterns
 - Bounds-check GLFW key callbacks (GLFW_KEY_UNKNOWN is -1)
+- Prefer `glGetIntegerv(GL_VIEWPORT, ...)` over cached viewport values in render paths where the viewport may change (e.g., window resize, FBO switches)
+- `gl_PointSize` is silently clamped by `GL_POINT_SIZE_RANGE` (max 256px on Mesa/llvmpipe). When testing resolution-independent scaling, choose camera distances that keep computed point sizes under this limit at **all** target resolutions including 4K.
 
 ### Visual Regression Tests ⚠️ IMPORTANT
 

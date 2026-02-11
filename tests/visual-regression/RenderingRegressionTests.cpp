@@ -45,7 +45,8 @@ namespace RenderingTestConfig
 {
 static const uint32_t RENDER_WIDTH = 1280;             // Default 720p width
 static const uint32_t RENDER_HEIGHT = 720;             // Default 720p height
-static const float PARTICLE_TOLERANCE = 2.0f / 255.0f; // ±2/255 (~0.8%) for Mesa compatibility
+static const float PARTICLE_TOLERANCE = 2.0f / 255.0f; // ±2/255 (~0.8%) per-pixel channel tolerance
+static const float MAX_DIFF_RATIO = 0.0001f;           // Allow up to 0.01% of pixels to differ across Mesa versions
 static const std::string BASELINES_DIR = "baselines";  // Baseline images directory
 } // namespace RenderingTestConfig
 
@@ -94,8 +95,8 @@ class OpenGLTestContext
 
         glViewport(0, 0, framebuffer_width, framebuffer_height);
 
-        framebuffer_ = new FramebufferCapture(static_cast<uint32_t>(framebuffer_width),
-                                              static_cast<uint32_t>(framebuffer_height));
+        framebuffer_ =
+            new FramebufferCapture(static_cast<uint32_t>(framebuffer_width), static_cast<uint32_t>(framebuffer_height));
         if (!framebuffer_->initialize()) {
             cleanup();
             return false;
@@ -148,8 +149,10 @@ class OpenGLTestContext
  * @param shader Shader program to use
  * @param view View matrix
  * @param projection Projection matrix
+ * @param viewport_height Viewport height for resolution-independent scaling (default: 720)
  */
-void renderParticle(Particle& particle, Shader& shader, const glm::mat4& view, const glm::mat4& projection)
+void renderParticle(Particle& particle, Shader& shader, const glm::mat4& view, const glm::mat4& projection,
+                    float viewport_height = 720.0f)
 {
     shader.Use();
 
@@ -159,6 +162,7 @@ void renderParticle(Particle& particle, Shader& shader, const glm::mat4& view, c
     glUniform1f(glGetUniformLocation(shader.Program, "radius"), 100.0f);
     glUniform1f(glGetUniformLocation(shader.Program, "scale"), 5.0f);
     glUniform1f(glGetUniformLocation(shader.Program, "transScale"), 0.25f);
+    glUniform1f(glGetUniformLocation(shader.Program, "viewportHeight"), viewport_height);
     glUniform3fv(glGetUniformLocation(shader.Program, "lightDirection"), 1,
                  glm::value_ptr(glm::vec3(0.1f, 0.1f, 0.85f)));
 
@@ -330,7 +334,10 @@ TEST_F(RenderingRegressionTest, RenderDefaultCube_AngledView_MatchesBaseline)
     PixelComparator comparator;
     ComparisonResult result = comparator.compare(baseline, currentImage, RenderingTestConfig::PARTICLE_TOLERANCE, true);
 
-    if (!result.matches) {
+    float diff_ratio = result.total_pixels > 0
+                           ? static_cast<float>(result.diff_pixels) / static_cast<float>(result.total_pixels)
+                           : 1.0f;
+    if (diff_ratio > RenderingTestConfig::MAX_DIFF_RATIO) {
         result.diff_image.save("artifacts/particle_cube_angle_diff.png", ImageFormat::PNG);
         FAIL() << "Visual mismatch detected:\n"
                << "  Diff pixels: " << result.diff_pixels << " / " << result.total_pixels << " ("
@@ -403,7 +410,10 @@ TEST_F(RenderingRegressionTest, RenderSingleParticle_CenteredView_MatchesBaselin
     PixelComparator comparator;
     ComparisonResult result = comparator.compare(baseline, currentImage, RenderingTestConfig::PARTICLE_TOLERANCE, true);
 
-    if (!result.matches) {
+    float diff_ratio = result.total_pixels > 0
+                           ? static_cast<float>(result.diff_pixels) / static_cast<float>(result.total_pixels)
+                           : 1.0f;
+    if (diff_ratio > RenderingTestConfig::MAX_DIFF_RATIO) {
         result.diff_image.save("artifacts/single_particle_diff.png", ImageFormat::PNG);
         FAIL() << "Visual mismatch detected:\n"
                << "  Diff pixels: " << result.diff_pixels << " / " << result.total_pixels << " ("
@@ -483,7 +493,10 @@ TEST_F(RenderingRegressionTest, RenderParticleGroup_ThreeParticles_MatchesBaseli
     PixelComparator comparator;
     ComparisonResult result = comparator.compare(baseline, currentImage, RenderingTestConfig::PARTICLE_TOLERANCE, true);
 
-    if (!result.matches) {
+    float diff_ratio = result.total_pixels > 0
+                           ? static_cast<float>(result.diff_pixels) / static_cast<float>(result.total_pixels)
+                           : 1.0f;
+    if (diff_ratio > RenderingTestConfig::MAX_DIFF_RATIO) {
         result.diff_image.save("artifacts/particle_group_diff.png", ImageFormat::PNG);
         FAIL() << "Visual mismatch detected:\n"
                << "  Diff pixels: " << result.diff_pixels << " / " << result.total_pixels << " ("
@@ -491,5 +504,278 @@ TEST_F(RenderingRegressionTest, RenderParticleGroup_ThreeParticles_MatchesBaseli
                << "  Similarity: " << (result.similarity * 100.0f) << "%\n"
                << "  Diff image saved to: artifacts/particle_group_diff.png\n"
                << "  Current image saved to: artifacts/particle_group_current.png";
+    }
+}
+
+// ============================================================================
+// Resolution Independence Tests
+// ============================================================================
+
+/*
+ * Calculates the fraction of non-black (lit) pixels in an image.
+ * Used to verify that particles occupy a consistent fraction of the viewport
+ * regardless of rendering resolution.
+ *
+ * Uses a small brightness threshold (>2 in any RGB channel) to ignore
+ * readback noise and driver-specific artifacts.
+ *
+ * @param image The image to analyze
+ * @return Fraction of pixels that are lit (0.0 to 1.0)
+ */
+float calculateLitPixelFraction(const Image& image)
+{
+    const size_t CHANNELS_PER_PIXEL = 4;
+    const size_t expected_size =
+        static_cast<size_t>(image.width) * static_cast<size_t>(image.height) * CHANNELS_PER_PIXEL;
+    if (image.pixels.size() != expected_size) {
+        ADD_FAILURE() << "Image pixel buffer size (" << image.pixels.size() << ") does not match width * height * 4 ("
+                      << expected_size << ") in calculateLitPixelFraction.";
+        return 0.0f;
+    }
+    const size_t total_pixels = image.pixels.size() / CHANNELS_PER_PIXEL;
+    const uint8_t LIT_THRESHOLD = 2; // ignore readback noise / driver artifacts
+    size_t lit_count = 0;
+    for (size_t i = 0; i < image.pixels.size(); i += CHANNELS_PER_PIXEL) {
+        if (image.pixels[i] > LIT_THRESHOLD || image.pixels[i + 1] > LIT_THRESHOLD ||
+            image.pixels[i + 2] > LIT_THRESHOLD) {
+            lit_count++;
+        }
+    }
+    return total_pixels == 0 ? 0.0f : static_cast<float>(lit_count) / static_cast<float>(total_pixels);
+}
+
+/*
+ * Test: ParticleScale_SingleParticle_ConsistentFractionAcrossResolutions
+ *
+ * Verifies resolution-independent particle scaling by rendering a single particle
+ * at multiple resolutions and checking that it occupies the same fraction of the
+ * viewport at each resolution. This validates the viewportHeight shader uniform
+ * correctly scales particles to maintain visual consistency.
+ *
+ * Uses the existing OpenGL context with different-sized framebuffers for each
+ * resolution to avoid GLFW context lifecycle issues.
+ *
+ * Camera distance chosen to keep gl_PointSize under GL_POINT_SIZE_RANGE max (256
+ * on Mesa/llvmpipe) at all tested resolutions including 4K. At z=5.0 the max
+ * point size at 4K is ~216px, safely under the 256px hardware limit.
+ *
+ * Resolutions tested: 1280x720, 1920x1080, 2560x1440, 3840x2160
+ */
+TEST_F(RenderingRegressionTest, ParticleScale_SingleParticle_ConsistentFractionAcrossResolutions)
+{
+    // Arrange
+    struct Resolution
+    {
+        uint32_t width;
+        uint32_t height;
+        std::string name;
+    };
+    std::vector<Resolution> resolutions = {
+        {1280, 720, "720p"}, {1920, 1080, "1080p"}, {2560, 1440, "1440p"}, {3840, 2160, "4K"}};
+
+    std::vector<glm::vec4> single_particle_data = {glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)};
+
+    std::string vertexShaderPath = getShaderPath("sphereVertex.vs");
+    std::string fragmentShaderPath = getShaderPath("sphereFragment.frag");
+    Shader particleShader(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
+    ASSERT_TRUE(particleShader.Program != 0) << "Failed to compile shader";
+
+    float reference_fraction = 0.0f;
+    const float FRACTION_TOLERANCE = 0.005f; // ±0.005 absolute fraction tolerance
+
+    for (const auto& res : resolutions) {
+        // Create a framebuffer at this resolution using the existing GL context
+        FramebufferCapture fbo(res.width, res.height);
+        ASSERT_TRUE(fbo.initialize()) << "Failed to create FBO at " << res.name;
+
+        Particle particles(1, single_particle_data.data());
+
+        // Camera at z=5.0 keeps gl_PointSize under the 256px hardware limit
+        // (GL_POINT_SIZE_RANGE) at all tested resolutions including 4K.
+        // Max point size at 4K: radius(100) * scale(5) / dist(6.93) * 3.0 ≈ 216px.
+        glm::vec3 cameraPos(0.0f, 0.0f, 5.0f);
+        glm::vec3 cameraTarget(0.0f, 0.0f, 0.0f);
+        glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
+        glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
+        glm::mat4 projection = glm::perspective(
+            glm::radians(45.0f), static_cast<float>(res.width) / static_cast<float>(res.height), 0.1f, 3000.0f);
+
+        // Act - render with resolution-dependent viewportHeight
+        fbo.bind();
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        renderParticle(particles, particleShader, view, projection, static_cast<float>(res.height));
+        Image currentImage = fbo.capture();
+
+        // Assert
+        ASSERT_TRUE(currentImage.valid()) << "Failed to capture framebuffer at " << res.name;
+
+        // Save each resolution render as artifact for visual inspection
+        std::string artifact_name = "artifacts/single_particle_" + res.name + ".png";
+        ASSERT_TRUE(currentImage.save(artifact_name, ImageFormat::PNG))
+            << "Failed to save artifact image: " << artifact_name;
+
+        float fraction = calculateLitPixelFraction(currentImage);
+
+        if (reference_fraction == 0.0f) {
+            reference_fraction = fraction;
+            ASSERT_GT(reference_fraction, 0.0f) << "Reference render at " << res.name << " has no lit pixels";
+        } else {
+            EXPECT_NEAR(fraction, reference_fraction, FRACTION_TOLERANCE)
+                << "Particle fraction at " << res.name << " (" << fraction << ") differs from reference ("
+                << reference_fraction << ")";
+        }
+    }
+}
+
+/*
+ * Test: ParticleScale_ThreeParticles_ConsistentFractionAcrossResolutions
+ *
+ * Verifies resolution-independent particle scaling with multiple particles.
+ * Renders three colored particles at different resolutions and validates
+ * that the total lit pixel fraction remains consistent.
+ *
+ * Camera at z=6.0 keeps all particle point sizes under GL_POINT_SIZE_RANGE
+ * max (256px) at all resolutions including 4K (max ~180px).
+ *
+ * Resolutions tested: 1280x720, 1920x1080, 2560x1440, 3840x2160
+ */
+TEST_F(RenderingRegressionTest, ParticleScale_ThreeParticles_ConsistentFractionAcrossResolutions)
+{
+    // Arrange
+    struct Resolution
+    {
+        uint32_t width;
+        uint32_t height;
+        std::string name;
+    };
+    std::vector<Resolution> resolutions = {
+        {1280, 720, "720p"}, {1920, 1080, "1080p"}, {2560, 1440, "1440p"}, {3840, 2160, "4K"}};
+
+    std::vector<glm::vec4> three_particle_data = {
+        glm::vec4(-4.0f, 0.0f, 0.0f, 0.0f), // Red
+        glm::vec4(0.0f, 0.0f, 0.0f, 1.0f),  // Blue
+        glm::vec4(4.0f, 0.0f, 0.0f, 2.0f)   // Magenta
+    };
+
+    std::string vertexShaderPath = getShaderPath("sphereVertex.vs");
+    std::string fragmentShaderPath = getShaderPath("sphereFragment.frag");
+    Shader particleShader(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
+    ASSERT_TRUE(particleShader.Program != 0) << "Failed to compile shader";
+
+    float reference_fraction = 0.0f;
+    const float FRACTION_TOLERANCE = 0.005f; // ±0.005 absolute fraction tolerance
+
+    for (const auto& res : resolutions) {
+        FramebufferCapture fbo(res.width, res.height);
+        ASSERT_TRUE(fbo.initialize()) << "Failed to create FBO at " << res.name;
+
+        Particle particles(3, three_particle_data.data());
+
+        // Camera at z=6.0 keeps point sizes under GL_POINT_SIZE_RANGE max (256px) at 4K.
+        glm::vec3 cameraPos(0.0f, 0.0f, 6.0f);
+        glm::vec3 cameraTarget(0.0f, 0.0f, 0.0f);
+        glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
+        glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
+        glm::mat4 projection = glm::perspective(
+            glm::radians(45.0f), static_cast<float>(res.width) / static_cast<float>(res.height), 0.1f, 3000.0f);
+
+        fbo.bind();
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        renderParticle(particles, particleShader, view, projection, static_cast<float>(res.height));
+        Image currentImage = fbo.capture();
+
+        ASSERT_TRUE(currentImage.valid()) << "Failed to capture framebuffer at " << res.name;
+
+        // Save each resolution render as artifact for visual inspection
+        std::string artifact_name = "artifacts/three_particles_" + res.name + ".png";
+        ASSERT_TRUE(currentImage.save(artifact_name, ImageFormat::PNG))
+            << "Failed to save artifact image: " << artifact_name;
+
+        float fraction = calculateLitPixelFraction(currentImage);
+
+        if (reference_fraction == 0.0f) {
+            reference_fraction = fraction;
+            ASSERT_GT(reference_fraction, 0.0f) << "Reference render at " << res.name << " has no lit pixels";
+        } else {
+            EXPECT_NEAR(fraction, reference_fraction, FRACTION_TOLERANCE)
+                << "Three-particle fraction at " << res.name << " (" << fraction << ") differs from reference ("
+                << reference_fraction << ")";
+        }
+    }
+}
+
+/*
+ * Test: ParticleScale_DefaultCube_ConsistentFractionAcrossResolutions
+ *
+ * Verifies resolution-independent scaling with the default 64,000-particle cube.
+ * This is the most realistic test case — it validates the actual scene users see
+ * when launching the application.
+ *
+ * The cube particles are far from the camera so individual point sizes stay well
+ * under GL_POINT_SIZE_RANGE max at all resolutions.
+ *
+ * Resolutions tested: 1280x720, 1920x1080, 2560x1440, 3840x2160
+ */
+TEST_F(RenderingRegressionTest, ParticleScale_DefaultCube_ConsistentFractionAcrossResolutions)
+{
+    // Arrange
+    struct Resolution
+    {
+        uint32_t width;
+        uint32_t height;
+        std::string name;
+    };
+    std::vector<Resolution> resolutions = {
+        {1280, 720, "720p"}, {1920, 1080, "1080p"}, {2560, 1440, "1440p"}, {3840, 2160, "4K"}};
+
+    std::string vertexShaderPath = getShaderPath("sphereVertex.vs");
+    std::string fragmentShaderPath = getShaderPath("sphereFragment.frag");
+    Shader particleShader(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
+    ASSERT_TRUE(particleShader.Program != 0) << "Failed to compile shader";
+
+    float reference_fraction = 0.0f;
+    const float FRACTION_TOLERANCE = 0.005f; // ±0.005 absolute fraction tolerance
+
+    // Same camera as the baseline cube test
+    glm::vec3 cameraPos(-23.60f, 25.21f, -30.93f);
+    glm::vec3 cameraTarget(-23.02f, 24.83f, -30.20f);
+    glm::vec3 cameraUp(0.08f, 1.00f, 0.00f);
+    glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
+
+    for (const auto& res : resolutions) {
+        FramebufferCapture fbo(res.width, res.height);
+        ASSERT_TRUE(fbo.initialize()) << "Failed to create FBO at " << res.name;
+
+        Particle cube;
+        ASSERT_EQ(cube.n, 64000) << "Default cube should have 64,000 particles";
+
+        glm::mat4 projection = glm::perspective(
+            glm::radians(45.0f), static_cast<float>(res.width) / static_cast<float>(res.height), 0.1f, 3000.0f);
+
+        fbo.bind();
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        renderParticle(cube, particleShader, view, projection, static_cast<float>(res.height));
+        Image currentImage = fbo.capture();
+
+        ASSERT_TRUE(currentImage.valid()) << "Failed to capture framebuffer at " << res.name;
+
+        // Save each resolution render as artifact for visual inspection
+        std::string artifact_name = "artifacts/cube_" + res.name + ".png";
+        ASSERT_TRUE(currentImage.save(artifact_name, ImageFormat::PNG))
+            << "Failed to save artifact image: " << artifact_name;
+
+        float fraction = calculateLitPixelFraction(currentImage);
+
+        if (reference_fraction == 0.0f) {
+            reference_fraction = fraction;
+            ASSERT_GT(reference_fraction, 0.0f) << "Reference render at " << res.name << " has no lit pixels";
+        } else {
+            EXPECT_NEAR(fraction, reference_fraction, FRACTION_TOLERANCE)
+                << "Cube fraction at " << res.name << " (" << fraction << ") differs from reference ("
+                << reference_fraction << ")";
+        }
     }
 }

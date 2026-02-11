@@ -396,6 +396,11 @@ class Camera
                                glm::value_ptr(setupCam()));
             glUniformMatrix4fv(glGetUniformLocation(sphereShader.Program, "projection"), 1, GL_FALSE,
                                glm::value_ptr(this->projection));
+            // Use the current OpenGL viewport height instead of a potentially stale cached value.
+            GLint viewport[4];
+            glGetIntegerv(GL_VIEWPORT, viewport);
+            GLfloat currentViewportHeight = static_cast<GLfloat>(viewport[3]);
+            glUniform1f(glGetUniformLocation(sphereShader.Program, "viewportHeight"), currentViewportHeight);
 
             if (rotLock && comLock) {
                 cameraPos = calcSpherePos(this->sphereYaw, this->spherePitch, this->centerOfMass);

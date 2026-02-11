@@ -8,13 +8,15 @@ uniform vec3 lightDirection = vec3(0.1, 0.1, 0.85);
 uniform float radius = 100.0f;
 uniform float scale = 5.0;
 uniform float transScale = 0.25;
+uniform float viewportHeight = 720.0;
+const float REFERENCE_HEIGHT = 720.0;
 
 void main()
 {
 	int colVal = int(offset.w);
     gl_Position = projection * view * vec4(offset.xyz * transScale,1.0f);
     float dist = length(gl_Position);
-	gl_PointSize = radius * (scale / dist); //radius * scale
+	gl_PointSize = radius * (scale / dist) * (viewportHeight / REFERENCE_HEIGHT);
 	if(colVal == 0)
 	{
 		fColor = vec3(1.0,0,0); //core1
