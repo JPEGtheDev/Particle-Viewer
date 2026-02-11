@@ -580,8 +580,9 @@ TEST_F(RenderingRegressionTest, ParticleScale_SingleParticle_ConsistentFractionA
         // Camera at z=3.0 produces point sizes under the GPU max for all tested resolutions.
         // gl_PointSize has a hardware max (GL_POINT_SIZE_RANGE); at z=3.0 with radius=100,
         // scale=5, the max point size at 1440p is ~244px, under typical limits (256+ px).
-        // At 4K (2160p), the point size would be ~366px which may exceed limits on some GPUs,
-        // but software renderers (llvmpipe) typically support larger sizes.
+        // At 4K (2160p), the computed point size (~366px) may exceed limits on some GPUs;
+        // OpenGL silently clamps to the maximum supported size. The test still validates
+        // that scaling is proportional up to the clamp point.
         glm::vec3 cameraPos(0.0f, 0.0f, 3.0f);
         glm::vec3 cameraTarget(0.0f, 0.0f, 0.0f);
         glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
