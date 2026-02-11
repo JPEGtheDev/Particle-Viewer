@@ -56,6 +56,11 @@ static const uint32_t RENDER_HEIGHT = 720;             // Default 720p height
 static const float PARTICLE_TOLERANCE = 2.0f / 255.0f; // ±2/255 (~0.8%) per-pixel channel tolerance
 static const float MAX_DIFF_RATIO = 0.0001f;           // Allow up to 0.01% of pixels to differ across Mesa versions
 static const std::string BASELINES_DIR = "baselines";  // Baseline images directory
+
+// GUI exclusion test: region to check for leaked ImGui content
+static const uint32_t MENU_BAR_CHECK_HEIGHT = 30;  // Menu bar is ~25px; check top 30 rows
+static const uint32_t MENU_BAR_CHECK_WIDTH = 200;  // "File  View" menu text spans ~200px
+static const uint8_t BRIGHT_PIXEL_THRESHOLD = 100; // Channel value above which a pixel is "bright" (GUI text is white)
 } // namespace RenderingTestConfig
 
 /*
@@ -895,19 +900,16 @@ TEST_F(RenderingRegressionTest, FBOCapture_WithImGuiActive_ExcludesGUI)
     //
     // We render from camera at (0,0,3) looking at origin, so the top-left corner
     // should be dark/black background.
-    uint32_t check_height = 30;
-    uint32_t check_width = 200;
     uint32_t bright_pixel_count = 0;
 
-    for (uint32_t y = 0; y < check_height && y < fboImage.height; ++y) {
-        for (uint32_t x = 0; x < check_width && x < fboImage.width; ++x) {
+    for (uint32_t y = 0; y < RenderingTestConfig::MENU_BAR_CHECK_HEIGHT && y < fboImage.height; ++y) {
+        for (uint32_t x = 0; x < RenderingTestConfig::MENU_BAR_CHECK_WIDTH && x < fboImage.width; ++x) {
             size_t idx = (y * fboImage.width + x) * 4;
             uint8_t r = fboImage.pixels[idx + 0];
             uint8_t g = fboImage.pixels[idx + 1];
             uint8_t b = fboImage.pixels[idx + 2];
-            // Menu bar text is white/light gray — any bright pixel here
-            // would indicate GUI content leaked into the FBO
-            if (r > 100 || g > 100 || b > 100) {
+            if (r > RenderingTestConfig::BRIGHT_PIXEL_THRESHOLD || g > RenderingTestConfig::BRIGHT_PIXEL_THRESHOLD ||
+                b > RenderingTestConfig::BRIGHT_PIXEL_THRESHOLD) {
                 bright_pixel_count++;
             }
         }

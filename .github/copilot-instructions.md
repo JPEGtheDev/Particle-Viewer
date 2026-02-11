@@ -461,7 +461,8 @@ cmake --build build
 - `menu_state_.debug_mode` is the runtime source of truth (initialized from `--debug-camera` CLI flag)
 
 **Debug Overlay Positioning:**
-- The ImGui menu bar is ~25px high. Debug overlay uses `DEBUG_BG_PADDING_Y = 30.0f` to render below it.
+- The debug overlay is an ImGui window positioned via `ImGui::SetNextWindowPos()` with `ImGui::GetFrameHeight()` to dynamically offset below the menu bar.
+- Uses `ImGuiWindowFlags_AlwaysAutoResize` for automatic sizing and anchors to the top-right corner.
 - When adding new overlays, account for the menu bar height to avoid z-order collisions.
 
 ### Visual Regression Tests ⚠️ IMPORTANT
