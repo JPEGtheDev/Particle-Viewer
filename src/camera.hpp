@@ -38,6 +38,7 @@ class Camera
     GLfloat spherePitch;
     GLfloat fov;
     GLfloat nearPlane;
+    GLfloat viewportHeight;
     GLuint VAO;
     GLuint VAO2;
     bool rotLock;
@@ -102,6 +103,7 @@ class Camera
         this->spherePitch = 0.0f;
         this->fov = 45.0f;
         this->nearPlane = 0.1f;
+        this->viewportHeight = static_cast<GLfloat>(SCREEN_HEIGHT);
         this->renderDistance = 3000.0f;
         this->projection = glm::perspective(this->fov, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, this->nearPlane,
                                             renderDistance);
@@ -396,6 +398,7 @@ class Camera
                                glm::value_ptr(setupCam()));
             glUniformMatrix4fv(glGetUniformLocation(sphereShader.Program, "projection"), 1, GL_FALSE,
                                glm::value_ptr(this->projection));
+            glUniform1f(glGetUniformLocation(sphereShader.Program, "viewportHeight"), viewportHeight);
 
             if (rotLock && comLock) {
                 cameraPos = calcSpherePos(this->sphereYaw, this->spherePitch, this->centerOfMass);

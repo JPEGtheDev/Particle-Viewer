@@ -146,21 +146,10 @@ void ViewerApp::setupCallbacks()
 
 void ViewerApp::setResolution(const std::string& resolution)
 {
-    // Sphere scale values are hand-tuned per resolution for visual consistency.
-    // Approximate fit: scale ≈ (screen_height / 720.0) ^ 0.55
-    // TODO: make rendering resolution-independent on the shader side
-    //
-    // Dimensions are derived from the injected context in initScreen(),
-    // so only the sphere scale needs to be set here.
-    GLfloat scale;
-    if (resolution == "4k") {
-        scale = 1.75;
-    } else if (resolution == "1080" || resolution == "1080p" || resolution == "HD") {
-        scale = 1.25;
-    } else {
-        scale = 1.0;
-    }
-    setSphereScale(scale);
+    // Resolution-independent scaling is handled automatically via the
+    // viewportHeight shader uniform. The sphere scale is a user-configurable
+    // visual size multiplier independent of resolution.
+    setSphereScale(1.0f);
 }
 
 void ViewerApp::setSphereScale(GLfloat scale)
@@ -317,6 +306,8 @@ void ViewerApp::drawScene()
                        glm::value_ptr(cam_->getProjection()));
     glUniform1f(glGetUniformLocation(render_.sphere_shader.Program, "radius"), sphere_.radius);
     glUniform1f(glGetUniformLocation(render_.sphere_shader.Program, "scale"), sphere_.scale);
+    glUniform1f(glGetUniformLocation(render_.sphere_shader.Program, "viewportHeight"),
+                static_cast<GLfloat>(window_.height));
     glDrawArraysInstanced(GL_POINTS, 0, 1, part_->n);
     glBindVertexArray(0);
 

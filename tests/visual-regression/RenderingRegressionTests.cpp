@@ -148,8 +148,10 @@ class OpenGLTestContext
  * @param shader Shader program to use
  * @param view View matrix
  * @param projection Projection matrix
+ * @param viewport_height Viewport height for resolution-independent scaling (default: 720)
  */
-void renderParticle(Particle& particle, Shader& shader, const glm::mat4& view, const glm::mat4& projection)
+void renderParticle(Particle& particle, Shader& shader, const glm::mat4& view, const glm::mat4& projection,
+                    float viewport_height = 720.0f)
 {
     shader.Use();
 
@@ -159,6 +161,7 @@ void renderParticle(Particle& particle, Shader& shader, const glm::mat4& view, c
     glUniform1f(glGetUniformLocation(shader.Program, "radius"), 100.0f);
     glUniform1f(glGetUniformLocation(shader.Program, "scale"), 5.0f);
     glUniform1f(glGetUniformLocation(shader.Program, "transScale"), 0.25f);
+    glUniform1f(glGetUniformLocation(shader.Program, "viewportHeight"), viewport_height);
     glUniform3fv(glGetUniformLocation(shader.Program, "lightDirection"), 1,
                  glm::value_ptr(glm::vec3(0.1f, 0.1f, 0.85f)));
 
@@ -491,5 +494,104 @@ TEST_F(RenderingRegressionTest, RenderParticleGroup_ThreeParticles_MatchesBaseli
                << "  Similarity: " << (result.similarity * 100.0f) << "%\n"
                << "  Diff image saved to: artifacts/particle_group_diff.png\n"
                << "  Current image saved to: artifacts/particle_group_current.png";
+    }
+}
+
+// ============================================================================
+// Resolution Independence Tests
+// ============================================================================
+
+/*
+ * Calculates the fraction of non-black (lit) pixels in an image.
+ * Used to verify that particles occupy a consistent fraction of the viewport
+ * regardless of rendering resolution.
+ *
+ * @param image The image to analyze
+ * @return Fraction of pixels that are non-black (0.0 to 1.0)
+ */
+float calculateLitPixelFraction(const Image& image)
+{
+    uint32_t lit_count = 0;
+    uint32_t total_pixels = image.width * image.height;
+    for (size_t i = 0; i < image.pixels.size(); i += 4) {
+        if (image.pixels[i] > 0 || image.pixels[i + 1] > 0 || image.pixels[i + 2] > 0) {
+            lit_count++;
+        }
+    }
+    return static_cast<float>(lit_count) / static_cast<float>(total_pixels);
+}
+
+/*
+ * Test: ParticleScale_SingleParticle_ConsistentFractionAcrossResolutions
+ *
+ * Verifies resolution-independent particle scaling by rendering a single particle
+ * at multiple resolutions and checking that it occupies the same fraction of the
+ * viewport at each resolution. This validates the viewportHeight shader uniform
+ * correctly scales particles to maintain visual consistency.
+ *
+ * Uses the existing OpenGL context with different-sized framebuffers for each
+ * resolution to avoid GLFW context lifecycle issues.
+ *
+ * Resolutions tested: 1280x720 (720p), 1920x1080 (1080p), 2560x1440 (1440p)
+ * Tolerance: ±1% of viewport area (accounts for rasterization differences)
+ */
+TEST_F(RenderingRegressionTest, ParticleScale_SingleParticle_ConsistentFractionAcrossResolutions)
+{
+    // Arrange
+    struct Resolution
+    {
+        uint32_t width;
+        uint32_t height;
+        std::string name;
+    };
+    std::vector<Resolution> resolutions = {{1280, 720, "720p"}, {1920, 1080, "1080p"}, {2560, 1440, "1440p"}};
+
+    std::vector<glm::vec4> single_particle_data = {glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)};
+
+    std::string vertexShaderPath = getShaderPath("sphereVertex.vs");
+    std::string fragmentShaderPath = getShaderPath("sphereFragment.frag");
+    Shader particleShader(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
+    ASSERT_TRUE(particleShader.Program != 0) << "Failed to compile shader";
+
+    float reference_fraction = 0.0f;
+    const float FRACTION_TOLERANCE = 0.01f; // ±1% of viewport area
+
+    for (const auto& res : resolutions) {
+        // Create a framebuffer at this resolution using the existing GL context
+        FramebufferCapture fbo(res.width, res.height);
+        ASSERT_TRUE(fbo.initialize()) << "Failed to create FBO at " << res.name;
+
+        Particle particles(1, single_particle_data.data());
+
+        // Camera at z=3.0 keeps point sizes under GPU max (256px on Mesa) at all resolutions.
+        // At 1440p the point size is ~244px, well within the 256px limit.
+        glm::vec3 cameraPos(0.0f, 0.0f, 3.0f);
+        glm::vec3 cameraTarget(0.0f, 0.0f, 0.0f);
+        glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
+        glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f),
+                                                 static_cast<float>(res.width) / static_cast<float>(res.height), 0.1f,
+                                                 3000.0f);
+
+        // Act - render with resolution-dependent viewportHeight
+        fbo.bind();
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        renderParticle(particles, particleShader, view, projection, static_cast<float>(res.height));
+        Image currentImage = fbo.capture();
+
+        // Assert
+        ASSERT_TRUE(currentImage.valid()) << "Failed to capture framebuffer at " << res.name;
+
+        float fraction = calculateLitPixelFraction(currentImage);
+
+        if (reference_fraction == 0.0f) {
+            reference_fraction = fraction;
+            ASSERT_GT(reference_fraction, 0.0f) << "Reference render at " << res.name << " has no lit pixels";
+        } else {
+            EXPECT_NEAR(fraction, reference_fraction, FRACTION_TOLERANCE)
+                << "Particle fraction at " << res.name << " (" << fraction << ") differs from reference ("
+                << reference_fraction << ")";
+        }
     }
 }
