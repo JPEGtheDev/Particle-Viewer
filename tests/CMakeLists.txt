@@ -38,11 +38,20 @@ target_include_directories(ParticleViewerTests PRIVATE
     ${CMAKE_SOURCE_DIR}/src/glad/include
     ${CMAKE_SOURCE_DIR}/tests/mocks
     ${CMAKE_SOURCE_DIR}/tests
+    ${imgui_SOURCE_DIR}
+    ${imgui_SOURCE_DIR}/backends
 )
 
 # Add glad source for OpenGL function pointers
 target_sources(ParticleViewerTests PRIVATE
     ${CMAKE_SOURCE_DIR}/src/glad/src/glad.c
+    ${CMAKE_SOURCE_DIR}/src/ui/imgui_menu.cpp
+    ${imgui_SOURCE_DIR}/imgui.cpp
+    ${imgui_SOURCE_DIR}/imgui_draw.cpp
+    ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+    ${imgui_SOURCE_DIR}/imgui_tables.cpp
+    ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
+    ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
 )
 
 # Discover tests for CTest

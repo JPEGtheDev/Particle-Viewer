@@ -192,6 +192,40 @@ GoogleTest is automatically fetched during the build process via CMake. For full
 
 ---
 
+### Dear ImGui
+
+- **Purpose:** Immediate mode GUI library for developer tools and menus
+- **Author:** Omar Cornut
+- **License:** MIT License
+- **Source:** https://github.com/ocornut/imgui
+- **Included Via:** CMake FetchContent (version 1.91.6)
+
+```
+The MIT License (MIT)
+
+Copyright (c) 2014-2024 Omar Cornut
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+---
+
 ## OpenGL
 
 This software uses OpenGL, which is an industry-standard graphics API. OpenGL is a trademark of Silicon Graphics, Inc. (SGI) and later Khronos Group. The OpenGL specification and headers are available under various permissive licenses from the Khronos Group.
@@ -225,6 +259,7 @@ This project gratefully uses the following third-party components:
 - GLFW - zlib/libpng License
 - GLM - MIT/The Happy Bunny License
 - GoogleTest (dev only) - BSD 3-Clause
+- Dear ImGui - MIT License
 - OpenGL - Industry standard API
 
 For the most up-to-date license information, please refer to the respective project repositories and official documentation.

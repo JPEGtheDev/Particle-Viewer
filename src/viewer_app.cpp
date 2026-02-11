@@ -12,6 +12,9 @@
 #include <string>
 
 #include "debugOverlay.hpp"
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 #include "osFile.hpp"
 #include "tinyFileDialogs/tinyfiledialogs.h"
 
@@ -37,8 +40,8 @@ static const QuadVertex QUAD_VERTICES[] = {{-1.0f, 1.0f, 0.0f, 1.0f}, {-1.0f, -1
 // ============================================================================
 
 ViewerApp::ViewerApp(IOpenGLContext* context)
-    : context_(context), delta_time_(0.0f), last_frame_(0.0f), cam_(nullptr), part_(nullptr), set_(nullptr), view_(),
-      com_(), cur_frame_(0), pixels_(nullptr)
+    : context_(context), imgui_initialized_(false), delta_time_(0.0f), last_frame_(0.0f), cam_(nullptr), part_(nullptr),
+      set_(nullptr), view_(), com_(), cur_frame_(0), pixels_(nullptr)
 {
     for (int i = 0; i < 1024; i++) {
         keys_[i] = false;
@@ -84,10 +87,12 @@ bool ViewerApp::initialize()
 
     initPaths();
     initScreen();
+    initImGui();
     cam_->initGL();
     part_ = new Particle();
     setupGLStuff();
     setupScreenFBO();
+    menu_state_.debug_mode = window_.debug_camera;
     return true;
 }
 
@@ -144,6 +149,37 @@ void ViewerApp::setupCallbacks()
     }
 }
 
+void ViewerApp::initImGui()
+{
+    GLFWwindow* native_window = static_cast<GLFWwindow*>(context_->getNativeWindowHandle());
+    if (!native_window) {
+        return;
+    }
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.IniFilename = nullptr; // Disable imgui.ini file
+
+    ImGui::StyleColorsDark();
+
+    // install_callbacks=true chains to existing GLFW callbacks
+    bool glfw_init_ok = ImGui_ImplGlfw_InitForOpenGL(native_window, true);
+    bool gl3_init_ok = ImGui_ImplOpenGL3_Init("#version 410 core");
+    if (!glfw_init_ok || !gl3_init_ok) {
+        if (gl3_init_ok) {
+            ImGui_ImplOpenGL3_Shutdown();
+        }
+        if (glfw_init_ok) {
+            ImGui_ImplGlfw_Shutdown();
+        }
+        ImGui::DestroyContext();
+        return;
+    }
+    imgui_initialized_ = true;
+}
+
 void ViewerApp::setResolution(const std::string& resolution)
 {
     // Resolution-independent scaling is handled automatically via the
@@ -167,6 +203,14 @@ void ViewerApp::run()
 {
     while (!context_->shouldClose()) {
         context_->pollEvents();
+
+        // Start ImGui frame (only if ImGui was initialized)
+        if (imgui_initialized_) {
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+        }
+
         cam_->Move();
 
         beforeDraw();
@@ -174,8 +218,23 @@ void ViewerApp::run()
         cam_->RenderSphere();
         drawFBO();
 
-        if (window_.debug_camera) {
-            renderCameraDebugOverlay(cam_, window_.width, window_.height);
+        if (imgui_initialized_) {
+            if (menu_state_.debug_mode) {
+                float fps = (delta_time_ > 0.0f) ? 1.0f / delta_time_ : 0.0f;
+                renderCameraDebugOverlay(cam_, window_.width, window_.height, fps, PARTICLE_VIEWER_VERSION);
+            }
+
+            // Render ImGui menu and process actions
+            MenuActions actions = renderMainMenu(menu_state_);
+            if (actions.load_file) {
+                handleLoadFile();
+            }
+            if (actions.quit) {
+                context_->setShouldClose(true);
+            }
+
+            ImGui::Render();
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         }
 
         context_->swapBuffers();
@@ -189,7 +248,9 @@ void ViewerApp::run()
         if (cur_frame_ > set_->frames) {
             cur_frame_ = set_->frames;
         }
-        processMinorKeys();
+        if (!imgui_initialized_ || !ImGui::GetIO().WantCaptureKeyboard) {
+            processMinorKeys();
+        }
         if (cur_frame_ < 0) {
             cur_frame_ = 0;
         }
@@ -365,6 +426,16 @@ void ViewerApp::processMinorKeys()
     }
 }
 
+void ViewerApp::handleLoadFile()
+{
+    SettingsIO* new_set = set_->loadFile(part_, false);
+    if (new_set && new_set != set_) {
+        delete set_;
+        set_ = new_set;
+    }
+    cur_frame_ = 0;
+}
+
 // ============================================================================
 // Input Handling
 // ============================================================================
@@ -380,6 +451,17 @@ void ViewerApp::keyCallback(int key, int scancode, int action, int mods)
         }
     }
 
+    // If ImGui wants keyboard input, only process menu toggle keys (F1/F3)
+    if (imgui_initialized_ && ImGui::GetIO().WantCaptureKeyboard) {
+        if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
+            menu_state_.visible = !menu_state_.visible;
+        }
+        if (key == GLFW_KEY_F3 && action == GLFW_PRESS) {
+            menu_state_.debug_mode = !menu_state_.debug_mode;
+        }
+        return;
+    }
+
     // Only forward to camera if key is in valid range (GLFW_KEY_UNKNOWN is -1).
     if (key >= 0 && key < 1024) {
         GLFWwindow* native_window = static_cast<GLFWwindow*>(context_->getNativeWindowHandle());
@@ -393,18 +475,19 @@ void ViewerApp::keyCallback(int key, int scancode, int action, int mods)
         set_->togglePlay();
     }
     if (key == GLFW_KEY_T && action == GLFW_PRESS) {
-        SettingsIO* new_set = set_->loadFile(part_, false);
-        if (new_set && new_set != set_) {
-            delete set_;
-            set_ = new_set;
-        }
-        cur_frame_ = 0;
+        handleLoadFile();
     }
     if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
         seekFrame(1, true);
     }
     if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
         seekFrame(1, false);
+    }
+    if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
+        menu_state_.visible = !menu_state_.visible;
+    }
+    if (key == GLFW_KEY_F3 && action == GLFW_PRESS) {
+        menu_state_.debug_mode = !menu_state_.debug_mode;
     }
     if (key == GLFW_KEY_R && action == GLFW_PRESS) {
         if (!recording_.is_active) {
@@ -439,6 +522,8 @@ void ViewerApp::keyCallback(int key, int scancode, int action, int mods)
 
 void ViewerApp::cleanup()
 {
+    shutdownImGui();
+
     delete part_;
     part_ = nullptr;
     delete[] pixels_;
@@ -479,6 +564,20 @@ void ViewerApp::cleanup()
     delete cam_;
     cam_ = nullptr;
     // Context cleanup is handled by the context's owner (caller), not ViewerApp.
+}
+
+// ============================================================================
+// ImGui Cleanup
+// ============================================================================
+
+void ViewerApp::shutdownImGui()
+{
+    if (imgui_initialized_) {
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
+        imgui_initialized_ = false;
+    }
 }
 
 // ============================================================================

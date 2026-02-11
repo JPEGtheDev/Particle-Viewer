@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.18)
+cmake_minimum_required (VERSION 3.24)
 
 # Accept version as CMake variable, or use git tags as fallback
 if(NOT DEFINED PROJECT_VERSION)
@@ -27,6 +27,29 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -march=native")
 find_package(glfw3 3.3 REQUIRED)
 find_package(OpenGL REQUIRED)
 
+# ============================================
+# ImGui Configuration (downloaded at configure time)
+# ============================================
+include(FetchContent)
+
+# Support pre-populated ImGui source (e.g., Flatpak offline builds)
+# When FETCHCONTENT_FULLY_DISCONNECTED=ON, FetchContent won't download.
+# Flatpak places ImGui source in _deps_imgui/ via its manifest.
+if(EXISTS "${CMAKE_SOURCE_DIR}/_deps_imgui/imgui.h")
+    set(FETCHCONTENT_SOURCE_DIR_IMGUI "${CMAKE_SOURCE_DIR}/_deps_imgui")
+endif()
+
+# ImGui ships no CMakeLists.txt. Using a non-existent SOURCE_SUBDIR causes
+# FetchContent_MakeAvailable to skip add_subdirectory (no CMakeLists.txt to find),
+# while still downloading and populating imgui_SOURCE_DIR for manual source inclusion.
+FetchContent_Declare(
+    imgui
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
+    GIT_TAG v1.91.6
+    SOURCE_SUBDIR _no_cmakelists
+)
+FetchContent_MakeAvailable(imgui)
+
 if(${alloutput})
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -Wall -W -Wshadow -Wunused-variable -Wunused-parameter -Wunused-function -Wunused -Wno-system-headers -Woverloaded-virtual -Wwrite-strings -fprofile-arcs -ftest-coverage")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -Wall -W -fprofile-arcs -ftest-coverage")
@@ -39,21 +62,37 @@ file(GLOB srcCPP src/*.cpp)
 file(GLOB srcHPP src/*.hpp)
 file(GLOB graphicsCPP src/graphics/*.cpp)
 file(GLOB graphicsHPP src/graphics/*.hpp)
+file(GLOB uiCPP src/ui/*.cpp)
+file(GLOB uiHPP src/ui/*.hpp)
 add_executable(Viewer
 	${DIALOG}
 	${srcCPP}
 	${srcHPP}
 	${graphicsCPP}
 	${graphicsHPP}
+	${uiCPP}
+	${uiHPP}
 	src/glad/src/glad.c
 	src/glad/include/glad/glad.h
 	src/glad/include/KHR/khrplatform.h
+	${imgui_SOURCE_DIR}/imgui.cpp
+	${imgui_SOURCE_DIR}/imgui_draw.cpp
+	${imgui_SOURCE_DIR}/imgui_widgets.cpp
+	${imgui_SOURCE_DIR}/imgui_tables.cpp
+	${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
+	${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
 )   
 
 target_link_libraries(Viewer ${CMAKE_DL_LIBS} glfw OpenGL::GL)
 
 target_include_directories(Viewer PUBLIC
 	src/glad/include
+	${imgui_SOURCE_DIR}
+	${imgui_SOURCE_DIR}/backends
+)
+
+target_compile_definitions(Viewer PRIVATE
+	PARTICLE_VIEWER_VERSION="${PROJECT_VERSION}"
 )
 
 if(WIN32)

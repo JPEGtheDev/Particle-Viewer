@@ -11,6 +11,7 @@ Particle-Viewer is a C++ OpenGL-based viewer for N-Body simulations. It allows v
 - CMake for build configuration
 - Google Test for unit testing
 - GLFW and GLM libraries (must be installed locally)
+- Dear ImGui for GUI menus and debug tools (downloaded via CMake FetchContent)
 - Embedded libraries: stb, Tiny File Dialogs, GLAD
 
 ## For Copilot Agents Creating Pull Requests
@@ -74,7 +75,7 @@ cmake --install build
 ```
 
 ### Build Requirements
-- CMake 3.18 or higher
+- CMake 3.24 or higher
 - C++11 compatible compiler with `-std=c++11 -march=native` flags
 - OpenGL development libraries
 - GLFW 3.3+ and GLM (must be installed on system)
@@ -94,6 +95,12 @@ cmake --install build
 - Shader files in `src/shaders/` are automatically copied to `Viewer-Assets/shaders/` during build
 - Version priority: (1) PROJECT_VERSION CMake variable if set (e.g., `-DPROJECT_VERSION=1.2.3`), (2) git tags if no variable is provided (format: `v0.1.0`), or (3) fallback to `0.0.0` if neither exists
 - Tests are enabled by default via `BUILD_TESTS=ON` option
+
+### Dependency Upgrades
+- **Upgrades are allowed** as long as all tests still pass and the build succeeds
+- When upgrading, verify with confidence that existing tests catch regressions
+- **Visual regression tests are a hard requirement** — they must pass and must NOT be modified unless there is an explicit notification to the approver showing the new output
+- Upgrades may require test updates (e.g., API changes in GoogleTest) — this is acceptable
 
 ## Testing
 
@@ -260,6 +267,7 @@ BREAKING CHANGE: Config file format changed from JSON to YAML"
 ```
 src/
 ├── *.cpp, *.hpp        # Main source files
+├── ui/                 # ImGui menu system (imgui_menu.hpp/cpp)
 ├── testing/            # Testing utilities (PixelComparator)
 ├── shaders/            # GLSL shader files (auto-copied during build)
 ├── glad/               # GLAD OpenGL loader (embedded)
@@ -315,7 +323,8 @@ When a skill needs rules from another domain, it references the other skill by p
 - `particle.hpp` - Header-only particle data structures (uses `std::vector<glm::vec4>`)
 - `settingsIO.hpp` - Header-only configuration file I/O
 - `osFile.hpp` - OS-specific file operations
-- `debugOverlay.hpp` - Camera debug overlay for development
+- `debugOverlay.hpp` - Camera debug overlay with FPS counter (top-right corner)
+- `ui/imgui_menu.hpp/.cpp` - ImGui main menu bar (File, View menus)
 - `Image.hpp/.cpp` - Core RGBA image class with save/load (PPM, PNG)
 - `testing/PixelComparator.hpp/.cpp` - Pixel-by-pixel image comparison for visual regression testing
 
@@ -444,6 +453,23 @@ cmake --build build
 - Bounds-check GLFW key callbacks (GLFW_KEY_UNKNOWN is -1)
 - Prefer `glGetIntegerv(GL_VIEWPORT, ...)` over cached viewport values in render paths where the viewport may change (e.g., window resize, FBO switches)
 - `gl_PointSize` is silently clamped by `GL_POINT_SIZE_RANGE` (max 256px on Mesa/llvmpipe). When testing resolution-independent scaling, choose camera distances that keep computed point sizes under this limit at **all** target resolutions including 4K.
+
+### ImGui Integration
+
+**Architecture:**
+- Dear ImGui is downloaded via CMake FetchContent (not vendored). Since ImGui has no `CMakeLists.txt`, use `FetchContent_Declare()` with `SOURCE_SUBDIR` pointing to a non-existent path plus `FetchContent_MakeAvailable()`, then manually add source files to the target. This avoids the `FetchContent_Populate()` deprecation warning.
+- ImGui renders to the **default framebuffer** (after the FBO blit), so it naturally does not appear in FBO-based screenshots or frame recordings.
+- GLFW callbacks: Set ViewerApp's GLFW callbacks **before** calling `ImGui_ImplGlfw_InitForOpenGL(window, true)`. ImGui saves and chains to existing callbacks, ensuring the chain is: ImGui → ViewerApp.
+
+**Menu System (`src/ui/`):**
+- `MenuState` tracks visibility and debug mode; `MenuActions` communicates triggered actions back to ViewerApp
+- F1 toggles menu visibility, F3 toggles debug mode at runtime
+- `menu_state_.debug_mode` is the runtime source of truth (initialized from `--debug-camera` CLI flag)
+
+**Debug Overlay Positioning:**
+- The debug overlay is an ImGui window positioned via `ImGui::SetNextWindowPos()` with `ImGui::GetFrameHeight()` to dynamically offset below the menu bar.
+- Uses `ImGuiWindowFlags_AlwaysAutoResize` for automatic sizing and anchors to the top-right corner.
+- When adding new overlays, account for the menu bar height to avoid z-order collisions.
 
 ### Visual Regression Tests ⚠️ IMPORTANT
 
