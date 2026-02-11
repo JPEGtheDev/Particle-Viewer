@@ -307,8 +307,10 @@ void ViewerApp::drawScene()
                        glm::value_ptr(cam_->getProjection()));
     glUniform1f(glGetUniformLocation(render_.sphere_shader.Program, "radius"), sphere_.radius);
     glUniform1f(glGetUniformLocation(render_.sphere_shader.Program, "scale"), sphere_.scale);
+    GLint viewport[4] = {0, 0, 0, 0};
+    glGetIntegerv(GL_VIEWPORT, viewport);
     glUniform1f(glGetUniformLocation(render_.sphere_shader.Program, "viewportHeight"),
-                static_cast<GLfloat>(window_.height));
+                static_cast<GLfloat>(viewport[3]));
     glDrawArraysInstanced(GL_POINTS, 0, 1, part_->n);
     glBindVertexArray(0);
 

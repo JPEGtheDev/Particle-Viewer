@@ -102,6 +102,14 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 **Added to:** `copilot-instructions.md` → OpenGL Usage
 
+### Cross-Mesa Baseline Stability (PR #81)
+
+**Problem:** Adding `* (viewportHeight / REFERENCE_HEIGHT)` to the shader (where both equal 720.0, so `* 1.0`) caused a 1-pixel sprite-boundary difference on CI's Mesa version but not locally. The baseline comparison required 100% pixel match, so 1 pixel out of 921,600 failed the entire test.
+
+**Lesson:** Different Mesa/llvmpipe versions may compile the same shader differently, causing sprite-boundary rounding differences. Visual regression baselines should allow a small `MAX_DIFF_RATIO` (e.g., 0.01%) instead of requiring 100% pixel match. Always `ASSERT_TRUE(image.save(...))` artifact writes so debug images are not silently lost.
+
+**Added to:** `copilot-instructions.md` → Test Issues
+
 ---
 
 ## Process Lessons

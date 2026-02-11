@@ -45,7 +45,8 @@ namespace RenderingTestConfig
 {
 static const uint32_t RENDER_WIDTH = 1280;             // Default 720p width
 static const uint32_t RENDER_HEIGHT = 720;             // Default 720p height
-static const float PARTICLE_TOLERANCE = 2.0f / 255.0f; // ±2/255 (~0.8%) for Mesa compatibility
+static const float PARTICLE_TOLERANCE = 2.0f / 255.0f; // ±2/255 (~0.8%) per-pixel channel tolerance
+static const float MAX_DIFF_RATIO = 0.0001f;           // Allow up to 0.01% of pixels to differ across Mesa versions
 static const std::string BASELINES_DIR = "baselines";  // Baseline images directory
 } // namespace RenderingTestConfig
 
@@ -94,8 +95,8 @@ class OpenGLTestContext
 
         glViewport(0, 0, framebuffer_width, framebuffer_height);
 
-        framebuffer_ = new FramebufferCapture(static_cast<uint32_t>(framebuffer_width),
-                                              static_cast<uint32_t>(framebuffer_height));
+        framebuffer_ =
+            new FramebufferCapture(static_cast<uint32_t>(framebuffer_width), static_cast<uint32_t>(framebuffer_height));
         if (!framebuffer_->initialize()) {
             cleanup();
             return false;
@@ -333,7 +334,10 @@ TEST_F(RenderingRegressionTest, RenderDefaultCube_AngledView_MatchesBaseline)
     PixelComparator comparator;
     ComparisonResult result = comparator.compare(baseline, currentImage, RenderingTestConfig::PARTICLE_TOLERANCE, true);
 
-    if (!result.matches) {
+    float diff_ratio = result.total_pixels > 0
+                           ? static_cast<float>(result.diff_pixels) / static_cast<float>(result.total_pixels)
+                           : 1.0f;
+    if (diff_ratio > RenderingTestConfig::MAX_DIFF_RATIO) {
         result.diff_image.save("artifacts/particle_cube_angle_diff.png", ImageFormat::PNG);
         FAIL() << "Visual mismatch detected:\n"
                << "  Diff pixels: " << result.diff_pixels << " / " << result.total_pixels << " ("
@@ -406,7 +410,10 @@ TEST_F(RenderingRegressionTest, RenderSingleParticle_CenteredView_MatchesBaselin
     PixelComparator comparator;
     ComparisonResult result = comparator.compare(baseline, currentImage, RenderingTestConfig::PARTICLE_TOLERANCE, true);
 
-    if (!result.matches) {
+    float diff_ratio = result.total_pixels > 0
+                           ? static_cast<float>(result.diff_pixels) / static_cast<float>(result.total_pixels)
+                           : 1.0f;
+    if (diff_ratio > RenderingTestConfig::MAX_DIFF_RATIO) {
         result.diff_image.save("artifacts/single_particle_diff.png", ImageFormat::PNG);
         FAIL() << "Visual mismatch detected:\n"
                << "  Diff pixels: " << result.diff_pixels << " / " << result.total_pixels << " ("
@@ -486,7 +493,10 @@ TEST_F(RenderingRegressionTest, RenderParticleGroup_ThreeParticles_MatchesBaseli
     PixelComparator comparator;
     ComparisonResult result = comparator.compare(baseline, currentImage, RenderingTestConfig::PARTICLE_TOLERANCE, true);
 
-    if (!result.matches) {
+    float diff_ratio = result.total_pixels > 0
+                           ? static_cast<float>(result.diff_pixels) / static_cast<float>(result.total_pixels)
+                           : 1.0f;
+    if (diff_ratio > RenderingTestConfig::MAX_DIFF_RATIO) {
         result.diff_image.save("artifacts/particle_group_diff.png", ImageFormat::PNG);
         FAIL() << "Visual mismatch detected:\n"
                << "  Diff pixels: " << result.diff_pixels << " / " << result.total_pixels << " ("
@@ -515,11 +525,11 @@ TEST_F(RenderingRegressionTest, RenderParticleGroup_ThreeParticles_MatchesBaseli
 float calculateLitPixelFraction(const Image& image)
 {
     const size_t CHANNELS_PER_PIXEL = 4;
-    const size_t expected_size = static_cast<size_t>(image.width) * static_cast<size_t>(image.height) * CHANNELS_PER_PIXEL;
+    const size_t expected_size =
+        static_cast<size_t>(image.width) * static_cast<size_t>(image.height) * CHANNELS_PER_PIXEL;
     if (image.pixels.size() != expected_size) {
-        ADD_FAILURE() << "Image pixel buffer size (" << image.pixels.size()
-                      << ") does not match width * height * 4 (" << expected_size
-                      << ") in calculateLitPixelFraction.";
+        ADD_FAILURE() << "Image pixel buffer size (" << image.pixels.size() << ") does not match width * height * 4 ("
+                      << expected_size << ") in calculateLitPixelFraction.";
         return 0.0f;
     }
     const size_t total_pixels = image.pixels.size() / CHANNELS_PER_PIXEL;
@@ -587,9 +597,8 @@ TEST_F(RenderingRegressionTest, ParticleScale_SingleParticle_ConsistentFractionA
         glm::vec3 cameraTarget(0.0f, 0.0f, 0.0f);
         glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
         glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f),
-                                                 static_cast<float>(res.width) / static_cast<float>(res.height), 0.1f,
-                                                 3000.0f);
+        glm::mat4 projection = glm::perspective(
+            glm::radians(45.0f), static_cast<float>(res.width) / static_cast<float>(res.height), 0.1f, 3000.0f);
 
         // Act - render with resolution-dependent viewportHeight
         fbo.bind();
@@ -603,7 +612,8 @@ TEST_F(RenderingRegressionTest, ParticleScale_SingleParticle_ConsistentFractionA
 
         // Save each resolution render as artifact for visual inspection
         std::string artifact_name = "artifacts/single_particle_" + res.name + ".png";
-        currentImage.save(artifact_name, ImageFormat::PNG);
+        ASSERT_TRUE(currentImage.save(artifact_name, ImageFormat::PNG))
+            << "Failed to save artifact image: " << artifact_name;
 
         float fraction = calculateLitPixelFraction(currentImage);
 
@@ -667,9 +677,8 @@ TEST_F(RenderingRegressionTest, ParticleScale_ThreeParticles_ConsistentFractionA
         glm::vec3 cameraTarget(0.0f, 0.0f, 0.0f);
         glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
         glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f),
-                                                 static_cast<float>(res.width) / static_cast<float>(res.height), 0.1f,
-                                                 3000.0f);
+        glm::mat4 projection = glm::perspective(
+            glm::radians(45.0f), static_cast<float>(res.width) / static_cast<float>(res.height), 0.1f, 3000.0f);
 
         fbo.bind();
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -681,7 +690,8 @@ TEST_F(RenderingRegressionTest, ParticleScale_ThreeParticles_ConsistentFractionA
 
         // Save each resolution render as artifact for visual inspection
         std::string artifact_name = "artifacts/three_particles_" + res.name + ".png";
-        currentImage.save(artifact_name, ImageFormat::PNG);
+        ASSERT_TRUE(currentImage.save(artifact_name, ImageFormat::PNG))
+            << "Failed to save artifact image: " << artifact_name;
 
         float fraction = calculateLitPixelFraction(currentImage);
 
@@ -754,7 +764,8 @@ TEST_F(RenderingRegressionTest, ParticleScale_DefaultCube_ConsistentFractionAcro
 
         // Save each resolution render as artifact for visual inspection
         std::string artifact_name = "artifacts/cube_" + res.name + ".png";
-        currentImage.save(artifact_name, ImageFormat::PNG);
+        ASSERT_TRUE(currentImage.save(artifact_name, ImageFormat::PNG))
+            << "Failed to save artifact image: " << artifact_name;
 
         float fraction = calculateLitPixelFraction(currentImage);
 

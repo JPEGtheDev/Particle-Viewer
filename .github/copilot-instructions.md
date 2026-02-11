@@ -379,6 +379,9 @@ cmake --build build
 **Problem**: Multiple GLFWContexts in tests cause segfaults
 **Solution**: `~GLFWContext()` calls `glfwTerminate()`, which kills all GLFW state. Never create/destroy multiple GLFWContext objects in a single test. For multi-resolution testing, use different-sized `FramebufferCapture` objects within a single GL context instead.
 
+**Problem**: Visual regression baseline fails with 1-pixel diff across Mesa versions
+**Solution**: Different Mesa/llvmpipe versions may produce sprite-boundary rounding differences. Use a `MAX_DIFF_RATIO` (e.g., 0.01%) instead of requiring 100% pixel match. Always assert artifact `save()` results so debug images are not silently lost.
+
 **Problem**: Test name doesn't follow convention
 **Solution**: Use format `UnitName_StateUnderTest_ExpectedResult` (e.g., `MoveForward_IncreasesPosition`)
 
