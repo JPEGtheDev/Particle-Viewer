@@ -783,6 +783,37 @@ Create a keyframe-based camera animation system that enables:
    - Record translation as new keyframe
    - Bezier/spline interpolation between keyframes
 
+### Technical Note: Paused-State Camera Recording
+
+A critical feature requirement: **Camera recording must continue while simulation is paused.**
+
+**Use Case:**
+- Pause simulation at a specific frame of interest
+- Spin camera around to explore from multiple angles **while recording**
+- Zoom in/out for detailed examination **while recording**
+- Create voiceover-ready footage (pause + rotate creates "frozen time" effect)
+- Multiple camera angles of same simulation frame for educational/presentation purposes
+
+**Technical Implications:**
+- Camera path recording operates independently of simulation playback state
+- "Recording" state separate from "Playing/Paused" state
+- Timeline can have multiple keyframes at same simulation frame index but different camera positions
+- Export rendering must support:
+  - Multiple camera angles at single simulation frame
+  - Smooth camera interpolation while simulation frame remains static
+  - Frame duplication in output (same particle positions, different camera views)
+
+**Workflow Example:**
+1. Play simulation to frame 1000
+2. **Pause simulation** (particles frozen)
+3. **Start camera recording**
+4. Rotate 360° around particles over 5 seconds
+5. **Stop camera recording**
+6. Result: 5 seconds of video showing frozen frame 1000 from rotating perspective
+7. (Optional) Add voiceover in separate software describing what's visible
+
+This enables "bullet time" style scientific visualization where time-frozen particles can be examined from all angles with narration.
+
 ### Historical Context
 
 This has been a decade-long goal that required:
@@ -809,9 +840,11 @@ This has been a decade-long goal that required:
 
 2. **Camera Path Recording:**
    - Record manual camera movements
+   - **Record camera movements while simulation is paused** (frozen frame inspection)
    - Save to file format (JSON/binary)
    - Load and replay paths
    - Edit/trim/splice paths
+   - Independent recording state from playback state (can record camera while sim paused)
 
 3. **High-Resolution Export:**
    - Batch render at target resolution
