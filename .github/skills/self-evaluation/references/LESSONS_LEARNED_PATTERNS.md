@@ -112,6 +112,42 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 ---
 
+## ImGui Integration Lessons
+
+### FetchContent for Libraries Without CMakeLists.txt (PR #79)
+
+**Problem:** ImGui doesn't ship a CMakeLists.txt, so `FetchContent_MakeAvailable()` fails. Needed a different approach.
+
+**Lesson:** Use `FetchContent_Populate()` for libraries without CMakeLists.txt, then manually add source files to the target via `target_sources()`. CMake 3.31 warns this is deprecated, but it's the correct approach for headerless CMake projects when the minimum CMake version is 3.18.
+
+**Added to:** `copilot-instructions.md` → ImGui Integration
+
+### GLFW Callback Chaining Order (PR #79)
+
+**Problem:** ImGui's GLFW backend saves and chains to existing callbacks when `install_callbacks=true`. If ImGui is initialized before ViewerApp sets its callbacks, the chain is broken.
+
+**Lesson:** Set application GLFW callbacks (e.g., `glfwSetKeyCallback`) **before** calling `ImGui_ImplGlfw_InitForOpenGL(window, true)`. ImGui saves the current callbacks and chains to them, ensuring both ImGui and the application receive input events.
+
+**Added to:** `copilot-instructions.md` → ImGui Integration
+
+### ImGui Renders to Default Framebuffer (PR #79)
+
+**Problem:** Needed to ensure ImGui menus don't appear in FBO-based screenshots and frame recordings.
+
+**Lesson:** ImGui renders to the default framebuffer after the FBO blit pass. Since recording reads pixels from the offscreen FBO (before the blit), ImGui content is naturally excluded. This is an architectural advantage of the FBO pipeline — no special handling needed.
+
+**Added to:** `copilot-instructions.md` → ImGui Integration
+
+### Debug Overlay Must Offset for Menu Bar (PR #79)
+
+**Problem:** Debug overlay positioned at y=5 was hidden behind the ImGui menu bar (~25px high). The first line (including FPS counter) was not visible.
+
+**Lesson:** When ImGui menu bar is active, any overlays rendered with stb_easy_font must use a y-offset of 30+ pixels to clear the menu bar. Use named constants (`DEBUG_BG_PADDING_Y`) to document this offset.
+
+**Added to:** `copilot-instructions.md` → ImGui Integration
+
+---
+
 ## Process Lessons
 
 ### Don't Modify README Unless Asked (PR #64)
