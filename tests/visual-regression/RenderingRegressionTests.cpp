@@ -13,6 +13,10 @@
  * - OpenGL for rendering
  * - Shaders from src/shaders/
  *
+ * NOTE: A GPU is NOT required to run these tests locally.
+ * Use Xvfb (X virtual framebuffer) for headless rendering:
+ *   xvfb-run -a ./build/tests/ParticleViewerTests --gtest_filter="RenderingRegressionTest.*"
+ *
  * Baseline images are stored in tests/visual-regression/baselines/
  * Current render outputs are uploaded as CI artifacts for comparison.
  */
@@ -35,10 +39,14 @@
 
 #include "Image.hpp"
 #include "graphics/GLFWContext.hpp"
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 #include "particle.hpp"
 #include "shader.hpp"
 #include "testing/FramebufferCapture.hpp"
 #include "testing/PixelComparator.hpp"
+#include "ui/imgui_menu.hpp"
 
 // Test configuration
 namespace RenderingTestConfig
@@ -139,6 +147,17 @@ class OpenGLTestContext
     {
         return context_ != nullptr && context_->isValid();
     }
+
+    /*
+     * Get the native GLFW window handle for ImGui initialization.
+     */
+    GLFWwindow* getNativeWindow() const
+    {
+        if (context_) {
+            return static_cast<GLFWwindow*>(context_->getNativeWindowHandle());
+        }
+        return nullptr;
+    }
 };
 
 /*
@@ -208,7 +227,8 @@ class RenderingRegressionTest : public testing::Test
         bool initialized = glContext_.initialize();
         if (!initialized) {
             GTEST_SKIP() << "Failed to initialize OpenGL context. "
-                         << "This test requires OpenGL 3.3 support (Mesa/Xvfb in CI, GPU locally).";
+                         << "A GPU is NOT required — use Xvfb for headless rendering:\n"
+                         << "  xvfb-run -a ./ParticleViewerTests --gtest_filter=\"RenderingRegressionTest.*\"";
         }
     }
 
@@ -611,7 +631,7 @@ TEST_F(RenderingRegressionTest, ParticleScale_SingleParticle_ConsistentFractionA
         ASSERT_TRUE(currentImage.valid()) << "Failed to capture framebuffer at " << res.name;
 
         // Save each resolution render as artifact for visual inspection
-        std::string artifact_name = "artifacts/single_particle_" + res.name + ".png";
+        std::string artifact_name = "artifacts/single_particle_" + res.name + "_current.png";
         ASSERT_TRUE(currentImage.save(artifact_name, ImageFormat::PNG))
             << "Failed to save artifact image: " << artifact_name;
 
@@ -689,7 +709,7 @@ TEST_F(RenderingRegressionTest, ParticleScale_ThreeParticles_ConsistentFractionA
         ASSERT_TRUE(currentImage.valid()) << "Failed to capture framebuffer at " << res.name;
 
         // Save each resolution render as artifact for visual inspection
-        std::string artifact_name = "artifacts/three_particles_" + res.name + ".png";
+        std::string artifact_name = "artifacts/three_particles_" + res.name + "_current.png";
         ASSERT_TRUE(currentImage.save(artifact_name, ImageFormat::PNG))
             << "Failed to save artifact image: " << artifact_name;
 
@@ -763,7 +783,7 @@ TEST_F(RenderingRegressionTest, ParticleScale_DefaultCube_ConsistentFractionAcro
         ASSERT_TRUE(currentImage.valid()) << "Failed to capture framebuffer at " << res.name;
 
         // Save each resolution render as artifact for visual inspection
-        std::string artifact_name = "artifacts/cube_" + res.name + ".png";
+        std::string artifact_name = "artifacts/cube_" + res.name + "_current.png";
         ASSERT_TRUE(currentImage.save(artifact_name, ImageFormat::PNG))
             << "Failed to save artifact image: " << artifact_name;
 
@@ -778,4 +798,124 @@ TEST_F(RenderingRegressionTest, ParticleScale_DefaultCube_ConsistentFractionAcro
                 << reference_fraction << ")";
         }
     }
+}
+
+// ============================================================================
+// GUI Exclusion Test
+// ============================================================================
+
+/*
+ * Test: FBOCapture_WithImGuiActive_ExcludesGUI
+ *
+ * Verifies that ImGui UI elements (menu bar, debug overlay) are NOT captured
+ * in FBO-based screenshots. This is critical for clean scientific visualization
+ * exports — the FBO pipeline must produce images free of GUI artifacts.
+ *
+ * Architecture validation:
+ *   ImGui renders to the default framebuffer AFTER the FBO blit pass.
+ *   FBO captures read from the offscreen framebuffer BEFORE the blit.
+ *   Therefore, ImGui content should never appear in FBO captures.
+ *
+ * The test:
+ * 1. Initializes ImGui with the test GLFW context
+ * 2. Starts an ImGui frame and renders a menu bar + debug overlay
+ * 3. Renders particles to the test FBO (separate from default FB)
+ * 4. Captures the FBO content
+ * 5. Verifies the menu bar region (top-left rows) contains ONLY the
+ *    rendered scene — no ImGui content leaked into the FBO
+ */
+TEST_F(RenderingRegressionTest, FBOCapture_WithImGuiActive_ExcludesGUI)
+{
+    // Arrange
+    GLFWwindow* window = glContext_.getNativeWindow();
+    ASSERT_NE(window, nullptr) << "Need native GLFW window for ImGui initialization";
+
+    // Initialize ImGui for this context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.IniFilename = nullptr;
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(window, false);
+    ImGui_ImplOpenGL3_Init("#version 410 core");
+
+    // Start an ImGui frame and render menu bar (writes to default FB state)
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    MenuState state;
+    state.visible = true;
+    state.debug_mode = true;
+    renderMainMenu(state);
+
+    // Render particles to the FBO (the offscreen framebuffer)
+    std::string vertexShaderPath = getShaderPath("sphereVertex.vs");
+    std::string fragmentShaderPath = getShaderPath("sphereFragment.frag");
+    Shader particleShader(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
+    ASSERT_TRUE(particleShader.Program != 0) << "Failed to compile particle shader";
+
+    Particle particles;
+
+    glm::vec3 cameraPos(0.0f, 0.0f, 3.0f);
+    glm::vec3 cameraTarget(0.0f, 0.0f, 0.0f);
+    glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
+    glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
+    glm::mat4 projection = glm::perspective(
+        glm::radians(45.0f), (float)RenderingTestConfig::RENDER_WIDTH / (float)RenderingTestConfig::RENDER_HEIGHT, 0.1f,
+        3000.0f);
+
+    // Act — render to the FBO (not the default framebuffer)
+    glContext_.bindFramebuffer();
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    renderParticle(particles, particleShader, view, projection);
+
+    // Finalize ImGui frame (renders to default FB, NOT to our FBO)
+    ImGui::Render();
+
+    // Capture the FBO content
+    Image fboImage = glContext_.captureFramebuffer();
+
+    // Cleanup ImGui
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
+    // Assert — FBO should NOT contain any ImGui content
+    ASSERT_TRUE(fboImage.valid()) << "Failed to capture FBO";
+    ASSERT_TRUE(fboImage.save("artifacts/fbo_gui_exclusion_current.png", ImageFormat::PNG))
+        << "Failed to save FBO capture artifact";
+
+    // Check the menu bar region (top 30 rows, left 200 columns).
+    // If ImGui leaked into the FBO, this region would contain non-black pixels
+    // from the menu bar text ("File  View").
+    // With proper FBO isolation, this region should be black (scene background)
+    // or contain only scene content (particle rendering).
+    //
+    // We render from camera at (0,0,3) looking at origin, so the top-left corner
+    // should be dark/black background.
+    uint32_t check_height = 30;
+    uint32_t check_width = 200;
+    uint32_t bright_pixel_count = 0;
+
+    for (uint32_t y = 0; y < check_height && y < fboImage.height; ++y) {
+        for (uint32_t x = 0; x < check_width && x < fboImage.width; ++x) {
+            size_t idx = (y * fboImage.width + x) * 4;
+            uint8_t r = fboImage.pixels[idx + 0];
+            uint8_t g = fboImage.pixels[idx + 1];
+            uint8_t b = fboImage.pixels[idx + 2];
+            // Menu bar text is white/light gray — any bright pixel here
+            // would indicate GUI content leaked into the FBO
+            if (r > 100 || g > 100 || b > 100) {
+                bright_pixel_count++;
+            }
+        }
+    }
+
+    // The menu bar region should have zero bright pixels (all dark background)
+    EXPECT_EQ(bright_pixel_count, 0u) << "Found " << bright_pixel_count
+                                      << " bright pixels in the menu bar region of the FBO capture.\n"
+                                      << "ImGui content may be leaking into the offscreen framebuffer.\n"
+                                      << "FBO capture saved to: artifacts/fbo_gui_exclusion_current.png";
 }

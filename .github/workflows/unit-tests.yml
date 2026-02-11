@@ -415,8 +415,8 @@ jobs:
             body += `| Image | Size | Type |\n`;
             body += `|-------|------|------|\n`;
             for (const img of imageFiles) {
-              const match = img.name.match(/^(.+?)_(baseline|current|diff|720p|1080p|1440p|4k)\.png$/);
-              const type = match ? match[2] : 'artifact';
+              const match = img.name.match(/^(.+?)_(baseline|current|diff)\.png$/);
+              const type = match ? match[2] : 'unknown';
               const sizeKb = (img.size / 1024).toFixed(1);
               body += `| \`${img.name}\` | ${sizeKb} KB | ${type} |\n`;
             }
