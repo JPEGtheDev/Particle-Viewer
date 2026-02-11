@@ -142,13 +142,21 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 **Problem:** Debug overlay positioned at y=5 was hidden behind the ImGui menu bar (~25px high). The first line (including FPS counter) was not visible.
 
-**Lesson:** When ImGui menu bar is active, any overlays rendered with stb_easy_font must use a y-offset of 30+ pixels to clear the menu bar. Use named constants (`DEBUG_BG_PADDING_Y`) to document this offset.
+**Lesson:** Use ImGui windows instead of raw GL overlays — `ImGui::GetFrameHeight()` gives the actual menu bar height for dynamic positioning. This avoids hard-coded offsets that break with DPI/font scaling changes.
 
 **Added to:** `copilot-instructions.md` → ImGui Integration
 
 ---
 
 ## Process Lessons
+
+### Fix Issues at the Source, Not in CI (PR #82)
+
+**Problem:** Visual regression test artifacts used names like `single_particle_720p.png` that didn't match the CI workflow regex `_baseline|_current|_diff`. The quick fix was to expand the regex; the correct fix was to rename artifacts at the source.
+
+**Lesson:** When CI reports show incorrect categorization (e.g., "unknown" type for test images), fix the naming convention in the test code — not the CI regex. CI patterns should enforce conventions, not accommodate deviations.
+
+**Added to:** Self-evaluation skill (this file)
 
 ### Don't Modify README Unless Asked (PR #64)
 
