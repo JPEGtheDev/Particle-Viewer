@@ -8,6 +8,7 @@
 #ifndef DEBUG_OVERLAY_H
 #define DEBUG_OVERLAY_H
 
+#include <algorithm>
 #include <cmath>
 #include <sstream>
 #include <string>

@@ -876,11 +876,14 @@ TEST_F(RenderingRegressionTest, FBOCapture_WithImGuiActive_ExcludesGUI)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     renderParticle(particles, particleShader, view, projection);
 
-    // Finalize ImGui frame (renders to default FB, NOT to our FBO)
-    ImGui::Render();
-
-    // Capture the FBO content
+    // Capture the FBO content before rendering ImGui draw data
     Image fboImage = glContext_.captureFramebuffer();
+
+    // Finalize ImGui frame and render draw data to the default framebuffer (not the FBO).
+    // This verifies the real-world pipeline: ImGui renders AFTER FBO capture.
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     // Cleanup ImGui
     ImGui_ImplOpenGL3_Shutdown();

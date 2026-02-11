@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.18)
+cmake_minimum_required (VERSION 3.24)
 
 # Accept version as CMake variable, or use git tags as fallback
 if(NOT DEFINED PROJECT_VERSION)
@@ -39,15 +39,15 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/_deps_imgui/imgui.h")
     set(FETCHCONTENT_SOURCE_DIR_IMGUI "${CMAKE_SOURCE_DIR}/_deps_imgui")
 endif()
 
+# ImGui ships no CMakeLists.txt. SOURCE_SUBDIR with a non-existent path
+# skips the automatic add_subdirectory(), letting us add sources manually.
 FetchContent_Declare(
     imgui
     GIT_REPOSITORY https://github.com/ocornut/imgui.git
     GIT_TAG v1.91.6
+    SOURCE_SUBDIR this_path_intentionally_does_not_exist
 )
-FetchContent_GetProperties(imgui)
-if(NOT imgui_POPULATED)
-    FetchContent_Populate(imgui)
-endif()
+FetchContent_MakeAvailable(imgui)
 
 if(${alloutput})
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -Wall -W -Wshadow -Wunused-variable -Wunused-parameter -Wunused-function -Wunused -Wno-system-headers -Woverloaded-virtual -Wwrite-strings -fprofile-arcs -ftest-coverage")

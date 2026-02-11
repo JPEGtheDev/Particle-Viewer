@@ -114,11 +114,11 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 ## ImGui Integration Lessons
 
-### FetchContent for Libraries Without CMakeLists.txt (PR #79)
+### FetchContent for Libraries Without CMakeLists.txt (PR #79, updated PR #82)
 
-**Problem:** ImGui doesn't ship a CMakeLists.txt, so `FetchContent_MakeAvailable()` fails. Needed a different approach.
+**Problem:** ImGui doesn't ship a CMakeLists.txt, so `FetchContent_MakeAvailable()` tries to call `add_subdirectory()` and fails. Using `FetchContent_Populate()` works but is deprecated in CMake 3.31+.
 
-**Lesson:** Use `FetchContent_Populate()` for libraries without CMakeLists.txt, then manually add source files to the target via `target_sources()`. CMake 3.31 warns this is deprecated, but it's the correct approach for headerless CMake projects when the minimum CMake version is 3.18.
+**Lesson:** Use `FetchContent_Declare()` with `SOURCE_SUBDIR` set to a non-existent path, then call `FetchContent_MakeAvailable()`. This downloads the source without attempting `add_subdirectory()`, and avoids the `FetchContent_Populate()` deprecation warning. Then add the source files manually to your target.
 
 **Added to:** `copilot-instructions.md` → ImGui Integration
 

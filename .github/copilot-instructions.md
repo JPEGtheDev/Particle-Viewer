@@ -75,7 +75,7 @@ cmake --install build
 ```
 
 ### Build Requirements
-- CMake 3.18 or higher
+- CMake 3.24 or higher
 - C++11 compatible compiler with `-std=c++11 -march=native` flags
 - OpenGL development libraries
 - GLFW 3.3+ and GLM (must be installed on system)
@@ -95,6 +95,12 @@ cmake --install build
 - Shader files in `src/shaders/` are automatically copied to `Viewer-Assets/shaders/` during build
 - Version priority: (1) PROJECT_VERSION CMake variable if set (e.g., `-DPROJECT_VERSION=1.2.3`), (2) git tags if no variable is provided (format: `v0.1.0`), or (3) fallback to `0.0.0` if neither exists
 - Tests are enabled by default via `BUILD_TESTS=ON` option
+
+### Dependency Upgrades
+- **Upgrades are allowed** as long as all tests still pass and the build succeeds
+- When upgrading, verify with confidence that existing tests catch regressions
+- **Visual regression tests are a hard requirement** — they must pass and must NOT be modified unless there is an explicit notification to the approver showing the new output
+- Upgrades may require test updates (e.g., API changes in GoogleTest) — this is acceptable
 
 ## Testing
 
@@ -451,7 +457,7 @@ cmake --build build
 ### ImGui Integration
 
 **Architecture:**
-- Dear ImGui is downloaded via CMake FetchContent (not vendored). Since ImGui has no `CMakeLists.txt`, use `FetchContent_Populate()` and manually add source files to the target.
+- Dear ImGui is downloaded via CMake FetchContent (not vendored). Since ImGui has no `CMakeLists.txt`, use `FetchContent_Declare()` with `SOURCE_SUBDIR` pointing to a non-existent path plus `FetchContent_MakeAvailable()`, then manually add source files to the target. This avoids the `FetchContent_Populate()` deprecation warning.
 - ImGui renders to the **default framebuffer** (after the FBO blit), so it naturally does not appear in FBO-based screenshots or frame recordings.
 - GLFW callbacks: Set ViewerApp's GLFW callbacks **before** calling `ImGui_ImplGlfw_InitForOpenGL(window, true)`. ImGui saves and chains to existing callbacks, ensuring the chain is: ImGui → ViewerApp.
 

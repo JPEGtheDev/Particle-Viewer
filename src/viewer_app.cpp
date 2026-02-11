@@ -165,8 +165,18 @@ void ViewerApp::initImGui()
     ImGui::StyleColorsDark();
 
     // install_callbacks=true chains to existing GLFW callbacks
-    ImGui_ImplGlfw_InitForOpenGL(native_window, true);
-    ImGui_ImplOpenGL3_Init("#version 410 core");
+    bool glfw_init_ok = ImGui_ImplGlfw_InitForOpenGL(native_window, true);
+    bool gl3_init_ok = ImGui_ImplOpenGL3_Init("#version 410 core");
+    if (!glfw_init_ok || !gl3_init_ok) {
+        if (gl3_init_ok) {
+            ImGui_ImplOpenGL3_Shutdown();
+        }
+        if (glfw_init_ok) {
+            ImGui_ImplGlfw_Shutdown();
+        }
+        ImGui::DestroyContext();
+        return;
+    }
     imgui_initialized_ = true;
 }
 
@@ -238,7 +248,9 @@ void ViewerApp::run()
         if (cur_frame_ > set_->frames) {
             cur_frame_ = set_->frames;
         }
-        processMinorKeys();
+        if (!imgui_initialized_ || !ImGui::GetIO().WantCaptureKeyboard) {
+            processMinorKeys();
+        }
         if (cur_frame_ < 0) {
             cur_frame_ = 0;
         }
