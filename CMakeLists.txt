@@ -39,13 +39,14 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/_deps_imgui/imgui.h")
     set(FETCHCONTENT_SOURCE_DIR_IMGUI "${CMAKE_SOURCE_DIR}/_deps_imgui")
 endif()
 
-# ImGui ships no CMakeLists.txt. SOURCE_SUBDIR with a non-existent path
-# skips the automatic add_subdirectory(), letting us add sources manually.
+# ImGui ships no CMakeLists.txt. Using a non-existent SOURCE_SUBDIR causes
+# FetchContent_MakeAvailable to skip add_subdirectory (no CMakeLists.txt to find),
+# while still downloading and populating imgui_SOURCE_DIR for manual source inclusion.
 FetchContent_Declare(
     imgui
     GIT_REPOSITORY https://github.com/ocornut/imgui.git
     GIT_TAG v1.91.6
-    SOURCE_SUBDIR this_path_intentionally_does_not_exist
+    SOURCE_SUBDIR _no_cmakelists
 )
 FetchContent_MakeAvailable(imgui)
 
