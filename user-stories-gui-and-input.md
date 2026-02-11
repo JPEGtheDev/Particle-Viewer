@@ -1,8 +1,9 @@
 # User Stories: GUI and Input Enhancement Features
 
 **Created:** 2026-02-11  
+**Updated:** 2026-02-11  
 **Project:** Particle-Viewer  
-**Status:** Draft - Awaiting Feedback
+**Status:** Refined with User Feedback
 
 ---
 
@@ -12,7 +13,7 @@
 2. [Story 2: Resolution-Independent Particle Scaling](#story-2-resolution-independent-particle-scaling)
 3. [Story 3: Runtime Resolution Changing](#story-3-runtime-resolution-changing)
 4. [Story 4: ImGui Menu System](#story-4-imgui-menu-system)
-5. [Questions for Refinement](#questions-for-refinement)
+5. [Future Vision: Movie Editor with Keyframe Animation](#future-vision-movie-editor-with-keyframe-animation)
 6. [Implementation Order Recommendation](#implementation-order-recommendation)
 
 ---
@@ -92,8 +93,9 @@
   1. **GLFW 3.3+ (Recommended)** - Already used by project, has built-in gamepad support via `glfwGetGamepadState()`
      - ✅ Zero new dependencies
      - ✅ Cross-platform (Linux, Windows, macOS)
-     - ✅ Standard Xbox controller mapping
-     - ❌ Limited to basic gamepad features (no haptics, LED control)
+     - ✅ Standard xinput/gamepad mapping (supports all standard controllers)
+     - ✅ Target Xbox 360 layout for documentation
+     - ❌ No haptic feedback support (native rumble not available)
   
   2. **SDL2 GameController API** - Robust, widely-used gamepad library
      - ✅ Extensive controller database (supports many controller types)
@@ -108,7 +110,16 @@
      - ❌ Adds new external dependency
      - ❌ Less gamepad-specific (more generic joystick API)
 
-**Recommendation:** Use **GLFW 3.3+ gamepad support** to avoid new dependencies. If more advanced features (haptics, extensive controller DB) are needed later, consider SDL2.
+**Recommendation:** Use **GLFW 3.3+ gamepad support** with standard xinput mapping. Documentation will feature Xbox 360 controller layout, but all standard controllers supported. Haptic feedback omitted as GLFW doesn't support it natively.
+
+**Platform Priority:**
+- **Primary:** Linux (Flatpak distribution target)
+- **Secondary:** Windows (including WSL2 compatibility)
+- GLFW gamepad support works on both platforms
+
+**Button Mapping Strategy:**
+- Hardcoded mapping as specified (not configurable initially)
+- Future enhancement: Configuration file with keyboard mappings
 
 **Constraints:**
 - Must respect same movement constraints as tank controls (likely velocity/acceleration limits)
@@ -186,24 +197,16 @@ Given the size (L), this story should be broken into smaller independent stories
 
 ### Comments
 
-**Question for User:**
-- Should this support PlayStation controllers (DualShock/DualSense) as well, or Xbox only? 
-
-It should be all standard controllers, but target xbox 360 for the layout in the documentation. If GLFW is agnostic, just keep it standard i.e. xinput.
-
-- Target platform priority: Linux first, then Windows? Or both simultaneously?
-Since we are targeting flatpak for distribution, windows is quickly becoming a second class citizen. This should still work with WSL2 right?
-
-- Do you want the controller mapping to be configurable (remappable buttons), or hardcoded as specified?
-
-Good question, lets keep it hardcoded for now. Estimate effort for a hard coded config file, including keyboard mappings and we will go from there.
+**User Requirements Confirmed:**
+- **Controller Support:** All standard controllers (PlayStation, Xbox, etc.), using standard xinput mapping. Documentation will feature Xbox 360 controller layout.
+- **Platform Priority:** Linux first (Flatpak target), Windows/WSL2 as secondary. GLFW's cross-platform support handles both.
+- **Button Mapping:** Hardcoded initially. Future story will estimate effort for configuration file including keyboard mappings.
+- **Haptic Feedback:** Not included - GLFW doesn't support native rumble.
+- **Multi-Controller:** Not needed, removed from scope.
 
 **Future Work:**
-- Custom button remapping via config file
-- Haptic feedback (rumble on frame boundaries, collisions in simulation)
-rumble would be cool, but if GLFW doesn't support it natively, nix it
-- Multi-controller support (unlikely needed for viewer)
-not needed, remove
+- Custom button remapping via config file (separate story - estimate effort for both gamepad and keyboard mapping configuration)
+- Advanced controller features (if migrating to SDL2 later)
 
 ---
 
@@ -313,20 +316,19 @@ float particleRadius = particleScreenHeight * projectionScale; // Adjusted for p
 
 ### Comments
 
-**Question for User:**
-- What percentage of the viewport should a "standard" particle occupy at reference resolution?
-  - Suggestion: 1-3% of viewport height for typical particles
-  - Allows user to configure via settings file later
-  since we can change our position, the number of particles on screen can vary greatly. the issue I have had in the past is that I need to adjust spacing as well as paricle size to get something that looks eyeball correct.
-- Should this affect ALL particles uniformly, or should different particle types have different scaling factors?
-we may want to have particle scale in there, but that does depend on the simulation and shell depth (too much technical jargon to go into)
+**User Requirements Confirmed:**
+- **Particle Size Complexity:** Number of particles on screen varies greatly based on camera position. Historical challenge: need to adjust BOTH spacing AND particle size to achieve correct visual appearance.
+- **Particle Scale Parameter:** May want configurable particle scale, but this depends on simulation characteristics and shell depth (simulation-specific technical considerations).
+- **Visual Regression Strategy:** Ideally, NO images need regeneration for existing 1280x720 baseline. The cube test image should appear identical across all resolutions, just at higher quality. Verification approach: scale down higher resolution render to compare with 720p baseline for visual consistency.
+- **Key Insight:** Resolution independence means "same composition, higher detail" not "more particles visible."
 
-Ideally, NO images will need to be regenerated for 1280x720 because things should be the same. The cube image should be the same on all resolutions, just higher quality. to verify, you can eyeball it by scaling down a higher res image to get an approximation.
+**Implementation Note:**
+The challenge is maintaining consistent visual appearance while allowing particle size to be resolution-independent. May need to expose particle scale as a configurable parameter separate from resolution calculations.
 
 **Visual Regression Test Impact:**
-- Baseline images will need regeneration after this change
-- Recommend capturing baselines at: 1280x720, 1920x1080, 2560x1440
-- Test should verify: "particle at screen center occupies X% ± 2% of viewport height"
+- Baseline images for 1280x720 should NOT require regeneration (verify by downscaling higher res images)
+- Add new baselines at: 1920x1080, 2560x1440
+- Test verification: "downscaled high-res image matches 720p baseline within tolerance"
 
 **Future Work:**
 - User-configurable particle size via GUI (slider: "Particle Scale")
@@ -371,6 +373,8 @@ Ideally, NO images will need to be regenerated for 1280x720 because things shoul
   - 1920x1080 (1080p)
   - 2560x1440 (1440p)
   - 3840x2160 (4K) - if system supports
+- [ ] Fullscreen/windowed mode toggle via Alt+Enter hotkey
+- [ ] Resolution choice persists across application restarts (saved to config file)
 - [ ] Window resizes smoothly without flickering
 - [ ] Rendering adapts immediately to new resolution
 - [ ] Application state preserved across resolution changes:
@@ -469,20 +473,16 @@ Ideally, NO images will need to be regenerated for 1280x720 because things shoul
 
 ### Comments
 
-**Question for User:**
-- Should resolution changes be available via:
-  - GUI menu only? (preferred, wait for Story 4)
-      menu only
-  - Temporary hotkey (e.g., Ctrl+R) for now?
-  - Command-line argument to set resolution before startup? 
-      we have this
-- Should the application support fullscreen mode toggle (Alt+Enter)?
-   yes
-- Should resolution changes persist across application restarts (saved to config)?
-   yes
+**User Requirements Confirmed:**
+- **Interface:** Resolution changes via GUI menu only (no temporary hotkey needed). Story 4 (ImGui Menu) should be implemented first.
+- **Command-Line:** Application already supports setting resolution via command-line argument at startup.
+- **Fullscreen Toggle:** Yes, implement Alt+Enter for fullscreen/windowed mode toggle.
+- **Persistence:** Yes, resolution choice should persist across application restarts (saved to config file).
+
 **Integration with Story 4 (GUI Menu):**
-- If GUI menu implemented first, resolution selector can be dropdown in menu
-- If this implemented first, add temporary keyboard shortcut, migrate to GUI later
+- GUI menu implementation is prerequisite
+- Resolution selector will be dropdown in View menu
+- Standard 16:9 presets: 1280x720, 1920x1080, 2560x1440, 3840x2160 (4K if supported)
 
 **Future Work:**
 - Fullscreen/windowed mode toggle
@@ -537,6 +537,13 @@ Ideally, NO images will need to be regenerated for 1280x720 because things shoul
 #### Technical Requirements
 - [ ] ImGui (Dear ImGui) integrated with existing OpenGL context
 - [ ] Menu renders on top of 3D viewport (overlay mode)
+- [ ] Menu visible by default on application start
+- [ ] Menu automatically hidden in framebuffer screenshots (separate render paths)
+- [ ] Screenshot configuration system to control visible UI elements:
+  - [ ] Toggle menu visibility in screenshots
+  - [ ] Toggle debug overlay visibility in screenshots
+  - [ ] Toggle simulation time/metadata visibility in screenshots
+  - [ ] Configuration accessible via "Screenshot Settings..." menu item
 - [ ] Input handling respects menu state:
   - Mouse clicks on menu don't propagate to camera controls
   - Keyboard shortcuts disabled when menu focused (e.g., typing in text field)
@@ -706,18 +713,27 @@ Given the size (L), this story should be broken into smaller independent stories
 
 ### Comments
 
-**Question for User:**
-- Do you want the menu visible by default, or hidden (press F1 to show)?
-   visible, hidden in framebuffer screenshots. we should also have a configuration to show what is visible. We have a really old gui branch where we showed simulation time inside our screenshots, so maybe have something where we can configure what is visible in screenshots.
-- Should the menu include FPS counter or performance stats?
- debug mode, yes
-- Future menu items to plan for:
-  - Playback controls (play/pause, speed slider)?
-  This is going to be an interesting one, noting at the bottom of this file. 
-  - Visual settings (background color, particle colors)?
-   Yes
-  - Export/screenshot options?
-   Yes
+**User Requirements Confirmed:**
+- **Menu Visibility:** Menu visible by default.
+- **Screenshot Behavior:** Menu hidden in framebuffer screenshots. Need configuration system to control what elements are visible in exported screenshots (menu, debug overlay, simulation time, etc.).
+- **Historical Context:** Old GUI branch showed simulation time inside screenshots. New system should support configurable screenshot overlays.
+- **FPS Counter:** Yes, in debug mode.
+- **Menu Items to Include:**
+  - Playback controls (play/pause, speed slider) - "This is going to be an interesting one" (noted for future complexity)
+  - Visual settings (background color, particle colors) - Yes
+  - Export/screenshot options - Yes
+
+**Screenshot Configuration Feature:**
+This implies a need for:
+- `ScreenshotConfig` struct defining what UI elements render in screenshots
+- Separate render paths for on-screen display vs. framebuffer capture
+- Menu item: "Screenshot Settings..." to configure visible overlays
+
+**Future Work:**
+See "Future Vision: Movie Editor with Keyframe Animation" section below for the long-term goal these features build toward.
+
+**ImGui Confirmation:**
+User confirmed: "Keep IMGUI" - Dear ImGui is the selected library.
 
 **Alternative GUI Options (if you want to reconsider):**
 
@@ -729,55 +745,122 @@ Given the size (L), this story should be broken into smaller independent stories
 | **Native GLFW Menus** | Zero dependencies | Platform-specific, very limited | ❌ Not recommended |
 | **Custom OpenGL** | Full control | Time-consuming, reinvent wheel | ❌ Not recommended |
 
-**ImGui is the clear winner for this use case.**
+**ImGui is the clear winner for this use case.** ✅ **User Confirmed**
 
 **Future Work:**
 - Custom ImGui theme matching project branding
 - Dockable windows (detach debug overlay into separate window)
 - Settings panel with sliders (particle size, camera speed, etc.)
 - Help overlay with keyboard shortcut reference
+- Playback controls with speed slider (noted as "interesting" - complexity TBD)
 
 ---
 
-## Questions for Refinement
+## Future Vision: Movie Editor with Keyframe Animation
 
-Please answer these questions so I can refine the stories:
+**Long-term Goal:** These four stories are building blocks toward a sophisticated movie editor for scientific visualization.
 
-Questions were answered iinline
+### The Vision
 
-### Gamepad Support (Story 1)
-1. **Platform priority:** Should gamepad support work on Linux first, Windows first, or both simultaneously? 
-2. **Controller types:** Xbox only, or should we also support PlayStation controllers (DualShock/DualSense)?
-3. **Button remapping:** Should the button mapping be configurable by users, or hardcoded as specified?
-4. **Timing:** Is this feature high priority, or can it come after the GUI menu?
+Create a keyframe-based camera animation system that enables:
 
-### Resolution Scaling (Story 2)
-5. **Particle size:** What percentage of the viewport should a standard particle occupy at 1080p? (Suggestion: 1-3% of viewport height)
-6. **Particle types:** Should all particles scale uniformly, or should different particle types (if they exist) have different scaling factors?
+1. **Low-Resolution Previewing:**
+   - Load simulation on low-resolution monitor
+   - Navigate and create keyframes interactively
+   - Follow simulation as it progresses (COM Lock feature)
+   - Smooth camera transitions between keyframes
+   - Save camera path data to file
 
-### Runtime Resolution (Story 3)
-7. **Interface:** Should resolution changes be available via:
-   - GUI menu only (requires Story 4 first)
-   - Temporary hotkey (e.g., Ctrl+R) for now, migrate to GUI later
-   - Both simultaneously
-8. **Persistence:** Should the resolution choice persist across application restarts (saved to config file)?
-9. **Fullscreen:** Should we also add fullscreen/windowed mode toggle (Alt+Enter)?
+2. **High-Resolution Rendering:**
+   - Load saved camera path
+   - Replay at 8K or higher resolution
+   - Export as video frames for compilation
+   - Framebuffer captures without UI elements
 
-### GUI Menu (Story 4)
-10. **Default state:** Should the menu be visible by default, or hidden (press F1 to toggle)?
-11. **Additional features:** Should the menu include:
-    - FPS counter / performance stats?
-    - Playback controls (play/pause, speed slider)?
-    - Visual settings panel (colors, rendering options)?
-12. **Library confirmation:** Are you happy with ImGui recommendation, or would you like me to elaborate on alternatives?
+3. **Interactive Editing:**
+   - Pause simulation at any frame
+   - Rotate camera smoothly to new angle
+   - Record translation as new keyframe
+   - Bezier/spline interpolation between keyframes
 
-### General Questions
-13. **Implementation order:** Which story should be implemented first? My recommendation:
-    - **Phase 1:** Story 4 (GUI Menu) - Foundation for other features
-    - **Phase 2:** Story 2 (Resolution Scaling) - Improves core UX
-    - **Phase 3:** Story 3 (Runtime Resolution) - Integrates with GUI
-    - **Phase 4:** Story 1 (Gamepad) - Advanced feature, can come later
-14. **Breaking down large stories:** Stories 1 and 4 are L-sized. Should I create separate GitHub issues for each subtask, or keep them as single issues with subtask checklists? subtask checklists, I plan on feeding opus each of theses stories to work.
+### Historical Context
+
+This has been a decade-long goal that required:
+- Tools (now available via modern AI assistants)
+- Time (accelerated development cycle)
+- Skillset (enhanced via AI collaboration)
+
+**Recent Progress:** "What I have done in the last 4 days is more than I would have been able to accomplish working full time in 6 months."
+
+### How Current Stories Enable This
+
+- **Story 1 (Gamepad):** Intuitive navigation during keyframe creation
+- **Story 2 (Resolution Scaling):** Consistent appearance from preview to final render
+- **Story 3 (Runtime Resolution):** Switch from preview to export resolution seamlessly
+- **Story 4 (ImGui Menu):** UI foundation for timeline, keyframe editor, camera path visualization
+
+### Future Stories Needed
+
+1. **Keyframe System:**
+   - Camera position/orientation capture
+   - Timeline UI with keyframe markers
+   - Interpolation algorithms (linear, Bezier, spline)
+   - Camera path visualization in 3D viewport
+
+2. **Camera Path Recording:**
+   - Record manual camera movements
+   - Save to file format (JSON/binary)
+   - Load and replay paths
+   - Edit/trim/splice paths
+
+3. **High-Resolution Export:**
+   - Batch render at target resolution
+   - Frame-by-frame export (PNG/PPM sequence)
+   - Progress tracking for long renders
+   - Resume from interruption
+
+4. **Timeline Editor:**
+   - Visual timeline with frame markers
+   - Drag-and-drop keyframe editing
+   - Preview scrubbing
+   - Multi-track support (camera + metadata overlays)
+
+---
+
+## User Feedback Summary
+
+All questions have been answered inline. Key decisions:
+
+**Story 1 - Gamepad:**
+- Support all standard controllers (xinput), document with Xbox 360 layout
+- Linux primary (Flatpak), Windows/WSL2 secondary
+- Hardcoded mapping initially, config file as future story
+- No haptic feedback (GLFW limitation)
+- No multi-controller support
+
+**Story 2 - Resolution Scaling:**
+- Particle size complexity acknowledged (spacing + size adjustments)
+- May need configurable particle scale parameter
+- Preserve existing 1280x720 baselines (verify via downscaling)
+- Goal: same composition, higher detail
+
+**Story 3 - Runtime Resolution:**
+- GUI menu only (no hotkey)
+- Command-line argument already exists
+- Add fullscreen toggle (Alt+Enter)
+- Persist resolution choice to config
+
+**Story 4 - ImGui Menu:**
+- Visible by default
+- Hidden in framebuffer screenshots
+- Screenshot configuration system needed
+- FPS counter in debug mode
+- Include playback controls, visual settings, export options
+- ImGui confirmed as library choice
+
+**Implementation Strategy:**
+- Use subtask checklists (not separate issues)
+- Feed each story to advanced model (Opus) for implementation
 
 ---
 
@@ -817,31 +900,44 @@ Based on dependencies and value delivery, I recommend this implementation order:
 
 ## Summary
 
-I've created 4 comprehensive user stories following INVEST principles and Particle-Viewer conventions:
+**Status: Refined and Ready for Implementation**
 
-1. **Gamepad Support** - Full Xbox controller integration (L-sized, break into subtasks)
-2. **Resolution Scaling** - Consistent particle sizes across resolutions (M-sized)
-3. **Runtime Resolution** - Change resolution without restart (M-sized)
-4. **ImGui Menu** - Professional menu system (L-sized, break into subtasks)
+This document contains 4 comprehensive user stories following INVEST principles and Particle-Viewer conventions, with all user requirements confirmed:
 
-Each story includes:
-- Effort estimates (premium requests, model tier recommendation)
-- Detailed acceptance criteria
-- Technical notes with implementation guidance
-- Definition of Done checklist
-- Specific questions for you to answer
-- Recommended subtask breakdown for L-sized stories
+1. **Story 1: Gamepad Support** (L, 80-120 requests, Advanced)
+   - All standard controllers via xinput, Xbox 360 layout for docs
+   - Linux primary, Windows/WSL2 secondary
+   - Hardcoded mapping initially
+   - GLFW 3.3+ (zero new dependencies)
+
+2. **Story 2: Resolution-Independent Particle Scaling** (M, 45-60 requests, Standard)
+   - Same composition across resolutions, higher detail
+   - Preserve existing 1280x720 baselines
+   - Configurable particle scale parameter
+   - Shader-based solution
+
+3. **Story 3: Runtime Resolution Changing** (M, 35-50 requests, Standard)
+   - GUI menu only (requires Story 4 first)
+   - Fullscreen toggle (Alt+Enter)
+   - Persistence to config file
+   - State preservation across changes
+
+4. **Story 4: ImGui Menu System** (L, 70-95 requests, Standard)
+   - Dear ImGui confirmed
+   - Visible by default, hidden in screenshots
+   - Screenshot configuration system
+   - FPS counter, playback controls, visual settings, export options
+
+**Future Vision:**
+These stories build toward a keyframe-based camera animation system for creating high-resolution scientific visualization videos. See "Future Vision: Movie Editor with Keyframe Animation" section for details.
+
+**Implementation Approach:**
+- Subtask checklists (not separate issues)
+- Feed each story to advanced model (Opus) for implementation
+- Follow recommended phase order: GUI → Resolution Scaling → Runtime Resolution → Gamepad
 
 **Next Steps:**
-1. Please review and answer the questions in the "Questions for Refinement" section
-2. Confirm or adjust the implementation order recommendation
-3. Decide if you want L-sized stories broken into separate GitHub issues
-4. I can then refine the stories based on your feedback and create GitHub issue templates if desired
-
----
-
-**Questions or feedback? Let me know what you'd like to adjust!**
-
-Keep IMGUI
-
-As mentioned inline in the IMGUI story there is a plan for an interesting feature. I would like to have a movie editor where I can load a simulation and create keyframes where I can follow a simulation as it progresses. That was the original goal of the COMLock, so we are able to follow a simulation as it moved away from the origin. All of these steps build up to this goal. I want to be able to have a low resolution monitor track a simulation, save the camera position data to a file and then play back at 8K or higher to export it as a video. I also want to be able to pause the simulation, rotate smoothly to another angle and have that translation saved. This is an extremely lofty goal and its an idea I've wanted to execute for the past decade, but didn't have the tools, time, or skillset. What I have done in the last 4 days is more than I would have been able to accomplish working full time in 6 months.
+1. ✅ User requirements confirmed
+2. ✅ Technical approach validated
+3. ✅ Dependencies and constraints documented
+4. **Ready:** Begin implementation starting with Story 4 (ImGui Menu)
