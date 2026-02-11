@@ -787,9 +787,16 @@ Create a keyframe-based camera animation system that enables:
 
 A critical feature requirement: **Camera recording must continue while simulation is paused.**
 
+**Core Architectural Principle:**
+**Simulation time and recording time are independent.**
+
+- **Simulation Time:** Frame index in the particle data (e.g., frame 1000 of 10,000)
+- **Recording Time:** Wall-clock time during camera path recording (e.g., 5 seconds of camera movement)
+- These two timelines operate independently and can progress at different rates or not at all
+
 **Use Case:**
-- Pause simulation at a specific frame of interest
-- Spin camera around to explore from multiple angles **while recording**
+- Pause simulation at a specific frame of interest (simulation time = frozen)
+- Spin camera around to explore from multiple angles **while recording** (recording time = advancing)
 - Zoom in/out for detailed examination **while recording**
 - Create voiceover-ready footage (pause + rotate creates "frozen time" effect)
 - Multiple camera angles of same simulation frame for educational/presentation purposes
@@ -797,6 +804,8 @@ A critical feature requirement: **Camera recording must continue while simulatio
 **Technical Implications:**
 - Camera path recording operates independently of simulation playback state
 - "Recording" state separate from "Playing/Paused" state
+- Simulation time can be: playing forward, playing backward, paused, or jumping to arbitrary frames
+- Recording time always advances linearly while recording is active
 - Timeline can have multiple keyframes at same simulation frame index but different camera positions
 - Export rendering must support:
   - Multiple camera angles at single simulation frame
@@ -804,13 +813,22 @@ A critical feature requirement: **Camera recording must continue while simulatio
   - Frame duplication in output (same particle positions, different camera views)
 
 **Workflow Example:**
-1. Play simulation to frame 1000
-2. **Pause simulation** (particles frozen)
-3. **Start camera recording**
-4. Rotate 360° around particles over 5 seconds
-5. **Stop camera recording**
+1. Play simulation to frame 1000 (simulation time advancing)
+2. **Pause simulation** (simulation time frozen at frame 1000)
+3. **Start camera recording** (recording time starts at 0:00)
+4. Rotate 360° around particles over 5 seconds (recording time: 0:00 → 0:05, simulation time still at frame 1000)
+5. **Stop camera recording** (recording time stops at 0:05)
 6. Result: 5 seconds of video showing frozen frame 1000 from rotating perspective
 7. (Optional) Add voiceover in separate software describing what's visible
+
+**Alternative Workflow (Recording while playing):**
+1. **Start camera recording** (recording time: 0:00, simulation time: frame 0)
+2. Play simulation forward (both times advancing: recording time AND simulation time)
+3. Pause at frame 1000 (simulation time frozen, recording time still advancing)
+4. Rotate camera for 5 seconds (recording time: T → T+5, simulation time still at frame 1000)
+5. Resume playback (both times advancing again)
+6. **Stop recording** at frame 2000 after 30 total seconds of recording
+7. Result: 30-second video with smooth camera path, including 5-second frozen "bullet time" section at frame 1000
 
 This enables "bullet time" style scientific visualization where time-frozen particles can be examined from all angles with narration.
 
