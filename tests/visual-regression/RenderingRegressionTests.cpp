@@ -554,7 +554,7 @@ TEST_F(RenderingRegressionTest, ParticleScale_SingleParticle_ConsistentFractionA
     ASSERT_TRUE(particleShader.Program != 0) << "Failed to compile shader";
 
     float reference_fraction = 0.0f;
-    const float FRACTION_TOLERANCE = 0.01f; // ±1% of viewport area
+    const float FRACTION_TOLERANCE = 0.01f; // ±0.01 absolute fraction tolerance
 
     for (const auto& res : resolutions) {
         // Create a framebuffer at this resolution using the existing GL context
@@ -563,8 +563,9 @@ TEST_F(RenderingRegressionTest, ParticleScale_SingleParticle_ConsistentFractionA
 
         Particle particles(1, single_particle_data.data());
 
-        // Camera at z=3.0 keeps point sizes under GPU max (256px on Mesa) at all resolutions.
-        // At 1440p the point size is ~244px, well within the 256px limit.
+        // Camera at z=3.0 produces point sizes under the GPU max for all tested resolutions.
+        // gl_PointSize has a hardware max (GL_POINT_SIZE_RANGE); at z=3.0 with radius=100,
+        // scale=5, the max point size at 1440p is ~244px, under typical limits (256+ px).
         glm::vec3 cameraPos(0.0f, 0.0f, 3.0f);
         glm::vec3 cameraTarget(0.0f, 0.0f, 0.0f);
         glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
