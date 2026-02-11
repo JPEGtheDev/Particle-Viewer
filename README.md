@@ -45,6 +45,9 @@ This is a project created by Jonathan Petz for Tarleton State University's Parti
 * [Tiny File Dialogs](http://sourceforge.net/projects/tinyfiledialogs/)
 * [GLAD](https://github.com/Dav1dde/glad)
 
+### Downloaded at Build Time (via CMake FetchContent)
+* [Dear ImGui](https://github.com/ocornut/imgui) - Immediate mode GUI for menus and debug tools
+
 **Note:** For detailed license information and attributions for all third-party libraries, see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ___
