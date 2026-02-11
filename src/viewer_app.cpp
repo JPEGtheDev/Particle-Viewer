@@ -149,6 +149,7 @@ void ViewerApp::setResolution(const std::string& resolution)
     // Resolution-independent scaling is handled automatically via the
     // viewportHeight shader uniform. The sphere scale is a user-configurable
     // visual size multiplier independent of resolution.
+    (void)resolution; // currently unused, kept for API compatibility
     setSphereScale(1.0f);
 }
 
