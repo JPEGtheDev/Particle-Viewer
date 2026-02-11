@@ -440,6 +440,7 @@ cmake --build build
 - Vertex data should use modern VBO/VAO patterns
 - Bounds-check GLFW key callbacks (GLFW_KEY_UNKNOWN is -1)
 - Prefer `glGetIntegerv(GL_VIEWPORT, ...)` over cached viewport values in render paths where the viewport may change (e.g., window resize, FBO switches)
+- `gl_PointSize` is silently clamped by `GL_POINT_SIZE_RANGE` (max 256px on Mesa/llvmpipe). When testing resolution-independent scaling, choose camera distances that keep computed point sizes under this limit at **all** target resolutions including 4K.
 
 ### Visual Regression Tests ⚠️ IMPORTANT
 

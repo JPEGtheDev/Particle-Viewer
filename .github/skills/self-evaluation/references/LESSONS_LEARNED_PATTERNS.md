@@ -94,6 +94,14 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 **Added to:** `copilot-instructions.md` → Memory Management
 
+### GL_POINT_SIZE_RANGE Clamping (PR #81)
+
+**Problem:** Resolution independence test at 4K computed `gl_PointSize` of 366px, but hardware max was 256px. OpenGL silently clamped it, making the particle appear ~50% smaller. A loose test tolerance (0.01) masked the defect.
+
+**Lesson:** `gl_PointSize` is silently clamped by `GL_POINT_SIZE_RANGE` (256px on Mesa/llvmpipe). When testing resolution-independent scaling, choose camera distances that keep computed point sizes under this limit at all target resolutions. Use tolerances proportional to the values being compared — an absolute tolerance larger than the expected value itself will mask real failures.
+
+**Added to:** `copilot-instructions.md` → OpenGL Usage
+
 ---
 
 ## Process Lessons
