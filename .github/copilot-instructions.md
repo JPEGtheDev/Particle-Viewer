@@ -376,6 +376,9 @@ cmake --build build
 **Problem**: Tests fail due to missing OpenGL context
 **Solution**: Tests should use `MockOpenGL` from `tests/mocks/` - NEVER require actual GPU/OpenGL
 
+**Problem**: Multiple GLFWContexts in tests cause segfaults
+**Solution**: `~GLFWContext()` calls `glfwTerminate()`, which kills all GLFW state. Never create/destroy multiple GLFWContext objects in a single test. For multi-resolution testing, use different-sized `FramebufferCapture` objects within a single GL context instead.
+
 **Problem**: Test name doesn't follow convention
 **Solution**: Use format `UnitName_StateUnderTest_ExpectedResult` (e.g., `MoveForward_IncreasesPosition`)
 
@@ -436,6 +439,7 @@ cmake --build build
 - Shaders are loaded from `Viewer-Assets/shaders/` directory
 - Vertex data should use modern VBO/VAO patterns
 - Bounds-check GLFW key callbacks (GLFW_KEY_UNKNOWN is -1)
+- Prefer `glGetIntegerv(GL_VIEWPORT, ...)` over cached viewport values in render paths where the viewport may change (e.g., window resize, FBO switches)
 
 ### Visual Regression Tests ⚠️ IMPORTANT
 
