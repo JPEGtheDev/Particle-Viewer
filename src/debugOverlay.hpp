@@ -34,6 +34,11 @@ constexpr float DEBUG_BG_WIDTH = 400.0f;
 constexpr float DEBUG_BG_HEIGHT = 310.0f;
 constexpr float DEBUG_TEXT_OFFSET = 5.0f;
 
+// FPS smoothing constants for exponential moving average
+constexpr float FPS_SMOOTHING_FACTOR = 0.95f;
+constexpr float FPS_NEW_WEIGHT = 0.05f;
+constexpr float FPS_INIT_THRESHOLD = 0.001f;
+
 // Simple shader for rendering 2D text overlay
 const char* debugOverlayVertexShader = R"(
 #version 410 core
@@ -175,10 +180,10 @@ inline void renderCameraDebugOverlay(Camera* cam, int screenWidth, int screenHei
 
     // Smooth FPS using exponential moving average
     static float smoothed_fps = 0.0f;
-    if (smoothed_fps < 0.001f) {
+    if (smoothed_fps < FPS_INIT_THRESHOLD) {
         smoothed_fps = fps;
     } else {
-        smoothed_fps = smoothed_fps * 0.95f + fps * 0.05f;
+        smoothed_fps = smoothed_fps * FPS_SMOOTHING_FACTOR + fps * FPS_NEW_WEIGHT;
     }
 
     // Format debug text
