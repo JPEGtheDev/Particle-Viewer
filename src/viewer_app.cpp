@@ -40,8 +40,8 @@ static const QuadVertex QUAD_VERTICES[] = {{-1.0f, 1.0f, 0.0f, 1.0f}, {-1.0f, -1
 // ============================================================================
 
 ViewerApp::ViewerApp(IOpenGLContext* context)
-    : context_(context), delta_time_(0.0f), last_frame_(0.0f), cam_(nullptr), part_(nullptr), set_(nullptr), view_(),
-      com_(), cur_frame_(0), pixels_(nullptr)
+    : context_(context), imgui_initialized_(false), delta_time_(0.0f), last_frame_(0.0f), cam_(nullptr), part_(nullptr),
+      set_(nullptr), view_(), com_(), cur_frame_(0), pixels_(nullptr)
 {
     for (int i = 0; i < 1024; i++) {
         keys_[i] = false;
@@ -160,12 +160,14 @@ void ViewerApp::initImGui()
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.IniFilename = nullptr; // Disable imgui.ini file
 
     ImGui::StyleColorsDark();
 
     // install_callbacks=true chains to existing GLFW callbacks
     ImGui_ImplGlfw_InitForOpenGL(native_window, true);
     ImGui_ImplOpenGL3_Init("#version 410 core");
+    imgui_initialized_ = true;
 }
 
 void ViewerApp::setResolution(const std::string& resolution)
@@ -192,10 +194,12 @@ void ViewerApp::run()
     while (!context_->shouldClose()) {
         context_->pollEvents();
 
-        // Start ImGui frame
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+        // Start ImGui frame (only if ImGui was initialized)
+        if (imgui_initialized_) {
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+        }
 
         cam_->Move();
 
@@ -204,22 +208,24 @@ void ViewerApp::run()
         cam_->RenderSphere();
         drawFBO();
 
-        if (menu_state_.debug_mode) {
-            float fps = (delta_time_ > 0.0f) ? 1.0f / delta_time_ : 0.0f;
-            renderCameraDebugOverlay(cam_, window_.width, window_.height, fps);
-        }
+        if (imgui_initialized_) {
+            if (menu_state_.debug_mode) {
+                float fps = (delta_time_ > 0.0f) ? 1.0f / delta_time_ : 0.0f;
+                renderCameraDebugOverlay(cam_, window_.width, window_.height, fps, PARTICLE_VIEWER_VERSION);
+            }
 
-        // Render ImGui menu and process actions
-        MenuActions actions = renderMainMenu(menu_state_);
-        if (actions.load_file) {
-            handleLoadFile();
-        }
-        if (actions.quit) {
-            context_->setShouldClose(true);
-        }
+            // Render ImGui menu and process actions
+            MenuActions actions = renderMainMenu(menu_state_);
+            if (actions.load_file) {
+                handleLoadFile();
+            }
+            if (actions.quit) {
+                context_->setShouldClose(true);
+            }
 
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+            ImGui::Render();
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        }
 
         context_->swapBuffers();
 
@@ -433,6 +439,17 @@ void ViewerApp::keyCallback(int key, int scancode, int action, int mods)
         }
     }
 
+    // If ImGui wants keyboard input, only process menu toggle keys (F1/F3)
+    if (imgui_initialized_ && ImGui::GetIO().WantCaptureKeyboard) {
+        if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
+            menu_state_.visible = !menu_state_.visible;
+        }
+        if (key == GLFW_KEY_F3 && action == GLFW_PRESS) {
+            menu_state_.debug_mode = !menu_state_.debug_mode;
+        }
+        return;
+    }
+
     // Only forward to camera if key is in valid range (GLFW_KEY_UNKNOWN is -1).
     if (key >= 0 && key < 1024) {
         GLFWwindow* native_window = static_cast<GLFWwindow*>(context_->getNativeWindowHandle());
@@ -543,11 +560,11 @@ void ViewerApp::cleanup()
 
 void ViewerApp::shutdownImGui()
 {
-    GLFWwindow* native_window = static_cast<GLFWwindow*>(context_->getNativeWindowHandle());
-    if (native_window) {
+    if (imgui_initialized_) {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
+        imgui_initialized_ = false;
     }
 }
 

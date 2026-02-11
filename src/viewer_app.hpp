@@ -159,6 +159,7 @@ class ViewerApp
     RecordingState recording_;
     ShaderPaths paths_;
     MenuState menu_state_;
+    bool imgui_initialized_;
 
     // ============================================
     // Timing

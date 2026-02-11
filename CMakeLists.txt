@@ -31,6 +31,14 @@ find_package(OpenGL REQUIRED)
 # ImGui Configuration (downloaded at configure time)
 # ============================================
 include(FetchContent)
+
+# Support pre-populated ImGui source (e.g., Flatpak offline builds)
+# When FETCHCONTENT_FULLY_DISCONNECTED=ON, FetchContent won't download.
+# Flatpak places ImGui source in _deps_imgui/ via its manifest.
+if(EXISTS "${CMAKE_SOURCE_DIR}/_deps_imgui/imgui.h")
+    set(FETCHCONTENT_SOURCE_DIR_IMGUI "${CMAKE_SOURCE_DIR}/_deps_imgui")
+endif()
+
 FetchContent_Declare(
     imgui
     GIT_REPOSITORY https://github.com/ocornut/imgui.git
@@ -80,6 +88,10 @@ target_include_directories(Viewer PUBLIC
 	src/glad/include
 	${imgui_SOURCE_DIR}
 	${imgui_SOURCE_DIR}/backends
+)
+
+target_compile_definitions(Viewer PRIVATE
+	PARTICLE_VIEWER_VERSION="${PROJECT_VERSION}"
 )
 
 if(WIN32)
