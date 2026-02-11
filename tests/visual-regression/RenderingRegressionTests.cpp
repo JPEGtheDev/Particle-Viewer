@@ -545,8 +545,11 @@ float calculateLitPixelFraction(const Image& image)
  * Uses the existing OpenGL context with different-sized framebuffers for each
  * resolution to avoid GLFW context lifecycle issues.
  *
+ * Camera distance chosen to keep gl_PointSize under GL_POINT_SIZE_RANGE max (256
+ * on Mesa/llvmpipe) at all tested resolutions including 4K. At z=5.0 the max
+ * point size at 4K is ~216px, safely under the 256px hardware limit.
+ *
  * Resolutions tested: 1280x720, 1920x1080, 2560x1440, 3840x2160
- * Tolerance: ±0.01 absolute fraction tolerance (accounts for rasterization differences)
  */
 TEST_F(RenderingRegressionTest, ParticleScale_SingleParticle_ConsistentFractionAcrossResolutions)
 {
@@ -568,7 +571,7 @@ TEST_F(RenderingRegressionTest, ParticleScale_SingleParticle_ConsistentFractionA
     ASSERT_TRUE(particleShader.Program != 0) << "Failed to compile shader";
 
     float reference_fraction = 0.0f;
-    const float FRACTION_TOLERANCE = 0.01f; // ±0.01 absolute fraction tolerance
+    const float FRACTION_TOLERANCE = 0.005f; // ±0.005 absolute fraction tolerance
 
     for (const auto& res : resolutions) {
         // Create a framebuffer at this resolution using the existing GL context
@@ -577,13 +580,10 @@ TEST_F(RenderingRegressionTest, ParticleScale_SingleParticle_ConsistentFractionA
 
         Particle particles(1, single_particle_data.data());
 
-        // Camera at z=3.0 produces point sizes under the GPU max for all tested resolutions.
-        // gl_PointSize has a hardware max (GL_POINT_SIZE_RANGE); at z=3.0 with radius=100,
-        // scale=5, the max point size at 1440p is ~244px, under typical limits (256+ px).
-        // At 4K (2160p), the computed point size (~366px) may exceed limits on some GPUs;
-        // OpenGL silently clamps to the maximum supported size. The test still validates
-        // that scaling is proportional up to the clamp point.
-        glm::vec3 cameraPos(0.0f, 0.0f, 3.0f);
+        // Camera at z=5.0 keeps gl_PointSize under the 256px hardware limit
+        // (GL_POINT_SIZE_RANGE) at all tested resolutions including 4K.
+        // Max point size at 4K: radius(100) * scale(5) / dist(6.93) * 3.0 ≈ 216px.
+        glm::vec3 cameraPos(0.0f, 0.0f, 5.0f);
         glm::vec3 cameraTarget(0.0f, 0.0f, 0.0f);
         glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
         glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
@@ -625,6 +625,9 @@ TEST_F(RenderingRegressionTest, ParticleScale_SingleParticle_ConsistentFractionA
  * Renders three colored particles at different resolutions and validates
  * that the total lit pixel fraction remains consistent.
  *
+ * Camera at z=6.0 keeps all particle point sizes under GL_POINT_SIZE_RANGE
+ * max (256px) at all resolutions including 4K (max ~180px).
+ *
  * Resolutions tested: 1280x720, 1920x1080, 2560x1440, 3840x2160
  */
 TEST_F(RenderingRegressionTest, ParticleScale_ThreeParticles_ConsistentFractionAcrossResolutions)
@@ -651,7 +654,7 @@ TEST_F(RenderingRegressionTest, ParticleScale_ThreeParticles_ConsistentFractionA
     ASSERT_TRUE(particleShader.Program != 0) << "Failed to compile shader";
 
     float reference_fraction = 0.0f;
-    const float FRACTION_TOLERANCE = 0.01f; // ±0.01 absolute fraction tolerance
+    const float FRACTION_TOLERANCE = 0.005f; // ±0.005 absolute fraction tolerance
 
     for (const auto& res : resolutions) {
         FramebufferCapture fbo(res.width, res.height);
@@ -659,7 +662,8 @@ TEST_F(RenderingRegressionTest, ParticleScale_ThreeParticles_ConsistentFractionA
 
         Particle particles(3, three_particle_data.data());
 
-        glm::vec3 cameraPos(0.0f, 0.0f, 4.0f);
+        // Camera at z=6.0 keeps point sizes under GL_POINT_SIZE_RANGE max (256px) at 4K.
+        glm::vec3 cameraPos(0.0f, 0.0f, 6.0f);
         glm::vec3 cameraTarget(0.0f, 0.0f, 0.0f);
         glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
         glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
@@ -687,6 +691,79 @@ TEST_F(RenderingRegressionTest, ParticleScale_ThreeParticles_ConsistentFractionA
         } else {
             EXPECT_NEAR(fraction, reference_fraction, FRACTION_TOLERANCE)
                 << "Three-particle fraction at " << res.name << " (" << fraction << ") differs from reference ("
+                << reference_fraction << ")";
+        }
+    }
+}
+
+/*
+ * Test: ParticleScale_DefaultCube_ConsistentFractionAcrossResolutions
+ *
+ * Verifies resolution-independent scaling with the default 64,000-particle cube.
+ * This is the most realistic test case — it validates the actual scene users see
+ * when launching the application.
+ *
+ * The cube particles are far from the camera so individual point sizes stay well
+ * under GL_POINT_SIZE_RANGE max at all resolutions.
+ *
+ * Resolutions tested: 1280x720, 1920x1080, 2560x1440, 3840x2160
+ */
+TEST_F(RenderingRegressionTest, ParticleScale_DefaultCube_ConsistentFractionAcrossResolutions)
+{
+    // Arrange
+    struct Resolution
+    {
+        uint32_t width;
+        uint32_t height;
+        std::string name;
+    };
+    std::vector<Resolution> resolutions = {
+        {1280, 720, "720p"}, {1920, 1080, "1080p"}, {2560, 1440, "1440p"}, {3840, 2160, "4K"}};
+
+    std::string vertexShaderPath = getShaderPath("sphereVertex.vs");
+    std::string fragmentShaderPath = getShaderPath("sphereFragment.frag");
+    Shader particleShader(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
+    ASSERT_TRUE(particleShader.Program != 0) << "Failed to compile shader";
+
+    float reference_fraction = 0.0f;
+    const float FRACTION_TOLERANCE = 0.005f; // ±0.005 absolute fraction tolerance
+
+    // Same camera as the baseline cube test
+    glm::vec3 cameraPos(-23.60f, 25.21f, -30.93f);
+    glm::vec3 cameraTarget(-23.02f, 24.83f, -30.20f);
+    glm::vec3 cameraUp(0.08f, 1.00f, 0.00f);
+    glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
+
+    for (const auto& res : resolutions) {
+        FramebufferCapture fbo(res.width, res.height);
+        ASSERT_TRUE(fbo.initialize()) << "Failed to create FBO at " << res.name;
+
+        Particle cube;
+        ASSERT_EQ(cube.n, 64000) << "Default cube should have 64,000 particles";
+
+        glm::mat4 projection = glm::perspective(
+            glm::radians(45.0f), static_cast<float>(res.width) / static_cast<float>(res.height), 0.1f, 3000.0f);
+
+        fbo.bind();
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        renderParticle(cube, particleShader, view, projection, static_cast<float>(res.height));
+        Image currentImage = fbo.capture();
+
+        ASSERT_TRUE(currentImage.valid()) << "Failed to capture framebuffer at " << res.name;
+
+        // Save each resolution render as artifact for visual inspection
+        std::string artifact_name = "artifacts/cube_" + res.name + ".png";
+        currentImage.save(artifact_name, ImageFormat::PNG);
+
+        float fraction = calculateLitPixelFraction(currentImage);
+
+        if (reference_fraction == 0.0f) {
+            reference_fraction = fraction;
+            ASSERT_GT(reference_fraction, 0.0f) << "Reference render at " << res.name << " has no lit pixels";
+        } else {
+            EXPECT_NEAR(fraction, reference_fraction, FRACTION_TOLERANCE)
+                << "Cube fraction at " << res.name << " (" << fraction << ") differs from reference ("
                 << reference_fraction << ")";
         }
     }
