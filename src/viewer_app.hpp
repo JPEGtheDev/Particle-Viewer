@@ -30,6 +30,7 @@
 #include "particle.hpp"
 #include "settingsIO.hpp"
 #include "shader.hpp"
+#include "ui/imgui_menu.hpp"
 
 /*
  * Window configuration.
@@ -157,6 +158,7 @@ class ViewerApp
     SphereParams sphere_;
     RecordingState recording_;
     ShaderPaths paths_;
+    MenuState menu_state_;
 
     // ============================================
     // Timing
@@ -193,6 +195,7 @@ class ViewerApp
     // ============================================
     void initScreen();
     void initPaths();
+    void initImGui();
     void setResolution(const std::string& resolution);
     void setSphereScale(GLfloat scale);
     void setupCallbacks();
@@ -213,6 +216,7 @@ class ViewerApp
     // ============================================
     void seekFrame(int frames, bool forward);
     void processMinorKeys();
+    void handleLoadFile();
 
     // ============================================
     // Input Handling
@@ -223,6 +227,7 @@ class ViewerApp
     // Resource Cleanup
     // ============================================
     void cleanup();
+    void shutdownImGui();
 
     // ============================================
     // Static GLFW Callbacks (delegate to instance via user pointer)

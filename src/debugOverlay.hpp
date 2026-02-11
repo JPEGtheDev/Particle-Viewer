@@ -26,11 +26,13 @@
 // Maximum expected text is ~150 characters, so 99999 bytes provides ample buffer
 constexpr size_t DEBUG_TEXT_BUFFER_SIZE = 99999;
 
-// Background rectangle dimensions and position (top-left corner)
-constexpr float DEBUG_BG_X = 5.0f;
-constexpr float DEBUG_BG_Y = 5.0f;
+// Background rectangle dimensions (positioned dynamically in top-right corner)
+// Vertical offset accounts for ImGui menu bar height (~25px)
+constexpr float DEBUG_BG_PADDING_X = 5.0f;
+constexpr float DEBUG_BG_PADDING_Y = 30.0f;
 constexpr float DEBUG_BG_WIDTH = 400.0f;
-constexpr float DEBUG_BG_HEIGHT = 290.0f;
+constexpr float DEBUG_BG_HEIGHT = 310.0f;
+constexpr float DEBUG_TEXT_OFFSET = 5.0f;
 
 // Simple shader for rendering 2D text overlay
 const char* debugOverlayVertexShader = R"(
@@ -101,14 +103,16 @@ static GLuint createDebugOverlayShaderProgram()
 
 /*
  * Renders debug camera information as an on-screen text overlay.
- * Displays camera position, target, up vector, projection parameters, and viewport size.
+ * Displays FPS, camera position, target, up vector, projection parameters, and viewport size.
+ * Positioned in the top-right corner of the viewport.
  *
  * Parameters:
  *   cam - Pointer to the Camera object
  *   screenWidth - Viewport width
  *   screenHeight - Viewport height
+ *   fps - Current frames per second (0.0 if unavailable)
  */
-void renderCameraDebugOverlay(Camera* cam, int screenWidth, int screenHeight)
+inline void renderCameraDebugOverlay(Camera* cam, int screenWidth, int screenHeight, float fps = 0.0f)
 {
     if (cam == nullptr) {
         return;
@@ -169,11 +173,19 @@ void renderCameraDebugOverlay(Camera* cam, int screenWidth, int screenHeight)
     float distFor50Pct = estimatedSubjectSize / (0.5f * tanHalfFov);
     float distFor40Pct = estimatedSubjectSize / (0.4f * tanHalfFov);
 
+    // Smooth FPS using exponential moving average
+    static float smoothed_fps = 0.0f;
+    if (smoothed_fps < 0.001f) {
+        smoothed_fps = fps;
+    } else {
+        smoothed_fps = smoothed_fps * 0.95f + fps * 0.05f;
+    }
+
     // Format debug text
     std::ostringstream debugText;
     debugText.precision(2);
     debugText << std::fixed;
-    debugText << "[DEBUG CAMERA]\n";
+    debugText << "[DEBUG CAMERA]  FPS: " << static_cast<int>(smoothed_fps) << "\n";
     debugText << "Pos: (" << pos.x << ", " << pos.y << ", " << pos.z << ")\n";
     debugText << "Target: (" << target.x << ", " << target.y << ", " << target.z << ")\n";
     debugText << "  (lookat point: Pos + Front)\n";
@@ -207,7 +219,15 @@ void renderCameraDebugOverlay(Camera* cam, int screenWidth, int screenHeight)
 
     // Allocate buffer for vertex data
     static char buffer[DEBUG_TEXT_BUFFER_SIZE];
-    int numQuads = stb_easy_font_print(10.0f, 10.0f, const_cast<char*>(text.c_str()), nullptr, buffer, sizeof(buffer));
+
+    // Position text in top-right corner (below menu bar)
+    float bg_x = static_cast<float>(screenWidth) - DEBUG_BG_WIDTH - DEBUG_BG_PADDING_X;
+    float bg_y = DEBUG_BG_PADDING_Y;
+    float text_x = bg_x + DEBUG_TEXT_OFFSET;
+    float text_y = bg_y + DEBUG_TEXT_OFFSET;
+
+    int numQuads =
+        stb_easy_font_print(text_x, text_y, const_cast<char*>(text.c_str()), nullptr, buffer, sizeof(buffer));
 
     if (numQuads == 0) {
         return;
@@ -230,19 +250,19 @@ void renderCameraDebugOverlay(Camera* cam, int screenWidth, int screenHeight)
     glUseProgram(shaderProgram);
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
-    // Render background rectangle for better readability
-    float bgVertices[] = {DEBUG_BG_X,
-                          DEBUG_BG_Y,
-                          DEBUG_BG_X + DEBUG_BG_WIDTH,
-                          DEBUG_BG_Y,
-                          DEBUG_BG_X + DEBUG_BG_WIDTH,
-                          DEBUG_BG_Y + DEBUG_BG_HEIGHT,
-                          DEBUG_BG_X,
-                          DEBUG_BG_Y,
-                          DEBUG_BG_X + DEBUG_BG_WIDTH,
-                          DEBUG_BG_Y + DEBUG_BG_HEIGHT,
-                          DEBUG_BG_X,
-                          DEBUG_BG_Y + DEBUG_BG_HEIGHT};
+    // Render background rectangle for better readability (top-right corner)
+    float bgVertices[] = {bg_x,
+                          bg_y,
+                          bg_x + DEBUG_BG_WIDTH,
+                          bg_y,
+                          bg_x + DEBUG_BG_WIDTH,
+                          bg_y + DEBUG_BG_HEIGHT,
+                          bg_x,
+                          bg_y,
+                          bg_x + DEBUG_BG_WIDTH,
+                          bg_y + DEBUG_BG_HEIGHT,
+                          bg_x,
+                          bg_y + DEBUG_BG_HEIGHT};
 
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
