@@ -41,6 +41,9 @@ struct WindowConfig
     GLint height = 0;
     GLint fullscreen = 0;
     bool debug_camera = false;
+    // Store windowed mode size for restoring from fullscreen
+    GLint windowed_width = 0;
+    GLint windowed_height = 0;
 };
 
 /*
@@ -206,6 +209,7 @@ class ViewerApp
     // ============================================
     void handleResize(int width, int height);
     void resizeFBO(int width, int height);
+    void toggleFullscreen();
 
     // ============================================
     // Rendering Pipeline

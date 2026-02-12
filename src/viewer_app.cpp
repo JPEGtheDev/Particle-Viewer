@@ -127,6 +127,10 @@ void ViewerApp::initScreen()
 
     std::cout << "Framebuffer resolution: " << window_.width << "x" << window_.height << std::endl;
 
+    // Store initial size as windowed mode size
+    window_.windowed_width = window_.width;
+    window_.windowed_height = window_.height;
+
     pixels_ = new unsigned char[window_.width * window_.height * 3];
     cam_ = new Camera(window_.width, window_.height);
 
@@ -449,6 +453,12 @@ void ViewerApp::handleLoadFile()
 
 void ViewerApp::keyCallback(int key, int scancode, int action, int mods)
 {
+    // Alt+Enter toggles fullscreen (handle first, always works)
+    if (key == GLFW_KEY_ENTER && action == GLFW_PRESS && (mods & GLFW_MOD_ALT)) {
+        toggleFullscreen();
+        return;
+    }
+
     // Guard against out-of-bounds access (GLFW_KEY_UNKNOWN is -1)
     if (key >= 0 && key < 1024) {
         if (action == GLFW_PRESS) {
@@ -645,6 +655,35 @@ void ViewerApp::resizeFBO(int width, int height)
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void ViewerApp::toggleFullscreen()
+{
+    GLFWwindow* native_window = static_cast<GLFWwindow*>(context_->getNativeWindowHandle());
+    if (!native_window) {
+        return;
+    }
+
+    GLFWmonitor* monitor = glfwGetWindowMonitor(native_window);
+
+    if (monitor) {
+        // Currently fullscreen, switch to windowed mode
+        glfwSetWindowMonitor(native_window, nullptr, 100, 100, window_.windowed_width, window_.windowed_height, GLFW_DONT_CARE);
+        window_.fullscreen = 0;
+    } else {
+        // Currently windowed, switch to fullscreen
+        // Save current window size
+        glfwGetWindowSize(native_window, &window_.windowed_width, &window_.windowed_height);
+
+        // Get primary monitor and its video mode
+        GLFWmonitor* primary = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(primary);
+
+        if (primary && mode) {
+            glfwSetWindowMonitor(native_window, primary, 0, 0, mode->width, mode->height, mode->refreshRate);
+            window_.fullscreen = 1;
+        }
+    }
 }
 
 // ============================================================================
