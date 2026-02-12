@@ -252,6 +252,9 @@ void ViewerApp::run()
                     saveWindowSettings();
                 }
             }
+            if (actions.toggle_fullscreen) {
+                toggleFullscreen();
+            }
             if (actions.quit) {
                 context_->setShouldClose(true);
             }

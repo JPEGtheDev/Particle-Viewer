@@ -19,6 +19,7 @@ struct MenuActions
     bool load_file = false;
     bool quit = false;
     bool change_resolution = false;
+    bool toggle_fullscreen = false;
     int target_width = 0;
     int target_height = 0;
 };

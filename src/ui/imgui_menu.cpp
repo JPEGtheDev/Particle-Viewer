@@ -145,6 +145,10 @@ MenuActions renderMainMenu(MenuState& state)
                 ImGui::EndMenu();
             }
             ImGui::Separator();
+            if (ImGui::MenuItem("Toggle Fullscreen", "Alt+Enter")) {
+                actions.toggle_fullscreen = true;
+            }
+            ImGui::Separator();
             ImGui::MenuItem("Debug Mode", "F3", &state.debug_mode);
             ImGui::MenuItem("Show Menu", "F1", &state.visible);
             ImGui::EndMenu();

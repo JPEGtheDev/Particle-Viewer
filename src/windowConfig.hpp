@@ -12,6 +12,8 @@
 #include <iostream>
 #include <string>
 
+#include "osFile.hpp"
+
 #ifdef _WIN32
     #include <direct.h>
 #else
@@ -96,9 +98,19 @@ inline bool saveWindowConfig(const std::string& filepath, int width, int height,
 
 /*
  * Get the config file path.
- * Uses XDG_CONFIG_HOME/particle-viewer/window.cfg on Linux/Mac (Flatpak-compatible),
- * falling back to $HOME/.config/particle-viewer/window.cfg,
- * or %APPDATA%\particle-viewer\window.cfg on Windows.
+ * Priority order (best practice for user config):
+ * 1. XDG_CONFIG_HOME/particle-viewer/window.cfg (Flatpak, sandboxed apps)
+ * 2. $HOME/.config/particle-viewer/window.cfg (Linux/Mac standard)
+ * 3. %APPDATA%\particle-viewer\window.cfg (Windows standard)
+ * 4. <exe_dir>/window.cfg (portable fallback for all platforms)
+ *
+ * Unlike shaders (read-only assets bundled with exe), config files are:
+ * - User-writable preferences modified at runtime
+ * - Should persist across application updates
+ * - Per-user on multi-user systems
+ * - May not have write access to exe directory (Program Files, /usr/bin, Flatpak)
+ *
+ * Exe-relative is used only as last resort for truly portable installs.
  */
 inline std::string getConfigPath()
 {
@@ -107,7 +119,8 @@ inline std::string getConfigPath()
     if (appdata) {
         return std::string(appdata) + "\\particle-viewer\\window.cfg";
     }
-    return "window.cfg"; // Fallback to current directory
+    // Fallback to exe directory (portable install)
+    return ExePath() + "\\window.cfg";
 #else
     // Try XDG_CONFIG_HOME first (Flatpak and other sandboxed apps set this)
     const char* xdg_config = std::getenv("XDG_CONFIG_HOME");
@@ -120,7 +133,8 @@ inline std::string getConfigPath()
     if (home) {
         return std::string(home) + "/.config/particle-viewer/window.cfg";
     }
-    return "window.cfg"; // Fallback to current directory
+    // Fallback to exe directory (portable install)
+    return ExePath() + "/window.cfg";
 #endif
 }
 
