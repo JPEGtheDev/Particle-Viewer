@@ -41,6 +41,11 @@ struct WindowConfig
     GLint height = 0;
     GLint fullscreen = 0;
     bool debug_camera = false;
+    // Store windowed mode size and position for restoring from fullscreen
+    GLint windowed_width = 0;
+    GLint windowed_height = 0;
+    GLint windowed_x = 0;
+    GLint windowed_y = 0;
 };
 
 /*
@@ -202,6 +207,15 @@ class ViewerApp
     void setupCallbacks();
 
     // ============================================
+    // Window Management
+    // ============================================
+    void handleResize(int width, int height);
+    void resizeFBO(int width, int height);
+    void toggleFullscreen();
+    void saveWindowSettings();
+    void loadWindowSettings();
+
+    // ============================================
     // Rendering Pipeline
     // ============================================
     void setupGLStuff();
@@ -234,6 +248,7 @@ class ViewerApp
     // Static GLFW Callbacks (delegate to instance via user pointer)
     // ============================================
     static void keyCallbackStatic(GLFWwindow* window, int key, int scancode, int action, int mods);
+    static void framebufferSizeCallbackStatic(GLFWwindow* window, int width, int height);
 };
 
 #endif // PARTICLE_VIEWER_VIEWER_APP_H

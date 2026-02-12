@@ -17,6 +17,7 @@
 #include "imgui_impl_opengl3.h"
 #include "osFile.hpp"
 #include "tinyFileDialogs/tinyfiledialogs.h"
+#include "windowConfig.hpp"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
@@ -92,6 +93,10 @@ bool ViewerApp::initialize()
     part_ = new Particle();
     setupGLStuff();
     setupScreenFBO();
+
+    // Load window settings AFTER FBO is set up (prevents crash during resize callback)
+    loadWindowSettings();
+
     menu_state_.debug_mode = window_.debug_camera;
     return true;
 }
@@ -127,6 +132,10 @@ void ViewerApp::initScreen()
 
     std::cout << "Framebuffer resolution: " << window_.width << "x" << window_.height << std::endl;
 
+    // Store initial size as windowed mode size
+    window_.windowed_width = window_.width;
+    window_.windowed_height = window_.height;
+
     pixels_ = new unsigned char[window_.width * window_.height * 3];
     cam_ = new Camera(window_.width, window_.height);
 
@@ -138,6 +147,9 @@ void ViewerApp::initScreen()
 
     // Register GLFW-specific callbacks if a native window is available
     setupCallbacks();
+
+    // NOTE: Window settings are loaded AFTER FBO setup in initialize()
+    // to prevent crash when resize callback is triggered before FBO exists
 }
 
 void ViewerApp::setupCallbacks()
@@ -146,6 +158,7 @@ void ViewerApp::setupCallbacks()
     if (native_window) {
         glfwSetWindowUserPointer(native_window, this);
         glfwSetKeyCallback(native_window, keyCallbackStatic);
+        glfwSetFramebufferSizeCallback(native_window, framebufferSizeCallbackStatic);
     }
 }
 
@@ -228,6 +241,19 @@ void ViewerApp::run()
             MenuActions actions = renderMainMenu(menu_state_);
             if (actions.load_file) {
                 handleLoadFile();
+            }
+            if (actions.change_resolution) {
+                GLFWwindow* native_window = static_cast<GLFWwindow*>(context_->getNativeWindowHandle());
+                if (native_window) {
+                    glfwSetWindowSize(native_window, actions.target_width, actions.target_height);
+                    // Update windowed size tracking and save
+                    window_.windowed_width = actions.target_width;
+                    window_.windowed_height = actions.target_height;
+                    saveWindowSettings();
+                }
+            }
+            if (actions.toggle_fullscreen) {
+                toggleFullscreen();
             }
             if (actions.quit) {
                 context_->setShouldClose(true);
@@ -442,6 +468,12 @@ void ViewerApp::handleLoadFile()
 
 void ViewerApp::keyCallback(int key, int scancode, int action, int mods)
 {
+    // Alt+Enter toggles fullscreen (handle first, always works)
+    if (key == GLFW_KEY_ENTER && action == GLFW_PRESS && (mods & GLFW_MOD_ALT)) {
+        toggleFullscreen();
+        return;
+    }
+
     // Guard against out-of-bounds access (GLFW_KEY_UNKNOWN is -1)
     if (key >= 0 && key < 1024) {
         if (action == GLFW_PRESS) {
@@ -581,6 +613,158 @@ void ViewerApp::shutdownImGui()
 }
 
 // ============================================================================
+// Window Management
+// ============================================================================
+
+void ViewerApp::handleResize(int width, int height)
+{
+    if (width <= 0 || height <= 0) {
+        return; // Invalid dimensions, ignore
+    }
+
+    window_.width = width;
+    window_.height = height;
+
+    // Update viewport
+    glViewport(0, 0, width, height);
+
+    // Update camera projection matrix
+    if (cam_) {
+        cam_->updateProjection(width, height);
+    }
+
+    // Resize framebuffer objects
+    resizeFBO(width, height);
+
+    // Reallocate pixel buffer for recording
+    delete[] pixels_;
+    pixels_ = new unsigned char[width * height * 3];
+
+    // Note: We don't save settings on every resize event to avoid excessive I/O
+    // during window dragging. Settings are saved when:
+    // 1. User selects a resolution from the menu
+    // 2. User toggles fullscreen (Alt+Enter)
+    // 3. Application exits (future enhancement)
+    // Users who manually resize can select "View → Resolution" to save their size.
+}
+
+void ViewerApp::resizeFBO(int width, int height)
+{
+    // Delete old FBO attachments
+    if (render_.texture_colorbuffer != 0) {
+        glDeleteTextures(1, &render_.texture_colorbuffer);
+        render_.texture_colorbuffer = 0;
+    }
+    if (render_.rbo != 0) {
+        glDeleteRenderbuffers(1, &render_.rbo);
+        render_.rbo = 0;
+    }
+
+    // Recreate texture attachment with new size
+    glBindFramebuffer(GL_FRAMEBUFFER, render_.framebuffer);
+    render_.texture_colorbuffer = generateAttachmentTexture(false, false);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, render_.texture_colorbuffer, 0);
+
+    // Recreate renderbuffer with new size
+    glGenRenderbuffers(1, &render_.rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, render_.rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, render_.rbo);
+
+    // Verify framebuffer is complete
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        std::cerr << "ERROR::FRAMEBUFFER:: Framebuffer incomplete after resize!" << std::endl;
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void ViewerApp::toggleFullscreen()
+{
+    GLFWwindow* native_window = static_cast<GLFWwindow*>(context_->getNativeWindowHandle());
+    if (!native_window) {
+        return;
+    }
+
+    GLFWmonitor* monitor = glfwGetWindowMonitor(native_window);
+
+    if (monitor) {
+        // Currently fullscreen, switch to windowed mode
+        glfwSetWindowMonitor(native_window, nullptr, window_.windowed_x, window_.windowed_y, window_.windowed_width,
+                             window_.windowed_height, GLFW_DONT_CARE);
+        window_.fullscreen = 0;
+    } else {
+        // Currently windowed, switch to fullscreen
+        // Save current window size and position
+        glfwGetWindowSize(native_window, &window_.windowed_width, &window_.windowed_height);
+        glfwGetWindowPos(native_window, &window_.windowed_x, &window_.windowed_y);
+
+        // Get primary monitor and its video mode
+        GLFWmonitor* primary = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(primary);
+
+        if (primary && mode) {
+            glfwSetWindowMonitor(native_window, primary, 0, 0, mode->width, mode->height, mode->refreshRate);
+            window_.fullscreen = 1;
+        }
+    }
+
+    // Save updated settings
+    saveWindowSettings();
+}
+
+void ViewerApp::saveWindowSettings()
+{
+    ensureConfigDir();
+    std::string config_path = getConfigPath();
+
+    // Save windowed size (not fullscreen size)
+    bool fullscreen = (window_.fullscreen != 0);
+    bool success = saveWindowConfig(config_path, window_.windowed_width, window_.windowed_height, fullscreen);
+
+    if (!success) {
+        std::cerr << "Warning: Failed to save window configuration" << std::endl;
+    }
+}
+
+void ViewerApp::loadWindowSettings()
+{
+    std::string config_path = getConfigPath();
+    int width = 0;
+    int height = 0;
+    bool fullscreen = false;
+
+    if (loadWindowConfig(config_path, width, height, fullscreen)) {
+        std::cout << "Loaded window config: " << width << "x" << height << " fullscreen=" << fullscreen << std::endl;
+
+        // Apply loaded settings
+        GLFWwindow* native_window = static_cast<GLFWwindow*>(context_->getNativeWindowHandle());
+        if (native_window) {
+            if (fullscreen) {
+                // Store windowed size before going fullscreen
+                window_.windowed_width = width;
+                window_.windowed_height = height;
+
+                GLFWmonitor* primary = glfwGetPrimaryMonitor();
+                const GLFWvidmode* mode = glfwGetVideoMode(primary);
+                if (primary && mode) {
+                    glfwSetWindowMonitor(native_window, primary, 0, 0, mode->width, mode->height, mode->refreshRate);
+                    window_.fullscreen = 1;
+                }
+            } else {
+                // Set windowed size
+                window_.windowed_width = width;
+                window_.windowed_height = height;
+                glfwSetWindowSize(native_window, width, height);
+                window_.fullscreen = 0;
+            }
+        }
+    } else {
+        std::cout << "No window config found, using defaults" << std::endl;
+    }
+}
+
+// ============================================================================
 // Static GLFW Callbacks
 // ============================================================================
 
@@ -589,5 +773,13 @@ void ViewerApp::keyCallbackStatic(GLFWwindow* window, int key, int scancode, int
     ViewerApp* app = static_cast<ViewerApp*>(glfwGetWindowUserPointer(window));
     if (app) {
         app->keyCallback(key, scancode, action, mods);
+    }
+}
+
+void ViewerApp::framebufferSizeCallbackStatic(GLFWwindow* window, int width, int height)
+{
+    ViewerApp* app = static_cast<ViewerApp*>(glfwGetWindowUserPointer(window));
+    if (app) {
+        app->handleResize(width, height);
     }
 }

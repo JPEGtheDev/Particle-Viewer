@@ -565,3 +565,105 @@ TEST_F(CameraTest, GetFarPlane_AfterSetRenderDistance_ReturnsNewDistance)
     // Assert
     EXPECT_FLOAT_EQ(farPlane, newDistance);
 }
+
+// ============================================
+// Projection Matrix Update Tests
+// ============================================
+
+TEST_F(CameraTest, UpdateProjection_ChangesAspectRatio_UpdatesProjectionMatrix)
+{
+    // Arrange
+    Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT);
+    glm::mat4 original_projection = camera.getProjection();
+
+    // Act — change to a different aspect ratio
+    camera.updateProjection(1920, 1080);
+
+    // Assert — projection matrix should have changed
+    glm::mat4 new_projection = camera.getProjection();
+    EXPECT_NE(original_projection, new_projection);
+}
+
+TEST_F(CameraTest, UpdateProjection_SameAspectRatioDifferentSize_ProjectionUnchanged)
+{
+    // Arrange
+    Camera camera(800, 600); // 4:3 aspect ratio
+    glm::mat4 original_projection = camera.getProjection();
+
+    // Act — update to different size but same aspect ratio
+    camera.updateProjection(1600, 1200); // still 4:3
+
+    // Assert — projection should be identical (same aspect ratio)
+    glm::mat4 new_projection = camera.getProjection();
+    EXPECT_EQ(original_projection, new_projection);
+}
+
+TEST_F(CameraTest, UpdateProjection_ToWidescreen_ChangesAspectCorrectly)
+{
+    // Arrange
+    Camera camera(800, 600); // 4:3 aspect ratio
+
+    // Act — switch to 16:9 widescreen
+    camera.updateProjection(1920, 1080);
+    glm::mat4 projection = camera.getProjection();
+
+    // Assert — verify the aspect ratio component changed
+    // In perspective projection, [0][0] is proportional to 1/aspect
+    float aspect = 1920.0f / 1080.0f;
+    float expected_x_scale = projection[1][1] / aspect;
+    EXPECT_NEAR(projection[0][0], expected_x_scale, 0.001f);
+}
+
+TEST_F(CameraTest, UpdateProjection_ToPortrait_ChangesAspectCorrectly)
+{
+    // Arrange
+    Camera camera(1920, 1080); // Landscape
+
+    // Act — switch to portrait orientation
+    camera.updateProjection(1080, 1920);
+    glm::mat4 projection = camera.getProjection();
+
+    // Assert — verify aspect ratio changed to portrait
+    float aspect = 1080.0f / 1920.0f;
+    float expected_x_scale = projection[1][1] / aspect;
+    EXPECT_NEAR(projection[0][0], expected_x_scale, 0.001f);
+}
+
+TEST_F(CameraTest, UpdateProjection_PreservesFOV_AfterUpdate)
+{
+    // Arrange
+    Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT);
+    float original_fov = camera.getFOV();
+
+    // Act — update projection with new dimensions
+    camera.updateProjection(1920, 1080);
+
+    // Assert — FOV should remain unchanged
+    EXPECT_FLOAT_EQ(camera.getFOV(), original_fov);
+}
+
+TEST_F(CameraTest, UpdateProjection_PreservesNearPlane_AfterUpdate)
+{
+    // Arrange
+    Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT);
+    float original_near = camera.getNearPlane();
+
+    // Act
+    camera.updateProjection(1920, 1080);
+
+    // Assert
+    EXPECT_FLOAT_EQ(camera.getNearPlane(), original_near);
+}
+
+TEST_F(CameraTest, UpdateProjection_PreservesFarPlane_AfterUpdate)
+{
+    // Arrange
+    Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT);
+    float original_far = camera.getFarPlane();
+
+    // Act
+    camera.updateProjection(1920, 1080);
+
+    // Assert
+    EXPECT_FLOAT_EQ(camera.getFarPlane(), original_far);
+}
