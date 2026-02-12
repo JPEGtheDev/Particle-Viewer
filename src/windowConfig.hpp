@@ -127,7 +127,7 @@ inline std::string getConfigPath()
     if (xdg_config) {
         return std::string(xdg_config) + "/particle-viewer/window.cfg";
     }
-    
+
     // Fall back to $HOME/.config
     const char* home = std::getenv("HOME");
     if (home) {

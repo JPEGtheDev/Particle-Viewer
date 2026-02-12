@@ -86,7 +86,8 @@ cmake --install build
   - **CRITICAL**: When squash merging, the PR title becomes the commit message that determines semantic version bumps
   - Example PR titles: `feat: add particle color picker`, `fix(camera): correct rotation`, `docs: update README`
 - **REQUIRED**: All commits must use [Conventional Commits](https://www.conventionalcommits.org/) format (e.g., `feat:`, `fix:`, `docs:`)
-- Code must pass clang-format checks
+- **REQUIRED**: Code MUST be formatted with clang-format before committing (see [Code Quality Checks](#code-quality-checks-before-committing))
+- Code must pass clang-format checks in CI
 - Unit tests must pass
 - Build must succeed on all platforms
 - See [Version Management and Commits](#version-management-and-commits) section for full conventional commit guidelines
@@ -150,8 +151,10 @@ Key requirements:
 
 **Auto-formatted via `.clang-format`** - DO NOT manually format code.
 
+**⚠️ CRITICAL: ALWAYS run clang-format on ALL changed files BEFORE committing!**
+
 ```bash
-# Format all C++ files
+# Format all C++ files (run this before EVERY commit)
 find src -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i
 
 # Check formatting (CI check)
@@ -335,31 +338,41 @@ When a skill needs rules from another domain, it references the other skill by p
 
 ### Code Quality Checks (Before Committing)
 
+**⚠️ MANDATORY: Run these checks before EVERY commit to avoid CI failures!**
+
 ```bash
-# Format all code
+# 1. Format ALL code (REQUIRED before committing)
 find src -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i
 
-# Check formatting (what CI runs)
+# 2. Verify formatting (CI check - must pass)
 find src -name "*.cpp" -o -name "*.hpp" | xargs clang-format --dry-run -Werror
 
-# Run static analysis
+# 3. Run static analysis (informational)
 clang-tidy src/main.cpp -- -Isrc/glad/include
 
-# Build and test
+# 4. Build and test
 cmake -B build -S .
 cmake --build build
 ./build/tests/ParticleViewerTests
 ```
+
+**Pre-commit Checklist:**
+- [ ] ✅ Run `clang-format -i` on all changed files
+- [ ] ✅ Verify `clang-format --dry-run -Werror` passes
+- [ ] ✅ Build succeeds
+- [ ] ✅ All tests pass
+- [ ] ✅ Use conventional commit message format
 
 ### Adding a New Feature
 
 1. Create feature branch (if not using Copilot PR)
 2. Make code changes following naming conventions
 3. Add unit tests in `tests/core/` following AAA pattern
-4. Run clang-format on changed files
+4. **⚠️ REQUIRED: Run `clang-format -i` on ALL changed files**
 5. Build and verify tests pass
-6. Commit with conventional commit format (e.g., `feat: add new feature`)
-7. CI checks will run automatically on PR
+6. Verify formatting with `clang-format --dry-run -Werror`
+7. Commit with conventional commit format (e.g., `feat: add new feature`)
+8. CI checks will run automatically on PR
 
 ### Fixing a Bug
 
@@ -367,8 +380,9 @@ cmake --build build
 2. Fix the code
 3. Verify test now passes
 4. Run full test suite
-5. Format code with clang-format
-6. Commit with format: `fix: description of what was fixed`
+5. **⚠️ REQUIRED: Format code with `clang-format -i` on changed files**
+6. Verify formatting with `clang-format --dry-run -Werror`
+7. Commit with format: `fix: description of what was fixed`
 
 ## Common Pitfalls and Solutions
 
@@ -512,14 +526,16 @@ See `docs/visual-regression/camera-positioning-lessons-learned.md` for full anal
 3. **Use tools**: Let clang-format handle formatting, don't do it manually
 4. **Test incrementally**: Run tests frequently during development
 5. **Commit properly**: Use conventional commits - your commit messages become release notes
-6. **Check CI early**: Run local formatting/tidy checks before pushing to catch CI failures early
-7. **Self-review before finishing**: Run code_review tool, check AAA pattern compliance, verify no resource leaks, ensure documentation is updated for any architectural changes
-8. **Run self-evaluation**: Before finalizing any session, run the `self-evaluation` skill (`.github/skills/self-evaluation/`) to capture lessons learned and improve project knowledge
+6. **⚠️ ALWAYS format before committing**: Run `clang-format -i` on ALL changed files BEFORE every commit to avoid CI failures
+7. **Check CI early**: Run local formatting/tidy checks before pushing to catch CI failures early
+8. **Self-review before finishing**: Run code_review tool, check AAA pattern compliance, verify no resource leaks, ensure documentation is updated for any architectural changes
+9. **Run self-evaluation**: Before finalizing any session, run the `self-evaluation` skill (`.github/skills/self-evaluation/`) to capture lessons learned and improve project knowledge
 
 ## When in Doubt
 
 - Consult `docs/CODING_STANDARDS.md` for code style questions
 - Consult `docs/TESTING_STANDARDS.md` for test-writing questions
 - Check existing similar code for patterns
+- **⚠️ ALWAYS run `clang-format -i` on changed files before committing**
 - Run clang-format and clang-tidy to catch issues
 - Build and test locally before pushing
