@@ -632,6 +632,13 @@ void ViewerApp::handleResize(int width, int height)
     // Reallocate pixel buffer for recording
     delete[] pixels_;
     pixels_ = new unsigned char[width * height * 3];
+
+    // Note: We don't save settings on every resize event to avoid excessive I/O
+    // during window dragging. Settings are saved when:
+    // 1. User selects a resolution from the menu
+    // 2. User toggles fullscreen (Alt+Enter)
+    // 3. Application exits (future enhancement)
+    // Users who manually resize can select "View → Resolution" to save their size.
 }
 
 void ViewerApp::resizeFBO(int width, int height)
@@ -676,12 +683,14 @@ void ViewerApp::toggleFullscreen()
 
     if (monitor) {
         // Currently fullscreen, switch to windowed mode
-        glfwSetWindowMonitor(native_window, nullptr, 100, 100, window_.windowed_width, window_.windowed_height, GLFW_DONT_CARE);
+        glfwSetWindowMonitor(native_window, nullptr, window_.windowed_x, window_.windowed_y, window_.windowed_width,
+                             window_.windowed_height, GLFW_DONT_CARE);
         window_.fullscreen = 0;
     } else {
         // Currently windowed, switch to fullscreen
-        // Save current window size
+        // Save current window size and position
         glfwGetWindowSize(native_window, &window_.windowed_width, &window_.windowed_height);
+        glfwGetWindowPos(native_window, &window_.windowed_x, &window_.windowed_y);
 
         // Get primary monitor and its video mode
         GLFWmonitor* primary = glfwGetPrimaryMonitor();

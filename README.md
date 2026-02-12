@@ -78,6 +78,30 @@ ___
 [CMAKE](https://cmake.org/")
 ___
 
+## Features
+
+### Window and Resolution Management
+
+Particle-Viewer supports runtime resolution changes and fullscreen mode:
+
+- **Resolution Selection**: Choose from 720p, 1080p, 1440p, or 4K via the View menu
+- **Fullscreen Toggle**: Press **Alt+Enter** to toggle fullscreen mode
+- **Manual Resizing**: Drag window edges to resize — the viewport adjusts automatically
+- **Persistent Settings**: Window size and fullscreen state are saved between sessions
+- **Monitor Constraints**: Automatically clamps resolution to your monitor's capabilities
+
+See [Window Management Guide](docs/WINDOW_MANAGEMENT.md) for detailed instructions.
+
+### Other Features
+
+- 3D visualization of N-Body particle simulations
+- Frame-by-frame playback control
+- Screenshot capture and video frame recording
+- Center-of-mass tracking and visualization
+- ImGui-based menu system with debug overlay
+
+___
+
 ## Contributing
 
 We welcome contributions! Please follow our [Coding Standards](docs/CODING_STANDARDS.md) to maintain code quality and consistency.

@@ -6,7 +6,7 @@
 
 #include "imgui_menu.hpp"
 
-#include <cstdio>
+#include <string>
 
 #include <GLFW/glfw3.h>
 
@@ -106,9 +106,9 @@ MenuActions renderMainMenu(MenuState& state)
 
                     // Show original name with (clamped) indicator if needed
                     if (clamped) {
-                        char label[128];
-                        snprintf(label, sizeof(label), "%s (clamped to %dx%d)", res.name, width, height);
-                        if (ImGui::MenuItem(label)) {
+                        std::string label = std::string(res.name) + " (clamped to " + std::to_string(width) + "x" +
+                                            std::to_string(height) + ")";
+                        if (ImGui::MenuItem(label.c_str())) {
                             actions.change_resolution = true;
                             actions.target_width = width;
                             actions.target_height = height;

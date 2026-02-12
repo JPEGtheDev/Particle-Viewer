@@ -18,8 +18,19 @@ class WindowConfigTest : public ::testing::Test
   protected:
     void SetUp() override
     {
-        // Use a temporary test file
+        // Use a portable test file path
+#ifdef _WIN32
+        const char* temp_dir = std::getenv("TEMP");
+        if (!temp_dir) {
+            temp_dir = std::getenv("TMP");
+        }
+        if (!temp_dir) {
+            temp_dir = ".";
+        }
+        test_config_path = std::string(temp_dir) + "\\test_particle_viewer_config.cfg";
+#else
         test_config_path = "/tmp/test_particle_viewer_config.cfg";
+#endif
         // Clean up any existing test file
         std::remove(test_config_path.c_str());
     }
