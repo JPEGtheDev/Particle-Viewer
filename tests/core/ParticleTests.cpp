@@ -410,3 +410,144 @@ TEST_F(ParticleTest, ChangeTranslations_WithSingleParticle_WorksCorrectly)
     // Cleanup
     delete[] newTrans;
 }
+
+// ============================================
+// Cube Particle Spacing Validation Tests
+// ============================================
+
+/*
+ * These tests validate that the default 40x40x40 particle cube has correct
+ * spacing between particles. The cube uses a specific formula where particles
+ * are indexed linearly but positioned in 3D space with 1.25 unit spacing.
+ */
+
+TEST_F(ParticleTest, DefaultCube_Has64000Particles)
+{
+    // Arrange & Act
+    Particle p;
+
+    // Assert - 40x40x40 cube = 64,000 particles
+    EXPECT_EQ(p.n, 64000);
+}
+
+TEST_F(ParticleTest, DefaultCube_XAxisSpacing_IsUniform)
+{
+    // Arrange
+    Particle p;
+    const float EXPECTED_SPACING = 1.25f;
+
+    // Act - Check X-axis spacing in the first row (indices 0-39)
+    // These particles have incrementing X coordinates with consistent spacing
+    for (int i = 0; i < 39; i++) {
+        float x_spacing = p.translations[i + 1].x - p.translations[i].x;
+
+        // Assert
+        EXPECT_FLOAT_EQ(x_spacing, EXPECTED_SPACING)
+            << "X spacing between particles " << i << " and " << (i + 1) << " is not 1.25";
+    }
+}
+
+TEST_F(ParticleTest, DefaultCube_YAxisSpacing_IsUniform)
+{
+    // Arrange
+    Particle p;
+    const float EXPECTED_SPACING = 1.25f;
+    const float TOLERANCE = 0.001f;
+
+    // Act - Check Y-axis spacing at X=0, Z=0 (indices 0, 40, 80, ...)
+    // Particles 40 indices apart have 1.25 unit Y spacing
+    for (int y = 0; y < 39; y++) {
+        int idx = y * 40;
+        float y_spacing = p.translations[idx + 40].y - p.translations[idx].y;
+
+        // Assert
+        EXPECT_NEAR(y_spacing, EXPECTED_SPACING, TOLERANCE)
+            << "Y spacing at Y-layer " << y << " is not 1.25";
+    }
+}
+
+TEST_F(ParticleTest, DefaultCube_ZAxisSpacing_IsUniform)
+{
+    // Arrange
+    Particle p;
+    const float EXPECTED_SPACING = 1.25f;
+    const float TOLERANCE = 0.001f;
+
+    // Act - Check Z-axis spacing at X=0, Y=0 (indices 0, 1600, 3200, ...)
+    // Particles 1600 indices apart have 1.25 unit Z spacing
+    for (int z = 0; z < 39; z++) {
+        int idx = z * 1600;
+        float z_spacing = p.translations[idx + 1600].z - p.translations[idx].z;
+
+        // Assert
+        EXPECT_NEAR(z_spacing, EXPECTED_SPACING, TOLERANCE)
+            << "Z spacing at Z-layer " << z << " is not 1.25";
+    }
+}
+
+TEST_F(ParticleTest, DefaultCube_OriginIsAtZero)
+{
+    // Arrange
+    Particle p;
+    const float TOLERANCE = 0.001f;
+
+    // Act & Assert - First particle should be at origin
+    EXPECT_NEAR(p.translations[0].x, 0.0f, TOLERANCE);
+    EXPECT_NEAR(p.translations[0].y, 0.0f, TOLERANCE);
+    EXPECT_NEAR(p.translations[0].z, 0.0f, TOLERANCE);
+}
+
+TEST_F(ParticleTest, DefaultCube_MaxDimensionsAreEqual)
+{
+    // Arrange
+    Particle p;
+    const float EXPECTED_MAX = 39 * 1.25f; // 48.75
+    const float TOLERANCE = 0.001f;
+
+    // Act - Find maximum extent along each axis
+    float max_x = p.translations[39].x;        // Max X at index 39
+    float max_y = p.translations[1560].y;      // Max Y at index 39*40
+    float max_z = p.translations[62400].z;     // Max Z at index 39*1600
+
+    // Assert - Cube should be equal in all dimensions
+    EXPECT_NEAR(max_x, EXPECTED_MAX, TOLERANCE);
+    EXPECT_NEAR(max_y, EXPECTED_MAX, TOLERANCE);
+    EXPECT_NEAR(max_z, EXPECTED_MAX, TOLERANCE);
+}
+
+TEST_F(ParticleTest, DefaultCube_AllParticlesHaveSameSize)
+{
+    // Arrange
+    Particle p;
+
+    // Act & Assert - All particles should have w=500
+    for (int i = 0; i < p.n; i++) {
+        EXPECT_FLOAT_EQ(p.translations[i].w, DEFAULT_PARTICLE_SIZE)
+            << "Particle " << i << " does not have the expected size";
+    }
+}
+
+TEST_F(ParticleTest, DefaultCube_CubeIsNotEmpty)
+{
+    // Arrange
+    Particle p;
+
+    // Act & Assert - Verify particles actually fill 3D space
+    // Check that we have particles with varying X, Y, and Z coordinates
+    bool has_varying_x = false;
+    bool has_varying_y = false;
+    bool has_varying_z = false;
+
+    for (int i = 1; i < p.n; i++) {
+        if (p.translations[i].x != p.translations[0].x)
+            has_varying_x = true;
+        if (p.translations[i].y != p.translations[0].y)
+            has_varying_y = true;
+        if (p.translations[i].z != p.translations[0].z)
+            has_varying_z = true;
+    }
+
+    EXPECT_TRUE(has_varying_x) << "All particles have the same X coordinate";
+    EXPECT_TRUE(has_varying_y) << "All particles have the same Y coordinate";
+    EXPECT_TRUE(has_varying_z) << "All particles have the same Z coordinate";
+}
