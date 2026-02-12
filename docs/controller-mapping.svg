@@ -1,163 +1,260 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+<svg width="900" height="700" viewBox="0 0 900 700" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <style>
-      .controller-body { fill: #2a2a2a; stroke: #000; stroke-width: 2; }
-      .button { fill: #4a4a4a; stroke: #000; stroke-width: 1.5; }
-      .button-face { fill: #e74c3c; }
-      .button-green { fill: #2ecc71; }
-      .button-blue { fill: #3498db; }
-      .button-yellow { fill: #f1c40f; }
-      .stick { fill: #3a3a3a; stroke: #000; stroke-width: 2; }
-      .trigger { fill: #5a5a5a; stroke: #000; stroke-width: 1.5; }
-      .dpad { fill: #2a2a2a; stroke: #000; stroke-width: 1.5; }
-      .label-text { font-family: Arial, sans-serif; font-size: 13px; fill: #333; font-weight: bold; }
-      .label-box { fill: white; stroke: #333; stroke-width: 1.5; rx: 5; }
-      .label-line { stroke: #666; stroke-width: 1.5; fill: none; }
-      .title-text { font-family: Arial, sans-serif; font-size: 24px; fill: #333; font-weight: bold; }
-      .subtitle-text { font-family: Arial, sans-serif; font-size: 16px; fill: #666; }
+      .controller-body { fill: #1a1a1a; stroke: #000; stroke-width: 2.5; }
+      .controller-dark { fill: #0d0d0d; stroke: #000; stroke-width: 2; }
+      .button { fill: #2a2a2a; stroke: #000; stroke-width: 1.5; }
+      .button-green { fill: #4CAF50; stroke: #2e7d32; stroke-width: 1.5; }
+      .button-red { fill: #f44336; stroke: #c62828; stroke-width: 1.5; }
+      .button-blue { fill: #2196F3; stroke: #1565c0; stroke-width: 1.5; }
+      .button-yellow { fill: #FFC107; stroke: #f57f17; stroke-width: 1.5; }
+      .button-gray { fill: #3a3a3a; stroke: #1a1a1a; stroke-width: 1.5; }
+      .stick { fill: #2a2a2a; stroke: #000; stroke-width: 2; }
+      .stick-inner { fill: #1a1a1a; }
+      .dpad { fill: #1a1a1a; stroke: #000; stroke-width: 1.5; }
+      .trigger { fill: #3a3a3a; stroke: #000; stroke-width: 2; }
+      .bumper { fill: #2a2a2a; stroke: #000; stroke-width: 1.5; }
+      .label-text { font-family: 'Segoe UI', Arial, sans-serif; font-size: 10px; fill: #333; font-weight: 600; }
+      .label-bg { fill: rgba(255,255,255,0.95); stroke: #999; stroke-width: 1; rx: 3; }
+      .arrow-line { stroke: #666; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+      .title-text { font-family: 'Segoe UI', Arial, sans-serif; font-size: 22px; fill: #222; font-weight: 700; }
+      .section-text { font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; fill: #444; font-weight: 600; }
     </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#666" />
+    </marker>
   </defs>
   
   <!-- Title -->
-  <text x="400" y="35" class="title-text" text-anchor="middle">Xbox Controller Mapping</text>
-  <text x="400" y="55" class="subtitle-text" text-anchor="middle">Particle-Viewer Gamepad Controls</text>
+  <text x="450" y="30" class="title-text" text-anchor="middle">Gamepad Controller Mapping</text>
   
-  <!-- Controller Body -->
-  <ellipse cx="400" cy="320" rx="180" ry="120" class="controller-body"/>
+  <!-- ==================== TOP VIEW (FRONT) ==================== -->
+  <text x="450" y="60" class="section-text" text-anchor="middle">Front View</text>
   
-  <!-- Grips -->
-  <path d="M 230 360 Q 220 400 240 420 L 250 410 Q 235 390 240 360 Z" class="controller-body"/>
-  <path d="M 570 360 Q 580 400 560 420 L 550 410 Q 565 390 560 360 Z" class="controller-body"/>
-  
-  <!-- Left Stick -->
-  <circle cx="320" cy="310" r="35" class="stick"/>
-  <circle cx="320" cy="310" r="25" class="button"/>
-  
-  <!-- Right Stick -->
-  <circle cx="480" cy="350" r="35" class="stick"/>
-  <circle cx="480" cy="350" r="25" class="button"/>
-  
-  <!-- D-Pad -->
-  <g transform="translate(300, 360)">
-    <rect x="-10" y="-30" width="20" height="60" class="dpad"/>
-    <rect x="-30" y="-10" width="60" height="20" class="dpad"/>
+  <!-- Controller Body (top view - more realistic shape) -->
+  <g id="controller-front">
+    <!-- Main body -->
+    <path d="M 250 180 
+             Q 240 150, 260 130
+             L 350 110
+             Q 380 105, 400 110
+             L 500 110
+             Q 520 105, 550 110
+             L 640 130
+             Q 660 150, 650 180
+             L 640 250
+             Q 635 270, 620 280
+             L 600 310
+             Q 590 330, 570 340
+             L 530 350
+             Q 520 352, 510 350
+             L 490 350
+             Q 480 352, 470 350
+             L 430 350
+             Q 420 352, 410 350
+             L 390 350
+             Q 380 352, 370 350
+             L 330 340
+             Q 310 330, 300 310
+             L 280 280
+             Q 265 270, 260 250
+             Z" 
+          class="controller-body"/>
+    
+    <!-- Grips (handles) -->
+    <ellipse cx="300" cy="310" rx="45" ry="60" class="controller-dark" transform="rotate(-15 300 310)"/>
+    <ellipse cx="600" cy="310" rx="45" ry="60" class="controller-dark" transform="rotate(15 600 310)"/>
+    
+    <!-- Left analog stick -->
+    <circle cx="340" cy="200" r="32" class="stick"/>
+    <circle cx="340" cy="200" r="22" class="stick-inner"/>
+    <text x="340" y="205" text-anchor="middle" fill="#666" font-size="9" font-weight="bold">L</text>
+    
+    <!-- Right analog stick -->
+    <circle cx="530" cy="240" r="32" class="stick"/>
+    <circle cx="530" cy="240" r="22" class="stick-inner"/>
+    <text x="530" y="245" text-anchor="middle" fill="#666" font-size="9" font-weight="bold">R</text>
+    
+    <!-- D-Pad -->
+    <g transform="translate(380, 230)">
+      <rect x="-8" y="-24" width="16" height="48" class="dpad" rx="3"/>
+      <rect x="-24" y="-8" width="48" height="16" class="dpad" rx="3"/>
+    </g>
+    
+    <!-- Face Buttons (ABXY) -->
+    <circle cx="560" cy="180" r="13" class="button-green"/>
+    <text x="560" y="184" text-anchor="middle" fill="white" font-size="10" font-weight="bold">A</text>
+    
+    <circle cx="590" cy="165" r="13" class="button-red"/>
+    <text x="590" y="169" text-anchor="middle" fill="white" font-size="10" font-weight="bold">B</text>
+    
+    <circle cx="530" cy="165" r="13" class="button-blue"/>
+    <text x="530" y="169" text-anchor="middle" fill="white" font-size="10" font-weight="bold">X</text>
+    
+    <circle cx="560" cy="150" r="13" class="button-yellow"/>
+    <text x="560" y="154" text-anchor="middle" fill="white" font-size="10" font-weight="bold">Y</text>
+    
+    <!-- Center buttons -->
+    <ellipse cx="420" cy="180" rx="10" ry="8" class="button-gray"/>
+    <text x="420" y="183" text-anchor="middle" fill="#999" font-size="6">◄◄</text>
+    
+    <ellipse cx="480" cy="180" rx="10" ry="8" class="button-gray"/>
+    <text x="480" y="183" text-anchor="middle" fill="#999" font-size="6">▶▶</text>
+    
+    <!-- Guide button -->
+    <circle cx="450" cy="180" r="12" class="button-gray"/>
+    <circle cx="450" cy="180" r="8" fill="#4CAF50"/>
+    
+    <!-- Bumpers (top shoulder buttons) -->
+    <path d="M 270 125 Q 265 115, 275 110 L 350 105 L 350 120 L 280 125 Z" class="bumper"/>
+    <text x="310" y="118" text-anchor="middle" fill="#ccc" font-size="8" font-weight="bold">LB</text>
+    
+    <path d="M 630 125 Q 635 115, 625 110 L 550 105 L 550 120 L 620 125 Z" class="bumper"/>
+    <text x="590" y="118" text-anchor="middle" fill="#ccc" font-size="8" font-weight="bold">RB</text>
   </g>
   
-  <!-- Face Buttons (A, B, X, Y) -->
-  <circle cx="500" cy="290" r="15" class="button button-green"/>
-  <text x="500" y="295" text-anchor="middle" fill="white" font-size="12" font-weight="bold">A</text>
+  <!-- Labels for front view -->
+  <g id="front-labels">
+    <!-- Left Stick -->
+    <path d="M 308 200 L 200 170" class="arrow-line"/>
+    <rect x="90" y="158" width="110" height="26" class="label-bg"/>
+    <text x="145" y="168" class="label-text" text-anchor="middle">Left Stick</text>
+    <text x="145" y="179" class="label-text" text-anchor="middle" font-size="9">Move Camera</text>
+    
+    <!-- L3 -->
+    <path d="M 320 220 L 220 260" class="arrow-line"/>
+    <rect x="145" y="255" width="75" height="16" class="label-bg"/>
+    <text x="182" y="265" class="label-text" text-anchor="middle">L3: Closer</text>
+    
+    <!-- Right Stick -->
+    <path d="M 562 240 L 680 230" class="arrow-line"/>
+    <rect x="680" y="218" width="110" height="26" class="label-bg"/>
+    <text x="735" y="228" class="label-text" text-anchor="middle">Right Stick</text>
+    <text x="735" y="239" class="label-text" text-anchor="middle" font-size="9">Rotate/Zoom</text>
+    
+    <!-- R3 -->
+    <path d="M 550 265 L 640 295" class="arrow-line"/>
+    <rect x="640" y="289" width="80" height="16" class="label-bg"/>
+    <text x="680" y="299" class="label-text" text-anchor="middle">R3: Farther</text>
+    
+    <!-- D-Pad -->
+    <path d="M 355 230 L 260 280" class="arrow-line"/>
+    <rect x="190" y="276" width="70" height="16" class="label-bg"/>
+    <text x="225" y="286" class="label-text" text-anchor="middle">(unused)</text>
+    
+    <!-- A Button -->
+    <path d="M 573 180 L 680 160" class="arrow-line"/>
+    <rect x="680" y="150" width="110" height="16" class="label-bg"/>
+    <text x="735" y="160" class="label-text" text-anchor="middle">A: Play/Pause</text>
+    
+    <!-- X Button -->
+    <path d="M 517 165 L 420 140" class="arrow-line"/>
+    <rect x="330" y="130" width="90" height="16" class="label-bg"/>
+    <text x="375" y="140" class="label-text" text-anchor="middle">X: Point Lock</text>
+    
+    <!-- Y Button -->
+    <path d="M 560 137 L 620 100" class="arrow-line"/>
+    <rect x="620" y="90" width="90" height="16" class="label-bg"/>
+    <text x="665" y="100" class="label-text" text-anchor="middle">Y: COM Lock</text>
+    
+    <!-- Back Button -->
+    <path d="M 410 180 L 310 190" class="arrow-line"/>
+    <rect x="220" y="184" width="90" height="16" class="label-bg"/>
+    <text x="265" y="194" class="label-text" text-anchor="middle">Back: Load File</text>
+    
+    <!-- LB -->
+    <path d="M 280 115 L 200 90" class="arrow-line"/>
+    <rect x="110" y="80" width="90" height="16" class="label-bg"/>
+    <text x="155" y="90" class="label-text" text-anchor="middle">LB: Prev Frame</text>
+    
+    <!-- RB -->
+    <path d="M 620 115 L 700 90" class="arrow-line"/>
+    <rect x="700" y="80" width="90" height="16" class="label-bg"/>
+    <text x="745" y="90" class="label-text" text-anchor="middle">RB: Next Frame</text>
+  </g>
   
-  <circle cx="530" cy="270" r="15" class="button button-face"/>
-  <text x="530" y="275" text-anchor="middle" fill="white" font-size="12" font-weight="bold">B</text>
+  <!-- ==================== BACK VIEW (TRIGGERS) ==================== -->
+  <text x="450" y="410" class="section-text" text-anchor="middle">Back View</text>
   
-  <circle cx="470" cy="270" r="15" class="button button-blue"/>
-  <text x="470" y="275" text-anchor="middle" fill="white" font-size="12" font-weight="bold">X</text>
+  <g id="controller-back" transform="translate(0, 180)">
+    <!-- Back body silhouette -->
+    <path d="M 280 280
+             L 300 260
+             Q 320 250, 350 248
+             L 450 248
+             Q 480 250, 500 248
+             L 550 248
+             Q 580 250, 600 260
+             L 620 280
+             Q 625 300, 615 320
+             L 600 350
+             Q 590 365, 570 372
+             L 530 380
+             Q 520 382, 510 380
+             L 490 380
+             Q 480 382, 470 380
+             L 430 380
+             Q 420 382, 410 380
+             L 390 380
+             Q 380 382, 370 380
+             L 330 372
+             Q 310 365, 300 350
+             L 285 320
+             Q 275 300, 280 280 Z"
+          class="controller-dark" opacity="0.3"/>
+    
+    <!-- Left trigger (LT) -->
+    <g>
+      <path d="M 290 250 
+               Q 285 245, 295 240
+               L 360 235
+               Q 370 234, 375 240
+               L 375 255
+               Q 370 260, 360 260
+               L 300 265
+               Q 290 263, 290 255 Z"
+            class="trigger"/>
+      <text x="332" y="252" text-anchor="middle" fill="#ccc" font-size="10" font-weight="bold">LT</text>
+    </g>
+    
+    <!-- Right trigger (RT) -->
+    <g>
+      <path d="M 610 250
+               Q 615 245, 605 240
+               L 540 235
+               Q 530 234, 525 240
+               L 525 255
+               Q 530 260, 540 260
+               L 600 265
+               Q 610 263, 610 255 Z"
+            class="trigger"/>
+      <text x="568" y="252" text-anchor="middle" fill="#ccc" font-size="10" font-weight="bold">RT</text>
+    </g>
+    
+    <!-- Grip indicators -->
+    <ellipse cx="320" cy="340" rx="35" ry="50" class="controller-body" opacity="0.4"/>
+    <ellipse cx="580" cy="340" rx="35" ry="50" class="controller-body" opacity="0.4"/>
+  </g>
   
-  <circle cx="500" cy="250" r="15" class="button button-yellow"/>
-  <text x="500" y="255" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Y</text>
+  <!-- Labels for back view -->
+  <g id="back-labels">
+    <!-- LT -->
+    <path d="M 295 425 L 200 405" class="arrow-line"/>
+    <rect x="110" y="395" width="90" height="16" class="label-bg"/>
+    <text x="155" y="405" class="label-text" text-anchor="middle">LT: Rewind</text>
+    
+    <!-- RT -->
+    <path d="M 605 425 L 700 405" class="arrow-line"/>
+    <rect x="700" y="395" width="100" height="16" class="label-bg"/>
+    <text x="750" y="405" class="label-text" text-anchor="middle">RT: Fast-Forward</text>
+  </g>
   
-  <!-- Bumpers -->
-  <ellipse cx="320" cy="235" rx="40" ry="12" class="button"/>
-  <text x="320" y="239" text-anchor="middle" fill="white" font-size="10" font-weight="bold">LB</text>
+  <!-- Legend -->
+  <rect x="50" y="600" width="800" height="80" fill="#f5f5f5" stroke="#999" stroke-width="2" rx="6"/>
+  <text x="450" y="620" class="section-text" text-anchor="middle">Control Details</text>
   
-  <ellipse cx="480" cy="235" rx="40" ry="12" class="button"/>
-  <text x="480" y="239" text-anchor="middle" fill="white" font-size="10" font-weight="bold">RB</text>
-  
-  <!-- Triggers -->
-  <ellipse cx="320" cy="210" rx="35" ry="10" class="trigger"/>
-  <text x="320" y="214" text-anchor="middle" fill="white" font-size="9" font-weight="bold">LT</text>
-  
-  <ellipse cx="480" cy="210" rx="35" ry="10" class="trigger"/>
-  <text x="480" y="214" text-anchor="middle" fill="white" font-size="9" font-weight="bold">RT</text>
-  
-  <!-- Center Buttons -->
-  <circle cx="375" cy="290" r="8" class="button"/>
-  <text x="375" y="294" text-anchor="middle" fill="white" font-size="7" font-weight="bold">◄◄</text>
-  
-  <circle cx="425" cy="290" r="8" class="button"/>
-  <text x="425" y="294" text-anchor="middle" fill="white" font-size="7" font-weight="bold">▶▶</text>
-  
-  <!-- Xbox Button -->
-  <circle cx="400" cy="290" r="10" class="button-green"/>
-  
-  <!-- Labels with lines -->
-  
-  <!-- Left Stick Label -->
-  <line x1="320" y1="270" x2="180" y2="200" class="label-line"/>
-  <rect x="60" y="180" width="120" height="40" class="label-box"/>
-  <text x="120" y="195" class="label-text" text-anchor="middle">Left Stick</text>
-  <text x="120" y="210" class="label-text" text-anchor="middle" font-size="11">Move Camera</text>
-  
-  <!-- L3 Label -->
-  <line x1="300" y1="310" x2="180" y2="260" class="label-line"/>
-  <rect x="80" y="245" width="100" height="30" class="label-box"/>
-  <text x="130" y="260" class="label-text" text-anchor="middle" font-size="11">L3: Sphere In</text>
-  
-  <!-- Right Stick Label -->
-  <line x1="480" y1="390" x2="620" y2="450" class="label-line"/>
-  <rect x="560" y="435" width="120" height="40" class="label-box"/>
-  <text x="620" y="450" class="label-text" text-anchor="middle">Right Stick</text>
-  <text x="620" y="465" class="label-text" text-anchor="middle" font-size="11">Rotate/Zoom</text>
-  
-  <!-- R3 Label -->
-  <line x1="500" y1="370" x2="620" y2="390" class="label-line"/>
-  <rect x="570" y="375" width="110" height="30" class="label-box"/>
-  <text x="625" y="390" class="label-text" text-anchor="middle" font-size="11">R3: Sphere Out</text>
-  
-  <!-- A Button Label -->
-  <line x1="515" y1="290" x2="640" y2="300" class="label-line"/>
-  <rect x="640" y="285" width="140" height="30" class="label-box"/>
-  <text x="710" y="300" class="label-text" text-anchor="middle" font-size="11">A: Play/Pause</text>
-  
-  <!-- B Button Label (not mapped, grayed) -->
-  <text x="545" y="270" fill="#999" font-size="9">(unused)</text>
-  
-  <!-- X Button Label -->
-  <line x1="455" y1="270" x2="350" y2="220" class="label-line"/>
-  <rect x="280" y="205" width="140" height="30" class="label-box"/>
-  <text x="350" y="220" class="label-text" text-anchor="middle" font-size="11">X: Point Lock</text>
-  
-  <!-- Y Button Label -->
-  <line x1="500" y1="235" x2="620" y2="180" class="label-line"/>
-  <rect x="560" y="165" width="130" height="30" class="label-box"/>
-  <text x="625" y="180" class="label-text" text-anchor="middle" font-size="11">Y: COM Lock</text>
-  
-  <!-- LB Label -->
-  <line x1="280" y1="235" x2="180" y2="150" class="label-line"/>
-  <rect x="110" y="130" width="140" height="35" class="label-box"/>
-  <text x="180" y="145" class="label-text" text-anchor="middle" font-size="11">LB: Prev Frame</text>
-  
-  <!-- RB Label -->
-  <line x1="520" y1="235" x2="620" y2="150" class="label-line"/>
-  <rect x="550" y="130" width="140" height="35" class="label-box"/>
-  <text x="620" y="145" class="label-text" text-anchor="middle" font-size="11">RB: Next Frame</text>
-  
-  <!-- LT Label -->
-  <line x1="285" y1="210" x2="180" y2="100" class="label-line"/>
-  <rect x="110" y="80" width="140" height="35" class="label-box"/>
-  <text x="180" y="95" class="label-text" text-anchor="middle" font-size="11">LT: Rewind</text>
-  
-  <!-- RT Label -->
-  <line x1="515" y1="210" x2="620" y2="100" class="label-line"/>
-  <rect x="550" y="80" width="140" height="35" class="label-box"/>
-  <text x="620" y="95" class="label-text" text-anchor="middle" font-size="11">RT: Fast-Forward</text>
-  
-  <!-- Back Button Label -->
-  <line x1="368" y1="290" x2="280" y2="300" class="label-line"/>
-  <rect x="170" y="285" width="110" height="30" class="label-box"/>
-  <text x="225" y="300" class="label-text" text-anchor="middle" font-size="11">Back: Load File</text>
-  
-  <!-- D-Pad Label -->
-  <line x1="285" y1="360" x2="180" y2="350" class="label-line"/>
-  <rect x="100" y="335" width="80" height="30" class="label-box"/>
-  <text x="140" y="350" class="label-text" text-anchor="middle" font-size="11">(unused)</text>
-  
-  <!-- Legend at bottom -->
-  <rect x="50" y="510" width="700" height="70" fill="#f9f9f9" stroke="#333" stroke-width="2" rx="8"/>
-  <text x="400" y="530" class="label-text" text-anchor="middle" font-size="14">Control Details</text>
-  <text x="60" y="550" font-size="11" fill="#333">• Left Stick: Strafe (X) + Forward/Back (Y)</text>
-  <text x="60" y="565" font-size="11" fill="#333">• Right Stick: Pan (X) + Tilt (Y) | Zoom when point-locked</text>
-  <text x="400" y="550" font-size="11" fill="#333">• Triggers: Analog (1-5 frames/update)</text>
-  <text x="400" y="565" font-size="11" fill="#333">• L3/R3: Hold to adjust sphere distance</text>
+  <text x="70" y="640" font-size="10" fill="#333">• <tspan font-weight="bold">Left Stick:</tspan> Strafe (X) + Forward/Back (Y) | <tspan font-weight="bold">L3:</tspan> Sphere distance closer</text>
+  <text x="70" y="655" font-size="10" fill="#333">• <tspan font-weight="bold">Right Stick:</tspan> Pan (X) + Tilt (Y) | Zoom when point-locked | <tspan font-weight="bold">R3:</tspan> Sphere distance farther</text>
+  <text x="70" y="670" font-size="10" fill="#333">• <tspan font-weight="bold">Triggers:</tspan> Analog control (1-5 frames/update based on pressure) | <tspan font-weight="bold">Bumpers:</tspan> Single frame advance</text>
 </svg>
