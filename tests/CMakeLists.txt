@@ -5,6 +5,7 @@
 file(GLOB TEST_CORE_FILES core/*Tests.cpp)
 file(GLOB TEST_MOCK_FILES mocks/*.cpp)
 file(GLOB TEST_INTEGRATION_FILES integration/*Tests.cpp)
+file(GLOB TEST_INPUT_FILES input/*Tests.cpp)
 file(GLOB TEST_TESTING_FILES testing/*Tests.cpp)
 file(GLOB TEST_VISUAL_REGRESSION_FILES visual-regression/*Tests.cpp)
 
@@ -15,6 +16,7 @@ add_executable(ParticleViewerTests
     ${TEST_CORE_FILES}
     ${TEST_MOCK_FILES}
     ${TEST_INTEGRATION_FILES}
+    ${TEST_INPUT_FILES}
     ${TEST_TESTING_FILES}
     ${TEST_VISUAL_REGRESSION_FILES}
     ${TESTING_UTILITY_SOURCES}
