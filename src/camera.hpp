@@ -218,6 +218,16 @@ class Camera
     }
 
     /*
+     * Update the projection matrix for a new aspect ratio.
+     * Call this when the window is resized to prevent distortion.
+     */
+    void updateProjection(int width, int height)
+    {
+        GLfloat aspect = static_cast<GLfloat>(width) / static_cast<GLfloat>(height);
+        projection = glm::perspective(fov, aspect, nearPlane, renderDistance);
+    }
+
+    /*
      * Initializes Vertex Array Objects for the rotation sphere and the Center Of Mass sphere.
      */
     void initGL()

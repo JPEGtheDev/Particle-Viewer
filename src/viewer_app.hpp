@@ -202,6 +202,12 @@ class ViewerApp
     void setupCallbacks();
 
     // ============================================
+    // Window Management
+    // ============================================
+    void handleResize(int width, int height);
+    void resizeFBO(int width, int height);
+
+    // ============================================
     // Rendering Pipeline
     // ============================================
     void setupGLStuff();
@@ -234,6 +240,7 @@ class ViewerApp
     // Static GLFW Callbacks (delegate to instance via user pointer)
     // ============================================
     static void keyCallbackStatic(GLFWwindow* window, int key, int scancode, int action, int mods);
+    static void framebufferSizeCallbackStatic(GLFWwindow* window, int width, int height);
 };
 
 #endif // PARTICLE_VIEWER_VIEWER_APP_H

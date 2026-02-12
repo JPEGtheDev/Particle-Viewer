@@ -146,6 +146,7 @@ void ViewerApp::setupCallbacks()
     if (native_window) {
         glfwSetWindowUserPointer(native_window, this);
         glfwSetKeyCallback(native_window, keyCallbackStatic);
+        glfwSetFramebufferSizeCallback(native_window, framebufferSizeCallbackStatic);
     }
 }
 
@@ -581,6 +582,66 @@ void ViewerApp::shutdownImGui()
 }
 
 // ============================================================================
+// Window Management
+// ============================================================================
+
+void ViewerApp::handleResize(int width, int height)
+{
+    if (width <= 0 || height <= 0) {
+        return; // Invalid dimensions, ignore
+    }
+
+    window_.width = width;
+    window_.height = height;
+
+    // Update viewport
+    glViewport(0, 0, width, height);
+
+    // Update camera projection matrix
+    if (cam_) {
+        cam_->updateProjection(width, height);
+    }
+
+    // Resize framebuffer objects
+    resizeFBO(width, height);
+
+    // Reallocate pixel buffer for recording
+    delete[] pixels_;
+    pixels_ = new unsigned char[width * height * 3];
+}
+
+void ViewerApp::resizeFBO(int width, int height)
+{
+    // Delete old FBO attachments
+    if (render_.texture_colorbuffer != 0) {
+        glDeleteTextures(1, &render_.texture_colorbuffer);
+        render_.texture_colorbuffer = 0;
+    }
+    if (render_.rbo != 0) {
+        glDeleteRenderbuffers(1, &render_.rbo);
+        render_.rbo = 0;
+    }
+
+    // Recreate texture attachment with new size
+    glBindFramebuffer(GL_FRAMEBUFFER, render_.framebuffer);
+    render_.texture_colorbuffer = generateAttachmentTexture(false, false);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, render_.texture_colorbuffer, 0);
+
+    // Recreate renderbuffer with new size
+    glGenRenderbuffers(1, &render_.rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, render_.rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, render_.rbo);
+
+    // Verify framebuffer is complete
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        std::cerr << "ERROR::FRAMEBUFFER:: Framebuffer incomplete after resize!" << std::endl;
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+// ============================================================================
 // Static GLFW Callbacks
 // ============================================================================
 
@@ -589,5 +650,13 @@ void ViewerApp::keyCallbackStatic(GLFWwindow* window, int key, int scancode, int
     ViewerApp* app = static_cast<ViewerApp*>(glfwGetWindowUserPointer(window));
     if (app) {
         app->keyCallback(key, scancode, action, mods);
+    }
+}
+
+void ViewerApp::framebufferSizeCallbackStatic(GLFWwindow* window, int width, int height)
+{
+    ViewerApp* app = static_cast<ViewerApp*>(glfwGetWindowUserPointer(window));
+    if (app) {
+        app->handleResize(width, height);
     }
 }
