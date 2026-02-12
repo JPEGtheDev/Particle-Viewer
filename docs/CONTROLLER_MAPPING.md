@@ -1,4 +1,4 @@
-# Controller Mapping Guide
+#Controller Mapping Guide
 
 This guide documents the gamepad/controller button mappings for Particle-Viewer.
 
@@ -14,17 +14,9 @@ The documentation uses Xbox 360 button labels as the standard reference.
 
 ## Button Layout (Xbox 360/One)
 
-```
-           [LB]                    [RB]       ← Bumpers
-           [LT]                    [RT]       ← Triggers
+![Xbox Controller Mapping](controller-mapping.svg)
 
-    [Back]  (XBOX)  [Start]
-                                   [Y]
-                              [X]      [B]    ← Face Buttons
-                                   [A]
-
-    Left Stick (L3)          Right Stick (R3)
-```
+*Visual reference showing all button mappings on an Xbox 360 controller*
 
 ## Control Mapping
 
@@ -172,6 +164,33 @@ To verify controller is working:
 3. **Test Movement**: Push left stick - camera should move
 4. **Test Rotation**: Push right stick - camera should rotate
 5. **Test Buttons**: Press A button - playback should toggle
+
+### Automated Testing Limitations
+
+**GLFW does not provide a mock or fake gamepad API** for automated testing. This means:
+
+- Unit tests can only verify state structures, deadzone logic, and connection detection
+- Full button mapping and input response requires manual testing with physical hardware
+- No xinput emulator or virtual controller support in GLFW 3.3+
+
+**Potential Workarounds for Future Versions:**
+
+1. **Platform-specific input injection** (complex, platform-dependent):
+   - Linux: Write to `/dev/uinput` to create virtual controller
+   - Windows: Use virtual Xbox controller drivers (x360ce, ViGEm)
+   - Requires elevated privileges and platform-specific code
+
+2. **Abstraction layer** (architectural change):
+   - Create `IControllerInput` interface
+   - Implement `GLFWControllerInput` (production) and `MockControllerInput` (testing)
+   - Would enable full integration testing without hardware
+
+3. **Record/replay system** (future enhancement):
+   - Record real controller input during manual testing
+   - Replay recorded inputs for regression testing
+   - Requires input capture/playback infrastructure
+
+For v1, manual testing with physical controllers remains the most practical approach.
 
 ## Future Enhancements
 

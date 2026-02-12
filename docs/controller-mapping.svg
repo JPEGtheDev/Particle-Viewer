@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .controller-body { fill: #2a2a2a; stroke: #000; stroke-width: 2; }
+      .button { fill: #4a4a4a; stroke: #000; stroke-width: 1.5; }
+      .button-face { fill: #e74c3c; }
+      .button-green { fill: #2ecc71; }
+      .button-blue { fill: #3498db; }
+      .button-yellow { fill: #f1c40f; }
+      .stick { fill: #3a3a3a; stroke: #000; stroke-width: 2; }
+      .trigger { fill: #5a5a5a; stroke: #000; stroke-width: 1.5; }
+      .dpad { fill: #2a2a2a; stroke: #000; stroke-width: 1.5; }
+      .label-text { font-family: Arial, sans-serif; font-size: 13px; fill: #333; font-weight: bold; }
+      .label-box { fill: white; stroke: #333; stroke-width: 1.5; rx: 5; }
+      .label-line { stroke: #666; stroke-width: 1.5; fill: none; }
+      .title-text { font-family: Arial, sans-serif; font-size: 24px; fill: #333; font-weight: bold; }
+      .subtitle-text { font-family: Arial, sans-serif; font-size: 16px; fill: #666; }
+    </style>
+  </defs>
+  
+  <!-- Title -->
+  <text x="400" y="35" class="title-text" text-anchor="middle">Xbox Controller Mapping</text>
+  <text x="400" y="55" class="subtitle-text" text-anchor="middle">Particle-Viewer Gamepad Controls</text>
+  
+  <!-- Controller Body -->
+  <ellipse cx="400" cy="320" rx="180" ry="120" class="controller-body"/>
+  
+  <!-- Grips -->
+  <path d="M 230 360 Q 220 400 240 420 L 250 410 Q 235 390 240 360 Z" class="controller-body"/>
+  <path d="M 570 360 Q 580 400 560 420 L 550 410 Q 565 390 560 360 Z" class="controller-body"/>
+  
+  <!-- Left Stick -->
+  <circle cx="320" cy="310" r="35" class="stick"/>
+  <circle cx="320" cy="310" r="25" class="button"/>
+  
+  <!-- Right Stick -->
+  <circle cx="480" cy="350" r="35" class="stick"/>
+  <circle cx="480" cy="350" r="25" class="button"/>
+  
+  <!-- D-Pad -->
+  <g transform="translate(300, 360)">
+    <rect x="-10" y="-30" width="20" height="60" class="dpad"/>
+    <rect x="-30" y="-10" width="60" height="20" class="dpad"/>
+  </g>
+  
+  <!-- Face Buttons (A, B, X, Y) -->
+  <circle cx="500" cy="290" r="15" class="button button-green"/>
+  <text x="500" y="295" text-anchor="middle" fill="white" font-size="12" font-weight="bold">A</text>
+  
+  <circle cx="530" cy="270" r="15" class="button button-face"/>
+  <text x="530" y="275" text-anchor="middle" fill="white" font-size="12" font-weight="bold">B</text>
+  
+  <circle cx="470" cy="270" r="15" class="button button-blue"/>
+  <text x="470" y="275" text-anchor="middle" fill="white" font-size="12" font-weight="bold">X</text>
+  
+  <circle cx="500" cy="250" r="15" class="button button-yellow"/>
+  <text x="500" y="255" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Y</text>
+  
+  <!-- Bumpers -->
+  <ellipse cx="320" cy="235" rx="40" ry="12" class="button"/>
+  <text x="320" y="239" text-anchor="middle" fill="white" font-size="10" font-weight="bold">LB</text>
+  
+  <ellipse cx="480" cy="235" rx="40" ry="12" class="button"/>
+  <text x="480" y="239" text-anchor="middle" fill="white" font-size="10" font-weight="bold">RB</text>
+  
+  <!-- Triggers -->
+  <ellipse cx="320" cy="210" rx="35" ry="10" class="trigger"/>
+  <text x="320" y="214" text-anchor="middle" fill="white" font-size="9" font-weight="bold">LT</text>
+  
+  <ellipse cx="480" cy="210" rx="35" ry="10" class="trigger"/>
+  <text x="480" y="214" text-anchor="middle" fill="white" font-size="9" font-weight="bold">RT</text>
+  
+  <!-- Center Buttons -->
+  <circle cx="375" cy="290" r="8" class="button"/>
+  <text x="375" y="294" text-anchor="middle" fill="white" font-size="7" font-weight="bold">◄◄</text>
+  
+  <circle cx="425" cy="290" r="8" class="button"/>
+  <text x="425" y="294" text-anchor="middle" fill="white" font-size="7" font-weight="bold">▶▶</text>
+  
+  <!-- Xbox Button -->
+  <circle cx="400" cy="290" r="10" class="button-green"/>
+  
+  <!-- Labels with lines -->
+  
+  <!-- Left Stick Label -->
+  <line x1="320" y1="270" x2="180" y2="200" class="label-line"/>
+  <rect x="60" y="180" width="120" height="40" class="label-box"/>
+  <text x="120" y="195" class="label-text" text-anchor="middle">Left Stick</text>
+  <text x="120" y="210" class="label-text" text-anchor="middle" font-size="11">Move Camera</text>
+  
+  <!-- L3 Label -->
+  <line x1="300" y1="310" x2="180" y2="260" class="label-line"/>
+  <rect x="80" y="245" width="100" height="30" class="label-box"/>
+  <text x="130" y="260" class="label-text" text-anchor="middle" font-size="11">L3: Sphere In</text>
+  
+  <!-- Right Stick Label -->
+  <line x1="480" y1="390" x2="620" y2="450" class="label-line"/>
+  <rect x="560" y="435" width="120" height="40" class="label-box"/>
+  <text x="620" y="450" class="label-text" text-anchor="middle">Right Stick</text>
+  <text x="620" y="465" class="label-text" text-anchor="middle" font-size="11">Rotate/Zoom</text>
+  
+  <!-- R3 Label -->
+  <line x1="500" y1="370" x2="620" y2="390" class="label-line"/>
+  <rect x="570" y="375" width="110" height="30" class="label-box"/>
+  <text x="625" y="390" class="label-text" text-anchor="middle" font-size="11">R3: Sphere Out</text>
+  
+  <!-- A Button Label -->
+  <line x1="515" y1="290" x2="640" y2="300" class="label-line"/>
+  <rect x="640" y="285" width="140" height="30" class="label-box"/>
+  <text x="710" y="300" class="label-text" text-anchor="middle" font-size="11">A: Play/Pause</text>
+  
+  <!-- B Button Label (not mapped, grayed) -->
+  <text x="545" y="270" fill="#999" font-size="9">(unused)</text>
+  
+  <!-- X Button Label -->
+  <line x1="455" y1="270" x2="350" y2="220" class="label-line"/>
+  <rect x="280" y="205" width="140" height="30" class="label-box"/>
+  <text x="350" y="220" class="label-text" text-anchor="middle" font-size="11">X: Point Lock</text>
+  
+  <!-- Y Button Label -->
+  <line x1="500" y1="235" x2="620" y2="180" class="label-line"/>
+  <rect x="560" y="165" width="130" height="30" class="label-box"/>
+  <text x="625" y="180" class="label-text" text-anchor="middle" font-size="11">Y: COM Lock</text>
+  
+  <!-- LB Label -->
+  <line x1="280" y1="235" x2="180" y2="150" class="label-line"/>
+  <rect x="110" y="130" width="140" height="35" class="label-box"/>
+  <text x="180" y="145" class="label-text" text-anchor="middle" font-size="11">LB: Prev Frame</text>
+  
+  <!-- RB Label -->
+  <line x1="520" y1="235" x2="620" y2="150" class="label-line"/>
+  <rect x="550" y="130" width="140" height="35" class="label-box"/>
+  <text x="620" y="145" class="label-text" text-anchor="middle" font-size="11">RB: Next Frame</text>
+  
+  <!-- LT Label -->
+  <line x1="285" y1="210" x2="180" y2="100" class="label-line"/>
+  <rect x="110" y="80" width="140" height="35" class="label-box"/>
+  <text x="180" y="95" class="label-text" text-anchor="middle" font-size="11">LT: Rewind</text>
+  
+  <!-- RT Label -->
+  <line x1="515" y1="210" x2="620" y2="100" class="label-line"/>
+  <rect x="550" y="80" width="140" height="35" class="label-box"/>
+  <text x="620" y="95" class="label-text" text-anchor="middle" font-size="11">RT: Fast-Forward</text>
+  
+  <!-- Back Button Label -->
+  <line x1="368" y1="290" x2="280" y2="300" class="label-line"/>
+  <rect x="170" y="285" width="110" height="30" class="label-box"/>
+  <text x="225" y="300" class="label-text" text-anchor="middle" font-size="11">Back: Load File</text>
+  
+  <!-- D-Pad Label -->
+  <line x1="285" y1="360" x2="180" y2="350" class="label-line"/>
+  <rect x="100" y="335" width="80" height="30" class="label-box"/>
+  <text x="140" y="350" class="label-text" text-anchor="middle" font-size="11">(unused)</text>
+  
+  <!-- Legend at bottom -->
+  <rect x="50" y="510" width="700" height="70" fill="#f9f9f9" stroke="#333" stroke-width="2" rx="8"/>
+  <text x="400" y="530" class="label-text" text-anchor="middle" font-size="14">Control Details</text>
+  <text x="60" y="550" font-size="11" fill="#333">• Left Stick: Strafe (X) + Forward/Back (Y)</text>
+  <text x="60" y="565" font-size="11" fill="#333">• Right Stick: Pan (X) + Tilt (Y) | Zoom when point-locked</text>
+  <text x="400" y="550" font-size="11" fill="#333">• Triggers: Analog (1-5 frames/update)</text>
+  <text x="400" y="565" font-size="11" fill="#333">• L3/R3: Hold to adjust sphere distance</text>
+</svg>
