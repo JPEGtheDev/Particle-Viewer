@@ -317,7 +317,7 @@ force = calculateGravitationalForce(particle, theta);
 
 ## Modern C++ Practices
 
-Follow modern C++11/14/17 idioms:
+Follow modern C++20 idioms:
 
 ### Memory Management
 - Prefer smart pointers over raw pointers

@@ -7,7 +7,7 @@ This document helps GitHub Copilot coding agent work efficiently with the Partic
 Particle-Viewer is a C++ OpenGL-based viewer for N-Body simulations. It allows viewing 3D particle simulations, taking screenshots, and rendering simulation videos. The project follows modern C++ practices, Microsoft C++ Core Guidelines, and uses automated semantic versioning.
 
 **Primary Technologies:**
-- C++11 with OpenGL for 3D rendering
+- C++20 with OpenGL for 3D rendering
 - CMake for build configuration
 - Google Test for unit testing
 - GLFW and GLM libraries (must be installed locally)
@@ -76,7 +76,7 @@ cmake --install build
 
 ### Build Requirements
 - CMake 3.24 or higher
-- C++11 compatible compiler with `-std=c++11 -march=native` flags
+- C++20 compatible compiler (GCC >= 10, Clang >= 11, MSVC 2019+/VS2022)
 - OpenGL development libraries
 - GLFW 3.3+ and GLM (must be installed on system)
 - clang-format and clang-tidy (for code quality checks)

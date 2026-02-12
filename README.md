@@ -26,6 +26,29 @@ See [FLATPAK.md](docs/flatpak/FLATPAK.md) for detailed installation and building
 
 ### Building from Source
 
+**Requirements:**
+- CMake 3.24 or higher
+- C++20 compatible compiler:
+  - GCC 10 or later
+  - Clang 11 or later  
+  - MSVC 2019 or later (Visual Studio 2022 recommended)
+- GLFW 3.3+ development libraries
+- GLM development libraries
+- OpenGL development libraries
+
+**Build Steps:**
+```bash
+# Install dependencies (Ubuntu/Debian)
+sudo apt-get install cmake build-essential libglfw3-dev libglm-dev
+
+# Configure and build
+cmake -B build -S .
+cmake --build build
+
+# Run
+./build/Viewer
+```
+
 For development or other platforms, see the build instructions below.
 
 ___
