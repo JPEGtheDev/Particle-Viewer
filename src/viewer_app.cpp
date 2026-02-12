@@ -17,6 +17,7 @@
 #include "imgui_impl_opengl3.h"
 #include "osFile.hpp"
 #include "tinyFileDialogs/tinyfiledialogs.h"
+#include "windowConfig.hpp"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
@@ -142,6 +143,9 @@ void ViewerApp::initScreen()
 
     // Register GLFW-specific callbacks if a native window is available
     setupCallbacks();
+
+    // Load saved window settings (resolution, fullscreen)
+    loadWindowSettings();
 }
 
 void ViewerApp::setupCallbacks()
@@ -238,6 +242,10 @@ void ViewerApp::run()
                 GLFWwindow* native_window = static_cast<GLFWwindow*>(context_->getNativeWindowHandle());
                 if (native_window) {
                     glfwSetWindowSize(native_window, actions.target_width, actions.target_height);
+                    // Update windowed size tracking and save
+                    window_.windowed_width = actions.target_width;
+                    window_.windowed_height = actions.target_height;
+                    saveWindowSettings();
                 }
             }
             if (actions.quit) {
@@ -683,6 +691,60 @@ void ViewerApp::toggleFullscreen()
             glfwSetWindowMonitor(native_window, primary, 0, 0, mode->width, mode->height, mode->refreshRate);
             window_.fullscreen = 1;
         }
+    }
+
+    // Save updated settings
+    saveWindowSettings();
+}
+
+void ViewerApp::saveWindowSettings()
+{
+    ensureConfigDir();
+    std::string config_path = getConfigPath();
+
+    // Save windowed size (not fullscreen size)
+    bool fullscreen = (window_.fullscreen != 0);
+    bool success = saveWindowConfig(config_path, window_.windowed_width, window_.windowed_height, fullscreen);
+
+    if (!success) {
+        std::cerr << "Warning: Failed to save window configuration" << std::endl;
+    }
+}
+
+void ViewerApp::loadWindowSettings()
+{
+    std::string config_path = getConfigPath();
+    int width = 0;
+    int height = 0;
+    bool fullscreen = false;
+
+    if (loadWindowConfig(config_path, width, height, fullscreen)) {
+        std::cout << "Loaded window config: " << width << "x" << height << " fullscreen=" << fullscreen << std::endl;
+
+        // Apply loaded settings
+        GLFWwindow* native_window = static_cast<GLFWwindow*>(context_->getNativeWindowHandle());
+        if (native_window) {
+            if (fullscreen) {
+                // Store windowed size before going fullscreen
+                window_.windowed_width = width;
+                window_.windowed_height = height;
+
+                GLFWmonitor* primary = glfwGetPrimaryMonitor();
+                const GLFWvidmode* mode = glfwGetVideoMode(primary);
+                if (primary && mode) {
+                    glfwSetWindowMonitor(native_window, primary, 0, 0, mode->width, mode->height, mode->refreshRate);
+                    window_.fullscreen = 1;
+                }
+            } else {
+                // Set windowed size
+                window_.windowed_width = width;
+                window_.windowed_height = height;
+                glfwSetWindowSize(native_window, width, height);
+                window_.fullscreen = 0;
+            }
+        }
+    } else {
+        std::cout << "No window config found, using defaults" << std::endl;
     }
 }
 

@@ -210,6 +210,8 @@ class ViewerApp
     void handleResize(int width, int height);
     void resizeFBO(int width, int height);
     void toggleFullscreen();
+    void saveWindowSettings();
+    void loadWindowSettings();
 
     // ============================================
     // Rendering Pipeline
