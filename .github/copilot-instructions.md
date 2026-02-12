@@ -117,6 +117,9 @@ make
 
 # Run specific test
 ./tests/ParticleViewerTests --gtest_filter=CameraTest.MoveForward_IncreasesPosition
+
+# Run visual regression tests (headless - no display/GPU required)
+xvfb-run -a ./tests/ParticleViewerTests --gtest_filter="RenderingRegressionTest.*"
 ```
 
 ### Test Structure and Standards
@@ -135,7 +138,7 @@ Key requirements:
 - `tests/core/` - Unit tests for core classes (Camera, Shader, Particle, SettingsIO)
 - `tests/integration/` - Integration tests for component interactions
 - `tests/testing/` - Tests for testing utilities (PixelComparator, Image)
-- `tests/visual-regression/` - Visual regression tests and helpers
+- `tests/visual-regression/` - Visual regression tests (run headless with Xvfb, no GPU needed)
 - `tests/mocks/` - Mock implementations (MockOpenGL, etc.)
 - Each test file corresponds to a core implementation unit (e.g., `CameraTests.cpp` for `camera.hpp`)
 
@@ -472,6 +475,13 @@ cmake --build build
 - When adding new overlays, account for the menu bar height to avoid z-order collisions.
 
 ### Visual Regression Tests ⚠️ IMPORTANT
+
+**CRITICAL: Visual regression tests DO NOT require a display or GPU**
+- Tests run headless using Xvfb (X virtual framebuffer)
+- No physical display or GPU required - works in CI environments
+- Use: `xvfb-run -a ./tests/ParticleViewerTests --gtest_filter="RenderingRegressionTest.*"`
+- Tests use software rendering (Mesa/llvmpipe) for consistent cross-platform results
+- When tests are skipped due to missing DISPLAY, simply run with `xvfb-run -a`
 
 **Use production classes in tests:**
 - Visual regression tests should use `Particle` directly, not duplicate its logic in test helpers
