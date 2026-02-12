@@ -96,7 +96,8 @@ inline bool saveWindowConfig(const std::string& filepath, int width, int height,
 
 /*
  * Get the config file path.
- * Uses $HOME/.config/particle-viewer/window.cfg on Linux/Mac,
+ * Uses XDG_CONFIG_HOME/particle-viewer/window.cfg on Linux/Mac (Flatpak-compatible),
+ * falling back to $HOME/.config/particle-viewer/window.cfg,
  * or %APPDATA%\particle-viewer\window.cfg on Windows.
  */
 inline std::string getConfigPath()
@@ -108,6 +109,13 @@ inline std::string getConfigPath()
     }
     return "window.cfg"; // Fallback to current directory
 #else
+    // Try XDG_CONFIG_HOME first (Flatpak and other sandboxed apps set this)
+    const char* xdg_config = std::getenv("XDG_CONFIG_HOME");
+    if (xdg_config) {
+        return std::string(xdg_config) + "/particle-viewer/window.cfg";
+    }
+    
+    // Fall back to $HOME/.config
     const char* home = std::getenv("HOME");
     if (home) {
         return std::string(home) + "/.config/particle-viewer/window.cfg";
@@ -118,7 +126,8 @@ inline std::string getConfigPath()
 
 /*
  * Ensure the config directory exists.
- * Creates ~/.config/particle-viewer on Linux/Mac, or %APPDATA%\particle-viewer on Windows.
+ * Creates XDG_CONFIG_HOME/particle-viewer or ~/.config/particle-viewer on Linux/Mac,
+ * or %APPDATA%\particle-viewer on Windows.
  */
 inline void ensureConfigDir()
 {
@@ -129,13 +138,21 @@ inline void ensureConfigDir()
         _mkdir(dir.c_str());
     }
 #else
-    const char* home = std::getenv("HOME");
-    if (home) {
-        std::string config_base = std::string(home) + "/.config";
-        std::string config_dir = config_base + "/particle-viewer";
-        // Create both .config and .config/particle-viewer
-        mkdir(config_base.c_str(), 0755);
+    // Try XDG_CONFIG_HOME first (Flatpak and other sandboxed apps set this)
+    const char* xdg_config = std::getenv("XDG_CONFIG_HOME");
+    if (xdg_config) {
+        std::string config_dir = std::string(xdg_config) + "/particle-viewer";
         mkdir(config_dir.c_str(), 0755);
+    } else {
+        // Fall back to $HOME/.config
+        const char* home = std::getenv("HOME");
+        if (home) {
+            std::string config_base = std::string(home) + "/.config";
+            std::string config_dir = config_base + "/particle-viewer";
+            // Create both .config and .config/particle-viewer
+            mkdir(config_base.c_str(), 0755);
+            mkdir(config_dir.c_str(), 0755);
+        }
     }
 #endif
 }
