@@ -106,10 +106,18 @@ MenuActions renderMainMenu(MenuState& state)
                     AspectRatio aspect_ratio;
                 };
 
-                Resolution resolutions[] = {{"720p (1280x720)", 1280, 720, AspectRatio::AR_16_9},
-                                            {"1080p (1920x1080)", 1920, 1080, AspectRatio::AR_16_9},
-                                            {"1440p (2560x1440)", 2560, 1440, AspectRatio::AR_16_9},
-                                            {"4K (3840x2160)", 3840, 2160, AspectRatio::AR_16_9}};
+                Resolution resolutions[] = {
+                    // 16:9 Widescreen (most common)
+                    {"720p (1280x720)", 1280, 720, AspectRatio::AR_16_9},
+                    {"1080p (1920x1080)", 1920, 1080, AspectRatio::AR_16_9},
+                    {"1440p (2560x1440)", 2560, 1440, AspectRatio::AR_16_9},
+                    {"4K (3840x2160)", 3840, 2160, AspectRatio::AR_16_9},
+                    // 4:3 Standard
+                    {"XGA (1024x768)", 1024, 768, AspectRatio::AR_4_3},
+                    {"SXGA (1280x1024)", 1280, 1024, AspectRatio::AR_4_3},
+                    // 21:9 Ultrawide
+                    {"Ultrawide 1080p (2560x1080)", 2560, 1080, AspectRatio::AR_21_9},
+                    {"Ultrawide 1440p (3440x1440)", 3440, 1440, AspectRatio::AR_21_9}};
 
                 for (const auto& res : resolutions) {
                     int width = res.width;
