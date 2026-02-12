@@ -93,6 +93,10 @@ bool ViewerApp::initialize()
     part_ = new Particle();
     setupGLStuff();
     setupScreenFBO();
+    
+    // Load window settings AFTER FBO is set up (prevents crash during resize callback)
+    loadWindowSettings();
+    
     menu_state_.debug_mode = window_.debug_camera;
     return true;
 }
@@ -143,9 +147,9 @@ void ViewerApp::initScreen()
 
     // Register GLFW-specific callbacks if a native window is available
     setupCallbacks();
-
-    // Load saved window settings (resolution, fullscreen)
-    loadWindowSettings();
+    
+    // NOTE: Window settings are loaded AFTER FBO setup in initialize()
+    // to prevent crash when resize callback is triggered before FBO exists
 }
 
 void ViewerApp::setupCallbacks()
