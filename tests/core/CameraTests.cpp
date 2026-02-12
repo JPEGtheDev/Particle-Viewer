@@ -667,3 +667,21 @@ TEST_F(CameraTest, UpdateProjection_PreservesFarPlane_AfterUpdate)
     // Assert
     EXPECT_FLOAT_EQ(camera.getFarPlane(), original_far);
 }
+
+TEST_F(CameraTest, IsRotLocked_ReturnsFalseInitially)
+{
+    // Arrange & Act
+    Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    // Assert
+    EXPECT_FALSE(camera.isRotLocked());
+}
+
+TEST_F(CameraTest, IsComLocked_ReturnsFalseInitially)
+{
+    // Arrange & Act
+    Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    // Assert
+    EXPECT_FALSE(camera.isComLocked());
+}
