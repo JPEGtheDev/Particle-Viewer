@@ -27,6 +27,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "graphics/IOpenGLContext.hpp"
+#include "input/controller_input.hpp"
 #include "particle.hpp"
 #include "settingsIO.hpp"
 #include "shader.hpp"
@@ -176,6 +177,14 @@ class ViewerApp
     // Input State
     // ============================================
     GLboolean keys_[1024];
+    ControllerInput controller_;
+    // Track button states for edge detection (button just pressed this frame)
+    bool prev_button_a_;
+    bool prev_button_x_;
+    bool prev_button_y_;
+    bool prev_button_back_;
+    bool prev_left_bumper_;
+    bool prev_right_bumper_;
 
     // ============================================
     // Scene Objects
@@ -237,6 +246,7 @@ class ViewerApp
     // Input Handling
     // ============================================
     void keyCallback(int key, int scancode, int action, int mods);
+    void processControllerInput();
 
     // ============================================
     // Resource Cleanup

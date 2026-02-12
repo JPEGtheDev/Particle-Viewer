@@ -42,7 +42,8 @@ static const QuadVertex QUAD_VERTICES[] = {{-1.0f, 1.0f, 0.0f, 1.0f}, {-1.0f, -1
 
 ViewerApp::ViewerApp(IOpenGLContext* context)
     : context_(context), imgui_initialized_(false), delta_time_(0.0f), last_frame_(0.0f), cam_(nullptr), part_(nullptr),
-      set_(nullptr), view_(), com_(), cur_frame_(0), pixels_(nullptr)
+      set_(nullptr), view_(), com_(), cur_frame_(0), pixels_(nullptr), prev_button_a_(false), prev_button_x_(false),
+      prev_button_y_(false), prev_button_back_(false), prev_left_bumper_(false), prev_right_bumper_(false)
 {
     for (int i = 0; i < 1024; i++) {
         keys_[i] = false;
@@ -223,6 +224,9 @@ void ViewerApp::run()
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
         }
+
+        // Process controller input before camera movement
+        processControllerInput();
 
         cam_->Move();
 
@@ -546,6 +550,141 @@ void ViewerApp::keyCallback(int key, int scancode, int action, int mods)
             recording_.is_active = false;
         }
     }
+}
+
+void ViewerApp::processControllerInput()
+{
+    // Poll controller state
+    if (!controller_.poll()) {
+        return; // No controller connected or polling failed
+    }
+
+    const ControllerState& state = controller_.getState();
+
+    // Left stick: Camera movement (tank controls)
+    // X-axis: strafe left/right, Y-axis: forward/backward
+    const float movement_speed = 0.1f; // Adjust movement speed for analog input
+    if (state.left_stick_x != 0.0f || state.left_stick_y != 0.0f) {
+        // Forward/backward movement
+        if (state.left_stick_y > 0.0f) {
+            for (int i = 0; i < static_cast<int>(state.left_stick_y * 10); i++) {
+                cam_->moveForward();
+            }
+        } else if (state.left_stick_y < 0.0f) {
+            for (int i = 0; i < static_cast<int>(-state.left_stick_y * 10); i++) {
+                cam_->moveBackward();
+            }
+        }
+
+        // Strafe left/right
+        if (state.left_stick_x > 0.0f) {
+            for (int i = 0; i < static_cast<int>(state.left_stick_x * 10); i++) {
+                cam_->moveRight();
+            }
+        } else if (state.left_stick_x < 0.0f) {
+            for (int i = 0; i < static_cast<int>(-state.left_stick_x * 10); i++) {
+                cam_->moveLeft();
+            }
+        }
+    }
+
+    // Right stick: Camera rotation (pan/tilt)
+    // When point lock is active, right stick Y-axis controls zoom instead
+    const float rotation_speed = 2.5f; // Degrees per frame at full deflection
+    if (cam_->isRotLocked() && cam_->renderSphere) {
+        // Point lock active: Right stick Y controls zoom (sphere distance)
+        if (state.right_stick_y > 0.0f) {
+            cam_->sphereDistance -= state.right_stick_y * 0.5f;
+        } else if (state.right_stick_y < 0.0f) {
+            cam_->sphereDistance += -state.right_stick_y * 0.5f;
+        }
+        // Still allow X-axis rotation
+        if (state.right_stick_x > 0.0f) {
+            cam_->lookRight(state.right_stick_x * rotation_speed);
+        } else if (state.right_stick_x < 0.0f) {
+            cam_->lookLeft(-state.right_stick_x * rotation_speed);
+        }
+    } else {
+        // Normal camera rotation
+        if (state.right_stick_x != 0.0f) {
+            if (state.right_stick_x > 0.0f) {
+                cam_->lookRight(state.right_stick_x * rotation_speed);
+            } else {
+                cam_->lookLeft(-state.right_stick_x * rotation_speed);
+            }
+        }
+        if (state.right_stick_y != 0.0f) {
+            if (state.right_stick_y > 0.0f) {
+                cam_->lookUp(state.right_stick_y * rotation_speed);
+            } else {
+                cam_->lookDown(-state.right_stick_y * rotation_speed);
+            }
+        }
+    }
+
+    // Triggers: Frame seeking (continuous while held)
+    if (state.left_trigger > TRIGGER_THRESHOLD) {
+        // Rewind frames
+        int seek_amount = static_cast<int>(state.left_trigger * 5) + 1; // 1-5 frames
+        seekFrame(seek_amount, false);
+    }
+    if (state.right_trigger > TRIGGER_THRESHOLD) {
+        // Fast-forward frames
+        int seek_amount = static_cast<int>(state.right_trigger * 5) + 1; // 1-5 frames
+        seekFrame(seek_amount, true);
+    }
+
+    // Bumpers: Single frame advance (edge-triggered)
+    if (state.left_bumper && !prev_left_bumper_) {
+        seekFrame(1, false); // Previous frame
+    }
+    if (state.right_bumper && !prev_right_bumper_) {
+        seekFrame(1, true); // Next frame
+    }
+
+    // A button: Toggle play/pause (edge-triggered)
+    if (state.button_a && !prev_button_a_) {
+        set_->togglePlay();
+    }
+
+    // X button: Toggle point lock (edge-triggered)
+    if (state.button_x && !prev_button_x_) {
+        // Simulate 'P' key press to cycle through rotation states
+        GLFWwindow* native_window = static_cast<GLFWwindow*>(context_->getNativeWindowHandle());
+        if (native_window) {
+            cam_->KeyReader(native_window, GLFW_KEY_P, 0, GLFW_PRESS, 0);
+        }
+    }
+
+    // Y button: Toggle COM lock (edge-triggered)
+    if (state.button_y && !prev_button_y_) {
+        // Simulate 'O' key press to toggle COM lock
+        GLFWwindow* native_window = static_cast<GLFWwindow*>(context_->getNativeWindowHandle());
+        if (native_window && cam_->isRotLocked()) {
+            cam_->KeyReader(native_window, GLFW_KEY_O, 0, GLFW_PRESS, 0);
+        }
+    }
+
+    // Back/Select button: Open file dialog (edge-triggered)
+    if (state.button_back && !prev_button_back_) {
+        handleLoadFile();
+    }
+
+    // L3/R3 (Stick buttons): Adjust sphere distance when unlocked (continuous)
+    if (state.left_stick_button && cam_->renderSphere) {
+        cam_->sphereDistance -= 0.25f; // Move closer
+    }
+    if (state.right_stick_button && cam_->renderSphere) {
+        cam_->sphereDistance += 0.25f; // Move farther
+    }
+
+    // Update previous button states for edge detection
+    prev_button_a_ = state.button_a;
+    prev_button_x_ = state.button_x;
+    prev_button_y_ = state.button_y;
+    prev_button_back_ = state.button_back;
+    prev_left_bumper_ = state.left_bumper;
+    prev_right_bumper_ = state.right_bumper;
 }
 
 // ============================================================================
