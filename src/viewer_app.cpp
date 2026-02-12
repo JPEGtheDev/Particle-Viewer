@@ -230,6 +230,12 @@ void ViewerApp::run()
             if (actions.load_file) {
                 handleLoadFile();
             }
+            if (actions.change_resolution) {
+                GLFWwindow* native_window = static_cast<GLFWwindow*>(context_->getNativeWindowHandle());
+                if (native_window) {
+                    glfwSetWindowSize(native_window, actions.target_width, actions.target_height);
+                }
+            }
             if (actions.quit) {
                 context_->setShouldClose(true);
             }
