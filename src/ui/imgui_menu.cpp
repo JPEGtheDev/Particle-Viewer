@@ -20,9 +20,9 @@ static void getMonitorConstraints(int& max_width, int& max_height)
 {
     GLFWmonitor* primary = glfwGetPrimaryMonitor();
     if (!primary) {
-        // Fallback if no monitor info available
-        max_width = 3840;
-        max_height = 2160;
+        // Fallback to 720p if no monitor info available
+        max_width = 1280;
+        max_height = 720;
         return;
     }
 
@@ -32,8 +32,8 @@ static void getMonitorConstraints(int& max_width, int& max_height)
         max_width = mode->width;
         max_height = mode->height;
     } else {
-        max_width = 3840;
-        max_height = 2160;
+        max_width = 1280;
+        max_height = 720;
     }
 }
 
@@ -65,6 +65,17 @@ static bool clampResolutionToMonitor(int& width, int& height)
     return clamped;
 }
 
+/*
+ * Common aspect ratios for display resolutions.
+ */
+enum class AspectRatio
+{
+    AR_16_9,  // Widescreen (1.778:1)
+    AR_16_10, // Wide (1.6:1)
+    AR_21_9,  // Ultrawide (2.333:1)
+    AR_4_3    // Standard (1.333:1)
+};
+
 MenuActions renderMainMenu(MenuState& state)
 {
     MenuActions actions;
@@ -86,18 +97,19 @@ MenuActions renderMainMenu(MenuState& state)
         }
         if (ImGui::BeginMenu("View")) {
             if (ImGui::BeginMenu("Resolution")) {
-                // Common resolutions
+                // Common resolutions with aspect ratios
                 struct Resolution
                 {
                     const char* name;
                     int width;
                     int height;
+                    AspectRatio aspect_ratio;
                 };
 
-                Resolution resolutions[] = {{"720p (1280x720)", 1280, 720},
-                                            {"1080p (1920x1080)", 1920, 1080},
-                                            {"1440p (2560x1440)", 2560, 1440},
-                                            {"4K (3840x2160)", 3840, 2160}};
+                Resolution resolutions[] = {{"720p (1280x720)", 1280, 720, AspectRatio::AR_16_9},
+                                            {"1080p (1920x1080)", 1920, 1080, AspectRatio::AR_16_9},
+                                            {"1440p (2560x1440)", 2560, 1440, AspectRatio::AR_16_9},
+                                            {"4K (3840x2160)", 3840, 2160, AspectRatio::AR_16_9}};
 
                 for (const auto& res : resolutions) {
                     int width = res.width;
