@@ -107,39 +107,61 @@ class ControllerInput
     /*
      * Initialize controller input system.
      * Scans all joystick slots to find the first available gamepad.
+     * Falls back to raw joystick if no gamepad mapping available.
      * Starts with slot 0 (most common, including Steam Deck).
      */
-    ControllerInput() : joystick_id_(GLFW_JOYSTICK_1), was_connected_(false)
+    ControllerInput() : joystick_id_(GLFW_JOYSTICK_1), was_connected_(false), use_raw_joystick_(false)
     {
         std::cout << "=== Controller Detection Debug ===" << std::endl;
 
         // Scan all joystick slots to find first available gamepad
         // GLFW_JOYSTICK_1 is 0, GLFW_JOYSTICK_2 is 1, etc.
-        bool found = false;
+        bool found_gamepad = false;
+        int first_joystick = -1;
+
         for (int i = GLFW_JOYSTICK_1; i <= GLFW_JOYSTICK_LAST; i++) {
             if (glfwJoystickPresent(i)) {
                 const char* joy_name = glfwGetJoystickName(i);
                 bool is_gamepad = glfwJoystickIsGamepad(i);
                 std::cout << "  Slot " << i << ": " << joy_name << " | Gamepad: " << (is_gamepad ? "YES" : "NO");
 
+                // Track first joystick for fallback
+                if (first_joystick == -1) {
+                    first_joystick = i;
+                }
+
                 if (is_gamepad) {
                     const char* gamepad_name = glfwGetGamepadName(i);
                     std::cout << " | Name: " << gamepad_name;
 
-                    if (!found) {
+                    if (!found_gamepad) {
                         joystick_id_ = i;
-                        found = true;
-                        std::cout << " [SELECTED]";
+                        found_gamepad = true;
+                        use_raw_joystick_ = false;
+                        std::cout << " [SELECTED - GAMEPAD MODE]";
                     }
                 }
                 std::cout << std::endl;
             }
         }
 
-        if (found) {
-            std::cout << "Controller selected at slot " << joystick_id_ << std::endl;
+        // If no gamepad found but we have a joystick, use raw joystick mode
+        if (!found_gamepad && first_joystick != -1) {
+            joystick_id_ = first_joystick;
+            use_raw_joystick_ = true;
+            const char* joy_name = glfwGetJoystickName(first_joystick);
+            std::cout << "\n  *** No gamepad mapping found for: " << joy_name << std::endl;
+            std::cout << "  *** Using RAW JOYSTICK MODE (experimental)" << std::endl;
+            std::cout << "  *** Button/axis mapping: Assuming Xbox-style layout" << std::endl;
+            std::cout << "  *** If buttons don't work, controller may need GLFW gamepad mapping" << std::endl;
+        }
+
+        if (found_gamepad) {
+            std::cout << "\nController selected at slot " << joystick_id_ << " (Gamepad Mode)" << std::endl;
+        } else if (first_joystick != -1) {
+            std::cout << "\nController selected at slot " << joystick_id_ << " (Raw Joystick Mode)" << std::endl;
         } else {
-            std::cout << "WARNING: No gamepad detected at startup" << std::endl;
+            std::cout << "\nWARNING: No controller detected at startup" << std::endl;
             std::cout << "         Controller may be hot-plugged later" << std::endl;
         }
         std::cout << "=================================" << std::endl;
@@ -147,10 +169,13 @@ class ControllerInput
 
     /*
      * Check if a gamepad is connected and available.
-     * Uses GLFW_JOYSTICK_1 (first controller).
+     * Also returns true if raw joystick mode is being used.
      */
     bool isConnected() const
     {
+        if (use_raw_joystick_) {
+            return glfwJoystickPresent(joystick_id_);
+        }
         return glfwJoystickPresent(joystick_id_) && glfwJoystickIsGamepad(joystick_id_);
     }
 
@@ -192,6 +217,43 @@ class ControllerInput
             return false;
         }
 
+        if (use_raw_joystick_) {
+            // Use raw joystick API (fallback for controllers without GLFW gamepad mapping)
+            return pollRawJoystick();
+        } else {
+            // Use GLFW gamepad API (preferred)
+            return pollGamepad();
+        }
+    }
+
+    /*
+     * Get current controller state.
+     * Only valid after poll() returns true.
+     */
+    const ControllerState& getState() const
+    {
+        return state_;
+    }
+
+    /*
+     * Check if controller was just connected this frame.
+     */
+    bool wasJustConnected() const
+    {
+        return isConnected() && was_connected_;
+    }
+
+  private:
+    int joystick_id_;
+    bool was_connected_;
+    bool use_raw_joystick_; // True if using raw joystick fallback
+    ControllerState state_;
+
+    /*
+     * Poll using GLFW gamepad API (for controllers with proper mapping).
+     */
+    bool pollGamepad()
+    {
         // Get gamepad state from GLFW
         GLFWgamepadstate glfw_state;
         if (glfwGetGamepadState(joystick_id_, &glfw_state) != GLFW_TRUE) {
@@ -247,26 +309,56 @@ class ControllerInput
     }
 
     /*
-     * Get current controller state.
-     * Only valid after poll() returns true.
+     * Poll using raw joystick API (fallback for controllers without GLFW gamepad mapping).
+     * Assumes Xbox-style button layout.
      */
-    const ControllerState& getState() const
+    bool pollRawJoystick()
     {
-        return state_;
-    }
+        int axis_count = 0;
+        const float* axes = glfwGetJoystickAxes(joystick_id_, &axis_count);
 
-    /*
-     * Check if controller was just connected this frame.
-     */
-    bool wasJustConnected() const
-    {
-        return isConnected() && was_connected_;
-    }
+        int button_count = 0;
+        const unsigned char* buttons = glfwGetJoystickButtons(joystick_id_, &button_count);
 
-  private:
-    int joystick_id_;
-    bool was_connected_;
-    ControllerState state_;
+        if (!axes || !buttons) {
+            static bool warning_shown = false;
+            if (!warning_shown) {
+                std::cerr << "WARNING: Failed to get raw joystick state for slot " << joystick_id_ << std::endl;
+                warning_shown = true;
+            }
+            return false;
+        }
+
+        // Map axes (assuming Xbox-style layout: 0=LX, 1=LY, 2=RX, 3=RY, 4=LT, 5=RT)
+        state_.left_stick_x = (axis_count > 0) ? applyDeadzone(axes[0]) : 0.0f;
+        state_.left_stick_y = (axis_count > 1) ? applyDeadzone(-axes[1]) : 0.0f; // invert Y
+        state_.right_stick_x = (axis_count > 2) ? applyDeadzone(axes[2]) : 0.0f;
+        state_.right_stick_y = (axis_count > 3) ? applyDeadzone(-axes[3]) : 0.0f; // invert Y
+
+        // Triggers (convert from [-1,1] to [0,1] range if present)
+        state_.left_trigger = (axis_count > 4) ? ((axes[4] + 1.0f) * 0.5f) : 0.0f;
+        state_.right_trigger = (axis_count > 5) ? ((axes[5] + 1.0f) * 0.5f) : 0.0f;
+
+        // Map buttons (assuming Xbox layout: 0=A, 1=B, 2=X, 3=Y, 4=LB, 5=RB, 6=Back, 7=Start, 8=L3, 9=R3)
+        state_.button_a = (button_count > 0) ? (buttons[0] == GLFW_PRESS) : false;
+        state_.button_b = (button_count > 1) ? (buttons[1] == GLFW_PRESS) : false;
+        state_.button_x = (button_count > 2) ? (buttons[2] == GLFW_PRESS) : false;
+        state_.button_y = (button_count > 3) ? (buttons[3] == GLFW_PRESS) : false;
+        state_.left_bumper = (button_count > 4) ? (buttons[4] == GLFW_PRESS) : false;
+        state_.right_bumper = (button_count > 5) ? (buttons[5] == GLFW_PRESS) : false;
+        state_.button_back = (button_count > 6) ? (buttons[6] == GLFW_PRESS) : false;
+        state_.button_start = (button_count > 7) ? (buttons[7] == GLFW_PRESS) : false;
+        state_.left_stick_button = (button_count > 8) ? (buttons[8] == GLFW_PRESS) : false;
+        state_.right_stick_button = (button_count > 9) ? (buttons[9] == GLFW_PRESS) : false;
+
+        // D-pad buttons (often at indices 10-13 on Xbox controllers)
+        state_.dpad_up = (button_count > 10) ? (buttons[10] == GLFW_PRESS) : false;
+        state_.dpad_down = (button_count > 11) ? (buttons[11] == GLFW_PRESS) : false;
+        state_.dpad_left = (button_count > 12) ? (buttons[12] == GLFW_PRESS) : false;
+        state_.dpad_right = (button_count > 13) ? (buttons[13] == GLFW_PRESS) : false;
+
+        return true;
+    }
 
     /*
      * Apply circular deadzone to analog stick input.
