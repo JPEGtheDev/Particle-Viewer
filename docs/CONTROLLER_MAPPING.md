@@ -143,11 +143,25 @@ Current implementation has the following limitations:
 
 ### Steam Deck
 
-- Built-in controller is automatically detected and supported
+**CRITICAL: Disable Steam Input**
+
+Steam Input interferes with GLFW gamepad detection. You MUST disable it:
+
+1. In Steam library, right-click Particle-Viewer
+2. Select **Properties → Controller**
+3. Set **Override** to **"Disable Steam Input"**
+4. Restart the application
+
+**Why this is required:**
+- Steam Input intercepts controller events before GLFW can see them
+- GLFW will detect the controller as a "joystick" but not as a "gamepad"
+- Without gamepad detection, button mappings won't work
+
+**After disabling Steam Input:**
+- Built-in controller is automatically detected at slot 0
 - Works in both Desktop Mode and Game Mode
-- When adding as a non-Steam app, ensure the application has controller permissions
-- Controller appears at joystick slot 0 (automatically detected)
 - All standard Xbox button mappings apply (A/B/X/Y, triggers, bumpers, sticks)
+- Check console output for: `"Controller detected at slot 0: [controller name]"`
 
 ### Linux
 

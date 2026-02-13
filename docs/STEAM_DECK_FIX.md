@@ -44,15 +44,30 @@ ControllerInput() : joystick_id_(GLFW_JOYSTICK_1), was_connected_(false) {
 
 ## Testing on Steam Deck
 
+### IMPORTANT: Disable Steam Input
+
+**Steam Input will interfere with GLFW gamepad detection.** You MUST disable it:
+
+1. In Steam, right-click Particle-Viewer
+2. Select **Properties**
+3. Go to **Controller** tab
+4. Set **Override for [Game Name]** to **Disable Steam Input**
+5. Close properties and restart the application
+
+Without this step, Steam Input will intercept controller events and GLFW won't see the gamepad.
+
 ### Game Mode (Non-Steam App)
 1. Add Particle-Viewer as a non-Steam app
-2. Launch from Game Mode
-3. Check that console shows: "Controller detected at slot 0: [controller name]"
-4. Test all button mappings (A/B/X/Y, triggers, bumpers, sticks)
+2. **Disable Steam Input as described above**
+3. Launch from Game Mode
+4. Check console output for: `"Controller detected at slot X: [controller name]"`
+5. If you see joysticks but "Gamepad: NO", Steam Input is likely interfering
+6. Test all button mappings (A/B/X/Y, triggers, bumpers, sticks)
 
 ### Desktop Mode
-1. Launch Particle-Viewer normally
-2. Controller should still work (slot 0 detection)
+1. Launch Particle-Viewer normally (or from Steam with Steam Input disabled)
+2. Controller should work (slot 0 detection)
+3. Check console for detection messages
 
 ## Troubleshooting
 

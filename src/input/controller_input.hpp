@@ -111,15 +111,38 @@ class ControllerInput
      */
     ControllerInput() : joystick_id_(GLFW_JOYSTICK_1), was_connected_(false)
     {
+        std::cout << "=== Controller Detection Debug ===" << std::endl;
+
         // Scan all joystick slots to find first available gamepad
         // GLFW_JOYSTICK_1 is 0, GLFW_JOYSTICK_2 is 1, etc.
+        bool found = false;
         for (int i = GLFW_JOYSTICK_1; i <= GLFW_JOYSTICK_LAST; i++) {
-            if (glfwJoystickPresent(i) && glfwJoystickIsGamepad(i)) {
-                joystick_id_ = i;
-                std::cout << "Controller detected at slot " << i << ": " << glfwGetGamepadName(i) << std::endl;
-                break;
+            if (glfwJoystickPresent(i)) {
+                const char* joy_name = glfwGetJoystickName(i);
+                bool is_gamepad = glfwJoystickIsGamepad(i);
+                std::cout << "  Slot " << i << ": " << joy_name << " | Gamepad: " << (is_gamepad ? "YES" : "NO");
+
+                if (is_gamepad) {
+                    const char* gamepad_name = glfwGetGamepadName(i);
+                    std::cout << " | Name: " << gamepad_name;
+
+                    if (!found) {
+                        joystick_id_ = i;
+                        found = true;
+                        std::cout << " [SELECTED]";
+                    }
+                }
+                std::cout << std::endl;
             }
         }
+
+        if (found) {
+            std::cout << "Controller selected at slot " << joystick_id_ << std::endl;
+        } else {
+            std::cout << "WARNING: No gamepad detected at startup" << std::endl;
+            std::cout << "         Controller may be hot-plugged later" << std::endl;
+        }
+        std::cout << "=================================" << std::endl;
     }
 
     /*
@@ -156,10 +179,12 @@ class ControllerInput
         if (connected && !was_connected_) {
             // Controller just connected
             was_connected_ = true;
+            std::cout << "Controller connected: " << glfwGetGamepadName(joystick_id_) << std::endl;
         } else if (!connected && was_connected_) {
             // Controller just disconnected - reset state
             was_connected_ = false;
             state_ = ControllerState(); // reset to defaults
+            std::cout << "Controller disconnected" << std::endl;
             return false;
         }
 
@@ -170,6 +195,14 @@ class ControllerInput
         // Get gamepad state from GLFW
         GLFWgamepadstate glfw_state;
         if (glfwGetGamepadState(joystick_id_, &glfw_state) != GLFW_TRUE) {
+            static bool warning_shown = false;
+            if (!warning_shown) {
+                std::cerr << "WARNING: glfwGetGamepadState failed for slot " << joystick_id_ << std::endl;
+                std::cerr << "         Controller may not have proper GLFW gamepad mapping" << std::endl;
+                std::cerr << "         Steam Input may be interfering - try disabling Steam Input for this app"
+                          << std::endl;
+                warning_shown = true;
+            }
             return false;
         }
 
