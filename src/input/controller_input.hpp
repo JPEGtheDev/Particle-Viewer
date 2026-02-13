@@ -7,7 +7,8 @@
  * Architecture:
  * - Polls gamepad state each frame via GLFW
  * - Converts stick axes and button states to camera/playback commands
- * - Supports single controller (GLFW_JOYSTICK_1)
+ * - Auto-detects first available gamepad from all joystick slots (0-15)
+ * - Supports Steam Deck, Xbox controllers, and generic xinput gamepads
  * - Hardcoded Xbox-style button mapping (no customization in v1)
  *
  * Button Mapping (Xbox 360/One layout):
@@ -28,7 +29,7 @@
  *
  * Limitations:
  * - No haptic feedback (GLFW 3.3 limitation)
- * - No multi-controller support
+ * - Single controller only (first detected gamepad is used)
  * - No user-customizable mapping (future enhancement)
  */
 
@@ -36,6 +37,7 @@
 #define PARTICLE_VIEWER_CONTROLLER_INPUT_H
 
 #include <cmath>
+#include <iostream>
 
 #include <GLFW/glfw3.h>
 
@@ -104,9 +106,20 @@ class ControllerInput
   public:
     /*
      * Initialize controller input system.
+     * Scans all joystick slots to find the first available gamepad.
+     * Starts with slot 0 (most common, including Steam Deck).
      */
     ControllerInput() : joystick_id_(GLFW_JOYSTICK_1), was_connected_(false)
     {
+        // Scan all joystick slots to find first available gamepad
+        // GLFW_JOYSTICK_1 is 0, GLFW_JOYSTICK_2 is 1, etc.
+        for (int i = GLFW_JOYSTICK_1; i <= GLFW_JOYSTICK_LAST; i++) {
+            if (glfwJoystickPresent(i) && glfwJoystickIsGamepad(i)) {
+                joystick_id_ = i;
+                std::cout << "Controller detected at slot " << i << ": " << glfwGetGamepadName(i) << std::endl;
+                break;
+            }
+        }
     }
 
     /*

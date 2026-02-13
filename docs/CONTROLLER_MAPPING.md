@@ -8,7 +8,10 @@ Particle-Viewer uses the GLFW 3.3+ gamepad API, which provides standardized inpu
 - Xbox 360 Controller
 - Xbox One Controller  
 - Xbox Series X/S Controller
+- Steam Deck (built-in controller)
 - Generic gamepads with xinput mapping
+
+The controller is **automatically detected** at startup by scanning all available joystick slots. The first detected gamepad will be used.
 
 The documentation uses Xbox 360 button labels as the standard reference.
 
@@ -137,6 +140,14 @@ Current implementation has the following limitations:
 3. Replace worn analog sticks
 
 ## Platform-Specific Notes
+
+### Steam Deck
+
+- Built-in controller is automatically detected and supported
+- Works in both Desktop Mode and Game Mode
+- When adding as a non-Steam app, ensure the application has controller permissions
+- Controller appears at joystick slot 0 (automatically detected)
+- All standard Xbox button mappings apply (A/B/X/Y, triggers, bumpers, sticks)
 
 ### Linux
 
