@@ -218,6 +218,22 @@ class Camera
     }
 
     /*
+     * Check if rotation lock is active.
+     */
+    bool isRotLocked() const
+    {
+        return rotLock;
+    }
+
+    /*
+     * Check if center of mass lock is active.
+     */
+    bool isComLocked() const
+    {
+        return comLock;
+    }
+
+    /*
      * Update the projection matrix for a new aspect ratio.
      * Call this when the window is resized to prevent distortion.
      */
