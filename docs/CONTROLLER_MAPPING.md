@@ -9,9 +9,12 @@ Particle-Viewer uses the GLFW 3.3+ gamepad API, which provides standardized inpu
 - Xbox One Controller  
 - Xbox Series X/S Controller
 - Steam Deck (built-in controller)
+- **8BitDo Wireless Controllers** (via Raw Joystick Mode - see [8BitDo Setup Guide](8BITDO_CONTROLLER_SETUP.md))
 - Generic gamepads with xinput mapping
 
 The controller is **automatically detected** at startup by scanning all available joystick slots. The first detected gamepad will be used.
+
+**Note for Bluetooth Controllers:** If your controller appears as a joystick but not a gamepad (common with 8BitDo controllers), the application will automatically fall back to **Raw Joystick Mode**, which maps buttons/axes directly assuming Xbox-style layout.
 
 The documentation uses Xbox 360 button labels as the standard reference.
 
@@ -120,9 +123,22 @@ Current implementation has the following limitations:
 1. Check if controller is recognized by your OS:
    - Linux: Run `jstest /dev/input/js0` (install `joystick` package)
    - Windows: Check "Set up USB game controllers" in Control Panel
-2. Ensure controller has xinput driver support
-3. Try disconnecting and reconnecting the controller
-4. Restart the application
+2. Check console output for detection messages
+3. For 8BitDo controllers: See [8BitDo Setup Guide](8BITDO_CONTROLLER_SETUP.md)
+4. Try disconnecting and reconnecting the controller
+5. Restart the application
+
+### 8BitDo Controllers (Bluetooth)
+
+**Symptom**: 8BitDo controller not working or detected as joystick only
+
+**Solution**: The application automatically uses **Raw Joystick Mode** for controllers without GLFW gamepad mappings. This should work automatically for most 8BitDo models.
+
+**Best practices for 8BitDo:**
+1. **Use X-Input mode**: Hold Start + X while powering on
+2. **Check console output**: Look for "RAW JOYSTICK MODE" message
+3. **Verify button layout**: May need to test which buttons do what
+4. **See detailed guide**: [8BitDo Setup Guide](8BITDO_CONTROLLER_SETUP.md)
 
 ### Unexpected Button Behavior
 
