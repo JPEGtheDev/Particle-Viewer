@@ -12,11 +12,6 @@ Particle-Viewer uses the GLFW 3.3+ gamepad API, which provides standardized inpu
 
 The documentation uses Xbox 360 button labels as the standard reference.
 
-## Button Layout (Xbox 360/One)
-
-![Xbox Controller Mapping](controller-mapping.svg)
-
-*Visual reference showing all button mappings on an Xbox 360 controller*
 
 ## Control Mapping
 
