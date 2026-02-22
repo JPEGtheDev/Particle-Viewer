@@ -4,11 +4,11 @@
  * Unit tests for window configuration save/load functionality.
  */
 
-#include <gtest/gtest.h>
-
 #include <cstdio>
 #include <fstream>
 #include <string>
+
+#include <gtest/gtest.h>
 
 #include "windowConfig.hpp"
 

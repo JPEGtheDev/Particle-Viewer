@@ -19,7 +19,7 @@ add_executable(ParticleViewerTests
     ${TEST_VISUAL_REGRESSION_FILES}
     ${TESTING_UTILITY_SOURCES}
     ${CMAKE_SOURCE_DIR}/src/Image.cpp
-    ${CMAKE_SOURCE_DIR}/src/graphics/GLFWContext.cpp
+    ${CMAKE_SOURCE_DIR}/src/graphics/SDL3Context.cpp
     stb_image_write_impl.cpp
 )
 
@@ -28,7 +28,7 @@ target_link_libraries(ParticleViewerTests
     gtest
     gtest_main
     ${CMAKE_DL_LIBS}
-    glfw
+    SDL3::SDL3-static
     OpenGL::GL
 )
 
@@ -50,7 +50,7 @@ target_sources(ParticleViewerTests PRIVATE
     ${imgui_SOURCE_DIR}/imgui_draw.cpp
     ${imgui_SOURCE_DIR}/imgui_widgets.cpp
     ${imgui_SOURCE_DIR}/imgui_tables.cpp
-    ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
+    ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp
     ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
 )
 

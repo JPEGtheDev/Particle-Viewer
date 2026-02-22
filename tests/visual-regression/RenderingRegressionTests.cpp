@@ -5,11 +5,11 @@
  * These tests verify that the OpenGL rendering pipeline produces consistent output
  * for various camera angles and particle configurations.
  *
- * Uses the production GLFWContext and Particle classes directly, ensuring tests
+ * Uses the production SDL3Context and Particle classes directly, ensuring tests
  * exercise the same code paths as the real application.
  *
  * Tests require:
- * - GLFW for window/context creation (headless mode with Xvfb in CI)
+ * - SDL3 for window/context creation (headless mode with Xvfb in CI)
  * - OpenGL for rendering
  * - Shaders from src/shaders/
  *
@@ -28,9 +28,9 @@
 #include <gtest/gtest.h>
 
 // clang-format off
-// GLAD must come before GLFW to properly initialize OpenGL functions
+// GLAD must come before SDL3 to properly initialize OpenGL functions
 #include "glad/glad.h"       // NOLINT(llvm-include-order)
-#include <GLFW/glfw3.h>      // NOLINT(llvm-include-order)
+#include <SDL3/SDL.h>        // NOLINT(llvm-include-order)
 // clang-format on
 
 #include <glm/glm.hpp>
@@ -38,10 +38,10 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Image.hpp"
-#include "graphics/GLFWContext.hpp"
+#include "graphics/SDL3Context.hpp"
 #include "imgui.h"
-#include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "imgui_impl_sdl3.h"
 #include "particle.hpp"
 #include "shader.hpp"
 #include "testing/FramebufferCapture.hpp"
@@ -65,14 +65,14 @@ static const uint8_t BRIGHT_PIXEL_THRESHOLD = 100; // Channel value above which 
 
 /*
  * Helper class for OpenGL rendering test setup.
- * Uses the production GLFWContext (hidden window) to ensure tests exercise
+ * Uses the production SDL3Context (hidden window) to ensure tests exercise
  * the same context creation path as the real application.
  * Adds FramebufferCapture for off-screen rendering.
  */
 class OpenGLTestContext
 {
   private:
-    GLFWContext* context_;
+    SDL3Context* context_;
     FramebufferCapture* framebuffer_;
 
   public:
@@ -86,12 +86,12 @@ class OpenGLTestContext
     }
 
     /*
-     * Initialize production GLFWContext (hidden), then set up framebuffer for off-screen rendering.
+     * Initialize production SDL3Context (hidden), then set up framebuffer for off-screen rendering.
      * @return true if initialization succeeds
      */
     bool initialize()
     {
-        context_ = new GLFWContext(RenderingTestConfig::RENDER_WIDTH, RenderingTestConfig::RENDER_HEIGHT,
+        context_ = new SDL3Context(RenderingTestConfig::RENDER_WIDTH, RenderingTestConfig::RENDER_HEIGHT,
                                    "Rendering Test", false);
         if (!context_->isValid()) {
             cleanup();
@@ -154,12 +154,12 @@ class OpenGLTestContext
     }
 
     /*
-     * Get the native GLFW window handle for ImGui initialization.
+     * Get the native SDL3 window handle for ImGui initialization.
      */
-    GLFWwindow* getNativeWindow() const
+    SDL_Window* getNativeWindow() const
     {
         if (context_) {
-            return static_cast<GLFWwindow*>(context_->getNativeWindowHandle());
+            return static_cast<SDL_Window*>(context_->getNativeWindowHandle());
         }
         return nullptr;
     }
@@ -578,7 +578,7 @@ float calculateLitPixelFraction(const Image& image)
  * correctly scales particles to maintain visual consistency.
  *
  * Uses the existing OpenGL context with different-sized framebuffers for each
- * resolution to avoid GLFW context lifecycle issues.
+ * resolution to avoid SDL3 context lifecycle issues.
  *
  * Camera distance chosen to keep gl_PointSize under GL_POINT_SIZE_RANGE max (256
  * on Mesa/llvmpipe) at all tested resolutions including 4K. At z=5.0 the max
@@ -822,7 +822,7 @@ TEST_F(RenderingRegressionTest, ParticleScale_DefaultCube_ConsistentFractionAcro
  *   Therefore, ImGui content should never appear in FBO captures.
  *
  * The test:
- * 1. Initializes ImGui with the test GLFW context
+ * 1. Initializes ImGui with the test SDL3 context
  * 2. Starts an ImGui frame and renders a menu bar + debug overlay
  * 3. Renders particles to the test FBO (separate from default FB)
  * 4. Captures the FBO content
@@ -832,8 +832,8 @@ TEST_F(RenderingRegressionTest, ParticleScale_DefaultCube_ConsistentFractionAcro
 TEST_F(RenderingRegressionTest, FBOCapture_WithImGuiActive_ExcludesGUI)
 {
     // Arrange
-    GLFWwindow* window = glContext_.getNativeWindow();
-    ASSERT_NE(window, nullptr) << "Need native GLFW window for ImGui initialization";
+    SDL_Window* window = glContext_.getNativeWindow();
+    ASSERT_NE(window, nullptr) << "Need native SDL3 window for ImGui initialization";
 
     // Initialize ImGui for this context
     IMGUI_CHECKVERSION();
@@ -841,12 +841,12 @@ TEST_F(RenderingRegressionTest, FBOCapture_WithImGuiActive_ExcludesGUI)
     ImGuiIO& io = ImGui::GetIO();
     io.IniFilename = nullptr;
     ImGui::StyleColorsDark();
-    ImGui_ImplGlfw_InitForOpenGL(window, false);
+    ImGui_ImplSDL3_InitForOpenGL(window, SDL_GL_GetCurrentContext());
     ImGui_ImplOpenGL3_Init("#version 410 core");
 
     // Start an ImGui frame and render menu bar (writes to default FB state)
     ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
+    ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
 
     MenuState state;
@@ -887,7 +887,7 @@ TEST_F(RenderingRegressionTest, FBOCapture_WithImGuiActive_ExcludesGUI)
 
     // Cleanup ImGui
     ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
+    ImGui_ImplSDL3_Shutdown();
     ImGui::DestroyContext();
 
     // Assert — FBO should NOT contain any ImGui content
@@ -948,8 +948,7 @@ TEST_F(RenderingRegressionTest, WindowResize_MultipleResolutions_RenderingConsis
         uint32_t height;
         std::string name;
     };
-    std::vector<Resolution> resolutions = {
-        {1280, 720, "720p"}, {1920, 1080, "1080p"}, {2560, 1440, "1440p"}};
+    std::vector<Resolution> resolutions = {{1280, 720, "720p"}, {1920, 1080, "1080p"}, {2560, 1440, "1440p"}};
 
     // Three particles at fixed positions
     std::vector<glm::vec4> particle_data = {
@@ -997,8 +996,7 @@ TEST_F(RenderingRegressionTest, WindowResize_MultipleResolutions_RenderingConsis
 
         // Save artifact for manual inspection
         std::string artifact_name = "artifacts/window_resize_" + res.name + "_current.png";
-        ASSERT_TRUE(currentImage.save(artifact_name, ImageFormat::PNG))
-            << "Failed to save artifact: " << artifact_name;
+        ASSERT_TRUE(currentImage.save(artifact_name, ImageFormat::PNG)) << "Failed to save artifact: " << artifact_name;
 
         // Calculate lit pixel fraction (should be consistent across resolutions)
         float fraction = calculateLitPixelFraction(currentImage);
@@ -1039,9 +1037,9 @@ TEST_F(RenderingRegressionTest, WindowResize_AspectRatioChange_NoDistortion)
         float aspect_ratio;
     };
     std::vector<Resolution> resolutions = {
-        {1920, 1080, "16_9", 16.0f / 9.0f},   // Widescreen
-        {1600, 1200, "4_3", 4.0f / 3.0f},     // Standard
-        {2560, 1080, "21_9", 21.0f / 9.0f}    // Ultrawide
+        {1920, 1080, "16_9", 16.0f / 9.0f}, // Widescreen
+        {1600, 1200, "4_3", 4.0f / 3.0f},   // Standard
+        {2560, 1080, "21_9", 21.0f / 9.0f}  // Ultrawide
     };
 
     // Single centered particle
@@ -1079,8 +1077,7 @@ TEST_F(RenderingRegressionTest, WindowResize_AspectRatioChange_NoDistortion)
         ASSERT_TRUE(currentImage.valid()) << "Failed to capture framebuffer at aspect " << res.name;
 
         std::string artifact_name = "artifacts/aspect_ratio_" + res.name + "_current.png";
-        ASSERT_TRUE(currentImage.save(artifact_name, ImageFormat::PNG))
-            << "Failed to save artifact: " << artifact_name;
+        ASSERT_TRUE(currentImage.save(artifact_name, ImageFormat::PNG)) << "Failed to save artifact: " << artifact_name;
 
         // Verify particle rendered (has lit pixels)
         float fraction = calculateLitPixelFraction(currentImage);

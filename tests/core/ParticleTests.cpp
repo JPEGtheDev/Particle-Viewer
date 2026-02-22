@@ -461,8 +461,7 @@ TEST_F(ParticleTest, DefaultCube_YAxisSpacing_IsUniform)
         float y_spacing = p.translations[idx + 40].y - p.translations[idx].y;
 
         // Assert
-        EXPECT_NEAR(y_spacing, EXPECTED_SPACING, TOLERANCE)
-            << "Y spacing at Y-layer " << y << " is not 1.25";
+        EXPECT_NEAR(y_spacing, EXPECTED_SPACING, TOLERANCE) << "Y spacing at Y-layer " << y << " is not 1.25";
     }
 }
 
@@ -480,8 +479,7 @@ TEST_F(ParticleTest, DefaultCube_ZAxisSpacing_IsUniform)
         float z_spacing = p.translations[idx + 1600].z - p.translations[idx].z;
 
         // Assert
-        EXPECT_NEAR(z_spacing, EXPECTED_SPACING, TOLERANCE)
-            << "Z spacing at Z-layer " << z << " is not 1.25";
+        EXPECT_NEAR(z_spacing, EXPECTED_SPACING, TOLERANCE) << "Z spacing at Z-layer " << z << " is not 1.25";
     }
 }
 
@@ -505,9 +503,9 @@ TEST_F(ParticleTest, DefaultCube_MaxDimensionsAreEqual)
     const float TOLERANCE = 0.001f;
 
     // Act - Find maximum extent along each axis
-    float max_x = p.translations[39].x;        // Max X at index 39
-    float max_y = p.translations[1560].y;      // Max Y at index 39*40
-    float max_z = p.translations[62400].z;     // Max Z at index 39*1600
+    float max_x = p.translations[39].x;    // Max X at index 39
+    float max_y = p.translations[1560].y;  // Max Y at index 39*40
+    float max_z = p.translations[62400].z; // Max Z at index 39*1600
 
     // Assert - Cube should be equal in all dimensions
     EXPECT_NEAR(max_x, EXPECTED_MAX, TOLERANCE);

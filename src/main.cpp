@@ -2,7 +2,7 @@
  * main.cpp
  *
  * Application entry point.
- * Creates a GLFWContext and injects it into ViewerApp (dependency injection).
+ * Creates an SDL3Context and injects it into ViewerApp (dependency injection).
  *
  * Command-line flags:
  *   --resolution, --res <resolution>  Set display resolution (4k, 1080, 720)
@@ -12,7 +12,7 @@
 
 #include <string>
 
-#include "graphics/GLFWContext.hpp"
+#include "graphics/SDL3Context.hpp"
 #include "viewer_app.hpp"
 
 namespace
@@ -60,8 +60,8 @@ int main(int argc, char* argv[])
     int height = 720;
     getWindowSize(resolution, width, height);
 
-    // Create the OpenGL context (GLFW window + GLAD initialization)
-    GLFWContext context(width, height, "Particle-Viewer");
+    // Create the OpenGL context (SDL3 window + GLAD initialization)
+    SDL3Context context(width, height, "Particle-Viewer");
     if (!context.isValid()) {
         return 1;
     }
