@@ -149,7 +149,7 @@ void ViewerApp::initScreen()
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     stbi_flip_vertically_on_write(true);
 
-    // Register GLFW-specific callbacks if a native window is available
+    // Register event handling (SDL3 events are polled in run())
     setupCallbacks();
 
     // NOTE: Window settings are loaded AFTER FBO setup in initialize()

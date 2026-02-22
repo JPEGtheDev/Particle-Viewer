@@ -32,9 +32,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 find_package(OpenGL REQUIRED)
 
 # ============================================
-# All FetchContent deps declared together before any MakeAvailable calls.
-# GoogleTest must be made available BEFORE SDL3 to avoid CMake 3.31
-# FetchContent state corruption when SDL3 is built as a subdirectory.
+# All FetchContent deps declared together.
+# GoogleTest must be made available BEFORE SDL3's FetchContent_MakeAvailable
+# to avoid a CMake 3.31 issue where SDL3's subdirectory configure corrupts
+# FetchContent internal state for subsequent FetchContent_MakeAvailable calls.
 # ============================================
 include(FetchContent)
 

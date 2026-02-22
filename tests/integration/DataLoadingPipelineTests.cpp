@@ -9,7 +9,6 @@
  */
 
 // Include glad first to avoid OpenGL header conflicts
-#define GLFW_INCLUDE_NONE
 #include <cmath>
 #include <cstdio>
 #include <fstream>

@@ -6,7 +6,7 @@
  * Owns the main loop, window, rendering pipeline, and scene objects.
  *
  * Supports dependency injection: accepts an IOpenGLContext* for testability.
- * Production code uses GLFWContext; tests use MockOpenGLContext.
+ * Production code typically uses SDL3Context; tests use MockOpenGLContext.
  *
  * Architecture: Input → Data Loading → Rendering
  */
@@ -131,7 +131,7 @@ class ViewerApp
 
     ~ViewerApp();
 
-    // Prevent copying (owns GL and GLFW resources)
+    // Prevent copying (owns GL and SDL3 resources)
     ViewerApp(const ViewerApp&) = delete;
     ViewerApp& operator=(const ViewerApp&) = delete;
 
@@ -142,7 +142,7 @@ class ViewerApp
     void parseArgs(int argc, char* argv[]);
 
     /*
-     * Initialize GLFW, OpenGL context, camera, particles, shaders, and FBO.
+     * Initialize SDL3 context, OpenGL, camera, particles, shaders, and FBO.
      * Returns true on success, false if initialization fails.
      */
     bool initialize();

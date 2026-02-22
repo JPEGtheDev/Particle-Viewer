@@ -2,7 +2,7 @@
  * IOpenGLContext.hpp
  *
  * Abstract interface for OpenGL context management.
- * Enables dependency injection: production code uses GLFWContext,
+ * Enables dependency injection: production code uses SDL3Context,
  * tests use MockOpenGLContext for headless testing without a GPU.
  *
  * This interface abstracts window and context lifecycle operations.
@@ -64,7 +64,7 @@ class IOpenGLContext
     /*
      * Get the native window handle for platform-specific operations.
      * Returns nullptr if no native window exists (e.g., in mock/headless mode).
-     * For GLFW contexts, this returns the GLFWwindow*.
+     * For SDL3 contexts, this returns the SDL_Window*.
      */
     virtual void* getNativeWindowHandle() const = 0;
 };
