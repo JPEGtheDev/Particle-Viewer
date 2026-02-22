@@ -13,9 +13,10 @@
  *   automatically fall back to X11 when Wayland window creation fails.
  *   Fix applied here: if the auto-detected driver fails, SDL3Context retries
  *   with "x11" forced (XWayland on Wayland desktops), which NVIDIA supports
- *   via GLX.
+ *   via GLX.  If x11 also fails (e.g. pure Wayland session without XWayland),
+ *   a third attempt with "wayland" forced is made.
  *
- * If the app still fails after both attempts:
+ * If the app still fails after all three attempts:
  *   - Ensure NVIDIA drivers >= 560 are installed (Wayland DRM support).
  *   - Run with SDL_VIDEODRIVER=x11 to force X11/XWayland mode manually.
  *   - Run with SDL_VIDEODRIVER=wayland to force the Wayland path explicitly.
@@ -30,6 +31,7 @@
 // clang-format on
 
 #include <iostream>
+#include <string>
 
 /*
  * Apply the required OpenGL context attributes before window creation.
@@ -54,20 +56,23 @@ static void setGLAttributes()
  *   4. Attempts window creation with MSAA=4, then MSAA=0 as fallback.
  *
  * Returns the created window on success.  On failure, calls SDL_Quit() to
- * balance the SDL_Init() and returns nullptr so the caller can retry with a
- * different driver.
+ * balance the SDL_Init() and stores the SDL error in out_error BEFORE
+ * SDL_Quit() can clear it, then returns nullptr so the caller can retry.
  *
- * driver: nullptr means auto-detect (SDL3 default); "x11" forces X11/XWayland.
+ * driver: nullptr means auto-detect (SDL3 default); "x11" forces X11/XWayland;
+ *         "wayland" forces the Wayland backend explicitly.
  */
 static SDL_Window* tryInitWithDriver(const char* title, int width, int height, SDL_WindowFlags flags,
-                                     const char* driver)
+                                     const char* driver, std::string& out_error)
 {
+    out_error.clear();
     if (driver) {
         SDL_SetHint(SDL_HINT_VIDEO_DRIVER, driver);
     }
 
     if (!SDL_Init(SDL_INIT_VIDEO)) {
-        std::cerr << "SDL_Init failed: " << SDL_GetError() << std::endl;
+        out_error = SDL_GetError();
+        std::cerr << "SDL_Init failed: " << out_error << std::endl;
         return nullptr; // Init failed — no SDL_Quit needed
     }
 
@@ -85,7 +90,8 @@ static SDL_Window* tryInitWithDriver(const char* title, int width, int height, S
     }
 
     if (!window) {
-        SDL_Quit(); // Balance the SDL_Init above so the caller can retry
+        out_error = SDL_GetError(); // capture BEFORE SDL_Quit() clears it
+        SDL_Quit();                 // balance the SDL_Init above so the caller can retry
     }
 
     return window;
@@ -99,22 +105,34 @@ SDL3Context::SDL3Context(int width, int height, const char* title, bool visible)
         flags |= SDL_WINDOW_HIDDEN;
     }
 
+    std::string last_error;
+
     // Attempt A: Auto-detect video driver.
     // SDL3 prefers Wayland on Wayland sessions and X11 on X11 sessions.
-    window_ = tryInitWithDriver(title, width, height, flags, nullptr);
+    window_ = tryInitWithDriver(title, width, height, flags, nullptr, last_error);
 
     // Attempt B: Force the x11 driver.
     // Covers NVIDIA + Wayland where the Wayland/EGL path fails (EGL Streams
     // not available inside the Flatpak sandbox or older driver versions).
     // On a Wayland desktop this uses XWayland, which NVIDIA supports via GLX.
     if (!window_) {
-        std::cerr << "SDL3Context: auto-detect driver failed (" << SDL_GetError()
+        std::cerr << "SDL3Context: auto-detect driver failed (" << last_error
                   << "), retrying with x11 driver (XWayland fallback)..." << std::endl;
-        window_ = tryInitWithDriver(title, width, height, flags, "x11");
+        window_ = tryInitWithDriver(title, width, height, flags, "x11", last_error);
+    }
+
+    // Attempt C: Force the wayland driver.
+    // Covers pure Wayland sessions where XWayland is not installed or available
+    // (e.g. some minimal Flatpak environments) and the auto-detect chosen path
+    // failed for a transient reason.
+    if (!window_) {
+        std::cerr << "SDL3Context: x11 driver failed (" << last_error << "), retrying with wayland driver..."
+                  << std::endl;
+        window_ = tryInitWithDriver(title, width, height, flags, "wayland", last_error);
     }
 
     if (!window_) {
-        std::cerr << "SDL_CreateWindow failed: " << SDL_GetError() << std::endl;
+        std::cerr << "SDL_CreateWindow failed: " << last_error << std::endl;
         // SDL_Quit was already called by the last tryInitWithDriver on failure.
         return;
     }
