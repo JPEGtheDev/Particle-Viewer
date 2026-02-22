@@ -388,8 +388,8 @@ cmake --build build
 
 ### Build Issues
 
-**Problem**: Missing GLFW or GLM libraries
-**Solution**: Install system-wide: `sudo apt-get install libglfw3-dev libglm-dev` (Ubuntu/Debian) or equivalent for your OS
+**Problem**: Missing SDL3 (SDL3 is fetched via FetchContent on first configure)
+**Solution**: Run `cmake -B build -S .` — SDL3 is downloaded automatically. For offline/Flatpak builds, pre-populate `_deps_sdl3/` in the source tree (see FetchContent notes above).
 
 **Problem**: OpenGL headers not found
 **Solution**: Install OpenGL development packages and ensure `OpenGL::GL` target is available
@@ -402,8 +402,8 @@ cmake --build build
 **Problem**: Tests fail due to missing OpenGL context
 **Solution**: Tests should use `MockOpenGL` from `tests/mocks/` - NEVER require actual GPU/OpenGL
 
-**Problem**: Multiple GLFWContexts in tests cause segfaults
-**Solution**: `~GLFWContext()` calls `glfwTerminate()`, which kills all GLFW state. Never create/destroy multiple GLFWContext objects in a single test. For multi-resolution testing, use different-sized `FramebufferCapture` objects within a single GL context instead.
+**Problem**: Multiple SDL3Contexts in tests cause issues
+**Solution**: `SDL3Context::~SDL3Context()` calls `SDL_Quit()`. Each `SetUp()`/`TearDown()` cycle re-initializes SDL3 — this is valid. For multi-resolution rendering, use different-sized `FramebufferCapture` objects within a single SDL3Context instead of creating multiple contexts.
 
 **Problem**: Visual regression baseline fails with 1-pixel diff across Mesa versions
 **Solution**: Different Mesa/llvmpipe versions may produce sprite-boundary rounding differences. Use a `MAX_DIFF_RATIO` (e.g., 0.01%) instead of requiring 100% pixel match. Always assert artifact `save()` results so debug images are not silently lost.
@@ -464,19 +464,21 @@ cmake --build build
 
 ### OpenGL Usage
 - Check OpenGL errors after major operations
-- Use GLAD for OpenGL function loading — check return value of `gladLoadGLLoader`
+- Use GLAD for OpenGL function loading — check return value of `gladLoadGLLoader`; loader call is `gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)` with SDL3
 - Shaders are loaded from `Viewer-Assets/shaders/` directory
 - Vertex data should use modern VBO/VAO patterns
-- Bounds-check GLFW key callbacks (GLFW_KEY_UNKNOWN is -1)
+- Bounds-check SDL3 scancode values before indexing key state arrays — SDL_SCANCODE_UNKNOWN is 0 but use `scancode < array_size` defensively
 - Prefer `glGetIntegerv(GL_VIEWPORT, ...)` over cached viewport values in render paths where the viewport may change (e.g., window resize, FBO switches)
 - `gl_PointSize` is silently clamped by `GL_POINT_SIZE_RANGE` (max 256px on Mesa/llvmpipe). When testing resolution-independent scaling, choose camera distances that keep computed point sizes under this limit at **all** target resolutions including 4K.
+- **SDL3 MSAA is strictly enforced**: `SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4)` causes `SDL_CreateWindow` to return NULL on Mesa/llvmpipe (Xvfb) because the software renderer doesn't support MSAA. GLFW silently fell back to no MSAA. Always add a fallback retry without MSAA: try 4x first; if creation fails, retry with `SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0)`.
 
 ### ImGui Integration
 
 **Architecture:**
 - Dear ImGui is downloaded via CMake FetchContent (not vendored). Since ImGui has no `CMakeLists.txt`, use `FetchContent_Declare()` with `SOURCE_SUBDIR` pointing to a non-existent path plus `FetchContent_MakeAvailable()`, then manually add source files to the target. This avoids the `FetchContent_Populate()` deprecation warning.
+- **FetchContent ordering with CMake 3.31+**: When a dependency has its own `CMakeLists.txt` (e.g., SDL3, GoogleTest), its `FetchContent_MakeAvailable()` can corrupt internal FetchContent state for subsequent calls in the same cmake run. Fix: make all other FetchContent deps available **before** the problematic one. In practice, process `imgui` and `googletest` before `SDL3`. Declare all deps together at the top, then `MakeAvailable` in safe order.
 - ImGui renders to the **default framebuffer** (after the FBO blit), so it naturally does not appear in FBO-based screenshots or frame recordings.
-- GLFW callbacks: Set ViewerApp's GLFW callbacks **before** calling `ImGui_ImplGlfw_InitForOpenGL(window, true)`. ImGui saves and chains to existing callbacks, ensuring the chain is: ImGui → ViewerApp.
+- **SDL3 ImGui event order**: Call `ImGui_ImplSDL3_ProcessEvent(&event)` for **every** SDL event **before** application-specific handling in the event loop. This ensures ImGui captures input first (e.g., to block key events when a text field is focused via `ImGui::GetIO().WantCaptureKeyboard`).
 
 **Menu System (`src/ui/`):**
 - `MenuState` tracks visibility and debug mode; `MenuActions` communicates triggered actions back to ViewerApp
