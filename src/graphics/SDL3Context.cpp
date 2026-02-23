@@ -16,11 +16,23 @@
  *   via GLX.  If x11 also fails (e.g. pure Wayland session without XWayland),
  *   a third attempt with "wayland" forced is made.
  *
- * If the app still fails after all three attempts:
+ * Flatpak + NVIDIA GL extension version mismatch:
+ *   When the installed nvidia-<ver> Flatpak GL extension does not exactly
+ *   match the host driver (e.g. driver 580.126.18 but only the 580.126.16
+ *   extension exists on flathub), Mesa's libGLX_mesa.so is the only vendor
+ *   library present in the sandbox.  Mesa's GLX client cannot negotiate with
+ *   NVIDIA's X server GLX extension, so window creation fails with
+ *   "Invalid window driver data".  SDL3Context detects this before the first
+ *   SDL_Init (NVIDIA device node present + LD_LIBRARY_PATH has no "nvidia"
+ *   path) and forces LIBGL_ALWAYS_SOFTWARE=1 so that Mesa software rendering
+ *   (llvmpipe) is used.  See forceGlSoftwareIfNvidiaExtensionAbsent() below.
+ *
+ * If the app still fails after all four attempts:
  *   - Ensure NVIDIA drivers >= 560 are installed (Wayland DRM support).
  *   - Run with SDL_VIDEODRIVER=x11 to force X11/XWayland mode manually.
  *   - Run with SDL_VIDEODRIVER=wayland to force the Wayland path explicitly.
- *   - On Flatpak, the --device=dri finish-arg is required (already set).
+ *   - On Flatpak, the --device=all finish-arg is required (already set).
+ *   - Check that org.freedesktop.Platform.GL.nvidia-<ver>//1.4 is installed.
  */
 
 #include "SDL3Context.hpp"
@@ -30,8 +42,71 @@
 #include <SDL3/SDL.h>    // NOLINT(llvm-include-order)
 // clang-format on
 
+#include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <string>
+
+#include <unistd.h>
+
+/*
+ * Pre-flight: detect an NVIDIA GPU present in the sandbox without a matching
+ * Flatpak GL extension active.
+ *
+ * In a Flatpak sandbox on an NVIDIA system, the GL extension
+ * (org.freedesktop.Platform.GL.nvidia-<ver>//1.4) must be installed with an
+ * exact driver-version match.  When it is absent or mismatched, the Flatpak
+ * runtime only mounts Mesa's GL.default extension.  Mesa's libGLX_mesa.so
+ * cannot negotiate with NVIDIA's X server GLX extension, so SDL3 window
+ * creation fails with "Invalid window driver data".
+ *
+ * Detection heuristic (Flatpak-specific, requires --device=all finish-arg):
+ *   - /dev/nvidia0 present  → NVIDIA GPU is present in the sandbox
+ *   - LD_LIBRARY_PATH has no "nvidia" path  → GL extension is not active
+ *
+ * When both conditions hold, three env vars are set before the first
+ * SDL_Init so that the correct Mesa software paths are chosen when GL
+ * vendor libraries are first loaded by GLVND:
+ *   LIBGL_ALWAYS_SOFTWARE=1     — force Mesa software rendering
+ *   GALLIUM_DRIVER=llvmpipe    — explicit Mesa llvmpipe backend
+ *   __GLX_VENDOR_LIBRARY_NAME=mesa — GLVND uses Mesa's libGLX_mesa vendor
+ *       library instead of querying the X server extension (which would
+ *       request the absent libGLX_nvidia.so and fail).
+ *
+ * The 'overwrite=1' flag is used because Flatpak pre-sets env vars it
+ * manages to "" (empty string), which means overwrite=0 would be silently
+ * ignored.  The forced values can always be overridden by re-running the app
+ * with an explicit --env=<VAR>=value flag.
+ *
+ * Returns true if software rendering was forced.
+ */
+static bool forceGlSoftwareIfNvidiaExtensionAbsent()
+{
+    const char* ld_path = getenv("LD_LIBRARY_PATH"); // NOLINT(concurrency-mt-unsafe)
+    const bool nvidia_ext_active = (ld_path != nullptr) && (strstr(ld_path, "nvidia") != nullptr);
+    const bool nvidia_dev_present = (access("/dev/nvidia0", F_OK) == 0);
+
+    if (nvidia_dev_present && !nvidia_ext_active) {
+        // Use overwrite=1: Flatpak initialises env vars it controls to ""
+        // (empty string) which is treated as "already set" by overwrite=0,
+        // so a plain setenv with overwrite=0 would be silently ignored.
+        //
+        // Three env vars are required together:
+        //   LIBGL_ALWAYS_SOFTWARE=1    — force Mesa software rendering
+        //   GALLIUM_DRIVER=llvmpipe   — explicit Mesa llvmpipe backend
+        //   __GLX_VENDOR_LIBRARY_NAME=mesa — force GLVND to use Mesa's
+        //       libGLX_mesa vendor library.  Without this, GLVND queries the
+        //       X server extension (which advertises NVIDIA) and tries to
+        //       dlopen libGLX_nvidia.so, which is absent when the GL
+        //       extension does not match; requesting Mesa here bypasses
+        //       the vendor negotiation and uses software rendering instead.
+        setenv("LIBGL_ALWAYS_SOFTWARE", "1", 1);        // NOLINT(concurrency-mt-unsafe)
+        setenv("GALLIUM_DRIVER", "llvmpipe", 1);        // NOLINT(concurrency-mt-unsafe)
+        setenv("__GLX_VENDOR_LIBRARY_NAME", "mesa", 1); // NOLINT(concurrency-mt-unsafe)
+        return true;
+    }
+    return false;
+}
 
 /*
  * Apply the required OpenGL context attributes before window creation.
@@ -68,6 +143,11 @@ static SDL_Window* tryInitWithDriver(const char* title, int width, int height, S
     out_error.clear();
     if (driver) {
         SDL_SetHint(SDL_HINT_VIDEO_DRIVER, driver);
+    } else {
+        // Reset any previously-set driver hint so SDL auto-detects cleanly.
+        // SDL hints survive SDL_Quit(), so without this reset the last explicit
+        // driver hint from a failed attempt (e.g. "wayland") would be reused.
+        SDL_ResetHint(SDL_HINT_VIDEO_DRIVER);
     }
 
     if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -105,6 +185,17 @@ SDL3Context::SDL3Context(int width, int height, const char* title, bool visible)
         flags |= SDL_WINDOW_HIDDEN;
     }
 
+    // Pre-flight: if an NVIDIA GPU is present but no matching Flatpak GL
+    // extension is active, force Mesa software rendering before the first
+    // SDL_Init.  This must happen before any SDL video initialisation so that
+    // LIBGL_ALWAYS_SOFTWARE is in effect when GLVND first loads GL vendor libs.
+    if (forceGlSoftwareIfNvidiaExtensionAbsent()) {
+        std::cerr << "SDL3Context: NVIDIA GPU detected without a matching Flatpak GL extension.\n"
+                  << "  Enabling software rendering (Mesa llvmpipe) — performance may be reduced.\n"
+                  << "  To restore hardware rendering, install the matching GL extension:\n"
+                  << "  flatpak install flathub org.freedesktop.Platform.GL.nvidia-<YOUR_VER>//1.4\n";
+    }
+
     std::string last_error;
 
     // Attempt A: Auto-detect video driver.
@@ -129,6 +220,26 @@ SDL3Context::SDL3Context(int width, int height, const char* title, bool visible)
         std::cerr << "SDL3Context: x11 driver failed (" << last_error << "), retrying with wayland driver..."
                   << std::endl;
         window_ = tryInitWithDriver(title, width, height, flags, "wayland", last_error);
+    }
+
+    // Attempt D: Best-effort software rendering retry.
+    // The pre-flight above sets LIBGL_ALWAYS_SOFTWARE=1 before the first
+    // SDL_Init when a Flatpak/NVIDIA mismatch is detected, so Attempts A–C
+    // should have succeeded and this branch is not normally reached.
+    // For non-Flatpak scenarios where the pre-flight heuristic could not
+    // detect the mismatch, this attempt sets LIBGL_ALWAYS_SOFTWARE and
+    // retries.  Note: if NVIDIA's GL libraries were already loaded by a prior
+    // SDL_Init call the setenv will have no effect on GLVND dispatch.
+    if (!window_) {
+        std::cerr << "SDL3Context: wayland driver failed (" << last_error
+                  << "), retrying with software rendering hint (best-effort)..." << std::endl;
+        setenv("LIBGL_ALWAYS_SOFTWARE", "1", 1);        // NOLINT(concurrency-mt-unsafe) overwrite=1: see pre-flight
+        setenv("GALLIUM_DRIVER", "llvmpipe", 1);        // NOLINT(concurrency-mt-unsafe)
+        setenv("__GLX_VENDOR_LIBRARY_NAME", "mesa", 1); // NOLINT(concurrency-mt-unsafe)
+        window_ = tryInitWithDriver(title, width, height, flags, nullptr, last_error);
+        if (window_) {
+            std::cerr << "SDL3Context: WARNING — using software rendering. Performance may be reduced." << std::endl;
+        }
     }
 
     if (!window_) {

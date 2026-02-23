@@ -56,20 +56,27 @@ FetchContent_Declare(
     SOURCE_SUBDIR _no_cmakelists
 )
 
-# Support pre-populated SDL3 source (e.g., Flatpak offline builds)
-if(EXISTS "${CMAKE_SOURCE_DIR}/_deps_sdl3/CMakeLists.txt")
-    set(FETCHCONTENT_SOURCE_DIR_SDL3 "${CMAKE_SOURCE_DIR}/_deps_sdl3")
+# Prefer a system-installed SDL3 (e.g. Flatpak module pre-built with proper
+# X11/Wayland pkg-config paths) over building from source via FetchContent.
+# When SDL3 is found here, FetchContent_MakeAvailable(SDL3) is skipped entirely.
+find_package(SDL3 QUIET)
+
+if(NOT SDL3_FOUND)
+    # Support pre-populated SDL3 source (e.g., Flatpak offline builds)
+    if(EXISTS "${CMAKE_SOURCE_DIR}/_deps_sdl3/CMakeLists.txt")
+        set(FETCHCONTENT_SOURCE_DIR_SDL3 "${CMAKE_SOURCE_DIR}/_deps_sdl3")
+    endif()
+
+    set(SDL_SHARED OFF CACHE BOOL "" FORCE)
+    set(SDL_STATIC ON CACHE BOOL "" FORCE)
+    set(SDL_TEST_LIBRARY OFF CACHE BOOL "" FORCE)
+
+    FetchContent_Declare(
+        SDL3
+        GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+        GIT_TAG release-3.2.6
+    )
 endif()
-
-set(SDL_SHARED OFF CACHE BOOL "" FORCE)
-set(SDL_STATIC ON CACHE BOOL "" FORCE)
-set(SDL_TEST_LIBRARY OFF CACHE BOOL "" FORCE)
-
-FetchContent_Declare(
-    SDL3
-    GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-    GIT_TAG release-3.2.6
-)
 
 # Make ImGui available first (header-only, no subdirectory)
 FetchContent_MakeAvailable(imgui)
@@ -92,8 +99,15 @@ if(BUILD_TESTS)
 endif()
 
 # SDL3 is made available last to prevent it from disrupting subsequent
-# FetchContent calls (CMake 3.31 subdirectory configure interaction)
-FetchContent_MakeAvailable(SDL3)
+# FetchContent calls (CMake 3.31 subdirectory configure interaction).
+# Skipped when find_package(SDL3) already found a system-installed SDL3
+# (e.g. the Flatpak sdl3 module built with proper X11/Wayland support).
+if(NOT SDL3_FOUND)
+    FetchContent_MakeAvailable(SDL3)
+    set(SDL3_LINK_TARGET SDL3::SDL3-static)
+else()
+    set(SDL3_LINK_TARGET SDL3::SDL3)
+endif()
 
 if(${alloutput})
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -Wall -W -Wshadow -Wunused-variable -Wunused-parameter -Wunused-function -Wunused -Wno-system-headers -Woverloaded-virtual -Wwrite-strings -fprofile-arcs -ftest-coverage")
@@ -128,7 +142,7 @@ add_executable(Viewer
 	${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
 )   
 
-target_link_libraries(Viewer ${CMAKE_DL_LIBS} SDL3::SDL3-static OpenGL::GL)
+target_link_libraries(Viewer ${CMAKE_DL_LIBS} ${SDL3_LINK_TARGET} OpenGL::GL)
 
 target_include_directories(Viewer PUBLIC
 	src/glad/include

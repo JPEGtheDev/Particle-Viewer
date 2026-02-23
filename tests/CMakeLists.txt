@@ -28,7 +28,7 @@ target_link_libraries(ParticleViewerTests
     gtest
     gtest_main
     ${CMAKE_DL_LIBS}
-    SDL3::SDL3-static
+    ${SDL3_LINK_TARGET}
     OpenGL::GL
 )
 

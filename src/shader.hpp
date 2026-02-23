@@ -88,7 +88,7 @@ class Shader
         glDeleteShader(vertex);
         glDeleteShader(fragment);
     };
-    Shader(){};
+    Shader() {};
     void Use()
     {
         glUseProgram(this->Program);
