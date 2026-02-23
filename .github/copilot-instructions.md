@@ -20,6 +20,7 @@ Each skill owns one domain. Read the skill before working in that domain. **Neve
 | `testing` | `.github/skills/testing/` | AAA pattern, naming, mocks, visual regression, coverage |
 | `workflow` | `.github/skills/workflow/` | CI/CD pipelines, artifacts, permissions, Flatpak GL gotchas |
 | `documentation` | `.github/skills/documentation/` | Docs conventions, linking, formatting, skill authoring |
+| `execution` | `.github/skills/execution/` | Autonomous execution protocol, planning, verification, bug fixing |
 | `user-story-generator` | `.github/skills/user-story-generator/` | INVEST-aligned story creation |
 | `self-evaluation` | `.github/skills/self-evaluation/` | End-of-session review, lessons learned |
 
@@ -34,6 +35,7 @@ These are the only rules stated here because they cut across all skills:
 5. **Never commit from CI.** Pipelines are read-only. See `workflow` skill.
 6. **Comment hygiene.** If you write or encounter a code comment longer than 5 lines of explanation, migrate the detail to the appropriate skill or `docs/` file and replace with a 1-line reference. Code comments explain *what*; skills and docs explain *why*.
 7. **Self-evaluate before finishing.** See [Session Lifecycle](#session-lifecycle) below — this is mandatory, not optional.
+8. **Todo list for every task.** Use `manage_todo_list` at session start to plan work. Mark items in-progress before starting, completed immediately after finishing. No exceptions — even small tasks get a todo list so progress is visible.
 
 ## Session Lifecycle (MANDATORY)
 
@@ -47,12 +49,14 @@ Before writing code, read the skill(s) relevant to your task from the Skills Dir
 
 | If the task involves… | MUST read these skills |
 |---|---|
-| Writing or editing C++ code | `code-quality` |
-| Writing or editing tests | `code-quality`, `testing` |
+| Any implementation work | `execution` |
+| Writing or editing C++ code | `execution`, `code-quality` |
+| Writing or editing tests | `execution`, `code-quality`, `testing` |
 | Creating a PR or commit | `versioning` |
 | CI/CD or workflow changes | `workflow` |
 | Build system or dependency changes | `build` |
 | Writing or editing documentation | `documentation` |
+| Bug fixes or error resolution | `execution` |
 
 If unsure, read `code-quality` — it applies to nearly every code task.
 
