@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.0"
+  version: "1.1"
   category: execution
   project: Particle-Viewer
 ---
@@ -47,8 +47,9 @@ These govern every decision during execution:
 
 1. **Write a todo list** with specific, checkable items using `manage_todo_list`
 2. **Write detailed specs upfront** to reduce ambiguity — what files, what changes, what tests
-3. **Verify plan makes sense** before starting implementation — does it cover all acceptance criteria?
-4. **If something goes sideways, STOP and re-plan immediately** — don't keep pushing a broken approach
+3. **Include verification steps in the plan** — not just building. Plan how you'll prove each change works (which tests, which diffs, which commands)
+4. **Verify plan makes sense** before starting implementation — does it cover all acceptance criteria?
+5. **If something goes sideways, STOP and re-plan immediately** — don't keep pushing a broken approach
 
 ### Planning an INVEST Story
 
@@ -82,6 +83,12 @@ For each todo item:
 - Tests pass
 - `git diff` reviewed for unintended changes
 - Ask yourself: **"Would a staff engineer approve this?"**
+
+### Progress Communication
+
+- **Provide a high-level summary at each major step** — what you did, what changed, what's next
+- Don't narrate every file edit — summarize at the logical-unit level
+- After completing all work, **briefly document what was done** — files changed, tests added, key decisions made
 
 ### Commit Cadence
 
@@ -181,6 +188,18 @@ When given a bug report, error log, or failing test: **just fix it.**
 5. **Verify the fix** — prove the error is gone
 6. **Check for related issues** — did the same pattern occur elsewhere?
 
+### CI Failures
+
+When CI fails (formatting, tests, build):
+
+1. Read the CI log — understand what actually failed
+2. Reproduce locally with the same command
+3. Fix it — don't ask how, don't wait for instructions
+4. Verify the fix locally before pushing
+5. Push and confirm CI passes
+
+This applies to **any** CI failure you can see, whether the user points it out or not.
+
 ### What NOT to Do
 
 - Don't ask "should I fix this?" — yes, fix it
@@ -199,8 +218,13 @@ When given a bug report, error log, or failing test: **just fix it.**
 2. **Check if it's already documented** — is this in a skill?
 3. **If not, update the relevant skill immediately** — don't wait until end-of-session
 4. **Write the rule to prevent recurrence** — be specific and actionable
+5. **Ruthlessly iterate** — keep refining rules until the mistake rate drops to zero
 
 This differs from end-of-session self-evaluation (which is also mandatory). This is **real-time correction** — fix the skill as soon as you learn the lesson.
+
+### At Session Start
+
+Before starting work, **review the skills relevant to your task** (per `copilot-instructions.md` Session Lifecycle). This is how lessons from past sessions inform current work. Don't just skim — internalize the rules so you don't repeat old mistakes.
 
 ### Example
 
