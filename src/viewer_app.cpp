@@ -7,6 +7,7 @@
 
 #include "viewer_app.hpp"
 
+#include <array>
 #include <cstdlib>
 #include <iostream>
 #include <string>
@@ -36,9 +37,12 @@ struct QuadVertex
 };
 
 // Fullscreen quad for FBO blit pass (two triangles covering NDC [-1,1])
-static const QuadVertex QUAD_VERTICES[] = {{-1.0f, 1.0f, 0.0f, 1.0f}, {-1.0f, -1.0f, 0.0f, 0.0f},
-                                           {1.0f, -1.0f, 1.0f, 0.0f}, {-1.0f, 1.0f, 0.0f, 1.0f},
-                                           {1.0f, -1.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}};
+static const std::array<QuadVertex, 6> QUAD_VERTICES = {{{-1.0f, 1.0f, 0.0f, 1.0f},
+                                                         {-1.0f, -1.0f, 0.0f, 0.0f},
+                                                         {1.0f, -1.0f, 1.0f, 0.0f},
+                                                         {-1.0f, 1.0f, 0.0f, 1.0f},
+                                                         {1.0f, -1.0f, 1.0f, 0.0f},
+                                                         {1.0f, 1.0f, 1.0f, 1.0f}}};
 
 // ============================================================================
 // Construction / Destruction
@@ -325,7 +329,7 @@ void ViewerApp::setupScreenFBO()
     glGenBuffers(1, &render_.quad_vbo);
     glBindVertexArray(render_.quad_vao);
     glBindBuffer(GL_ARRAY_BUFFER, render_.quad_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(QUAD_VERTICES), QUAD_VERTICES, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(QUAD_VERTICES), QUAD_VERTICES.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
     glEnableVertexAttribArray(1);

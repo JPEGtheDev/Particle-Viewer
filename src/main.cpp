@@ -25,7 +25,7 @@ namespace
 std::string parseResolution(int argc, char* argv[])
 {
     for (int i = 1; i < argc; i++) {
-        std::string arg(argv[i]);
+        const std::string arg(argv[i]);
         if ((arg == "--resolution" || arg == "--res") && i + 1 < argc) {
             return argv[i + 1];
         }
@@ -55,7 +55,7 @@ void getWindowSize(const std::string& resolution, int& width, int& height)
 int main(int argc, char* argv[])
 {
     // Parse resolution early so we can create the context with the right size
-    std::string resolution = parseResolution(argc, argv);
+    const std::string resolution = parseResolution(argc, argv);
     int width = 1280;
     int height = 720;
     getWindowSize(resolution, width, height);

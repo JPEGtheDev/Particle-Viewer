@@ -58,25 +58,27 @@ static Image loadPPM(const std::string& path)
 {
     std::ifstream file(path.c_str(), std::ios::binary);
     if (!file.is_open()) {
-        return Image();
+        return {};
     }
 
     std::string magic;
     if (!readPPMToken(file, magic) || magic != "P6") {
-        return Image();
+        return {};
     }
 
-    std::string width_str, height_str, maxval_str;
+    std::string width_str;
+    std::string height_str;
+    std::string maxval_str;
     if (!readPPMToken(file, width_str) || !readPPMToken(file, height_str) || !readPPMToken(file, maxval_str)) {
-        return Image();
+        return {};
     }
 
-    uint32_t w = static_cast<uint32_t>(std::atoi(width_str.c_str()));
-    uint32_t h = static_cast<uint32_t>(std::atoi(height_str.c_str()));
-    uint32_t max_val = static_cast<uint32_t>(std::atoi(maxval_str.c_str()));
+    const uint32_t w = static_cast<uint32_t>(std::atoi(width_str.c_str()));
+    const uint32_t h = static_cast<uint32_t>(std::atoi(height_str.c_str()));
+    const uint32_t max_val = static_cast<uint32_t>(std::atoi(maxval_str.c_str()));
 
     if (w == 0 || h == 0 || max_val == 0 || max_val > 255) {
-        return Image();
+        return {};
     }
 
     int next = file.peek();
