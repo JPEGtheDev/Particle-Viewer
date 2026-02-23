@@ -27,7 +27,7 @@
 *.app
 
 #build folder
-build/
+/build/
 .DS_Store
 _codeql_build_dir/
 

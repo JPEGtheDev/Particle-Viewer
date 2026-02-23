@@ -4,7 +4,7 @@
 
 # Language and Standard
 Language: Cpp
-Standard: c++11
+Standard: c++20
 
 # Basic Formatting
 TabWidth: 4
