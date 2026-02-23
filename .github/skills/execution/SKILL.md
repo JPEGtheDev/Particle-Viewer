@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.1"
+  version: "1.2"
   category: execution
   project: Particle-Viewer
 ---
@@ -22,256 +22,257 @@ This skill is **mandatory for all implementation work**. `copilot-instructions.m
 
 These govern every decision during execution:
 
-- **Simplicity First:** Make every change as simple as possible. Impact minimal code. Don't add abstractions unless they earn their complexity.
-- **No Laziness:** Find root causes. No temporary fixes. No "it works, ship it." Hold yourself to senior developer standards.
-- **Minimal Impact:** Changes should only touch what's necessary. Avoid introducing bugs by limiting blast radius.
-- **Own Your Work:** Don't ask for hand-holding. Don't ask permission to continue. Don't report problems — resolve them.
+- **Keep It Simple:** Prefer the straightforward approach. Only introduce abstraction when it pays for itself in clarity or reuse.
+- **Senior-Level Standards:** Diagnose root causes. Refuse temporary workarounds. Treat every change as if it will be reviewed by your most critical colleague.
+- **Surgical Precision:** Touch only what the task requires. A smaller diff is almost always a better diff.
+- **Drive to Completion:** Act on what you know. Resolve blockers yourself. Waiting for permission wastes everyone's time.
 
 ---
 
-## Phase 1: Plan Before Building
+## Phase 1: Scope and Sequence
 
-**Enter plan mode for ANY non-trivial task** (3+ steps or architectural decisions).
+**Establish a clear plan before writing code** whenever the task involves 3+ steps or any architectural judgment.
 
-### When to Plan
+### Decision Table
 
-| Situation | Action |
+| Situation | Response |
 |---|---|
-| Single-file bug fix with obvious cause | Skip planning, just fix it |
-| Multi-file change | Plan first |
-| Anything touching architecture | Plan first |
-| Unclear requirements | Plan first, clarify via subagent research |
-| Story with acceptance criteria | Plan first — map criteria to steps |
+| Obvious single-file fix | Implement immediately — no ceremony needed |
+| Changes spanning multiple files | Outline the sequence first |
+| Architectural or design choices | Specify the approach before touching code |
+| Ambiguous requirements | Research first (subagents are cheap) |
+| User story with acceptance criteria | Decompose criteria into ordered checkpoints |
 
-### How to Plan
+### Building the Plan
 
-1. **Write a todo list** with specific, checkable items using `manage_todo_list`
-2. **Write detailed specs upfront** to reduce ambiguity — what files, what changes, what tests
-3. **Include verification steps in the plan** — not just building. Plan how you'll prove each change works (which tests, which diffs, which commands)
-4. **Verify plan makes sense** before starting implementation — does it cover all acceptance criteria?
-5. **If something goes sideways, STOP and re-plan immediately** — don't keep pushing a broken approach
+1. **Create a todo list** (`manage_todo_list`) with concrete, verifiable items
+2. **Specify expected changes** up front — files, functions, test additions
+3. **Bake in proof steps** — plan how you will verify each change, not just what you will build
+4. **Sanity-check coverage** — does the plan address every acceptance criterion?
+5. **Abandon broken plans early** — if progress stalls, scrap the approach and redesign
 
-### Planning an INVEST Story
+### Decomposing a User Story
 
-When given a user story with acceptance criteria:
+When handed an INVEST story with acceptance criteria:
 
-1. Parse each acceptance criterion into a verifiable checkpoint
-2. Identify files to create/modify (from Technical Notes or your own analysis)
-3. Map criteria → implementation steps → todo items
-4. Order steps by dependency (tests can often be written first)
-5. Estimate: will this fit in one session? If not, propose splitting to the user
+1. Turn each criterion into a pass/fail checkpoint
+2. Map checkpoints to files and functions
+3. Sequence by dependency (tests-first is often the right order)
+4. Gauge whether the scope fits a single session — propose a split if not
 
 ---
 
-## Phase 2: Execute With Discipline
+## Phase 2: Disciplined Iteration
 
-### Work Loop
+### The Work Loop
 
-For each todo item:
+For every planned item:
 
 ```
-1. Mark todo as in-progress
-2. Implement the change
-3. Verify it works (build, test, inspect)
-4. Mark todo as completed
-5. Commit if the change is a logical unit
-6. Move to next item
+1. Flag it as in-progress
+2. Make the change
+3. Prove it works (compile, test, inspect diff)
+4. Flag it as done
+5. Commit when you reach a logical boundary
+6. Advance to the next item
 ```
 
-**Never mark a task complete without proving it works.** This means:
-- Code compiles
-- Tests pass
-- `git diff` reviewed for unintended changes
-- Ask yourself: **"Would a staff engineer approve this?"**
+**A task is not done until you can demonstrate it works.** That means:
+- Clean compilation
+- All tests green
+- Diff reviewed for side-effects
+- You would confidently submit this for code review
 
-### Progress Communication
+### Communicating Progress
 
-- **Provide a high-level summary at each major step** — what you did, what changed, what's next
-- Don't narrate every file edit — summarize at the logical-unit level
-- After completing all work, **briefly document what was done** — files changed, tests added, key decisions made
+- Summarize at the milestone level, not the keystroke level
+- State what changed, what was validated, and what comes next
+- When all items are complete, give a brief accounting of files touched, tests added, and notable decisions
 
-### Commit Cadence
+### Commit Rhythm
 
-- Commit after each logical unit of work (not after every file edit)
-- Each commit should build and pass tests independently
-- Use conventional commit messages (see `versioning` skill)
-- Don't batch unrelated changes into one commit
+- One commit per logical unit — not per file, not per session
+- Every commit must build and pass tests on its own
+- Follow conventional commit format (see `versioning` skill)
+- Never lump unrelated changes together
 
 ---
 
-## Phase 3: Subagent Strategy
+## Phase 3: Delegating to Subagents
 
-Use subagents liberally to keep main context window clean and focused.
+Preserve your context window by offloading research and exploration.
 
-### When to Use Subagents
+### Good Candidates for Delegation
 
-| Task | Use subagent? |
+| Work | Delegate? |
 |---|---|
-| Researching how an API works | Yes — offload exploration |
-| Searching codebase for usage patterns | Yes — parallel analysis |
-| Reading multiple large files to understand architecture | Yes — gather context |
-| Writing a single function | No — do it directly |
-| Complex problem needing multiple angles | Yes — throw more compute at it |
+| Exploring unfamiliar APIs or libraries | Yes — keep investigation out of your main thread |
+| Scanning the codebase for patterns or usages | Yes — parallel search is faster |
+| Digesting multiple large files for context | Yes — collect the summary, not the raw text |
+| Authoring a single function or fix | No — do this inline |
+| Tackling a hard problem from several angles | Yes — fan out the analysis |
 
-### Subagent Rules
+### Delegation Guidelines
 
-- **One task per subagent** for focused execution
-- **Be specific** in the prompt — tell it exactly what to return
-- **Trust the output** unless it contradicts what you know
-- Subagents cannot write files — they research, you implement
+- **Assign one clear objective per subagent** — focused tasks yield better results
+- **State the return format** — tell it exactly what information you need back
+- **Accept the findings** unless they conflict with verified facts
+- Subagents gather information; you apply it
 
 ---
 
-## Phase 4: Verification Before Done
+## Phase 4: Prove It Before You Ship It
 
-**Never declare work complete without evidence.**
+**Completion requires evidence, not just intent.**
 
-### Verification Checklist
+### Pre-Completion Checks
 
-For every change, before marking complete:
+Before declaring any change finished:
 
-- [ ] **Build passes:** `cmake --build build`
-- [ ] **Tests pass:** `./build/tests/ParticleViewerTests`
-- [ ] **Formatting clean:** `find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i`
-- [ ] **Diff reviewed:** `git diff` — inspect every changed file for unintended changes
-- [ ] **Silent output investigated:** If a tool produces no output, verify independently — don't assume success
-- [ ] **Staff engineer test:** Would this pass code review? If you hesitate, improve it
+- [ ] **Compiles:** `cmake --build build`
+- [ ] **Tests green:** `./build/tests/ParticleViewerTests`
+- [ ] **Formatted:** `find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i`
+- [ ] **Diff inspected:** `git diff` — read every hunk for accidental changes
+- [ ] **No trusted silence:** Empty tool output gets a second verification method
+- [ ] **Review-ready:** You would not hesitate to open a PR with this
 
-### Diff Against Main
+### Comparing Against the Base Branch
 
-When relevant (especially for PRs), compare your changes against the target branch:
+Especially before pushing or opening PRs:
 
 ```bash
 git diff main..HEAD --stat
 git diff main..HEAD -- src/
 ```
 
-This catches drift, accidental changes, and scope creep.
+Catches scope creep, stale hunks, and unintentional drift.
 
 ---
 
-## Phase 5: Demand Elegance (Balanced)
+## Phase 5: Pursue Clarity
 
-For non-trivial changes, pause and ask: **"Is there a more elegant way?"**
+After something works but before you commit, pause: **"Is there a cleaner way to express this?"**
 
-### When to Apply
+### Apply When
 
-- After getting something working but before committing
-- When a fix feels hacky: "Knowing everything I know now, implement the elegant solution"
-- When you see an opportunity to simplify adjacent code without scope creep
+- A working solution feels convoluted or brittle
+- Hindsight reveals a simpler path: "Given what I now know, I'd write it differently"
+- Nearby code could be simplified without expanding scope
 
-### When to Skip
+### Skip When
 
-- Simple, obvious fixes — don't over-engineer
-- Formatting-only changes
-- When elegance would require touching unrelated code
+- The fix is already obvious and direct
+- The change is purely mechanical (formatting, renames)
+- Improvement would require unrelated refactoring
 
-### The Challenge
+### Self-Review
 
-Before presenting your work, challenge it:
-- Is this the simplest solution that works?
-- Did I introduce unnecessary complexity?
-- Would I be proud to show this in a code review?
-
----
-
-## Phase 6: Autonomous Bug Fixing
-
-When given a bug report, error log, or failing test: **just fix it.**
-
-### Protocol
-
-1. **Read the error** — understand what's actually failing
-2. **Reproduce it** — run the failing command/test locally
-3. **Find root cause** — don't patch symptoms
-4. **Fix it** — implement the correct solution
-5. **Verify the fix** — prove the error is gone
-6. **Check for related issues** — did the same pattern occur elsewhere?
-
-### CI Failures
-
-When CI fails (formatting, tests, build):
-
-1. Read the CI log — understand what actually failed
-2. Reproduce locally with the same command
-3. Fix it — don't ask how, don't wait for instructions
-4. Verify the fix locally before pushing
-5. Push and confirm CI passes
-
-This applies to **any** CI failure you can see, whether the user points it out or not.
-
-### What NOT to Do
-
-- Don't ask "should I fix this?" — yes, fix it
-- Don't report the problem without attempting resolution
-- Don't propose multiple options and ask the user to choose — pick the best one
-- Don't require context switching from the user — handle it yourself
-- Don't apply band-aids — find and fix root causes
+Before presenting your work:
+- Is this the most straightforward implementation?
+- Did I add complexity that the problem didn't demand?
+- Would I be comfortable defending every line in review?
 
 ---
 
-## Phase 7: Self-Correction Loop
+## Phase 6: Resolve Errors Autonomously
 
-**After ANY mistake or user correction during a session:**
+When you encounter a bug report, failing test, or error log: **resolve it without prompting.**
 
-1. **Identify the pattern** — what went wrong and why?
-2. **Check if it's already documented** — is this in a skill?
-3. **If not, update the relevant skill immediately** — don't wait until end-of-session
-4. **Write the rule to prevent recurrence** — be specific and actionable
-5. **Ruthlessly iterate** — keep refining rules until the mistake rate drops to zero
+### Approach
 
-This differs from end-of-session self-evaluation (which is also mandatory). This is **real-time correction** — fix the skill as soon as you learn the lesson.
+1. **Parse the failure** — read the actual error, not just the summary
+2. **Reproduce locally** — run the same command that failed
+3. **Trace to the root** — don't mask symptoms with patches
+4. **Implement the fix** — choose the correct solution, not the fastest one
+5. **Confirm resolution** — prove the error no longer occurs
+6. **Scan for siblings** — check whether the same pattern exists elsewhere
 
-### At Session Start
+### When CI Breaks
 
-Before starting work, **review the skills relevant to your task** (per `copilot-instructions.md` Session Lifecycle). This is how lessons from past sessions inform current work. Don't just skim — internalize the rules so you don't repeat old mistakes.
+Pipeline failures follow the same protocol:
 
-### Example
+1. Read the log output — identify the specific failure
+2. Reproduce it on your machine with the equivalent command
+3. Apply the fix — no need to wait for direction
+4. Verify locally, then push
+5. Confirm the pipeline goes green
+
+Act on **any** visible CI failure, whether or not someone flags it.
+
+### Prohibited Behaviors
+
+- Asking whether you should fix an obvious error — of course you should
+- Describing a problem without working toward a solution
+- Presenting a menu of options instead of executing the best one
+- Pushing diagnosis work back to the user
+- Settling for a workaround when a proper fix is reachable
+
+---
+
+## Phase 7: Continuous Skill Refinement
+
+**Correct course in real time, not just at session end.**
+
+After any mistake or user correction during a session:
+
+1. **Name the failure mode** — what exactly went wrong?
+2. **Search existing skills** — is this already documented?
+3. **If it's new, update the relevant skill now** — don't defer to the post-session review
+4. **Write a concrete prevention rule** — vague advice doesn't prevent recurrence
+5. **Keep tightening** — revisit rules that still produce mistakes and sharpen them
+
+This complements the mandatory end-of-session self-evaluation. The difference: this happens the moment you learn something, not after the work is finished.
+
+### Starting a New Session
+
+Before beginning work, **read every skill your task requires** (per the auto-load table in `copilot-instructions.md`). This is how lessons from prior sessions carry forward. Read to internalize, not to check a box.
+
+### Concrete Example
 
 ```
-Mistake: Trusted clang-format silent output without checking git diff
-Correction: Added verification step to code-quality skill Step 1
-Rule: "Always check git diff after formatting — silent output doesn't mean success"
+Failure: Assumed empty clang-format output meant all files were clean
+Fix: Added "inspect git diff after formatting" to code-quality pre-commit checklist
+Rule: "Verify formatting changes via diff — silence is not confirmation"
 ```
 
 ---
 
-## Anti-Patterns
+## Prohibited Patterns
 
-These behaviors are explicitly prohibited:
+These behaviors are explicitly disallowed:
 
-1. **Asking permission to continue** — if the task is clear, execute it
-2. **Reporting problems without solutions** — always propose or implement a fix
-3. **Marking work done without verification** — prove it works first
-4. **Pushing through a failing approach** — stop, re-plan, try differently
-5. **Over-engineering simple tasks** — match solution complexity to problem complexity
-6. **Skipping planning for complex work** — 3+ steps = plan first
-7. **Ignoring adjacent issues** — if you see a bug while working, note it or fix it
-8. **Trusting tool silence** — verify independently when output is empty
+1. **Waiting for a green light** — if the task is defined, begin executing
+2. **Surfacing problems without fixes** — always pair a diagnosis with a resolution
+3. **Declaring done without proof** — every completion claim needs supporting evidence
+4. **Doubling down on a stuck approach** — halt, rethink, restart
+5. **Gold-plating simple work** — match effort to actual complexity
+6. **Winging complex work** — multi-step tasks get a written plan
+7. **Walking past defects** — if you spot an issue while working, address or log it
+8. **Believing empty output** — always cross-check with a second method
 
 ---
 
-## Quick Reference: Execution Flow
+## Quick Reference
 
 ```
-Task received
+Task arrives
     ↓
-Is it trivial (1-2 steps)?
-    Yes → Execute directly, verify, commit
+Trivial (1-2 steps)?
+    Yes → Implement, verify, commit
     No  ↓
-Plan: Write todo list with checkable items
+Plan: build todo list with verifiable items
     ↓
-For each item:
-    Mark in-progress → Implement → Verify → Mark complete → Commit
+Per item:
+    Start → Implement → Prove → Complete → Commit
     ↓
-    If blocked or broken → STOP → Re-plan → Continue
+    Stuck? → Stop → Re-plan → Resume
     ↓
-All items done?
+All done?
     ↓
-Final verification:
-    Build ✓ | Tests ✓ | Format ✓ | Diff reviewed ✓ | Staff engineer test ✓
+Final gate:
+    Compiles ✓ | Tests ✓ | Formatted ✓ | Diff clean ✓ | Review-ready ✓
     ↓
 Self-evaluate (per self-evaluation skill)
     ↓
-Done
+Ship it
 ```
