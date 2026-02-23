@@ -32,6 +32,33 @@ These are the only rules stated here because they cut across all skills:
 3. **PR title = squash commit message.** Do NOT change an existing PR title unless the user explicitly asks.
 4. **Build and test before pushing.** `cmake --build build && ./build/tests/ParticleViewerTests`
 5. **Never commit from CI.** Pipelines are read-only. See `workflow` skill.
+6. **Comment hygiene.** If you write or encounter a code comment longer than 5 lines of explanation, migrate the detail to the appropriate skill or `docs/` file and replace with a 1-line reference. Code comments explain *what*; skills and docs explain *why*.
+7. **Self-evaluate before finishing.** See [Session Lifecycle](#session-lifecycle) below — this is mandatory, not optional.
+
+## Session Lifecycle (MANDATORY)
+
+Every session follows this lifecycle. All models (Opus, Sonnet, Haiku) MUST execute both phases.
+
+### On Start — Skill Check
+
+Before writing code, read the skill(s) relevant to your task from the Skills Directory above. If the task touches multiple domains, read multiple skills.
+
+### On Finish — Self-Evaluate and Compact
+
+**Before your final message to the user**, you MUST do all of the following:
+
+1. **Read** `.github/skills/self-evaluation/SKILL.md` and follow its steps.
+2. **Identify lessons learned** — mistakes made, user corrections, patterns discovered.
+3. **Check existing skills** — is the lesson already documented? If yes, skip.
+4. **Apply updates** — for High/Medium priority lessons, update the relevant skill file and bump its version in the YAML frontmatter. Commit the skill update with the session's work.
+5. **Compact** — scan any files you touched for bloated comments or duplicated docs. Migrate detail to skills/docs and leave 1-line references.
+6. **Report** — include a brief `### Session Self-Evaluation` block in your final message:
+   ```
+   ### Session Self-Evaluation
+   Lessons: [count] | Skills updated: [list or "None"] | Compacted: [files or "None"]
+   ```
+
+If you have nothing to report, still include the block with zeroes. This ensures the behavior is habitual.
 
 ## Source Code Layout
 
