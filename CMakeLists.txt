@@ -106,7 +106,14 @@ if(NOT SDL3_FOUND)
     FetchContent_MakeAvailable(SDL3)
     set(SDL3_LINK_TARGET SDL3::SDL3-static)
 else()
-    set(SDL3_LINK_TARGET SDL3::SDL3)
+    # Prefer static target when available (e.g. Flatpak bundled build where
+    # SDL3 is built with SDL_STATIC=ON so libSDL3.so.0 need not be present
+    # on the host at runtime).
+    if(TARGET SDL3::SDL3-static)
+        set(SDL3_LINK_TARGET SDL3::SDL3-static)
+    else()
+        set(SDL3_LINK_TARGET SDL3::SDL3)
+    endif()
 endif()
 
 if(${alloutput})
