@@ -10,7 +10,7 @@ Particle-Viewer is a C++ OpenGL-based viewer for N-Body simulations. It allows v
 - C++20 with OpenGL for 3D rendering
 - CMake for build configuration
 - Google Test for unit testing
-- GLFW and GLM libraries (must be installed locally)
+- SDL3 and GLM libraries (SDL3 auto-downloaded via CMake FetchContent for local builds; installed as a standalone module for Flatpak builds)
 - Dear ImGui for GUI menus and debug tools (downloaded via CMake FetchContent)
 - Embedded libraries: stb, Tiny File Dialogs, GLAD
 
@@ -78,7 +78,7 @@ cmake --install build
 - CMake 3.24 or higher
 - C++20 compatible compiler (GCC >= 10, Clang >= 11, MSVC 2019+/VS2022)
 - OpenGL development libraries
-- GLFW 3.3+ and GLM (must be installed on system)
+- GLM (must be installed on system); SDL3 is auto-downloaded via CMake FetchContent
 - clang-format and clang-tidy (for code quality checks)
 
 ### Pull Request Requirements
@@ -244,27 +244,7 @@ Configuration in `.clang-tidy` enforces:
 
 **Note**: The release workflow detects `feat:`, `fix:`, and any `<type>!:` breaking changes. Commits without these types still trigger a PATCH bump to ensure every push to master creates a release.
 
-**Examples:**
-```bash
-# Patch release
-git commit -m "fix: resolve memory leak in particle system"
-
-# Minor release
-git commit -m "feat: add particle color customization"
-
-# Major release (breaking change)
-git commit -m "feat!: redesign configuration API"
-# OR with footer
-git commit -m "feat: redesign configuration API
-
-BREAKING CHANGE: Config file format changed from JSON to YAML"
-```
-
-**Commit Tips:**
-- Present tense ("add" not "added")
-- Lowercase after colon
-- No trailing period
-- Keep description concise and clear
+**Examples and commit tips:** See [`docs/CONVENTIONAL_COMMITS.md`](docs/CONVENTIONAL_COMMITS.md).
 
 ## Source Code Organization
 
@@ -313,7 +293,7 @@ docs/
 | Skill | Domain | Reference From |
 |-------|--------|----------------|
 | `testing` | Test writing, AAA pattern, mocking | `docs/TESTING_STANDARDS.md` |
-| `workflow` | CI/CD pipelines, artifacts, permissions | CI Pipeline Rules section |
+| `workflow` | CI/CD pipelines, artifacts, permissions, Flatpak GL/SDL3 gotchas | `.github/skills/workflow/references/FLATPAK_GL_GOTCHAS.md` |
 | `documentation` | Docs conventions, linking, formatting | This section |
 | `user-story-generator` | Story creation, INVEST framework | Project planning |
 | `self-evaluation` | End-of-session review, lessons learned | This section |
@@ -439,6 +419,8 @@ cmake --build build
 - **Integration Tests**: `docs/testing/integration-tests.md`
 - **Release Process**: `docs/RELEASE_PROCESS.md`
 - **Conventional Commits Quick Ref**: `docs/CONVENTIONAL_COMMITS.md`
+- **ImGui Integration Patterns**: `docs/IMGUI_INTEGRATION.md`
+- **Flatpak GL/SDL3 Gotchas**: `.github/skills/workflow/references/FLATPAK_GL_GOTCHAS.md`
 - **Microsoft C++ Core Guidelines**: https://isocpp.github.io/CppCoreGuidelines/
 - **Google Test Docs**: https://google.github.io/googletest/
 
@@ -470,59 +452,17 @@ cmake --build build
 - Bounds-check SDL3 scancode values before indexing key state arrays — SDL_SCANCODE_UNKNOWN is 0 but use `scancode < array_size` defensively
 - Prefer `glGetIntegerv(GL_VIEWPORT, ...)` over cached viewport values in render paths where the viewport may change (e.g., window resize, FBO switches)
 - `gl_PointSize` is silently clamped by `GL_POINT_SIZE_RANGE` (max 256px on Mesa/llvmpipe). When testing resolution-independent scaling, choose camera distances that keep computed point sizes under this limit at **all** target resolutions including 4K.
-- **SDL3 MSAA is strictly enforced**: `SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4)` causes `SDL_CreateWindow` to return NULL on Mesa/llvmpipe (Xvfb) because the software renderer doesn't support MSAA. GLFW silently fell back to no MSAA. Always add a fallback retry without MSAA: try 4x first; if creation fails, retry with `SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0)`.
-- **SDL3 FetchContent in Flatpak produces no display backends**: When SDL3 is built via CMake FetchContent inside a Flatpak `flatpak-builder` module, the Freedesktop SDK pkg-config paths are not inherited. This causes `sdl3_config.cmake` to see `SDL_X11: OFF` and `SDL_WAYLAND: OFF`, leaving no video driver available at runtime. Fix: build SDL3 as a **separate** module in the Flatpak manifest (before the app module) with explicit `-DSDL_X11=ON -DSDL_WAYLAND=ON`.
-- **Flatpak NVIDIA GL extension mismatch — software rendering fallback**: When the installed NVIDIA Flatpak GL extension does not exactly match the host driver version, Mesa's `libGLX_mesa.so` is the only GLX vendor library in the sandbox. Mesa's GLX client cannot negotiate with NVIDIA's X server GLX extension, so `SDL_CreateWindow` fails with `Invalid window driver data`. Detect the mismatch before the first `SDL_Init` using `/dev/nvidia0` (present when `--device=all` is set) and `LD_LIBRARY_PATH` having no `"nvidia"` path. When detected, set all three env vars before `SDL_Init`: `LIBGL_ALWAYS_SOFTWARE=1`, `GALLIUM_DRIVER=llvmpipe`, and `__GLX_VENDOR_LIBRARY_NAME=mesa`. Setting only `LIBGL_ALWAYS_SOFTWARE=1` is **insufficient** — GLVND still queries the X server extension (which advertises NVIDIA) and tries to dlopen the absent `libGLX_nvidia.so`. All three together bypass vendor negotiation and route to Mesa's software renderer.
-- **Flatpak `setenv` requires `overwrite=1`**: Flatpak pre-initialises env vars it manages to `""` (empty string). An `overwrite=0` call to `setenv()` sees a non-NULL existing value and silently does nothing. Always use `overwrite=1` when setting env vars inside a Flatpak sandbox, unless explicitly preserving user-set values is required.
+- For Flatpak/SDL3/GL platform gotchas (MSAA enforcement, FetchContent display backends, NVIDIA extension mismatch, `setenv` overwrite), see `.github/skills/workflow/references/FLATPAK_GL_GOTCHAS.md`.
 
 ### ImGui Integration
 
-**Architecture:**
-- Dear ImGui is downloaded via CMake FetchContent (not vendored). Since ImGui has no `CMakeLists.txt`, use `FetchContent_Declare()` with `SOURCE_SUBDIR` pointing to a non-existent path plus `FetchContent_MakeAvailable()`, then manually add source files to the target. This avoids the `FetchContent_Populate()` deprecation warning.
-- **FetchContent ordering with CMake 3.31+**: When a dependency has its own `CMakeLists.txt` (e.g., SDL3, GoogleTest), its `FetchContent_MakeAvailable()` can corrupt internal FetchContent state for subsequent calls in the same cmake run. Fix: make all other FetchContent deps available **before** the problematic one. In practice, process `imgui` and `googletest` before `SDL3`. Declare all deps together at the top, then `MakeAvailable` in safe order.
-- ImGui renders to the **default framebuffer** (after the FBO blit), so it naturally does not appear in FBO-based screenshots or frame recordings.
-- **SDL3 ImGui event order**: Call `ImGui_ImplSDL3_ProcessEvent(&event)` for **every** SDL event **before** application-specific handling in the event loop. This ensures ImGui captures input first (e.g., to block key events when a text field is focused via `ImGui::GetIO().WantCaptureKeyboard`).
-
-**Menu System (`src/ui/`):**
-- `MenuState` tracks visibility and debug mode; `MenuActions` communicates triggered actions back to ViewerApp
-- F1 toggles menu visibility, F3 toggles debug mode at runtime
-- `menu_state_.debug_mode` is the runtime source of truth (initialized from `--debug-camera` CLI flag)
-
-**Debug Overlay Positioning:**
-- The debug overlay is an ImGui window positioned via `ImGui::SetNextWindowPos()` with `ImGui::GetFrameHeight()` to dynamically offset below the menu bar.
-- Uses `ImGuiWindowFlags_AlwaysAutoResize` for automatic sizing and anchors to the top-right corner.
-- When adding new overlays, account for the menu bar height to avoid z-order collisions.
+For ImGui architecture, FetchContent setup, menu system, event ordering, and overlay positioning patterns, see [`docs/IMGUI_INTEGRATION.md`](docs/IMGUI_INTEGRATION.md).
 
 ### Visual Regression Tests ⚠️ IMPORTANT
 
-**CRITICAL: Visual regression tests DO NOT require a display or GPU**
-- Tests run headless using Xvfb (X virtual framebuffer)
-- No physical display or GPU required - works in CI environments
-- Use: `xvfb-run -a ./tests/ParticleViewerTests --gtest_filter="RenderingRegressionTest.*"`
-- Tests use software rendering (Mesa/llvmpipe) for consistent cross-platform results
-- When tests are skipped due to missing DISPLAY, simply run with `xvfb-run -a`
+**CRITICAL: Tests DO NOT require a display or GPU** — run headless with `xvfb-run -a ./tests/ParticleViewerTests --gtest_filter="RenderingRegressionTest.*"`. Use software rendering (Mesa/llvmpipe) for consistent cross-platform results. Use production classes (e.g. `Particle`) directly in tests rather than duplicating logic.
 
-**Use production classes in tests:**
-- Visual regression tests should use `Particle` directly, not duplicate its logic in test helpers
-- This ensures tests stay in sync with production code automatically
-
-**Camera Positioning Pitfall:**
-When creating visual regression tests using debug camera output:
-
-❌ **DON'T**: Blindly copy debug coordinates
-- Debug shows camera state during user interaction
-- May be zoomed in/out for inspection, not ideal framing
-- Distance may not produce desired composition
-
-✓ **DO**: Calculate camera distance for composition
-1. Extract viewing **direction** from debug (angle preserved)
-2. Calculate **distance** based on desired viewport coverage
-3. Formula: `distance = subject_size / (coverage_% * tan(FOV/2))`
-4. Typical scale factors: 1.5x - 2.0x from initial distance
-
-**Key lesson**: Debug output shows WHERE you're looking, not WHAT you're framing.
-
-See `docs/visual-regression/camera-positioning-lessons-learned.md` for full analysis and formulas.
+For baselines, tolerances, camera positioning formulas, and visual regression patterns, see the `testing` skill (`.github/skills/testing/`) and [`docs/testing/visual-regression.md`](docs/testing/visual-regression.md).
 
 ## Tips for Efficient Work
 
