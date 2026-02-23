@@ -154,7 +154,7 @@ The Flatpak manifest (`flatpak/org.particleviewer.ParticleViewer.yaml`) defines:
 - **Runtime:** org.freedesktop.Platform 24.08
 - **SDK:** org.freedesktop.Sdk 24.08
 - **Permissions:**
-  - Graphics: X11, Wayland, DRI
+  - Graphics: X11, Wayland, all devices (`--device=all` required for NVIDIA GPU detection inside the sandbox)
   - File system: home directory, documents, downloads
   - File picker portal support
 
@@ -163,11 +163,12 @@ The Flatpak manifest (`flatpak/org.particleviewer.ParticleViewer.yaml`) defines:
 The Flatpak bundles the following dependencies:
 
 1. **GLM** (1.0.1) - Header-only math library
-2. **GLFW** (3.3.9) - OpenGL window and input management (static-linked)
-3. **OpenGL** - Provided by the runtime
+2. **SDL3** (release-3.2.6) - Window and OpenGL context management (built as a standalone Flatpak module before the app so that the Freedesktop SDK pkg-config paths are available and `SDL_X11`/`SDL_WAYLAND` are detected correctly)
+3. **OpenGL** - Provided by the runtime (Mesa `GL.default` extension; hardware acceleration requires a matching NVIDIA GL extension — see Troubleshooting)
 4. **tinyFileDialogs** - Embedded in source
 5. **GLAD** - Embedded in source
 6. **stb libraries** - Embedded in source
+7. **Dear ImGui** - Downloaded via CMake FetchContent at build time
 
 ## CI/CD Integration
 
@@ -221,6 +222,28 @@ flatpak run --log-session-bus org.particleviewer.ParticleViewer
 # Try with verbose logging
 flatpak run --verbose org.particleviewer.ParticleViewer
 ```
+
+**Problem:** `SDL_CreateWindow failed: Invalid window driver data` on NVIDIA
+
+This happens when the installed Flatpak NVIDIA GL extension does not exactly match your installed driver. For example, driver `580.126.18` requires extension `nvidia-580-126-18`, but only `nvidia-580-126-16` may be available on flathub.
+
+The application detects this automatically and falls back to Mesa software rendering (llvmpipe) with reduced performance. A warning message is printed at startup.
+
+To restore hardware-accelerated rendering, install the matching extension:
+```bash
+# Find your driver version
+nvidia-smi --query-gpu=driver_version --format=csv,noheader
+# e.g. output: 580.126.18 → install nvidia-580-126-18
+
+# Install the matching GL extension (24.08 branch for this runtime)
+sudo flatpak install flathub org.freedesktop.Platform.GL.nvidia-<YOUR_VER>//1.4
+# Example:
+sudo flatpak install flathub org.freedesktop.Platform.GL.nvidia-580-126-18//1.4
+```
+
+If the exact version isn't on flathub yet (extensions lag behind driver releases by a few days), the software rendering fallback keeps the app usable in the meantime.
+
+> **Note:** Three env vars must be set together for Mesa software rendering to work on an NVIDIA X11 session: `LIBGL_ALWAYS_SOFTWARE=1`, `GALLIUM_DRIVER=llvmpipe`, and `__GLX_VENDOR_LIBRARY_NAME=mesa`. Setting only `LIBGL_ALWAYS_SOFTWARE=1` is insufficient — GLVND still queries the X server extension (which advertises NVIDIA) and tries to load the absent `libGLX_nvidia.so`. The application sets all three automatically.
 
 **Problem:** Can't access certain files
 - Check that files are in accessible locations (home directory or XDG directories)

@@ -389,7 +389,7 @@ cmake --build build
 ### Build Issues
 
 **Problem**: Missing SDL3 (SDL3 is fetched via FetchContent on first configure)
-**Solution**: Run `cmake -B build -S .` — SDL3 is downloaded automatically. For offline/Flatpak builds, pre-populate `_deps_sdl3/` in the source tree (see FetchContent notes above).
+**Solution**: Run `cmake -B build -S .` — SDL3 is downloaded automatically. For Flatpak builds, SDL3 is built as a standalone Flatpak module (before the app) rather than via FetchContent. This ensures the Freedesktop SDK pkg-config paths are available so `SDL_X11` and `SDL_WAYLAND` are detected and enabled. CMakeLists uses `find_package(SDL3)` first (picks up the Flatpak module) and falls back to FetchContent for local builds.
 
 **Problem**: OpenGL headers not found
 **Solution**: Install OpenGL development packages and ensure `OpenGL::GL` target is available
@@ -471,6 +471,9 @@ cmake --build build
 - Prefer `glGetIntegerv(GL_VIEWPORT, ...)` over cached viewport values in render paths where the viewport may change (e.g., window resize, FBO switches)
 - `gl_PointSize` is silently clamped by `GL_POINT_SIZE_RANGE` (max 256px on Mesa/llvmpipe). When testing resolution-independent scaling, choose camera distances that keep computed point sizes under this limit at **all** target resolutions including 4K.
 - **SDL3 MSAA is strictly enforced**: `SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4)` causes `SDL_CreateWindow` to return NULL on Mesa/llvmpipe (Xvfb) because the software renderer doesn't support MSAA. GLFW silently fell back to no MSAA. Always add a fallback retry without MSAA: try 4x first; if creation fails, retry with `SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0)`.
+- **SDL3 FetchContent in Flatpak produces no display backends**: When SDL3 is built via CMake FetchContent inside a Flatpak `flatpak-builder` module, the Freedesktop SDK pkg-config paths are not inherited. This causes `sdl3_config.cmake` to see `SDL_X11: OFF` and `SDL_WAYLAND: OFF`, leaving no video driver available at runtime. Fix: build SDL3 as a **separate** module in the Flatpak manifest (before the app module) with explicit `-DSDL_X11=ON -DSDL_WAYLAND=ON`.
+- **Flatpak NVIDIA GL extension mismatch — software rendering fallback**: When the installed NVIDIA Flatpak GL extension does not exactly match the host driver version, Mesa's `libGLX_mesa.so` is the only GLX vendor library in the sandbox. Mesa's GLX client cannot negotiate with NVIDIA's X server GLX extension, so `SDL_CreateWindow` fails with `Invalid window driver data`. Detect the mismatch before the first `SDL_Init` using `/dev/nvidia0` (present when `--device=all` is set) and `LD_LIBRARY_PATH` having no `"nvidia"` path. When detected, set all three env vars before `SDL_Init`: `LIBGL_ALWAYS_SOFTWARE=1`, `GALLIUM_DRIVER=llvmpipe`, and `__GLX_VENDOR_LIBRARY_NAME=mesa`. Setting only `LIBGL_ALWAYS_SOFTWARE=1` is **insufficient** — GLVND still queries the X server extension (which advertises NVIDIA) and tries to dlopen the absent `libGLX_nvidia.so`. All three together bypass vendor negotiation and route to Mesa's software renderer.
+- **Flatpak `setenv` requires `overwrite=1`**: Flatpak pre-initialises env vars it manages to `""` (empty string). An `overwrite=0` call to `setenv()` sees a non-NULL existing value and silently does nothing. Always use `overwrite=1` when setting env vars inside a Flatpak sandbox, unless explicitly preserving user-set values is required.
 
 ### ImGui Integration
 
