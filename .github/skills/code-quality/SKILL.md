@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.0"
+  version: "1.1"
   category: code-quality
   project: Particle-Viewer
 ---
@@ -36,16 +36,26 @@ Run these before **every** commit:
 # 1. Format ALL changed C++ files
 find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i
 
-# 2. Verify formatting passes (same check CI runs)
+# 2. Check what changed
+git diff --name-only | head -20
+
+# 3. Spot-check any files you touched (don't trust silent tool output)
+# Look for: trailing semicolons after function }, exception handling, 
+# multi-declaration statements, bracing consistency
+git diff src/[touched_file].cpp | head -100
+
+# 4. Verify formatting passes (same check CI runs)
 find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format --dry-run -Werror
 
-# 3. Build and test
+# 5. Build and test
 cmake --build build
 ./build/tests/ParticleViewerTests
 
-# 4. (Optional) Static analysis
+# 6. (Optional) Static analysis
 clang-tidy src/main.cpp -- -Isrc/glad/include
 ```
+
+**⚠️ Critical:** Never trust that `clang-format --dry-run -Werror` with no output means success. Always visually inspect `git diff` of modified files. Silent tool output can mask formatting issues.
 
 ---
 
@@ -67,7 +77,22 @@ Full configuration: `.clang-format`
 
 ---
 
-## Step 3: Naming Conventions (clang-tidy enforced)
+## Step 3: Human-Reviewable Formatting Patterns
+
+These require **manual inspection** after running clang-format — tools don't always catch them:
+
+| Issue | Fix | Example |
+|-------|-----|---------|
+| Semicolon after function closing brace | Remove trailing `;` | `void foo() { }` not `void foo() { };` |
+| Empty constructor syntax | Use `= default` | `Shader() = default;` not `Shader() {};` |
+| Exception catching by value | Catch by const reference | `catch (const std::ifstream::failure& e)` |
+| Multiple declarations in one line | Split to separate lines | `uint32_t w; uint32_t h;` not `uint32_t w, h;` |
+
+**Always check `git diff` for these patterns after formatting.**
+
+---
+
+## Step 4: Naming Conventions (clang-tidy enforced)
 
 | Element | Convention | Example |
 |---------|-----------|---------|
@@ -82,7 +107,7 @@ Full configuration: `.clang-format`
 
 ---
 
-## Step 4: Static Analysis (clang-tidy)
+## Step 5: Static Analysis (clang-tidy)
 
 ```bash
 # Analyze a source file
@@ -107,7 +132,7 @@ Header filter excludes embedded libs: `glad`, `tinyFileDialogs`, `stb_*`.
 
 ---
 
-## Step 5: Project-Specific C++ Patterns
+## Step 6: Project-Specific C++ Patterns
 
 ### Data Organization
 - Group related member variables into POCOs/structs (e.g., `WindowConfig`, `SphereParams`)
@@ -146,7 +171,7 @@ Header filter excludes embedded libs: `glad`, `tinyFileDialogs`, `stb_*`.
 
 ---
 
-## Step 6: Adding a Feature / Fixing a Bug
+## Step 7: Adding a Feature / Fixing a Bug
 
 ### New Feature Workflow
 1. Make code changes following naming conventions

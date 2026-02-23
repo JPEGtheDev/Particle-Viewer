@@ -112,7 +112,21 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 ---
 
-## ImGui Integration Lessons
+## Code Formatting and Verification Lessons
+
+### Silent Tool Output Does Not Mean Success (S5 code-quality audit)
+
+**Problem:** Session 5 ran `clang-format --dry-run -Werror src/shader.hpp` which had no output. Agent interpreted "no output = all files are clean" and skipped detailed verification. Later, an external formatting check failed, revealing that shader.hpp had three formatting issues: (1) exception caught by value instead of const reference, (2) unnecessary semicolons after function closing braces, (3) empty constructor using `{}` instead of `= default`.
+
+**Lesson:** Never rely on tool output silence to mean success. Always:
+1. After running `clang-format -i`, check `git diff` to see actual changes
+2. Visually spot-check modified files for common patterns (trailing semicolons after `}`, exception handling, multi-declarations, bracing)
+3. Only then run the dry-run verification
+
+**Added to:** `code-quality` skill → Step 1 (Pre-Commit Checklist) + new Step 3 (Human-Reviewable Formatting Patterns table)
+
+---
+
 
 ### FetchContent for Libraries Without CMakeLists.txt (PR #79, updated PR #82)
 
