@@ -7,14 +7,19 @@
 
 #include "viewer_app.hpp"
 
+#include <array>
 #include <cstdlib>
 #include <iostream>
 #include <string>
 
+// clang-format off
+#include <SDL3/SDL.h>          // NOLINT(llvm-include-order)
+// clang-format on
+
 #include "debugOverlay.hpp"
 #include "imgui.h"
-#include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "imgui_impl_sdl3.h"
 #include "osFile.hpp"
 #include "tinyFileDialogs/tinyfiledialogs.h"
 #include "windowConfig.hpp"
@@ -32,9 +37,12 @@ struct QuadVertex
 };
 
 // Fullscreen quad for FBO blit pass (two triangles covering NDC [-1,1])
-static const QuadVertex QUAD_VERTICES[] = {{-1.0f, 1.0f, 0.0f, 1.0f}, {-1.0f, -1.0f, 0.0f, 0.0f},
-                                           {1.0f, -1.0f, 1.0f, 0.0f}, {-1.0f, 1.0f, 0.0f, 1.0f},
-                                           {1.0f, -1.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}};
+static const std::array<QuadVertex, 6> QUAD_VERTICES = {{{-1.0f, 1.0f, 0.0f, 1.0f},
+                                                         {-1.0f, -1.0f, 0.0f, 0.0f},
+                                                         {1.0f, -1.0f, 1.0f, 0.0f},
+                                                         {-1.0f, 1.0f, 0.0f, 1.0f},
+                                                         {1.0f, -1.0f, 1.0f, 0.0f},
+                                                         {1.0f, 1.0f, 1.0f, 1.0f}}};
 
 // ============================================================================
 // Construction / Destruction
@@ -145,7 +153,7 @@ void ViewerApp::initScreen()
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     stbi_flip_vertically_on_write(true);
 
-    // Register GLFW-specific callbacks if a native window is available
+    // Register event handling (SDL3 events are polled in run())
     setupCallbacks();
 
     // NOTE: Window settings are loaded AFTER FBO setup in initialize()
@@ -154,17 +162,12 @@ void ViewerApp::initScreen()
 
 void ViewerApp::setupCallbacks()
 {
-    GLFWwindow* native_window = static_cast<GLFWwindow*>(context_->getNativeWindowHandle());
-    if (native_window) {
-        glfwSetWindowUserPointer(native_window, this);
-        glfwSetKeyCallback(native_window, keyCallbackStatic);
-        glfwSetFramebufferSizeCallback(native_window, framebufferSizeCallbackStatic);
-    }
+    // No callbacks to register: SDL3 events are processed in run() via SDL_PollEvent().
 }
 
 void ViewerApp::initImGui()
 {
-    GLFWwindow* native_window = static_cast<GLFWwindow*>(context_->getNativeWindowHandle());
+    SDL_Window* native_window = static_cast<SDL_Window*>(context_->getNativeWindowHandle());
     if (!native_window) {
         return;
     }
@@ -177,15 +180,15 @@ void ViewerApp::initImGui()
 
     ImGui::StyleColorsDark();
 
-    // install_callbacks=true chains to existing GLFW callbacks
-    bool glfw_init_ok = ImGui_ImplGlfw_InitForOpenGL(native_window, true);
+    SDL_GLContext gl_ctx = SDL_GL_GetCurrentContext();
+    bool sdl3_init_ok = ImGui_ImplSDL3_InitForOpenGL(native_window, gl_ctx);
     bool gl3_init_ok = ImGui_ImplOpenGL3_Init("#version 410 core");
-    if (!glfw_init_ok || !gl3_init_ok) {
+    if (!sdl3_init_ok || !gl3_init_ok) {
         if (gl3_init_ok) {
             ImGui_ImplOpenGL3_Shutdown();
         }
-        if (glfw_init_ok) {
-            ImGui_ImplGlfw_Shutdown();
+        if (sdl3_init_ok) {
+            ImGui_ImplSDL3_Shutdown();
         }
         ImGui::DestroyContext();
         return;
@@ -215,12 +218,26 @@ void ViewerApp::setSphereScale(GLfloat scale)
 void ViewerApp::run()
 {
     while (!context_->shouldClose()) {
-        context_->pollEvents();
+        // Process SDL3 events (replaces GLFW callbacks)
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            if (imgui_initialized_) {
+                ImGui_ImplSDL3_ProcessEvent(&event);
+            }
+            if (event.type == SDL_EVENT_QUIT) {
+                context_->setShouldClose(true);
+            } else if (event.type == SDL_EVENT_KEY_DOWN || event.type == SDL_EVENT_KEY_UP) {
+                handleKeyEvent(event.key.scancode, event.type == SDL_EVENT_KEY_DOWN,
+                               static_cast<unsigned int>(event.key.mod));
+            } else if (event.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
+                handleResize(event.window.data1, event.window.data2);
+            }
+        }
 
         // Start ImGui frame (only if ImGui was initialized)
         if (imgui_initialized_) {
             ImGui_ImplOpenGL3_NewFrame();
-            ImGui_ImplGlfw_NewFrame();
+            ImGui_ImplSDL3_NewFrame();
             ImGui::NewFrame();
         }
 
@@ -243,9 +260,9 @@ void ViewerApp::run()
                 handleLoadFile();
             }
             if (actions.change_resolution) {
-                GLFWwindow* native_window = static_cast<GLFWwindow*>(context_->getNativeWindowHandle());
+                SDL_Window* native_window = static_cast<SDL_Window*>(context_->getNativeWindowHandle());
                 if (native_window) {
-                    glfwSetWindowSize(native_window, actions.target_width, actions.target_height);
+                    SDL_SetWindowSize(native_window, actions.target_width, actions.target_height);
                     // Update windowed size tracking and save
                     window_.windowed_width = actions.target_width;
                     window_.windowed_height = actions.target_height;
@@ -312,7 +329,7 @@ void ViewerApp::setupScreenFBO()
     glGenBuffers(1, &render_.quad_vbo);
     glBindVertexArray(render_.quad_vao);
     glBindBuffer(GL_ARRAY_BUFFER, render_.quad_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(QUAD_VERTICES), QUAD_VERTICES, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(QUAD_VERTICES), QUAD_VERTICES.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
     glEnableVertexAttribArray(1);
@@ -444,10 +461,10 @@ void ViewerApp::seekFrame(int frames, bool forward)
 
 void ViewerApp::processMinorKeys()
 {
-    if (keys_[GLFW_KEY_Q]) {
+    if (keys_[SDL_SCANCODE_Q]) {
         seekFrame(3, false);
     }
-    if (keys_[GLFW_KEY_E]) {
+    if (keys_[SDL_SCANCODE_E]) {
         seekFrame(3, true);
     }
 }
@@ -466,62 +483,57 @@ void ViewerApp::handleLoadFile()
 // Input Handling
 // ============================================================================
 
-void ViewerApp::keyCallback(int key, int scancode, int action, int mods)
+void ViewerApp::handleKeyEvent(unsigned int scancode, bool is_pressed, unsigned int mods)
 {
     // Alt+Enter toggles fullscreen (handle first, always works)
-    if (key == GLFW_KEY_ENTER && action == GLFW_PRESS && (mods & GLFW_MOD_ALT)) {
+    if (scancode == SDL_SCANCODE_RETURN && is_pressed && (mods & SDL_KMOD_ALT)) {
         toggleFullscreen();
         return;
     }
 
-    // Guard against out-of-bounds access (GLFW_KEY_UNKNOWN is -1)
-    if (key >= 0 && key < 1024) {
-        if (action == GLFW_PRESS) {
-            keys_[key] = true;
-        } else if (action == GLFW_RELEASE) {
-            keys_[key] = false;
-        }
+    // Guard against out-of-bounds access
+    if (scancode < 1024) {
+        keys_[scancode] = is_pressed;
     }
 
     // If ImGui wants keyboard input, only process menu toggle keys (F1/F3)
     if (imgui_initialized_ && ImGui::GetIO().WantCaptureKeyboard) {
-        if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
+        if (scancode == SDL_SCANCODE_F1 && is_pressed) {
             menu_state_.visible = !menu_state_.visible;
         }
-        if (key == GLFW_KEY_F3 && action == GLFW_PRESS) {
+        if (scancode == SDL_SCANCODE_F3 && is_pressed) {
             menu_state_.debug_mode = !menu_state_.debug_mode;
         }
         return;
     }
 
-    // Only forward to camera if key is in valid range (GLFW_KEY_UNKNOWN is -1).
-    if (key >= 0 && key < 1024) {
-        GLFWwindow* native_window = static_cast<GLFWwindow*>(context_->getNativeWindowHandle());
-        cam_->KeyReader(native_window, key, scancode, action, mods);
+    // Forward to camera if key is in valid range
+    if (scancode < 1024) {
+        cam_->KeyReader(static_cast<SDL_Scancode>(scancode), is_pressed);
     }
 
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+    if (scancode == SDL_SCANCODE_ESCAPE && is_pressed) {
         context_->setShouldClose(true);
     }
-    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+    if (scancode == SDL_SCANCODE_SPACE && is_pressed) {
         set_->togglePlay();
     }
-    if (key == GLFW_KEY_T && action == GLFW_PRESS) {
+    if (scancode == SDL_SCANCODE_T && is_pressed) {
         handleLoadFile();
     }
-    if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
+    if (scancode == SDL_SCANCODE_RIGHT && is_pressed) {
         seekFrame(1, true);
     }
-    if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
+    if (scancode == SDL_SCANCODE_LEFT && is_pressed) {
         seekFrame(1, false);
     }
-    if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
+    if (scancode == SDL_SCANCODE_F1 && is_pressed) {
         menu_state_.visible = !menu_state_.visible;
     }
-    if (key == GLFW_KEY_F3 && action == GLFW_PRESS) {
+    if (scancode == SDL_SCANCODE_F3 && is_pressed) {
         menu_state_.debug_mode = !menu_state_.debug_mode;
     }
-    if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+    if (scancode == SDL_SCANCODE_R && is_pressed) {
         if (!recording_.is_active) {
             recording_.error_count = 0;
             std::string dialog = "Select Folder";
@@ -606,7 +618,7 @@ void ViewerApp::shutdownImGui()
 {
     if (imgui_initialized_) {
         ImGui_ImplOpenGL3_Shutdown();
-        ImGui_ImplGlfw_Shutdown();
+        ImGui_ImplSDL3_Shutdown();
         ImGui::DestroyContext();
         imgui_initialized_ = false;
     }
@@ -681,32 +693,27 @@ void ViewerApp::resizeFBO(int width, int height)
 
 void ViewerApp::toggleFullscreen()
 {
-    GLFWwindow* native_window = static_cast<GLFWwindow*>(context_->getNativeWindowHandle());
+    SDL_Window* native_window = static_cast<SDL_Window*>(context_->getNativeWindowHandle());
     if (!native_window) {
         return;
     }
 
-    GLFWmonitor* monitor = glfwGetWindowMonitor(native_window);
+    SDL_WindowFlags flags = SDL_GetWindowFlags(native_window);
+    bool is_fullscreen = (flags & SDL_WINDOW_FULLSCREEN) != 0;
 
-    if (monitor) {
+    if (is_fullscreen) {
         // Currently fullscreen, switch to windowed mode
-        glfwSetWindowMonitor(native_window, nullptr, window_.windowed_x, window_.windowed_y, window_.windowed_width,
-                             window_.windowed_height, GLFW_DONT_CARE);
+        SDL_SetWindowFullscreen(native_window, false);
+        SDL_SetWindowSize(native_window, window_.windowed_width, window_.windowed_height);
         window_.fullscreen = 0;
     } else {
         // Currently windowed, switch to fullscreen
         // Save current window size and position
-        glfwGetWindowSize(native_window, &window_.windowed_width, &window_.windowed_height);
-        glfwGetWindowPos(native_window, &window_.windowed_x, &window_.windowed_y);
+        SDL_GetWindowSize(native_window, &window_.windowed_width, &window_.windowed_height);
+        SDL_GetWindowPosition(native_window, &window_.windowed_x, &window_.windowed_y);
 
-        // Get primary monitor and its video mode
-        GLFWmonitor* primary = glfwGetPrimaryMonitor();
-        const GLFWvidmode* mode = glfwGetVideoMode(primary);
-
-        if (primary && mode) {
-            glfwSetWindowMonitor(native_window, primary, 0, 0, mode->width, mode->height, mode->refreshRate);
-            window_.fullscreen = 1;
-        }
+        SDL_SetWindowFullscreen(native_window, true);
+        window_.fullscreen = 1;
     }
 
     // Save updated settings
@@ -738,48 +745,24 @@ void ViewerApp::loadWindowSettings()
         std::cout << "Loaded window config: " << width << "x" << height << " fullscreen=" << fullscreen << std::endl;
 
         // Apply loaded settings
-        GLFWwindow* native_window = static_cast<GLFWwindow*>(context_->getNativeWindowHandle());
+        SDL_Window* native_window = static_cast<SDL_Window*>(context_->getNativeWindowHandle());
         if (native_window) {
             if (fullscreen) {
                 // Store windowed size before going fullscreen
                 window_.windowed_width = width;
                 window_.windowed_height = height;
 
-                GLFWmonitor* primary = glfwGetPrimaryMonitor();
-                const GLFWvidmode* mode = glfwGetVideoMode(primary);
-                if (primary && mode) {
-                    glfwSetWindowMonitor(native_window, primary, 0, 0, mode->width, mode->height, mode->refreshRate);
-                    window_.fullscreen = 1;
-                }
+                SDL_SetWindowFullscreen(native_window, true);
+                window_.fullscreen = 1;
             } else {
                 // Set windowed size
                 window_.windowed_width = width;
                 window_.windowed_height = height;
-                glfwSetWindowSize(native_window, width, height);
+                SDL_SetWindowSize(native_window, width, height);
                 window_.fullscreen = 0;
             }
         }
     } else {
         std::cout << "No window config found, using defaults" << std::endl;
-    }
-}
-
-// ============================================================================
-// Static GLFW Callbacks
-// ============================================================================
-
-void ViewerApp::keyCallbackStatic(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-    ViewerApp* app = static_cast<ViewerApp*>(glfwGetWindowUserPointer(window));
-    if (app) {
-        app->keyCallback(key, scancode, action, mods);
-    }
-}
-
-void ViewerApp::framebufferSizeCallbackStatic(GLFWwindow* window, int width, int height)
-{
-    ViewerApp* app = static_cast<ViewerApp*>(glfwGetWindowUserPointer(window));
-    if (app) {
-        app->handleResize(width, height);
     }
 }

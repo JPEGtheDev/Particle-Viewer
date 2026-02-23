@@ -34,6 +34,10 @@ class SettingsIO
         posFile = "/PosAndVel";
         statsFile = "/RunSetup";
         comFile = "/COMFile";
+        N = 0;
+        frames = 0;
+        isPlaying = false;
+        errorCount = 0;
     }
 
     /*

@@ -2,7 +2,7 @@
  * main.cpp
  *
  * Application entry point.
- * Creates a GLFWContext and injects it into ViewerApp (dependency injection).
+ * Creates an SDL3Context and injects it into ViewerApp (dependency injection).
  *
  * Command-line flags:
  *   --resolution, --res <resolution>  Set display resolution (4k, 1080, 720)
@@ -12,7 +12,7 @@
 
 #include <string>
 
-#include "graphics/GLFWContext.hpp"
+#include "graphics/SDL3Context.hpp"
 #include "viewer_app.hpp"
 
 namespace
@@ -25,7 +25,7 @@ namespace
 std::string parseResolution(int argc, char* argv[])
 {
     for (int i = 1; i < argc; i++) {
-        std::string arg(argv[i]);
+        const std::string arg(argv[i]);
         if ((arg == "--resolution" || arg == "--res") && i + 1 < argc) {
             return argv[i + 1];
         }
@@ -55,13 +55,13 @@ void getWindowSize(const std::string& resolution, int& width, int& height)
 int main(int argc, char* argv[])
 {
     // Parse resolution early so we can create the context with the right size
-    std::string resolution = parseResolution(argc, argv);
+    const std::string resolution = parseResolution(argc, argv);
     int width = 1280;
     int height = 720;
     getWindowSize(resolution, width, height);
 
-    // Create the OpenGL context (GLFW window + GLAD initialization)
-    GLFWContext context(width, height, "Particle-Viewer");
+    // Create the OpenGL context (SDL3 window + GLAD initialization)
+    SDL3Context context(width, height, "Particle-Viewer");
     if (!context.isValid()) {
         return 1;
     }

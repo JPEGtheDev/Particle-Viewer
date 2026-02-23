@@ -9,7 +9,7 @@
 #define CAMERA_H
 #include <vector>
 
-#include <GLFW/glfw3.h>
+#include <SDL3/SDL.h>
 
 #include <glm/glm.hpp>
 
@@ -262,7 +262,7 @@ class Camera
     }
     void updateSpeed(GLfloat deltaTime)
     {
-        if (keys[GLFW_KEY_LEFT_SHIFT]) {
+        if (keys[SDL_SCANCODE_LSHIFT]) {
             this->speed = this->baseSpeed * deltaTime * 20;
         } else {
             this->speed = this->baseSpeed * deltaTime;
@@ -313,19 +313,19 @@ class Camera
     /*
      * Sets up keyboard controls for the camera
      */
-    void KeyReader(GLFWwindow* window, int key, int scancode, int action, int mods)
+    void KeyReader(SDL_Scancode key, bool is_pressed)
     {
         /* Allows for smooth, constant key presses */
-        if (action == GLFW_PRESS) {
+        if (is_pressed) {
             keys[key] = true;
-        } else if (action == GLFW_RELEASE) {
+        } else {
             keys[key] = false;
         }
         /* ======================================= */
 
-        if (action == GLFW_PRESS) // single press key commands
+        if (is_pressed) // single press key commands
         {
-            if (key == GLFW_KEY_P) {
+            if (key == SDL_SCANCODE_P) {
                 rotateState++;
                 rotateState = rotateState % 3;
                 if (rotateState == 0) {
@@ -346,43 +346,43 @@ class Camera
                     sphereColor = glm::vec3(0.0f, 1.0f, 0.0f);
                 }
             }
-            if (key == GLFW_KEY_O) {
+            if (key == SDL_SCANCODE_O) {
                 if (rotLock) {
                     comLock = !comLock;
                 }
             }
             if (rotLock) {
-                if (key == GLFW_KEY_1) {
+                if (key == SDL_SCANCODE_1) {
                     this->yaw = 90.0f;
                     this->pitch = 0.0f;
                     this->sphereYaw = -90.0f;
                     this->spherePitch = 0.0f;
                 }
-                if (key == GLFW_KEY_2) {
+                if (key == SDL_SCANCODE_2) {
                     this->yaw = 180.0f;
                     this->pitch = 0.0f;
                     this->sphereYaw = 0.0f;
                     this->spherePitch = 0.0f;
                 }
-                if (key == GLFW_KEY_3) {
+                if (key == SDL_SCANCODE_3) {
                     this->yaw = 270.0f;
                     this->pitch = 0.0f;
                     this->sphereYaw = 90.0f;
                     this->spherePitch = 0.0f;
                 }
-                if (key == GLFW_KEY_4) {
+                if (key == SDL_SCANCODE_4) {
                     this->yaw = 0.0f;
                     this->pitch = 0.0f;
                     this->sphereYaw = 180.0f;
                     this->spherePitch = 0.0f;
                 }
-                if (key == GLFW_KEY_5) {
+                if (key == SDL_SCANCODE_5) {
                     this->yaw = 90.0f;
                     this->pitch = -89.0f;
                     this->sphereYaw = 270.0f;
                     this->spherePitch = 89.0f;
                 }
-                if (key == GLFW_KEY_6) {
+                if (key == SDL_SCANCODE_6) {
                     this->yaw = 90.0f;
                     this->pitch = 89.0f;
                     this->sphereYaw = 270.0f;
@@ -454,55 +454,55 @@ class Camera
     {
         if (!rotLock) // unlocked movement
         {
-            if (keys[GLFW_KEY_W]) {
+            if (keys[SDL_SCANCODE_W]) {
                 moveForward();
             }
-            if (keys[GLFW_KEY_S]) {
+            if (keys[SDL_SCANCODE_S]) {
                 moveBackward();
             }
-            if (keys[GLFW_KEY_A]) {
+            if (keys[SDL_SCANCODE_A]) {
                 moveLeft();
             }
-            if (keys[GLFW_KEY_D]) {
+            if (keys[SDL_SCANCODE_D]) {
                 moveRight();
             }
-            if (keys[GLFW_KEY_I]) {
+            if (keys[SDL_SCANCODE_I]) {
                 lookUp(2.5f);
             }
-            if (keys[GLFW_KEY_K]) {
+            if (keys[SDL_SCANCODE_K]) {
                 lookDown(2.5f);
             }
-            if (keys[GLFW_KEY_J]) {
+            if (keys[SDL_SCANCODE_J]) {
                 lookLeft(2.5f);
             }
-            if (keys[GLFW_KEY_L]) {
+            if (keys[SDL_SCANCODE_L]) {
                 lookRight(2.5f);
             }
         } else // Rotation locked movement
         {
-            if (keys[GLFW_KEY_W]) {
+            if (keys[SDL_SCANCODE_W]) {
                 spherePitch += 1.0;
                 lookDown(1.0f);
             }
-            if (keys[GLFW_KEY_S]) {
+            if (keys[SDL_SCANCODE_S]) {
                 spherePitch -= 1.0;
                 lookUp(1.0f);
             }
-            if (keys[GLFW_KEY_A]) {
+            if (keys[SDL_SCANCODE_A]) {
                 sphereYaw -= 1.0;
                 lookLeft(1.0);
             }
-            if (keys[GLFW_KEY_D]) {
+            if (keys[SDL_SCANCODE_D]) {
                 sphereYaw += 1.0;
                 lookRight(1.0);
             }
         }
 
         if (renderSphere) {
-            if (keys[GLFW_KEY_LEFT_BRACKET]) {
+            if (keys[SDL_SCANCODE_LEFTBRACKET]) {
                 sphereDistance -= .25;
             } // Move sphere/camera in
-            if (keys[GLFW_KEY_RIGHT_BRACKET]) {
+            if (keys[SDL_SCANCODE_RIGHTBRACKET]) {
                 sphereDistance += .25;
             } // Move sphere/camera out
         }

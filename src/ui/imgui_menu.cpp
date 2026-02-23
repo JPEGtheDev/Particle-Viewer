@@ -8,29 +8,28 @@
 
 #include <string>
 
-#include <GLFW/glfw3.h>
+#include <SDL3/SDL.h>
 
 #include "imgui.h"
 
 /*
- * Helper to get the maximum window size that fits on the primary monitor.
- * Returns {width, height} clamped to monitor work area.
+ * Helper to get the maximum window size that fits on the primary display.
+ * Returns {width, height} clamped to display work area.
  */
 static void getMonitorConstraints(int& max_width, int& max_height)
 {
-    GLFWmonitor* primary = glfwGetPrimaryMonitor();
-    if (!primary) {
-        // Fallback to 720p if no monitor info available
+    SDL_DisplayID display = SDL_GetPrimaryDisplay();
+    if (display == 0) {
+        // Fallback to 720p if no display info available
         max_width = 1280;
         max_height = 720;
         return;
     }
 
-    const GLFWvidmode* mode = glfwGetVideoMode(primary);
-    if (mode) {
-        // Use monitor resolution as max
-        max_width = mode->width;
-        max_height = mode->height;
+    SDL_Rect bounds;
+    if (SDL_GetDisplayBounds(display, &bounds)) {
+        max_width = bounds.w;
+        max_height = bounds.h;
     } else {
         max_width = 1280;
         max_height = 720;

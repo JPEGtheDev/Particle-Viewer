@@ -6,7 +6,7 @@
  * Owns the main loop, window, rendering pipeline, and scene objects.
  *
  * Supports dependency injection: accepts an IOpenGLContext* for testability.
- * Production code uses GLFWContext; tests use MockOpenGLContext.
+ * Production code typically uses SDL3Context; tests use MockOpenGLContext.
  *
  * Architecture: Input → Data Loading → Rendering
  */
@@ -17,9 +17,8 @@
 #include <string>
 
 // clang-format off
-// GLAD must come before GLFW to properly initialize OpenGL functions
+// GLAD must come before other OpenGL-related headers
 #include <glad/glad.h>       // NOLINT(llvm-include-order)
-#include <GLFW/glfw3.h>      // NOLINT(llvm-include-order)
 // clang-format on
 
 #include "camera.hpp"
@@ -103,13 +102,13 @@ struct ShaderPaths
  *
  * Replaces the global state previously in clutter.hpp with proper encapsulation.
  * Requires a non-null IOpenGLContext* passed to the constructor for testability.
- * Production code typically uses GLFWContext; tests use MockOpenGLContext.
+ * Production code typically uses SDL3Context; tests use MockOpenGLContext.
  * ViewerApp does not create or own the OpenGL context itself.
  *
- * GLFW callbacks use the window user pointer to delegate to instance methods.
+ * SDL3 events are polled directly in run() via SDL_PollEvent().
  *
  * Usage (production):
- *   GLFWContext context(1280, 720, "Particle-Viewer");
+ *   SDL3Context context(1280, 720, "Particle-Viewer");
  *   ViewerApp app(&context);
  *   app.parseArgs(argc, argv);
  *   if (app.initialize()) {
@@ -132,7 +131,7 @@ class ViewerApp
 
     ~ViewerApp();
 
-    // Prevent copying (owns GL and GLFW resources)
+    // Prevent copying (owns GL and SDL3 resources)
     ViewerApp(const ViewerApp&) = delete;
     ViewerApp& operator=(const ViewerApp&) = delete;
 
@@ -143,7 +142,7 @@ class ViewerApp
     void parseArgs(int argc, char* argv[]);
 
     /*
-     * Initialize GLFW, OpenGL context, camera, particles, shaders, and FBO.
+     * Initialize SDL3 context, OpenGL, camera, particles, shaders, and FBO.
      * Returns true on success, false if initialization fails.
      */
     bool initialize();
@@ -236,19 +235,13 @@ class ViewerApp
     // ============================================
     // Input Handling
     // ============================================
-    void keyCallback(int key, int scancode, int action, int mods);
+    void handleKeyEvent(unsigned int scancode, bool is_pressed, unsigned int mods);
 
     // ============================================
     // Resource Cleanup
     // ============================================
     void cleanup();
     void shutdownImGui();
-
-    // ============================================
-    // Static GLFW Callbacks (delegate to instance via user pointer)
-    // ============================================
-    static void keyCallbackStatic(GLFWwindow* window, int key, int scancode, int action, int mods);
-    static void framebufferSizeCallbackStatic(GLFWwindow* window, int width, int height);
 };
 
 #endif // PARTICLE_VIEWER_VIEWER_APP_H

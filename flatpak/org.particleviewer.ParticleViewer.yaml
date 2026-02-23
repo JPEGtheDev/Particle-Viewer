@@ -6,7 +6,13 @@ command: Viewer
 
 finish-args:
   # Graphics access
-  - --device=dri
+  # --device=all is required for NVIDIA proprietary drivers: --device=dri exposes
+  # the DRM nodes but not the NVIDIA userspace driver libraries, causing DRI3 probe
+  # failures ("failed to load driver: nvidia-drm"). --device=all exposes the full
+  # /dev/dri/, /dev/nvidia* set so the proprietary GLX/EGL path works.
+  # NOTE: users also need the matching NVIDIA GL extension installed:
+  #   flatpak install flathub org.freedesktop.Platform.GL.nvidia-<driver-version>//24.08
+  - --device=all
   - --socket=x11
   - --socket=wayland
   - --share=ipc
@@ -32,20 +38,25 @@ modules:
         url: https://github.com/g-truc/glm/archive/refs/tags/1.0.1.tar.gz
         sha256: 9f3174561fd26904b23f0db5e560971cbf9b3cbda0b280f04d5c379d03bf234c
 
-  # GLFW
-  - name: glfw
+  # SDL3 built as a standalone module so the Freedesktop SDK's pkg-config paths
+  # are inherited and X11/Wayland backends are detected and enabled correctly.
+  # When SDL3 is a FetchContent sub-build of the main CMakeLists, pkg-config is
+  # not resolved and SDL_X11/SDL_WAYLAND come out OFF, leaving no display driver.
+  - name: sdl3
     buildsystem: cmake-ninja
     builddir: true
     config-opts:
       - -DCMAKE_BUILD_TYPE=Release
-      - -DBUILD_SHARED_LIBS=OFF
-      - -DGLFW_BUILD_EXAMPLES=OFF
-      - -DGLFW_BUILD_TESTS=OFF
-      - -DGLFW_BUILD_DOCS=OFF
+      - -DSDL_SHARED=OFF
+      - -DSDL_STATIC=ON
+      - -DSDL_TEST_LIBRARY=OFF
+      - -DSDL_TESTS=OFF
+      - -DSDL_X11=ON
+      - -DSDL_WAYLAND=ON
     sources:
-      - type: archive
-        url: https://github.com/glfw/glfw/archive/refs/tags/3.3.9.tar.gz
-        sha256: a7e7faef424fcb5f83d8faecf9d697a338da7f7a906fc1afbc0e1879ef31bd53
+      - type: git
+        url: https://github.com/libsdl-org/SDL.git
+        tag: release-3.2.6
 
   # Particle Viewer application
   - name: particle-viewer

@@ -29,11 +29,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 
-find_package(glfw3 3.3 REQUIRED)
 find_package(OpenGL REQUIRED)
 
 # ============================================
-# ImGui Configuration (downloaded at configure time)
+# All FetchContent deps declared together.
+# GoogleTest must be made available BEFORE SDL3's FetchContent_MakeAvailable
+# to avoid a CMake 3.31 issue where SDL3's subdirectory configure corrupts
+# FetchContent internal state for subsequent FetchContent_MakeAvailable calls.
 # ============================================
 include(FetchContent)
 
@@ -53,7 +55,66 @@ FetchContent_Declare(
     GIT_TAG v1.91.6
     SOURCE_SUBDIR _no_cmakelists
 )
+
+# Prefer a system-installed SDL3 (e.g. Flatpak module pre-built with proper
+# X11/Wayland pkg-config paths) over building from source via FetchContent.
+# When SDL3 is found here, FetchContent_MakeAvailable(SDL3) is skipped entirely.
+find_package(SDL3 QUIET)
+
+if(NOT SDL3_FOUND)
+    # Support pre-populated SDL3 source (e.g., Flatpak offline builds)
+    if(EXISTS "${CMAKE_SOURCE_DIR}/_deps_sdl3/CMakeLists.txt")
+        set(FETCHCONTENT_SOURCE_DIR_SDL3 "${CMAKE_SOURCE_DIR}/_deps_sdl3")
+    endif()
+
+    set(SDL_SHARED OFF CACHE BOOL "" FORCE)
+    set(SDL_STATIC ON CACHE BOOL "" FORCE)
+    set(SDL_TEST_LIBRARY OFF CACHE BOOL "" FORCE)
+
+    FetchContent_Declare(
+        SDL3
+        GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+        GIT_TAG release-3.2.6
+    )
+endif()
+
+# Make ImGui available first (header-only, no subdirectory)
 FetchContent_MakeAvailable(imgui)
+
+# ============================================
+# Testing Configuration (placed here so GoogleTest is available BEFORE SDL3
+# to work around a CMake 3.31 FetchContent state issue with SDL3 subdirectory)
+# ============================================
+option(BUILD_TESTS "Build unit tests" ON)
+
+if(BUILD_TESTS)
+    FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG release-1.12.1
+    )
+    # For Windows: Prevent overriding the parent project's compiler/linker settings
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
+endif()
+
+# SDL3 is made available last to prevent it from disrupting subsequent
+# FetchContent calls (CMake 3.31 subdirectory configure interaction).
+# Skipped when find_package(SDL3) already found a system-installed SDL3
+# (e.g. the Flatpak sdl3 module built with proper X11/Wayland support).
+if(NOT SDL3_FOUND)
+    FetchContent_MakeAvailable(SDL3)
+    set(SDL3_LINK_TARGET SDL3::SDL3-static)
+else()
+    # Prefer static target when available (e.g. Flatpak bundled build where
+    # SDL3 is built with SDL_STATIC=ON so libSDL3.so.0 need not be present
+    # on the host at runtime).
+    if(TARGET SDL3::SDL3-static)
+        set(SDL3_LINK_TARGET SDL3::SDL3-static)
+    else()
+        set(SDL3_LINK_TARGET SDL3::SDL3)
+    endif()
+endif()
 
 if(${alloutput})
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -Wall -W -Wshadow -Wunused-variable -Wunused-parameter -Wunused-function -Wunused -Wno-system-headers -Woverloaded-virtual -Wwrite-strings -fprofile-arcs -ftest-coverage")
@@ -84,11 +145,11 @@ add_executable(Viewer
 	${imgui_SOURCE_DIR}/imgui_draw.cpp
 	${imgui_SOURCE_DIR}/imgui_widgets.cpp
 	${imgui_SOURCE_DIR}/imgui_tables.cpp
-	${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
+	${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp
 	${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
 )   
 
-target_link_libraries(Viewer ${CMAKE_DL_LIBS} glfw OpenGL::GL)
+target_link_libraries(Viewer ${CMAKE_DL_LIBS} ${SDL3_LINK_TARGET} OpenGL::GL)
 
 target_include_directories(Viewer PUBLIC
 	src/glad/include
@@ -126,26 +187,7 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/flatpak/org.particleviewer.ParticleViewer.svg")
             DESTINATION share/icons/hicolor/scalable/apps)
 endif()
 
-# ============================================
-# Testing Configuration
-# ============================================
-option(BUILD_TESTS "Build unit tests" ON)
-
 if(BUILD_TESTS)
     enable_testing()
-    
-    # Download and configure GoogleTest
-    include(FetchContent)
-    FetchContent_Declare(
-        googletest
-        GIT_REPOSITORY https://github.com/google/googletest.git
-        GIT_TAG release-1.12.1
-    )
-    
-    # For Windows: Prevent overriding the parent project's compiler/linker settings
-    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-    FetchContent_MakeAvailable(googletest)
-    
-    # Add test subdirectory
     add_subdirectory(tests)
 endif()

@@ -44,7 +44,7 @@ class Shader
             // Convert stream into string
             vertexCode = vShaderStream.str();
             fragmentCode = fShaderStream.str();
-        } catch (std::ifstream::failure e) {
+        } catch (const std::ifstream::failure& e) {
             std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ" << std::endl;
         }
 
@@ -87,12 +87,12 @@ class Shader
         // Delete the shaders as they're linked into our program now and no longer necessary
         glDeleteShader(vertex);
         glDeleteShader(fragment);
-    };
-    Shader(){};
+    }
+    Shader() = default;
     void Use()
     {
         glUseProgram(this->Program);
-    };
+    }
 };
 
 #endif
