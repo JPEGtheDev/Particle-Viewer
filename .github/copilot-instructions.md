@@ -43,6 +43,19 @@ Every session follows this lifecycle. All models (Opus, Sonnet, Haiku) MUST exec
 
 Before writing code, read the skill(s) relevant to your task from the Skills Directory above. If the task touches multiple domains, read multiple skills.
 
+**Minimum skill loads by task type:**
+
+| If the task involves… | MUST read these skills |
+|---|---|
+| Writing or editing C++ code | `code-quality` |
+| Writing or editing tests | `code-quality`, `testing` |
+| Creating a PR or commit | `versioning` |
+| CI/CD or workflow changes | `workflow` |
+| Build system or dependency changes | `build` |
+| Writing or editing documentation | `documentation` |
+
+If unsure, read `code-quality` — it applies to nearly every code task.
+
 ### On Finish — Self-Evaluate and Compact
 
 **Before your final message to the user**, you MUST do all of the following:

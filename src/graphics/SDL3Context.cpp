@@ -33,8 +33,9 @@
 static bool forceGlSoftwareIfNvidiaExtensionAbsent()
 {
     const char* ld_path = getenv("LD_LIBRARY_PATH"); // NOLINT(concurrency-mt-unsafe)
-    const bool nvidia_ext_active = (ld_path != nullptr) && (strstr(ld_path, "nvidia") != nullptr);
-    const bool nvidia_dev_present = (access("/dev/nvidia0", F_OK) == 0);
+    const bool nvidia_ext_active =                   // NOLINT(readability-identifier-naming)
+        (ld_path != nullptr) && (strstr(ld_path, "nvidia") != nullptr);
+    const bool nvidia_dev_present = (access("/dev/nvidia0", F_OK) == 0); // NOLINT(readability-identifier-naming)
 
     if (nvidia_dev_present && !nvidia_ext_active) {
         // overwrite=1: Flatpak pre-sets managed vars to "" so overwrite=0 silently does nothing.
@@ -72,7 +73,7 @@ static SDL_Window* tryInitWithDriver(const char* title, int width, int height, S
                                      const char* driver, std::string& out_error)
 {
     out_error.clear();
-    if (driver) {
+    if (driver != nullptr) {
         SDL_SetHint(SDL_HINT_VIDEO_DRIVER, driver);
     } else {
         // Reset hint so SDL auto-detects — hints survive SDL_Quit().
@@ -81,7 +82,7 @@ static SDL_Window* tryInitWithDriver(const char* title, int width, int height, S
 
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         out_error = SDL_GetError();
-        std::cerr << "SDL_Init failed: " << out_error << std::endl;
+        std::cerr << "SDL_Init failed: " << out_error << '\n';
         return nullptr; // Init failed — no SDL_Quit needed
     }
 
@@ -92,12 +93,12 @@ static SDL_Window* tryInitWithDriver(const char* title, int width, int height, S
     SDL_Window* window = SDL_CreateWindow(title, width, height, flags);
 
     // Attempt 2: No MSAA — Mesa/llvmpipe does not expose a multisampled visual.
-    if (!window) {
+    if (window == nullptr) {
         SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
         window = SDL_CreateWindow(title, width, height, flags);
     }
 
-    if (!window) {
+    if (window == nullptr) {
         out_error = SDL_GetError(); // capture BEFORE SDL_Quit() clears it
         SDL_Quit();                 // balance the SDL_Init above so the caller can retry
     }
@@ -128,43 +129,42 @@ SDL3Context::SDL3Context(int width, int height, const char* title, bool visible)
     window_ = tryInitWithDriver(title, width, height, flags, nullptr, last_error);
 
     // Attempt B: force x11 — covers NVIDIA+Wayland where EGL Streams are unavailable.
-    if (!window_) {
+    if (window_ == nullptr) {
         std::cerr << "SDL3Context: auto-detect driver failed (" << last_error
-                  << "), retrying with x11 driver (XWayland fallback)..." << std::endl;
+                  << "), retrying with x11 driver (XWayland fallback)...\n";
         window_ = tryInitWithDriver(title, width, height, flags, "x11", last_error);
     }
 
     // Attempt C: force wayland — covers pure-Wayland sessions without XWayland.
-    if (!window_) {
-        std::cerr << "SDL3Context: x11 driver failed (" << last_error << "), retrying with wayland driver..."
-                  << std::endl;
+    if (window_ == nullptr) {
+        std::cerr << "SDL3Context: x11 driver failed (" << last_error << "), retrying with wayland driver...\n";
         window_ = tryInitWithDriver(title, width, height, flags, "wayland", last_error);
     }
 
     // Attempt D: software rendering last resort.  The pre-flight above normally
     // handles Flatpak/NVIDIA mismatches before SDL_Init; this catches any
     // remaining cases on non-Flatpak platforms.
-    if (!window_) {
+    if (window_ == nullptr) {
         std::cerr << "SDL3Context: wayland driver failed (" << last_error
-                  << "), retrying with software rendering hint (best-effort)..." << std::endl;
+                  << "), retrying with software rendering hint (best-effort)...\n";
         setenv("LIBGL_ALWAYS_SOFTWARE", "1", 1);        // NOLINT(concurrency-mt-unsafe)
         setenv("GALLIUM_DRIVER", "llvmpipe", 1);        // NOLINT(concurrency-mt-unsafe)
         setenv("__GLX_VENDOR_LIBRARY_NAME", "mesa", 1); // NOLINT(concurrency-mt-unsafe)
         window_ = tryInitWithDriver(title, width, height, flags, nullptr, last_error);
-        if (window_) {
-            std::cerr << "SDL3Context: WARNING — using software rendering. Performance may be reduced." << std::endl;
+        if (window_ != nullptr) {
+            std::cerr << "SDL3Context: WARNING — using software rendering. Performance may be reduced.\n";
         }
     }
 
-    if (!window_) {
-        std::cerr << "SDL_CreateWindow failed: " << last_error << std::endl;
+    if (window_ == nullptr) {
+        std::cerr << "SDL_CreateWindow failed: " << last_error << '\n';
         // SDL_Quit was already called by the last tryInitWithDriver on failure.
         return;
     }
 
     gl_context_ = SDL_GL_CreateContext(window_);
-    if (!gl_context_) {
-        std::cerr << "SDL_GL_CreateContext failed: " << SDL_GetError() << std::endl;
+    if (gl_context_ == nullptr) {
+        std::cerr << "SDL_GL_CreateContext failed: " << SDL_GetError() << '\n';
         SDL_DestroyWindow(window_);
         window_ = nullptr;
         SDL_Quit();
@@ -173,8 +173,8 @@ SDL3Context::SDL3Context(int width, int height, const char* title, bool visible)
 
     SDL_GL_MakeCurrent(window_, gl_context_);
 
-    if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
-        std::cerr << "Failed to initialize GLAD: unable to load OpenGL function pointers." << std::endl;
+    if (gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress)) == 0) {
+        std::cerr << "Failed to initialize GLAD: unable to load OpenGL function pointers.\n";
         SDL_GL_DestroyContext(gl_context_);
         gl_context_ = nullptr;
         SDL_DestroyWindow(window_);
@@ -185,11 +185,11 @@ SDL3Context::SDL3Context(int width, int height, const char* title, bool visible)
 
 SDL3Context::~SDL3Context()
 {
-    if (gl_context_) {
+    if (gl_context_ != nullptr) {
         SDL_GL_DestroyContext(gl_context_);
         gl_context_ = nullptr;
     }
-    if (window_) {
+    if (window_ != nullptr) {
         SDL_DestroyWindow(window_);
         window_ = nullptr;
     }
@@ -198,26 +198,26 @@ SDL3Context::~SDL3Context()
 
 bool SDL3Context::isValid() const
 {
-    return window_ != nullptr && gl_context_ != nullptr;
+    return (window_ != nullptr) && (gl_context_ != nullptr);
 }
 
 void SDL3Context::makeCurrent()
 {
-    if (window_ && gl_context_) {
+    if (window_ != nullptr && gl_context_ != nullptr) {
         SDL_GL_MakeCurrent(window_, gl_context_);
     }
 }
 
 void SDL3Context::swapBuffers()
 {
-    if (window_) {
+    if (window_ != nullptr) {
         SDL_GL_SwapWindow(window_);
     }
 }
 
 std::pair<int, int> SDL3Context::getFramebufferSize() const
 {
-    if (window_) {
+    if (window_ != nullptr) {
         int framebuffer_width = 0;
         int framebuffer_height = 0;
         SDL_GetWindowSizeInPixels(window_, &framebuffer_width, &framebuffer_height);
