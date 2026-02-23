@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.1"
+  version: "1.2"
   category: code-quality
   project: Particle-Viewer
 ---
@@ -174,11 +174,12 @@ Header filter excludes embedded libs: `glad`, `tinyFileDialogs`, `stb_*`.
 ## Step 7: Adding a Feature / Fixing a Bug
 
 ### New Feature Workflow
-1. Make code changes following naming conventions
-2. Add unit tests in `tests/core/` (see `testing` skill)
-3. Run `clang-format -i` on ALL changed files
-4. Build and verify tests pass
-5. Commit: `feat: description`
+1. **Scan the class interface** — before writing integration code that calls methods on an existing class, verify which members are public/private. Classes like `Camera` have a mix; don't assume public.
+2. Make code changes following naming conventions
+3. Add unit tests in `tests/core/` (see `testing` skill)
+4. Run `clang-format -i` on ALL changed files
+5. Build and verify tests pass
+6. Commit: `feat: description`
 
 ### Bug Fix Workflow
 1. Write a failing test that reproduces the bug
