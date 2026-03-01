@@ -53,15 +53,10 @@ echo "Detected NVIDIA driver version: $driver"
 # so normalize the string accordingly before building the id.
 flatpakver=$(printf "%s" "$driver" | tr '.' '-')
 
-# Determine which branch our runtime is on so we install the matching
-# extension.  The warning text hardcodes "//1.4" but runtime branches
-# are tied to the SDK version; query the installed org.freedesktop.Platform
-# and fall back to 1.4 if for whatever reason the command fails.
-runtime_branch=$(flatpak info org.freedesktop.Platform --show-branch 2>/dev/null || true)
-if [ -z "$runtime_branch" ]; then
-    runtime_branch="1.4"
-fi
-extension="org.freedesktop.Platform.GL.nvidia-$flatpakver//$runtime_branch"
+# NVIDIA GL extensions on Flathub currently use the fixed "//1.4" branch
+# regardless of the org.freedesktop.Platform runtime branch.  Always
+# target that branch so the computed extension ID actually exists.
+extension="org.freedesktop.Platform.GL.nvidia-$flatpakver//1.4"
 
 # sanity check: flatpak binary must exist before we try to install anything
 if ! command -v flatpak >/dev/null 2>&1; then
@@ -69,14 +64,10 @@ if ! command -v flatpak >/dev/null 2>&1; then
     exit 2
 fi
 
-# check for presence without letting 'flatpak list' abort the script
-if ! flatpak list --app >/dev/null 2>&1; then
-    echo "Warning: 'flatpak list' failed - is the Flatpak service running?" >&2
-else
-    if flatpak list --app | grep -q "$extension"; then
-        echo "Flatpak extension $extension is already installed."
-        exit 0
-    fi
+# check for presence without letting flatpak commands abort the script
+if flatpak info "$extension" >/dev/null 2>&1; then
+    echo "Flatpak extension $extension is already installed."
+    exit 0
 fi
 
 echo "Installing Flatpak extension: $extension"
