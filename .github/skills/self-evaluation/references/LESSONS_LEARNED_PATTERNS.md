@@ -236,6 +236,16 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 **Added to:** `code-quality` skill → OpenGL Usage section
 
+---
+
+### SDL3 `*ForID` Functions Avoid Unnecessary Device Open/Close (gamepad PR)
+
+**Problem:** In `addXInputMapping()`, the GUID was retrieved by calling `SDL_OpenJoystick()`, reading the GUID with `SDL_GetJoystickGUID()`, then calling `SDL_CloseJoystick()`. SDL3 provides `SDL_GetJoystickGUIDForID(instance_id)` specifically to avoid this open/close dance.
+
+**Lesson:** When querying joystick properties by instance ID, always check for a `SDL_Get*ForID()` variant first: `SDL_GetJoystickGUIDForID`, `SDL_GetJoystickTypeForID`, `SDL_GetJoystickVendorForID`, `SDL_GetJoystickProductForID`, etc. Opening a device to read a property and immediately closing it wastes a file handle and SDL3 reference counts unnecessarily.
+
+**Added to:** `code-quality` skill → OpenGL Usage section
+
 | If the lesson is about... | Add to... |
 |---|---|
 | Code patterns, naming, error handling | `copilot-instructions.md` |

@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.3"
+  version: "1.4"
   category: code-quality
   project: Particle-Viewer
 ---
@@ -162,6 +162,7 @@ Header filter excludes embedded libs: `glad`, `tinyFileDialogs`, `stb_*`.
 - `gl_PointSize` clamped by `GL_POINT_SIZE_RANGE` (max 256px on Mesa/llvmpipe)
 - For Flatpak/SDL3/GL gotchas: see `.github/skills/workflow/references/FLATPAK_GL_GOTCHAS.md`
 - **SDL3 subsystem flags:** `SDL_Init` in `SDL3Context.cpp` must include the flag for every SDL3 subsystem used. Adding gamepad input requires `SDL_INIT_GAMEPAD`; adding audio requires `SDL_INIT_AUDIO`; etc. Missing a flag causes the subsystem to silently fail — no error, no events, no devices.
+- **SDL3 `*ForID` query functions:** When querying joystick properties by instance ID, prefer the `SDL_Get*ForID()` variants (e.g. `SDL_GetJoystickGUIDForID`, `SDL_GetJoystickTypeForID`, `SDL_GetJoystickVendorForID`) over opening the joystick just to read the value and closing it. Opening a device unnecessarily consumes a file handle and triggers internal SDL3 reference counting.
 
 ### Headers
 - Every header must include all headers it directly uses (no transitive include reliance)
