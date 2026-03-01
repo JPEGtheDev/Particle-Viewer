@@ -11,7 +11,8 @@
  *   gamepad.openFirstGamepad();          // call once on startup
  *
  *   // In event loop:
- *   gamepad.handleEvent(event);          // handles GAMEPAD_ADDED/REMOVED
+ *   gamepad.handleEvent(event);          // handles GAMEPAD_ADDED/REMOVED and
+ *                                        // JOYSTICK_ADDED fallback for unmapped devices
  *
  *   // Once per frame after event loop:
  *   gamepad.poll();                      // snapshot current SDL3 state
@@ -27,6 +28,7 @@
 #include <array>
 #include <cmath>
 #include <cstdint>
+#include <string>
 
 // clang-format off
 #include <SDL3/SDL.h>  // NOLINT(llvm-include-order)
@@ -60,6 +62,8 @@ class GamepadInput
 
     /*
      * Forward an SDL event so GAMEPAD_ADDED / GAMEPAD_REMOVED are handled.
+     * Also handles JOYSTICK_ADDED as a fallback for gamepad-type devices
+     * not yet in SDL3's mapping database (e.g. 8BitDo 2.4GHz on non-SteamOS).
      * Call from the application's SDL_PollEvent loop.
      */
     void handleEvent(const SDL_Event& event);
@@ -122,6 +126,20 @@ class GamepadInput
     std::array<bool, SDL_GAMEPAD_BUTTON_COUNT> button_prev_state_{};
 
     void close();
+
+    /*
+     * Scan joystick devices for gamepad-type hardware that SDL3 hasn't mapped
+     * yet (e.g. 8BitDo 2.4GHz dongle).  For each, add a generic XInput layout
+     * and open the first one as a gamepad.
+     */
+    void tryOpenFirstJoystickAsGamepad();
+
+    /*
+     * Add a standard XInput-compatible gamepad mapping for a joystick device
+     * that SDL3 has not yet mapped.  Uses the device's GUID so the mapping
+     * applies only to this specific hardware.
+     */
+    void addXInputMapping(SDL_JoystickID instance_id);
 };
 
 // ============================================================================
@@ -152,12 +170,22 @@ inline void GamepadInput::openFirstGamepad()
     if (gamepad_ != nullptr) {
         return; // already open
     }
+
+    // Primary: devices SDL3 already has in its gamepad mapping database.
     int count = 0;
     SDL_JoystickID* ids = SDL_GetGamepads(&count);
     if (ids != nullptr && count > 0) {
         gamepad_ = SDL_OpenGamepad(ids[0]);
     }
     SDL_free(ids);
+
+    if (gamepad_ != nullptr) {
+        return;
+    }
+
+    // Fallback: scan joystick devices for gamepad-type hardware that SDL3
+    // hasn't mapped yet (e.g. 8BitDo 2.4GHz dongle on non-SteamOS Linux).
+    tryOpenFirstJoystickAsGamepad();
 }
 
 inline void GamepadInput::handleEvent(const SDL_Event& event)
@@ -165,6 +193,21 @@ inline void GamepadInput::handleEvent(const SDL_Event& event)
     if (event.type == SDL_EVENT_GAMEPAD_ADDED) {
         if (gamepad_ == nullptr) {
             gamepad_ = SDL_OpenGamepad(event.gdevice.which);
+        }
+    } else if (event.type == SDL_EVENT_JOYSTICK_ADDED) {
+        // Fallback: a joystick arrived that SDL3 may not have a mapping for.
+        // If it is HID-type gamepad (e.g. 8BitDo 2.4GHz), add a generic XInput
+        // mapping so the SDL3 gamepad API can drive it.
+        if (gamepad_ == nullptr) {
+            if (SDL_IsGamepad(event.jdevice.which)) {
+                // SDL3 recognises it as a gamepad — open directly.
+                gamepad_ = SDL_OpenGamepad(event.jdevice.which);
+            } else if (SDL_GetJoystickTypeForID(event.jdevice.which) == SDL_JOYSTICK_TYPE_GAMEPAD) {
+                addXInputMapping(event.jdevice.which);
+                if (SDL_IsGamepad(event.jdevice.which)) {
+                    gamepad_ = SDL_OpenGamepad(event.jdevice.which);
+                }
+            }
         }
     } else if (event.type == SDL_EVENT_GAMEPAD_REMOVED) {
         if (gamepad_ != nullptr && SDL_GetGamepadID(gamepad_) == event.gdevice.which) {
@@ -255,6 +298,59 @@ inline bool GamepadInput::isButtonJustPressed(SDL_GamepadButton button) const
         return false;
     }
     return button_state_[static_cast<std::size_t>(idx)] && !button_prev_state_[static_cast<std::size_t>(idx)];
+}
+
+inline void GamepadInput::tryOpenFirstJoystickAsGamepad()
+{
+    int joy_count = 0;
+    SDL_JoystickID* joy_ids = SDL_GetJoysticks(&joy_count);
+    if (joy_ids == nullptr) {
+        return;
+    }
+    for (int i = 0; i < joy_count && gamepad_ == nullptr; ++i) {
+        if (SDL_IsGamepad(joy_ids[i])) {
+            // SDL3 has a mapping for this device but SDL_GetGamepads() missed it —
+            // open it directly.
+            gamepad_ = SDL_OpenGamepad(joy_ids[i]);
+        } else if (SDL_GetJoystickTypeForID(joy_ids[i]) == SDL_JOYSTICK_TYPE_GAMEPAD) {
+            // HID class identifies this as a gamepad but SDL3 has no mapping
+            // (e.g. 8BitDo 2.4GHz dongle on non-SteamOS Linux).  Inject a
+            // generic XInput-compatible layout and open it.
+            addXInputMapping(joy_ids[i]);
+            if (SDL_IsGamepad(joy_ids[i])) {
+                gamepad_ = SDL_OpenGamepad(joy_ids[i]);
+            }
+        }
+    }
+    SDL_free(joy_ids);
+}
+
+inline void GamepadInput::addXInputMapping(SDL_JoystickID instance_id)
+{
+    char guid_str[33];
+    SDL_GUIDToString(SDL_GetJoystickGUIDForID(instance_id), guid_str, sizeof(guid_str));
+
+    // Standard XInput-compatible gamepad layout.  Covers 8BitDo controllers
+    // in X-Input mode and most other modern USB/2.4GHz gamepads:
+    //   Face:     A=b0  B=b1  X=b2  Y=b3
+    //   Bumpers:  LB=b4 RB=b5
+    //   Menu:     Back=b6  Start=b7  Guide=b8
+    //   Sticks:   LS=b9  RS=b10
+    //   Axes:     LX=a0 LY=a1  LT=a2  RX=a3 RY=a4  RT=a5
+    //   D-pad:    hat0
+    std::string mapping = guid_str;
+    mapping += ",Gamepad,";
+    mapping += "a:b0,b:b1,x:b2,y:b3,";
+    mapping += "back:b6,guide:b8,start:b7,";
+    mapping += "leftshoulder:b4,rightshoulder:b5,";
+    mapping += "leftstick:b9,rightstick:b10,";
+    mapping += "leftx:a0,lefty:a1,rightx:a3,righty:a4,";
+    mapping += "lefttrigger:a2,righttrigger:a5,";
+    mapping += "dpup:h0.1,dpright:h0.2,dpdown:h0.4,dpleft:h0.8,";
+    mapping += "platform:";
+    mapping += SDL_GetPlatform();
+
+    SDL_AddGamepadMapping(mapping.c_str());
 }
 
 inline float GamepadInput::normalizeAxis(Sint16 raw_value, float dead_zone)
