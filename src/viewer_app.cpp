@@ -105,6 +105,8 @@ bool ViewerApp::initialize()
     // Load window settings AFTER FBO is set up (prevents crash during resize callback)
     loadWindowSettings();
 
+    gamepad_.openFirstGamepad();
+
     menu_state_.debug_mode = window_.debug_camera;
     return true;
 }
@@ -224,6 +226,7 @@ void ViewerApp::run()
             if (imgui_initialized_) {
                 ImGui_ImplSDL3_ProcessEvent(&event);
             }
+            gamepad_.handleEvent(event);
             if (event.type == SDL_EVENT_QUIT) {
                 context_->setShouldClose(true);
             } else if (event.type == SDL_EVENT_KEY_DOWN || event.type == SDL_EVENT_KEY_UP) {
@@ -234,6 +237,8 @@ void ViewerApp::run()
             }
         }
 
+        gamepad_.poll();
+
         // Start ImGui frame (only if ImGui was initialized)
         if (imgui_initialized_) {
             ImGui_ImplOpenGL3_NewFrame();
@@ -242,6 +247,7 @@ void ViewerApp::run()
         }
 
         cam_->Move();
+        processGamepadInput();
 
         beforeDraw();
         drawScene();
@@ -557,6 +563,96 @@ void ViewerApp::handleKeyEvent(unsigned int scancode, bool is_pressed, unsigned 
             recording_.folder = "";
             recording_.is_active = false;
         }
+    }
+}
+
+// ============================================================================
+// Gamepad Input
+// ============================================================================
+
+void ViewerApp::processGamepadInput()
+{
+    if (!gamepad_.isConnected()) {
+        return;
+    }
+
+    // Look sensitivity (degrees per frame at full deflection)
+    constexpr float LOOK_SPEED = 3.0f;
+    // Zoom increment per frame at full stick deflection
+    constexpr float ZOOM_SPEED = 0.5f;
+    // Trigger threshold before frame seeking activates (0..1)
+    constexpr float TRIGGER_THRESHOLD = 0.3f;
+
+    const float left_x = gamepad_.getLeftStickX();
+    const float left_y = gamepad_.getLeftStickY();
+    const float right_x = gamepad_.getRightStickX();
+    const float right_y = gamepad_.getRightStickY();
+    const float left_trigger = gamepad_.getLeftTrigger();
+    const float right_trigger = gamepad_.getRightTrigger();
+
+    // ---- Movement / Orbit ----
+    // When rotation is locked (orbit mode) the left stick orbits the sphere;
+    // otherwise it provides free-camera movement.
+    if (cam_->isRotLocked()) {
+        // Orbit: replicate W/A/S/D rotLock behaviour with analog input
+        cam_->applyGamepadOrbit(left_y, left_x);
+        // Right stick Y zooms (adjusts sphere distance) when locked
+        if (right_y != 0.0f) {
+            cam_->adjustSphereDistance(right_y * ZOOM_SPEED);
+        }
+    } else {
+        // Free camera movement
+        cam_->applyGamepadMovement(left_y, left_x);
+        // Right stick look
+        cam_->applyGamepadLook(right_x * LOOK_SPEED, right_y * LOOK_SPEED);
+    }
+
+    // L3 / R3 adjust sphere distance when the sphere is visible
+    if (cam_->isRenderingSphere()) {
+        if (gamepad_.isButtonHeld(SDL_GAMEPAD_BUTTON_LEFT_STICK)) {
+            cam_->adjustSphereDistance(-ZOOM_SPEED);
+        }
+        if (gamepad_.isButtonHeld(SDL_GAMEPAD_BUTTON_RIGHT_STICK)) {
+            cam_->adjustSphereDistance(ZOOM_SPEED);
+        }
+    }
+
+    // ---- Frame Playback ----
+    // Triggers: fast-forward / rewind (continuous, mirrors Q/E keys)
+    if (right_trigger > TRIGGER_THRESHOLD) {
+        seekFrame(3, true);
+    }
+    if (left_trigger > TRIGGER_THRESHOLD) {
+        seekFrame(3, false);
+    }
+
+    // Bumpers: single-frame advance / rewind (mirrors arrow keys)
+    if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER)) {
+        seekFrame(1, true);
+    }
+    if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_LEFT_SHOULDER)) {
+        seekFrame(1, false);
+    }
+
+    // ---- Action Buttons ----
+    // A (South) — toggle play/pause
+    if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_SOUTH)) {
+        set_->togglePlay();
+    }
+
+    // Back/Select — open file load dialog
+    if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_BACK)) {
+        handleLoadFile();
+    }
+
+    // X (West) — cycle point lock state (mirrors P key)
+    if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_WEST)) {
+        cam_->cycleRotateState();
+    }
+
+    // Y (North) — toggle COM lock (mirrors O key, only active when rotation is locked)
+    if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_NORTH)) {
+        cam_->toggleComLock();
     }
 }
 

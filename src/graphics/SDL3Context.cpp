@@ -80,7 +80,7 @@ static SDL_Window* tryInitWithDriver(const char* title, int width, int height, S
         SDL_ResetHint(SDL_HINT_VIDEO_DRIVER);
     }
 
-    if (!SDL_Init(SDL_INIT_VIDEO)) {
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
         out_error = SDL_GetError();
         std::cerr << "SDL_Init failed: " << out_error << '\n';
         return nullptr; // Init failed — no SDL_Quit needed

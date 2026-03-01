@@ -26,6 +26,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "graphics/IOpenGLContext.hpp"
+#include "input/gamepad_input.hpp"
 #include "particle.hpp"
 #include "settingsIO.hpp"
 #include "shader.hpp"
@@ -175,6 +176,7 @@ class ViewerApp
     // Input State
     // ============================================
     GLboolean keys_[1024];
+    GamepadInput gamepad_;
 
     // ============================================
     // Scene Objects
@@ -236,6 +238,7 @@ class ViewerApp
     // Input Handling
     // ============================================
     void handleKeyEvent(unsigned int scancode, bool is_pressed, unsigned int mods);
+    void processGamepadInput();
 
     // ============================================
     // Resource Cleanup
