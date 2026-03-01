@@ -140,6 +140,16 @@ class GamepadInput
      * applies only to this specific hardware.
      */
     void addXInputMapping(SDL_JoystickID instance_id);
+
+    /*
+     * Returns true if a joystick has gamepad-like hardware capabilities
+     * (at least 4 axes and 6 buttons).  Used as a last-resort fallback
+     * when SDL3 reports the device type as SDL_JOYSTICK_TYPE_UNKNOWN —
+     * e.g. an 8BitDo 2.4GHz dongle on OpenSuse where the generic HID
+     * driver does not set the udev GAMEPAD property.
+     * Opens and immediately closes the joystick to read its capabilities.
+     */
+    bool looksLikeGamepad(SDL_JoystickID instance_id);
 };
 
 // ============================================================================
@@ -196,16 +206,21 @@ inline void GamepadInput::handleEvent(const SDL_Event& event)
         }
     } else if (event.type == SDL_EVENT_JOYSTICK_ADDED) {
         // Fallback: a joystick arrived that SDL3 may not have a mapping for.
-        // If it is HID-type gamepad (e.g. 8BitDo 2.4GHz), add a generic XInput
-        // mapping so the SDL3 gamepad API can drive it.
+        // Also handles UNKNOWN-type devices with gamepad-like capabilities
+        // (e.g. 8BitDo 2.4GHz on OpenSuse where udev omits the GAMEPAD tag).
         if (gamepad_ == nullptr) {
             if (SDL_IsGamepad(event.jdevice.which)) {
                 // SDL3 recognises it as a gamepad — open directly.
                 gamepad_ = SDL_OpenGamepad(event.jdevice.which);
-            } else if (SDL_GetJoystickTypeForID(event.jdevice.which) == SDL_JOYSTICK_TYPE_GAMEPAD) {
-                addXInputMapping(event.jdevice.which);
-                if (SDL_IsGamepad(event.jdevice.which)) {
-                    gamepad_ = SDL_OpenGamepad(event.jdevice.which);
+            } else {
+                const SDL_JoystickType joy_type = SDL_GetJoystickTypeForID(event.jdevice.which);
+                const bool candidate = (joy_type == SDL_JOYSTICK_TYPE_GAMEPAD) ||
+                                       (joy_type == SDL_JOYSTICK_TYPE_UNKNOWN && looksLikeGamepad(event.jdevice.which));
+                if (candidate) {
+                    addXInputMapping(event.jdevice.which);
+                    if (SDL_IsGamepad(event.jdevice.which)) {
+                        gamepad_ = SDL_OpenGamepad(event.jdevice.which);
+                    }
                 }
             }
         }
@@ -312,17 +327,41 @@ inline void GamepadInput::tryOpenFirstJoystickAsGamepad()
             // SDL3 has a mapping for this device but SDL_GetGamepads() missed it —
             // open it directly.
             gamepad_ = SDL_OpenGamepad(joy_ids[i]);
-        } else if (SDL_GetJoystickTypeForID(joy_ids[i]) == SDL_JOYSTICK_TYPE_GAMEPAD) {
-            // HID class identifies this as a gamepad but SDL3 has no mapping
-            // (e.g. 8BitDo 2.4GHz dongle on non-SteamOS Linux).  Inject a
-            // generic XInput-compatible layout and open it.
-            addXInputMapping(joy_ids[i]);
-            if (SDL_IsGamepad(joy_ids[i])) {
-                gamepad_ = SDL_OpenGamepad(joy_ids[i]);
+        } else {
+            // Try devices SDL3 classifies as GAMEPAD type without a mapping, and
+            // also UNKNOWN-type devices that have gamepad-like capabilities.  The
+            // latter covers e.g. 8BitDo 2.4GHz dongles on non-SteamOS Linux where
+            // the generic HID driver omits the udev GAMEPAD tag.
+            const SDL_JoystickType joy_type = SDL_GetJoystickTypeForID(joy_ids[i]);
+            const bool candidate = (joy_type == SDL_JOYSTICK_TYPE_GAMEPAD) ||
+                                   (joy_type == SDL_JOYSTICK_TYPE_UNKNOWN && looksLikeGamepad(joy_ids[i]));
+            if (candidate) {
+                addXInputMapping(joy_ids[i]);
+                if (SDL_IsGamepad(joy_ids[i])) {
+                    gamepad_ = SDL_OpenGamepad(joy_ids[i]);
+                }
             }
         }
     }
     SDL_free(joy_ids);
+}
+
+inline bool GamepadInput::looksLikeGamepad(SDL_JoystickID instance_id)
+{
+    // Minimum capabilities that distinguish a gamepad from other joystick types.
+    // 4 axes: covers at minimum 2 sticks or sticks+triggers.
+    // 6 buttons: covers the bare-minimum face button set.
+    constexpr int MIN_AXES = 4;
+    constexpr int MIN_BUTTONS = 6;
+
+    SDL_Joystick* joy = SDL_OpenJoystick(instance_id);
+    if (joy == nullptr) {
+        return false;
+    }
+    const int num_axes = SDL_GetNumJoystickAxes(joy);
+    const int num_buttons = SDL_GetNumJoystickButtons(joy);
+    SDL_CloseJoystick(joy);
+    return (num_axes >= MIN_AXES && num_buttons >= MIN_BUTTONS);
 }
 
 inline void GamepadInput::addXInputMapping(SDL_JoystickID instance_id)
