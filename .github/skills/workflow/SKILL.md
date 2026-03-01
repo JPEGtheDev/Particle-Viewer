@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.0"
+  version: "1.1"
   category: ci-cd
   project: Particle-Viewer
 ---
