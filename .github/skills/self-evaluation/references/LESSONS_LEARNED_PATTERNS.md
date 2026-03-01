@@ -226,6 +226,16 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 **Added to:** `copilot-instructions.md` → Common Pitfalls (as a Build Issues entry)
 
+---
+
+### SDL3 Subsystem Flag Missing Causes Silent Failure (gamepad PR)
+
+**Problem:** Gamepad input was implemented and merged but never worked on any device (Steam Deck, Bluetooth, USB). `SDL_Init(SDL_INIT_VIDEO)` was never updated when the gamepad subsystem was added. Without `SDL_INIT_GAMEPAD`, `SDL_GetGamepads()` returns empty, `SDL_EVENT_GAMEPAD_ADDED` is never fired, and all controllers are invisible — no error, no warning.
+
+**Lesson:** Every SDL3 subsystem needs its `SDL_INIT_*` flag in the `SDL_Init` call in `SDL3Context.cpp`. Adding a new SDL3 feature (gamepad, audio, haptic) **always** requires updating this call. Missing a flag is a silent failure — SDL3 does not warn that the subsystem was never started.
+
+**Added to:** `code-quality` skill → OpenGL Usage section
+
 | If the lesson is about... | Add to... |
 |---|---|
 | Code patterns, naming, error handling | `copilot-instructions.md` |
