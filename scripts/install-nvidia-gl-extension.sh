@@ -52,7 +52,16 @@ echo "Detected NVIDIA driver version: $driver"
 # Flatpak extension names use dashes instead of dots (e.g. 580-126-18),
 # so normalize the string accordingly before building the id.
 flatpakver=$(printf "%s" "$driver" | tr '.' '-')
-extension="org.freedesktop.Platform.GL.nvidia-$flatpakver//1.4"
+
+# Determine which branch our runtime is on so we install the matching
+# extension.  The warning text hardcodes "//1.4" but runtime branches
+# are tied to the SDK version; query the installed org.freedesktop.Platform
+# and fall back to 1.4 if for whatever reason the command fails.
+runtime_branch=$(flatpak info org.freedesktop.Platform --show-branch 2>/dev/null || true)
+if [ -z "$runtime_branch" ]; then
+    runtime_branch="1.4"
+fi
+extension="org.freedesktop.Platform.GL.nvidia-$flatpakver//$runtime_branch"
 
 # sanity check: flatpak binary must exist before we try to install anything
 if ! command -v flatpak >/dev/null 2>&1; then
@@ -72,7 +81,7 @@ fi
 
 echo "Installing Flatpak extension: $extension"
 if flatpak install --user flathub "$extension" -y; then
-    echo "Installation complete.  Restart Particle-Viewer to pick up the new runtime."
+    echo "Installation complete.  restart Particle-Viewer to pick up the new runtime."
 else
     echo "Failed to install $extension" >&2
     exit 1
