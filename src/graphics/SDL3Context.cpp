@@ -21,7 +21,10 @@
 #include <iostream>
 #include <string>
 
-#include <unistd.h>
+#ifdef __linux__
+    #include <dirent.h>
+    #include <unistd.h>
+#endif
 
 /*
  * Pre-flight check: if an NVIDIA GPU is present but no matching Flatpak GL
@@ -30,23 +33,94 @@
  * the vars when it first loads vendor libraries.
  * See FLATPAK_GL_GOTCHAS.md — "NVIDIA GL extension version mismatch".
  */
-static bool forceGlSoftwareIfNvidiaExtensionAbsent()
-{
-    const char* ld_path = getenv("LD_LIBRARY_PATH"); // NOLINT(concurrency-mt-unsafe)
-    const bool nvidia_ext_active =                   // NOLINT(readability-identifier-naming)
-        (ld_path != nullptr) && (strstr(ld_path, "nvidia") != nullptr);
-    const bool nvidia_dev_present = (access("/dev/nvidia0", F_OK) == 0); // NOLINT(readability-identifier-naming)
 
-    if (nvidia_dev_present && !nvidia_ext_active) {
-        // overwrite=1: Flatpak pre-sets managed vars to "" so overwrite=0 silently does nothing.
-        // All three vars are required together — see FLATPAK_GL_GOTCHAS.md.
-        setenv("LIBGL_ALWAYS_SOFTWARE", "1", 1);        // NOLINT(concurrency-mt-unsafe)
-        setenv("GALLIUM_DRIVER", "llvmpipe", 1);        // NOLINT(concurrency-mt-unsafe)
-        setenv("__GLX_VENDOR_LIBRARY_NAME", "mesa", 1); // NOLINT(concurrency-mt-unsafe)
+#ifdef __linux__
+/*
+ * Scan /usr/lib for any <arch>/GL/nvidia-* or GL/nvidia-* directory.
+ * Flatpak mounts the GL extension under /usr/lib/<triplet>/GL/nvidia-<ver>
+ * where <triplet> varies by architecture (x86_64-linux-gnu, aarch64-linux-gnu,
+ * etc.).  Rather than hard-coding a single triplet we scan every immediate
+ * subdirectory of /usr/lib looking for a GL/nvidia-* entry.
+ */
+static bool hasNvidiaEntries(const char* gl_dir)
+{
+    DIR* dir = opendir(gl_dir);
+    if (dir == nullptr) {
+        return false;
+    }
+    bool found = false;
+    struct dirent* entry = nullptr;
+    while ((entry = readdir(dir)) != nullptr) { // NOLINT(concurrency-mt-unsafe)
+        if (strncmp(entry->d_name, "nvidia-", 7) == 0) {
+            found = true;
+            break;
+        }
+    }
+    closedir(dir);
+    return found;
+}
+
+static bool isNvidiaGlExtensionMounted()
+{
+    // Direct check: /usr/lib/GL (some Flatpak layouts place it here).
+    if (hasNvidiaEntries("/usr/lib/GL")) {
         return true;
     }
-    return false;
+
+    // Architecture-agnostic scan: enumerate /usr/lib/<subdir>/GL/.
+    DIR* lib_dir = opendir("/usr/lib");
+    if (lib_dir == nullptr) {
+        return false;
+    }
+    bool found = false;
+    struct dirent* entry = nullptr;
+    while ((entry = readdir(lib_dir)) != nullptr) { // NOLINT(concurrency-mt-unsafe)
+        if (entry->d_name[0] == '.') {
+            continue; // skip . and ..
+        }
+        std::string gl_path = std::string("/usr/lib/") + entry->d_name + "/GL";
+        if (hasNvidiaEntries(gl_path.c_str())) {
+            found = true;
+            break;
+        }
+    }
+    closedir(lib_dir);
+    return found;
 }
+
+static bool isRunningInFlatpak()
+{
+    return access("/.flatpak-info", F_OK) == 0;
+}
+
+static bool forceGlSoftwareIfNvidiaExtensionAbsent()
+{
+    // This workaround only applies inside a Flatpak sandbox where NVIDIA
+    // drivers are provided via GL extensions.  On a regular system the
+    // NVIDIA driver is installed system-wide and always available.
+    if (!isRunningInFlatpak()) {
+        return false;
+    }
+
+    const bool nvidia_dev_present = (access("/dev/nvidia0", F_OK) == 0); // NOLINT(readability-identifier-naming)
+    if (!nvidia_dev_present) {
+        return false; // no NVIDIA GPU — nothing to do
+    }
+
+    // Check for the mounted GL extension directory inside the sandbox.
+    if (isNvidiaGlExtensionMounted()) {
+        return false; // extension present — hardware rendering should work
+    }
+
+    // No extension found — force software rendering.
+    // overwrite=1: Flatpak pre-sets managed vars to "" so overwrite=0 silently does nothing.
+    // All three vars are required together — see FLATPAK_GL_GOTCHAS.md.
+    setenv("LIBGL_ALWAYS_SOFTWARE", "1", 1);        // NOLINT(concurrency-mt-unsafe)
+    setenv("GALLIUM_DRIVER", "llvmpipe", 1);        // NOLINT(concurrency-mt-unsafe)
+    setenv("__GLX_VENDOR_LIBRARY_NAME", "mesa", 1); // NOLINT(concurrency-mt-unsafe)
+    return true;
+}
+#endif // __linux__
 
 /*
  * Apply the required OpenGL context attributes before window creation.
@@ -114,14 +188,17 @@ SDL3Context::SDL3Context(int width, int height, const char* title, bool visible)
         flags |= SDL_WINDOW_HIDDEN;
     }
 
-    // Pre-flight: force Mesa software rendering if NVIDIA GPU is present
-    // without a matching Flatpak GL extension.  Must precede any SDL_Init.
+    // Pre-flight (Flatpak only): force Mesa software rendering if NVIDIA GPU
+    // is present without a matching GL extension.  Must precede any SDL_Init.
+    // Skipped on non-Flatpak systems where the driver is installed normally.
+#ifdef __linux__
     if (forceGlSoftwareIfNvidiaExtensionAbsent()) {
-        std::cerr << "SDL3Context: NVIDIA GPU detected without a matching Flatpak GL extension.\n"
+        std::cerr << "SDL3Context: NVIDIA GPU detected inside Flatpak without a matching GL extension.\n"
                   << "  Enabling software rendering (Mesa llvmpipe) — performance may be reduced.\n"
                   << "  To restore hardware rendering, install the matching GL extension:\n"
                   << "  flatpak install flathub org.freedesktop.Platform.GL.nvidia-<YOUR_VER>//1.4\n";
     }
+#endif
 
     std::string last_error;
 
@@ -147,9 +224,11 @@ SDL3Context::SDL3Context(int width, int height, const char* title, bool visible)
     if (window_ == nullptr) {
         std::cerr << "SDL3Context: wayland driver failed (" << last_error
                   << "), retrying with software rendering hint (best-effort)...\n";
+#ifdef __linux__
         setenv("LIBGL_ALWAYS_SOFTWARE", "1", 1);        // NOLINT(concurrency-mt-unsafe)
         setenv("GALLIUM_DRIVER", "llvmpipe", 1);        // NOLINT(concurrency-mt-unsafe)
         setenv("__GLX_VENDOR_LIBRARY_NAME", "mesa", 1); // NOLINT(concurrency-mt-unsafe)
+#endif
         window_ = tryInitWithDriver(title, width, height, flags, nullptr, last_error);
         if (window_ != nullptr) {
             std::cerr << "SDL3Context: WARNING — using software rendering. Performance may be reduced.\n";
