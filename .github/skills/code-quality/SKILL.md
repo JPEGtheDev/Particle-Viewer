@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.4"
+  version: "1.5"
   category: code-quality
   project: Particle-Viewer
 ---
@@ -163,6 +163,7 @@ Header filter excludes embedded libs: `glad`, `tinyFileDialogs`, `stb_*`.
 - For Flatpak/SDL3/GL gotchas: see `.github/skills/workflow/references/FLATPAK_GL_GOTCHAS.md`
 - **SDL3 subsystem flags:** `SDL_Init` in `SDL3Context.cpp` must include the flag for every SDL3 subsystem used. Adding gamepad input requires `SDL_INIT_GAMEPAD`; adding audio requires `SDL_INIT_AUDIO`; etc. Missing a flag causes the subsystem to silently fail — no error, no events, no devices.
 - **SDL3 `*ForID` query functions:** When querying joystick properties by instance ID, prefer the `SDL_Get*ForID()` variants (e.g. `SDL_GetJoystickGUIDForID`, `SDL_GetJoystickTypeForID`, `SDL_GetJoystickVendorForID`) over opening the joystick just to read the value and closing it. Opening a device unnecessarily consumes a file handle and triggers internal SDL3 reference counting.
+- **SDL3 joystick type is distro-dependent:** `SDL_GetJoystickTypeForID()` returns `SDL_JOYSTICK_TYPE_GAMEPAD` on SteamOS for hardware like the 8BitDo 2.4GHz dongle, but `SDL_JOYSTICK_TYPE_UNKNOWN` on generic Linux (OpenSuse, Ubuntu, etc.) because stock udev rules don't set the GAMEPAD property. Any SDL3 input fallback that only checks `SDL_JOYSTICK_TYPE_GAMEPAD` will silently fail on non-SteamOS distros. Always pair type-based detection with a capability-based fallback: open the joystick, check `SDL_GetNumJoystickAxes() >= 4 && SDL_GetNumJoystickButtons() >= 6`, then close it.
 
 ### Headers
 - Every header must include all headers it directly uses (no transitive include reliance)

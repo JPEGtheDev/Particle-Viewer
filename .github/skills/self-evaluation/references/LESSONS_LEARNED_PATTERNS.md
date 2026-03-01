@@ -246,6 +246,16 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 **Added to:** `code-quality` skill → OpenGL Usage section
 
+---
+
+### SDL3 Joystick Type Is Distro-Dependent (gamepad PR)
+
+**Problem:** `SDL_GetJoystickTypeForID()` returns `SDL_JOYSTICK_TYPE_GAMEPAD` on SteamOS for the 8BitDo 2.4GHz dongle, but `SDL_JOYSTICK_TYPE_UNKNOWN` on OpenSuse Tumbleweed (and presumably other non-SteamOS distros). The SDL3 joystick type is derived from udev properties that Valve sets via custom rules on SteamOS but are absent on stock Linux. The fallback that only checked `SDL_JOYSTICK_TYPE_GAMEPAD` silently skipped the device on OpenSuse.
+
+**Lesson:** Never rely on `SDL_GetJoystickTypeForID() == SDL_JOYSTICK_TYPE_GAMEPAD` alone for cross-distro gamepad detection. Always pair it with a capability-based fallback for `SDL_JOYSTICK_TYPE_UNKNOWN` devices: open the joystick briefly, check `SDL_GetNumJoystickAxes() >= 4 && SDL_GetNumJoystickButtons() >= 6`, close it, and treat as a gamepad candidate if the heuristic passes.
+
+**Added to:** `code-quality` skill → OpenGL Usage section
+
 | If the lesson is about... | Add to... |
 |---|---|
 | Code patterns, naming, error handling | `copilot-instructions.md` |
