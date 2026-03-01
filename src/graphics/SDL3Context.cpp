@@ -107,15 +107,9 @@ static bool forceGlSoftwareIfNvidiaExtensionAbsent()
         return false; // no NVIDIA GPU — nothing to do
     }
 
-    // Primary check: look for the mounted GL extension directory inside the sandbox.
+    // Check for the mounted GL extension directory inside the sandbox.
     if (isNvidiaGlExtensionMounted()) {
         return false; // extension present — hardware rendering should work
-    }
-
-    // Fallback check: some Flatpak versions put the path on LD_LIBRARY_PATH.
-    const char* ld_path = getenv("LD_LIBRARY_PATH"); // NOLINT(concurrency-mt-unsafe)
-    if ((ld_path != nullptr) && (strstr(ld_path, "nvidia") != nullptr)) {
-        return false;
     }
 
     // No extension found — force software rendering.
