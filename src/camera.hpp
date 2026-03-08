@@ -413,11 +413,14 @@ class Camera
     }
 
     /*
-     * Returns true when the rotation sphere is being rendered.
+     * Enable or disable the speed-boost mode equivalent to holding Shift.
+     * Sets the same internal key state that updateSpeed() reads each frame,
+     * without going through KeyReader's single-press dispatch logic.
+     * Call every frame with the current hold state of the gamepad boost button.
      */
-    bool isRenderingSphere() const
+    void setSpeedBoost(bool active)
     {
-        return renderSphere;
+        keys[SDL_SCANCODE_LSHIFT] = active;
     }
 
     /*
