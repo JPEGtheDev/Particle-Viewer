@@ -256,6 +256,16 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 **Added to:** `code-quality` skill → OpenGL Usage section
 
+---
+
+### Gamepad Hold-Button → KeyReader Routing Causes Repeated Single-Press Events (gamepad PR)
+
+**Problem:** To mirror Shift-key speed boost on the B gamepad button, initial implementation called `cam_->KeyReader(SDL_SCANCODE_LSHIFT, held)` every frame. `KeyReader` has a `if (is_pressed)` single-press dispatch block — calling it every frame with `is_pressed=true` would fire any single-press handlers for that scancode on every frame, not just on the initial press.
+
+**Lesson:** For gamepad hold-buttons that mirror keyboard *held* keys (e.g. B → Shift for speed boost), **never** route through `Camera::KeyReader()`. Instead, add a dedicated thin method that sets only the key state directly (e.g. `Camera::setSpeedBoost(bool active) { keys[SDL_SCANCODE_LSHIFT] = active; }`). Call it every frame with the current hold state — it's safe because it bypasses the single-press dispatch entirely.
+
+**Added to:** `code-quality` skill → OpenGL Usage section
+
 | If the lesson is about... | Add to... |
 |---|---|
 | Code patterns, naming, error handling | `copilot-instructions.md` |
