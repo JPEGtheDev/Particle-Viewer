@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.6"
+  version: "1.7"
   category: code-quality
   project: Particle-Viewer
 ---
@@ -184,6 +184,9 @@ Header filter excludes embedded libs: `glad`, `tinyFileDialogs`, `stb_*`.
 4. Run `clang-format -i` on ALL changed files
 5. Build and verify tests pass
 6. Commit: `feat: description`
+
+### Removing Features / User-Requested Changes
+When removing a gamepad feature or call site from `viewer_app.cpp` at user request, **do not also delete the supporting `Camera` public method**. The Camera API is stable across sessions; call sites in `viewer_app` change frequently with user preferences. Removing `isRenderingSphere()` when L3/R3 was dropped meant restoring it when L3/R3 came back one session later. Only remove a Camera method if it is architecturally wrong, not merely unused at the current moment.
 
 ### Bug Fix Workflow
 1. Write a failing test that reproduces the bug

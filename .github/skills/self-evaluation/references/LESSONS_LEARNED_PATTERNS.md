@@ -266,6 +266,16 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 **Added to:** `code-quality` skill → OpenGL Usage section
 
+---
+
+### Don't Remove Camera API Methods When Only the Call Site Changes (gamepad PR)
+
+**Problem:** When L3/R3 sphere distance controls were removed at user request, `isRenderingSphere()` was also deleted from `Camera` because `viewer_app.cpp` was the only caller. One session later, the user re-requested L3/R3, requiring `isRenderingSphere()` to be restored — unnecessary rework.
+
+**Lesson:** When removing a call site in `viewer_app.cpp` (e.g. a gamepad feature), **do not also delete the supporting `Camera` public method**. The Camera API is stable; call sites in `viewer_app` are volatile (controlled by user preference). Only remove a Camera method if it is architecturally incorrect or duplicates something, not merely because it has no callers at the moment.
+
+**Added to:** `code-quality` skill → Step 7: Adding a Feature / Fixing a Bug
+
 | If the lesson is about... | Add to... |
 |---|---|
 | Code patterns, naming, error handling | `copilot-instructions.md` |
