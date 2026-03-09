@@ -311,6 +311,127 @@ class Camera
     }
 
     /*
+     * Apply analog gamepad orbit movement in rotation-locked mode.
+     * pitch_axis: positive = orbit down (looking up), negative = orbit up.
+     * yaw_axis:   positive = orbit right, negative = orbit left.
+     * Mirrors the W/A/S/D behaviour inside Move() when rotLock is true.
+     */
+    void applyGamepadOrbit(float pitch_axis, float yaw_axis)
+    {
+        if (pitch_axis > 0.0f) {
+            spherePitch += pitch_axis;
+            lookDown(pitch_axis);
+        } else if (pitch_axis < 0.0f) {
+            spherePitch += pitch_axis;
+            lookUp(-pitch_axis);
+        }
+        if (yaw_axis > 0.0f) {
+            sphereYaw += yaw_axis;
+            lookRight(yaw_axis);
+        } else if (yaw_axis < 0.0f) {
+            sphereYaw += yaw_axis;
+            lookLeft(-yaw_axis);
+        }
+    }
+
+    /*
+     * Apply analog gamepad movement.  Axes are in [-1, 1]; negative forward_axis
+     * moves the camera forward (stick up), positive strafe_axis moves right.
+     * Speed is scaled by the current per-frame speed already set by updateSpeed().
+     */
+    void applyGamepadMovement(float forward_axis, float strafe_axis)
+    {
+        cameraPos -= forward_axis * speed * cameraFront;
+        cameraPos += strafe_axis * speed * glm::normalize(glm::cross(cameraFront, cameraUp));
+    }
+
+    /*
+     * Apply analog gamepad look rotation.  yaw_delta is added to yaw (positive =
+     * look right), pitch_delta is subtracted from pitch (positive axis = look down).
+     */
+    void applyGamepadLook(float yaw_delta, float pitch_delta)
+    {
+        yaw += yaw_delta;
+        pitch -= pitch_delta;
+    }
+
+    /*
+     * Adjust the rotation sphere distance by delta.  Clamped to a minimum of 1.
+     * Mirrors the [ / ] keyboard controls when renderSphere is active.
+     */
+    void adjustSphereDistance(float delta)
+    {
+        sphereDistance += delta;
+        if (sphereDistance < 1.0f) {
+            sphereDistance = 1.0f;
+        }
+    }
+
+    /*
+     * Cycle the rotation lock state (rotateState 0→1→2→0).
+     * Mirrors the P key: 0 = free, 1 = point lock visible, 2 = orbit locked.
+     */
+    void cycleRotateState()
+    {
+        rotateState = (rotateState + 1) % 3;
+        if (rotateState == 0) {
+            rotLock = false;
+            comLock = false;
+            renderSphere = false;
+            sphereColor = glm::vec3(0.0f, 0.0f, 0.0f);
+        } else if (rotateState == 1) {
+            rotLock = false;
+            comLock = false;
+            renderSphere = true;
+            sphereColor = glm::vec3(1.0f, 0.0f, 0.0f);
+        } else if (rotateState == 2) {
+            this->sphereYaw = yaw + 180.0f;
+            this->spherePitch = -pitch;
+            renderSphere = true;
+            rotLock = true;
+            sphereColor = glm::vec3(0.0f, 1.0f, 0.0f);
+        }
+    }
+
+    /*
+     * Toggle the center-of-mass (COM) lock.  Only takes effect when rotation
+     * is already locked (rotLock == true).  Mirrors the O key.
+     */
+    void toggleComLock()
+    {
+        if (rotLock) {
+            comLock = !comLock;
+        }
+    }
+
+    /*
+     * Returns true when rotation is locked (orbit mode active).
+     */
+    bool isRotLocked() const
+    {
+        return rotLock;
+    }
+
+    /*
+     * Returns true when the rotation sphere is being rendered.
+     */
+    bool isRenderingSphere() const
+    {
+        return renderSphere;
+    }
+
+    /*
+     * Enable or disable the speed-boost mode equivalent to holding Shift.
+     * Sets the same internal key state that updateSpeed() reads each frame,
+     * without going through KeyReader's single-press dispatch logic.
+     * Call every frame with the current hold state of the gamepad boost button.
+     */
+    void setSpeedBoost(bool active)
+    {
+        keys[SDL_SCANCODE_LSHIFT] = active;
+    }
+
+    /*
      * Sets up keyboard controls for the camera
      */
     void KeyReader(SDL_Scancode key, bool is_pressed)
