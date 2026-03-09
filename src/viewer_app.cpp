@@ -590,8 +590,8 @@ void ViewerApp::processGamepadInput()
     const float left_trigger = gamepad_.getLeftTrigger();
     const float right_trigger = gamepad_.getRightTrigger();
 
-    // B (East) — speed boost while held (mirrors Shift key)
-    cam_->setSpeedBoost(gamepad_.isButtonHeld(SDL_GAMEPAD_BUTTON_EAST));
+    // X (West) — speed boost while held (mirrors Shift key)
+    cam_->setSpeedBoost(gamepad_.isButtonHeld(SDL_GAMEPAD_BUTTON_WEST));
 
     // ---- Movement / Orbit ----
     // When rotation is locked (orbit mode) the left stick orbits the sphere;
@@ -608,6 +608,16 @@ void ViewerApp::processGamepadInput()
         cam_->applyGamepadMovement(left_y, left_x);
         // Right stick look
         cam_->applyGamepadLook(right_x * LOOK_SPEED, right_y * LOOK_SPEED);
+    }
+
+    // L3 / R3 adjust sphere distance when the sphere is visible
+    if (cam_->isRenderingSphere()) {
+        if (gamepad_.isButtonHeld(SDL_GAMEPAD_BUTTON_LEFT_STICK)) {
+            cam_->adjustSphereDistance(-ZOOM_SPEED);
+        }
+        if (gamepad_.isButtonHeld(SDL_GAMEPAD_BUTTON_RIGHT_STICK)) {
+            cam_->adjustSphereDistance(ZOOM_SPEED);
+        }
     }
 
     // ---- Frame Playback ----
@@ -638,8 +648,8 @@ void ViewerApp::processGamepadInput()
         handleLoadFile();
     }
 
-    // X (West) — cycle point lock state (mirrors P key)
-    if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_WEST)) {
+    // B (East) — cycle point lock state (mirrors P key)
+    if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_EAST)) {
         cam_->cycleRotateState();
     }
 

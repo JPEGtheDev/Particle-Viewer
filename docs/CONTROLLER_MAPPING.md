@@ -42,8 +42,10 @@ Particle-Viewer supports standard gamepads (Xbox 360, Xbox One, and compatible c
 
 | Input | Action |
 |-------|--------|
-| **X button** | Cycle point lock state: Off → Point visible → Orbit locked |
+| **B button** | Cycle point lock state: Off → Point visible → Orbit locked |
 | **Y button** | Toggle COM (centre-of-mass) lock — only active in orbit mode |
+| **L3** (left stick click) | Move rotation sphere closer (zoom in) |
+| **R3** (right stick click) | Move rotation sphere further (zoom out) |
 
 Point lock states match the **P** key on the keyboard:
 - **Off** — free camera, no sphere displayed
@@ -54,7 +56,7 @@ Point lock states match the **P** key on the keyboard:
 
 | Input | Action |
 |-------|--------|
-| **B button** (hold) | Speed boost — 20× movement speed while held (mirrors Shift key) |
+| **X button** (hold) | Speed boost — 20× movement speed while held (mirrors Shift key) |
 
 ### Frame Playback
 
@@ -79,12 +81,13 @@ All gamepad actions have keyboard equivalents.  See the in-app menu (**F1**) for
 | Gamepad | Keyboard |
 |---------|----------|
 | A | Space |
-| B (hold) | Shift (speed boost) |
-| X | P |
+| B | P |
+| X (hold) | Shift (speed boost) |
 | Y | O |
 | Select/Back | T |
 | RB / LB | → / ← |
 | RT / LT | E / Q |
+| L3 / R3 | `[` / `]` |
 | Left stick | W / A / S / D |
 | Right stick | I / K / J / L |
 

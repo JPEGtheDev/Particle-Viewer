@@ -413,6 +413,14 @@ class Camera
     }
 
     /*
+     * Returns true when the rotation sphere is being rendered.
+     */
+    bool isRenderingSphere() const
+    {
+        return renderSphere;
+    }
+
+    /*
      * Enable or disable the speed-boost mode equivalent to holding Shift.
      * Sets the same internal key state that updateSpeed() reads each frame,
      * without going through KeyReader's single-press dispatch logic.
