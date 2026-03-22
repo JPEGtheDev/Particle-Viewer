@@ -130,6 +130,7 @@ file(GLOB graphicsCPP src/graphics/*.cpp)
 file(GLOB graphicsHPP src/graphics/*.hpp)
 file(GLOB uiCPP src/ui/*.cpp)
 file(GLOB uiHPP src/ui/*.hpp)
+file(GLOB inputHPP src/input/*.hpp)
 add_executable(Viewer
 	${DIALOG}
 	${srcCPP}
@@ -138,6 +139,7 @@ add_executable(Viewer
 	${graphicsHPP}
 	${uiCPP}
 	${uiHPP}
+	${inputHPP}
 	src/glad/src/glad.c
 	src/glad/include/glad/glad.h
 	src/glad/include/KHR/khrplatform.h
