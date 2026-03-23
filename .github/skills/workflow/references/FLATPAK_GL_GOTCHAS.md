@@ -128,6 +128,42 @@ unless explicitly preserving a user-supplied value is required.
 
 ---
 
+## NVIDIA GL extension branch is always `//1.4`
+
+NVIDIA GL runtime extensions on Flathub (`org.freedesktop.Platform.GL.nvidia-*`)
+always use the **fixed branch `1.4`**, regardless of which
+`org.freedesktop.Platform` branch is installed on the host (e.g. 24.08).
+
+**Correct extension ID format:**
+
+```
+org.freedesktop.Platform.GL.nvidia-<driver-dashes>//1.4
+# e.g. org.freedesktop.Platform.GL.nvidia-535-86-10//1.4
+```
+
+Do not query `flatpak info org.freedesktop.Platform --show-branch` and reuse
+that branch for the extension — the resulting ID will not exist on Flathub and
+`flatpak install` will fail.
+
+---
+
+## Checking whether a Flatpak extension is installed
+
+`flatpak list --app` only lists sandboxed application entries and will **not**
+show runtime extensions. To reliably check whether an extension or runtime is
+present, use `flatpak info`:
+
+```bash
+if flatpak info "$extension" >/dev/null 2>&1; then
+    echo "Already installed"
+fi
+```
+
+`flatpak info` exits 0 if the ref is installed and non-zero otherwise, making
+it the correct check for scripted pre-install guards.
+
+---
+
 ## Inspecting the sandbox environment
 
 Useful when debugging GL/display issues inside Flatpak:
