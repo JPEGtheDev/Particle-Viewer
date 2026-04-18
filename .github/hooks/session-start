@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+# Follows the superpowers plugin hook pattern.
+# See: https://github.com/superpowers/superpowers (SessionStart hook)
+#
+# NOTE: This hook will not fire automatically without plugin infrastructure.
+# It requires either:
+#   (a) A superpowers-compatible plugin host that reads hooks.json, OR
+#   (b) Manual integration into your tool's hook system (e.g., sourcing this
+#       script from your tool's session-init pipeline).
+
+# ---------------------------------------------------------------------------
+# JSON escape helper — bash parameter substitution (not character loops).
+# Handles: backslash, double-quote, newline, carriage return, tab.
+# ---------------------------------------------------------------------------
+escape_for_json() {
+  local s="$1"
+  s="${s//\\/\\\\}"    # \ → \\
+  s="${s//\"/\\\"}"    # " → \"
+  s="${s//$'\n'/\\n}"  # newline → \n
+  s="${s//$'\r'/\\r}"  # CR → \r
+  s="${s//$'\t'/\\t}"  # tab → \t
+  printf '%s' "$s"
+}
+
+# ---------------------------------------------------------------------------
+# Iron-law content injected at every session start
+# ---------------------------------------------------------------------------
+read -r -d '' CONTENT << 'ENDOFCONTENT'
+<EXTREMELY_IMPORTANT>
+You are working on the Particle-Viewer project. The following laws are non-negotiable and override any tendency toward convenience, speed, or assumption.
+
+## Iron Law 1 — TDD: Test First, Always
+
+YOU MUST write a failing test before writing any production code. No exceptions.
+
+Sequence: write the test → watch it fail → write the minimum code to pass → refactor.
+
+If you find yourself thinking "I'll add the test after" or "this is too simple to test" — that thought is rationalization. Stop. Write the test first. See the `testing` skill for patterns and conventions.
+
+## Iron Law 2 — VERIFICATION: Run It Before You Claim It
+
+YOU MUST run the verification command in this session before claiming any work is complete.
+
+Saying "should work", "probably passes", or expressing satisfaction BEFORE running = a violation.
+
+Run this exact command, read the output, then report:
+```
+cmake --build build && ./build/tests/ParticleViewerTests
+```
+
+Silence is not confirmation. Empty output gets a second check. No exceptions.
+
+## Iron Law 3 — DEBUGGING: Root Cause Before Fix
+
+YOU MUST trace a failure to its root cause before proposing or applying a fix.
+
+Proposing a fix you haven't traced = symptom patching. It will recur.
+
+Steps: reproduce it → read the actual error (not the summary) → trace the call path → identify the root → fix the root. See the `systematic-debugging` skill.
+
+---
+
+## Skill Auto-Load Table
+
+Read the required skill(s) BEFORE acting — not after, not during:
+
+| Task type                  | Skills to read BEFORE acting               |
+|----------------------------|--------------------------------------------|
+| Any implementation         | `execution`                                |
+| Writing/editing C++        | `execution`, `code-quality`               |
+| Writing/editing tests      | `execution`, `code-quality`, `testing`    |
+| Debugging a failure        | `systematic-debugging`                     |
+| Claiming work is done      | `verification-before-completion`           |
+| Creating PR or commit      | `versioning`                               |
+| CI/CD changes              | `workflow`                                 |
+| Build/dependency changes   | `build`                                    |
+| Documentation changes      | `documentation`                            |
+
+---
+
+## Pre-Commit Gate
+
+Before EVERY commit, YOU MUST run both commands and confirm they pass:
+
+```
+find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i
+cmake --build build && ./build/tests/ParticleViewerTests
+```
+
+CI will reject unformatted code. Tests must pass before pushing. No staged commits on failing builds.
+
+---
+
+## Commitment Mechanism
+
+When you load a skill, announce it: "I am using the [skill-name] skill to [purpose]." This is not optional.
+</EXTREMELY_IMPORTANT>
+ENDOFCONTENT
+
+context=$(escape_for_json "$CONTENT")
+
+# ---------------------------------------------------------------------------
+# Output platform-specific JSON
+#   - Cursor:  { "context": "..." }         (CURSOR_PLUGIN_ROOT is set)
+#   - Claude:  { "context": "..." }         (CLAUDE_PLUGIN_ROOT is set)
+#   - Copilot CLI fallback: { "additionalContext": "..." }
+# ---------------------------------------------------------------------------
+if [[ -n "${CURSOR_PLUGIN_ROOT:-}" ]]; then
+  printf '{"context":"%s"}\n' "$context"
+elif [[ -n "${CLAUDE_PLUGIN_ROOT:-}" ]]; then
+  printf '{"context":"%s"}\n' "$context"
+else
+  printf '{"additionalContext":"%s"}\n' "$context"
+fi
