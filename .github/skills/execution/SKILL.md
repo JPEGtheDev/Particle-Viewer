@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.3"
+  version: "1.4"
   category: execution
   project: Particle-Viewer
 ---
@@ -133,24 +133,135 @@ If you catch yourself thinking any of these:
 
 ## Phase 3: Delegating to Subagents
 
-Preserve your context window by offloading research and exploration.
+**Iron Law:**
 
-### Good Candidates for Delegation
+```
+DISPATCH BEFORE GUESSING — SUBAGENTS ARE CHEAP, WRONG ASSUMPTIONS ARE EXPENSIVE
+```
 
-| Work | Delegate? |
+### Why Subagents Are Mandatory (Not Optional)
+
+Using subagents is not a convenience — it is a discipline:
+
+- **Main context fills up fast.** Once full, early instructions — including these rules — are evicted. Keep the main context lean.
+- **Subagents search without your existing bias.** They are better at confirming or denying theories precisely because they lack your assumptions.
+- **Parallel dispatch is faster.** Five explore agents running simultaneously beat five sequential searches in one context.
+- **Subagents keep your diff clean.** Exploratory dead-ends, failed theory checks, and interim summaries never appear in your main context history.
+
+### The Empirical Evidence Mandate
+
+This is the most important rule in this phase. No theory, assumption, or belief is acceptable as a basis for action. Every claim must be backed by empirical evidence before you proceed.
+
+**Acceptable evidence:**
+- Code you read yourself — opened the file, saw the line
+- Test output you ran yourself — executed the command, read the result
+- Documentation cross-checked against the actual source code
+- A/B test results — implemented both, compared outcomes
+- A targeted test written specifically to prove or disprove the theory
+
+**Unacceptable:**
+- Memory ("I remember this worked before")
+- Confidence ("I'm sure the parser handles this")
+- Assumption ("It should work because Y")
+- Prior success ("It worked last time")
+
+**Decision rule:** If you cannot point to a specific file, line, or test run that supports your claim, you do not have evidence. Dispatch a subagent to get it.
+
+#### Red Flags → STOP
+
+If you catch yourself forming any of these thoughts, stop immediately and dispatch a subagent before proceeding:
+
+- "I think the issue is..."
+- "This should work because..."
+- "I'm confident that..."
+- "It probably passes..."
+- "Based on how it usually works..."
+- "I remember that..."
+
+**All of these mean: Stop. Dispatch a subagent to confirm. Get evidence first.**
+
+Concrete examples for this project:
+
+| Thought | Required action |
+|---------|----------------|
+| "I think `SDL3Context` handles this edge case" | Dispatch explore agent → read `SDL3Context.cpp` |
+| "The shader should compile fine with this change" | Run `cmake --build build` and read the output |
+| "I'm pretty sure the Google Test fixture handles teardown" | Read the test output or the GTest docs directly |
+| "CMake probably finds this dependency automatically" | Run CMake, read the configure output |
+| "clang-tidy is probably fine with this pattern" | Run clang-tidy, read the diagnostics |
+
+### Git Worktrees for Parallel Subagent Work
+
+When a subagent needs to **modify files** (not just read them), give it its own worktree. This avoids branch switching in the main context and lets multiple subagents work in parallel safely.
+
+```bash
+# Create a worktree for a subagent
+git worktree add ../particle-viewer-agent-1 -b feat/subagent-work
+
+# List active worktrees
+git worktree list
+
+# Remove after merging
+git worktree remove ../particle-viewer-agent-1
+```
+
+**Workflow:**
+1. Create the worktree before dispatching the subagent
+2. Pass the worktree path as the working directory in the subagent prompt
+3. Subagent makes changes inside its worktree — no interference with main context
+4. After the subagent completes, review its diff: `git -C ../particle-viewer-agent-1 diff main`
+5. Cherry-pick or merge the changes into the main branch
+6. Remove the worktree: `git worktree remove ../particle-viewer-agent-1`
+
+Read-only subagents (explore agents doing research) do not need a worktree.
+
+### Subagent Dispatch Table
+
+| Task | Dispatch | Why |
+|------|----------|-----|
+| Exploring unfamiliar APIs or libraries | Yes — explore agent | Keep investigation out of main context |
+| Scanning codebase for patterns (5+ files) | Yes — explore agent | Parallel search is faster |
+| Confirming a theory or assumption | Yes — explore agent | Unbiased confirmation, satisfies evidence mandate |
+| Code review (per-file) | Yes — code-review agent, 1 per file | Cheap, thorough, out-of-band |
+| Skill review | Yes — general-purpose with skill-reviewer skill | Dispatch 1 per skill file |
+| Digesting multiple large files | Yes — explore agent | Collect summaries, not raw text |
+| Writing a single function inline | No — do inline | Fast enough for main context |
+| Hard problem needing multiple approaches | Yes — fan out to multiple general-purpose agents | Compare results empirically |
+| Architecture validation | Yes — general-purpose with architecture-review skill | Unbiased structural check |
+
+### Reviewer Dispatch Pattern
+
+When reviewing work — code, skills, architecture, infrastructure — dispatch **one agent per file**:
+
+- Do not review 5 files in one agent. Review them in 5 parallel agents.
+- Each reviewer agent receives: the file path, the skill to apply, and the specific question to answer.
+- Collect all results before acting on any of them.
+- This is faster and produces more thorough coverage than one agent reviewing everything sequentially.
+
+### When NOT to Dispatch
+
+- Quick grep/glob searches you can do in one tool call — do inline
+- Reading a single known file — do inline
+- Trivial single-step commands — do inline
+- Do not speculatively launch agents "just in case" — dispatch only when you have a clear objective
+
+### Delegation Quality Rules
+
+- **One clear objective per subagent** — no multi-part briefs; focused tasks yield better results
+- **State the return format explicitly** — tell it exactly what to give back
+- **Provide complete context** — subagents are stateless; they cannot refer back to the conversation
+- **Accept findings unless they conflict with evidence you have verified yourself**
+- **If a subagent finds something unexpected:** treat it as data, verify it before acting on it
+
+### Delegation Anti-Patterns
+
+| Anti-pattern | Why it fails |
 |---|---|
-| Exploring unfamiliar APIs or libraries | Yes — keep investigation out of your main thread |
-| Scanning the codebase for patterns or usages | Yes — parallel search is faster |
-| Digesting multiple large files for context | Yes — collect the summary, not the raw text |
-| Authoring a single function or fix | No — do this inline |
-| Tackling a hard problem from several angles | Yes — fan out the analysis |
-
-### Delegation Guidelines
-
-- **Assign one clear objective per subagent** — focused tasks yield better results
-- **State the return format** — tell it exactly what information you need back
-- **Accept the findings** unless they conflict with verified facts
-- Subagents gather information; you apply it
+| "I'll just check this quickly myself" (for 5+ files) | Fills context, slower, biased by existing assumptions |
+| One agent reviewing multiple large files | Coverage is shallow; 1 agent per file is the rule |
+| Dispatching without a clear return format | Agent returns noise; you waste time extracting signal |
+| Acting on a subagent's finding without verifying | Subagents can be wrong; treat findings as hypotheses until confirmed |
+| Hoarding work in main context to avoid dispatch overhead | Dispatch overhead is trivial; context loss is not |
 
 ---
 
@@ -254,6 +365,9 @@ When the task involves these domains, dispatch to the relevant skill FIRST:
 | Creating commits or PRs | `versioning` |
 | CI/CD work | `workflow` |
 | Build or dependencies | `build` |
+| Confirming a theory or assumption | `explore agent` + empirical evidence mandate (Phase 3) |
+| Reviewing code files | `code-review agent`, 1 per file |
+| Reviewing skill files | `general-purpose agent` with `skill-reviewer` skill |
 
 ---
 
