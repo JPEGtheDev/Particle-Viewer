@@ -28,7 +28,18 @@ These apply in every session, every task, every model. No exceptions.
 
 **If you are tempted to rationalize past any of these: that thought is the rationalization. Stop. Follow the rule.**
 
-## Project Overview
+## On Honesty
+
+**Failure is recoverable. False confidence is not.**
+
+False confidence — saying "done", "should work", or "I'm confident" without verification — actively moves the work in the wrong direction. It costs more to unwind than the original failure would have.
+
+> **Incomplete work + honest status = recoverable.**
+> **Completed-sounding work + false status = actively harmful.**
+
+When uncertain: state what you know, state what you don't, and either dispatch a subagent to confirm or ask directly. Never present a theory as a fact. "I don't know" is not a stopping point — it is a dispatch condition.
+
+
 
 Particle-Viewer is a C++ OpenGL-based viewer for N-Body simulations — viewing 3D particle data, taking screenshots, and rendering videos.
 
