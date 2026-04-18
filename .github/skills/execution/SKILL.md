@@ -5,9 +5,21 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.2"
+  version: "1.3"
   category: execution
   project: Particle-Viewer
+---
+
+## Iron Law
+
+```
+PLAN BEFORE CODE. PROVE BEFORE SHIPPING. DELEGATE BEFORE DROWNING.
+```
+
+This skill governs planning and iteration. For debugging use `systematic-debugging`. For completion verification use `verification-before-completion`.
+
+**Announce at start:** "I am using the execution skill to [plan/implement/delegate] [brief description]."
+
 ---
 
 # Instructions for Agent
@@ -60,6 +72,16 @@ When handed an INVEST story with acceptance criteria:
 3. Sequence by dependency (tests-first is often the right order)
 4. Gauge whether the scope fits a single session — propose a split if not
 
+### Rationalization Prevention
+
+| Excuse | Reality |
+|--------|---------|
+| "I'll start coding, plan as I go" | Unplanned multi-step work creates cascading mistakes. Write the plan. |
+| "It's obvious what needs to be done" | Obvious tasks still have sequencing and dependency risks. |
+| "The todo list wastes time" | Unmarked todos get skipped. The list IS the audit trail. |
+| "I'll update the todo list later" | Later never comes. Update BEFORE starting, AFTER finishing each item. |
+| "This is a small change, no plan needed" | Small changes become large ones. A 3-item plan takes 2 minutes. |
+
 ---
 
 ## Phase 2: Disciplined Iteration
@@ -96,6 +118,17 @@ For every planned item:
 - Follow conventional commit format (see `versioning` skill)
 - Never lump unrelated changes together
 
+### Red Flags — STOP
+
+If you catch yourself thinking any of these:
+- "I'll mark it done after I clean up a few things"
+- "The tests will probably still pass"
+- "I'll commit everything at the end"
+- "Just one more small change before I verify"
+- "This is done enough to move on"
+
+**All of these mean: Stop. Run the full verification gate before advancing. See `verification-before-completion` skill.**
+
 ---
 
 ## Phase 3: Delegating to Subagents
@@ -123,29 +156,15 @@ Preserve your context window by offloading research and exploration.
 
 ## Phase 4: Prove It Before You Ship It
 
-**Completion requires evidence, not just intent.**
+**REQUIRED: Use the `verification-before-completion` skill.**
 
-### Pre-Completion Checks
+Before claiming any task done:
+- Build: `cmake --build build`
+- Tests: `./build/tests/ParticleViewerTests`
+- Format: `find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i`
+- Diff: `git diff` — read every hunk for accidental changes
 
-Before declaring any change finished:
-
-- [ ] **Compiles:** `cmake --build build`
-- [ ] **Tests green:** `./build/tests/ParticleViewerTests`
-- [ ] **Formatted:** `find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i`
-- [ ] **Diff inspected:** `git diff` — read every hunk for accidental changes
-- [ ] **No trusted silence:** Empty tool output gets a second verification method
-- [ ] **Review-ready:** You would not hesitate to open a PR with this
-
-### Comparing Against the Base Branch
-
-Especially before pushing or opening PRs:
-
-```bash
-git diff main..HEAD --stat
-git diff main..HEAD -- src/
-```
-
-Catches scope creep, stale hunks, and unintentional drift.
+The verification-before-completion skill contains the complete gate function, common failure modes, and rationalization table. Read it if you are tempted to claim completion without running these commands.
 
 ---
 
@@ -176,36 +195,21 @@ Before presenting your work:
 
 ## Phase 6: Resolve Errors Autonomously
 
-When you encounter a bug report, failing test, or error log: **resolve it without prompting.**
+**REQUIRED: Use the `systematic-debugging` skill.**
 
-### Approach
+When you encounter a bug, failing test, build error, or CI failure:
+1. STOP before proposing fixes
+2. Load the `systematic-debugging` skill
+3. Follow its 4-phase protocol
+4. Apply the fix only after Phase 1 (root cause) is complete
 
-1. **Parse the failure** — read the actual error, not just the summary
-2. **Reproduce locally** — run the same command that failed
-3. **Trace to the root** — don't mask symptoms with patches
-4. **Implement the fix** — choose the correct solution, not the fastest one
-5. **Confirm resolution** — prove the error no longer occurs
-6. **Scan for siblings** — check whether the same pattern exists elsewhere
-
-### When CI Breaks
-
-Pipeline failures follow the same protocol:
-
-1. Read the log output — identify the specific failure
-2. Reproduce it on your machine with the equivalent command
-3. Apply the fix — no need to wait for direction
-4. Verify locally, then push
-5. Confirm the pipeline goes green
-
-Act on **any** visible CI failure, whether or not someone flags it.
-
-### Prohibited Behaviors
-
-- Asking whether you should fix an obvious error — of course you should
-- Describing a problem without working toward a solution
-- Presenting a menu of options instead of executing the best one
-- Pushing diagnosis work back to the user
+**Prohibited:**
+- Proposing a fix you haven't traced to root cause
+- "Just try this" attempts
+- Asking whether you should fix an obvious error — fix it
 - Settling for a workaround when a proper fix is reachable
+
+The systematic-debugging skill contains the complete 4-phase protocol, 3-strikes-architecture rule, and rationalization table.
 
 ---
 
@@ -237,6 +241,22 @@ Rule: "Verify formatting changes via diff — silence is not confirmation"
 
 ---
 
+## Skill Dispatch Table
+
+When the task involves these domains, dispatch to the relevant skill FIRST:
+
+| Domain | Skill to Load |
+|--------|---------------|
+| Encountering a bug or failure | `systematic-debugging` |
+| Claiming work is complete | `verification-before-completion` |
+| Writing tests | `testing` |
+| Writing/editing C++ | `code-quality` |
+| Creating commits or PRs | `versioning` |
+| CI/CD work | `workflow` |
+| Build or dependencies | `build` |
+
+---
+
 ## Prohibited Patterns
 
 These behaviors are explicitly disallowed:
@@ -249,6 +269,7 @@ These behaviors are explicitly disallowed:
 6. **Winging complex work** — multi-step tasks get a written plan
 7. **Walking past defects** — if you spot an issue while working, address or log it
 8. **Believing empty output** — always cross-check with a second method
+9. **Bypassing skill dispatch** — claiming a fix is done without `verification-before-completion`, or proposing a fix without `systematic-debugging`. The skills exist to prevent the patterns in this list.
 
 ---
 
@@ -263,14 +284,13 @@ Trivial (1-2 steps)?
 Plan: build todo list with verifiable items
     ↓
 Per item:
-    Start → Implement → Prove → Complete → Commit
+    Start → Implement → Bug/Error? → Load systematic-debugging
+                ↓
+            Prove → Complete → Commit
     ↓
     Stuck? → Stop → Re-plan → Resume
     ↓
-All done?
-    ↓
-Final gate:
-    Compiles ✓ | Tests ✓ | Formatted ✓ | Diff clean ✓ | Review-ready ✓
+All done? → Load verification-before-completion → Run gates
     ↓
 Self-evaluate (per self-evaluation skill)
     ↓
