@@ -5,9 +5,27 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.2"
+  version: "1.3"
   category: testing
   project: Particle-Viewer
+---
+
+## Iron Law
+
+```
+NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
+```
+
+Write the test. Watch it fail. THEN write code.
+
+If you wrote code before the test: **Delete it. Start over.** No exceptions.
+- Don't keep it as "reference"
+- Don't "adapt" it while writing tests
+- Don't look at it while writing tests
+- Delete means delete
+
+**Announce at start:** "I am using the testing skill to [write/review/fix] [specific test description]."
+
 ---
 
 # Instructions for Agent
@@ -27,6 +45,34 @@ When activated, write tests that strictly follow the project's testing standards
 **Every test MUST follow the Arrange-Act-Assert (AAA) pattern with all three phases as separate sections.**
 
 Before writing any test, **load and review** [references/TESTING_EXAMPLES.md](references/TESTING_EXAMPLES.md) for concrete examples of correct and incorrect patterns.
+
+---
+
+## TDD Cycle
+
+**RED → GREEN → REFACTOR. In that order. Every time.**
+
+```
+RED: Write one failing test
+  - Use TEST() or TEST_F() macro
+  - Name: UnitName_Condition_ExpectedResult
+  - Test one behavior only
+  - Run it: ./build/tests/ParticleViewerTests --gtest_filter=Suite.TestName
+  - Confirm it fails with expected message (NOT a compile error — fix those first)
+  - If it passes immediately: you're testing existing behavior. Fix the test.
+
+GREEN: Write minimal implementation
+  - Simplest code to make the test pass
+  - No extra features, no "while I'm here" refactoring
+  - Run the full suite: ./build/tests/ParticleViewerTests
+  - ALL tests must pass (not just the new one)
+
+REFACTOR: Clean up
+  - Remove duplication
+  - Improve names
+  - Never add behavior during refactor
+  - Tests must stay green throughout
+```
 
 ---
 
@@ -192,6 +238,39 @@ Before presenting tests, verify:
 
 ---
 
+## Red Flags — STOP
+
+If you catch yourself thinking any of these, STOP and start over with RED:
+
+- Writing implementation code before writing a test
+- "I'll write tests after to verify it works"
+- "The visual regression test will cover this"
+- "It's too complex to unit test with MockOpenGL" (MockOpenGL exists for exactly this)
+- "I already manually tested it"
+- "Tests after achieve the same goals"
+- "Just this once" or "This is different because..."
+- Test passes immediately without seeing it fail first
+- "I need to get the implementation right before I know what to test"
+
+**All of these mean: Delete any code written before the test. Start over with RED.**
+
+---
+
+## Rationalization Prevention
+
+| Excuse | Reality |
+|--------|---------|
+| "Too simple to test" | Simple code breaks. The test takes 30 seconds. |
+| "I'll write tests after" | Tests passing immediately after implementation prove nothing. |
+| "Visual regression test will cover it" | Visual tests are slow and test pixels, not logic. Unit test the logic. |
+| "Too complex to test in isolation" | That's a design signal. Simplify the interface. MockOpenGL is there for GL calls. |
+| "Already manually tested it" | Manual testing is ad-hoc. No record, can't re-run, misses edge cases. |
+| "Tests after achieve the same goals" | Tests-after answer "what does this do?" Tests-first answer "what SHOULD this do?" |
+| "Deleting X hours of work is wasteful" | Sunk cost. Keeping untested code is technical debt. |
+| "TDD slows me down" | TDD is faster than debugging production failures. |
+
+---
+
 ## Key Design Principles (Learned from Review Feedback)
 
 1. **Use production classes in tests.** Visual regression tests should use `Particle` directly instead of re-implementing particle creation logic in a test helper class. This ensures tests stay in sync with production code.
@@ -213,6 +292,8 @@ Before presenting tests, verify:
 ## Self-Evaluation
 
 After completing test work, run the `self-evaluation` skill (`.github/skills/self-evaluation/`) to capture any new testing patterns learned during the session.
+
+For mock-related anti-patterns, see [references/testing-anti-patterns.md](references/testing-anti-patterns.md).
 
 ---
 
