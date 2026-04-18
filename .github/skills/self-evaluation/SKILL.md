@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.4"
+  version: "1.5"
   category: meta
   project: Particle-Viewer
 ---
@@ -101,7 +101,32 @@ For each new lesson, propose a specific, minimal update:
 
 ---
 
-## Step 5: Apply Updates (If Appropriate)
+## Step 5: Trust Audit
+
+Before generating the session summary, complete this audit:
+
+**Ask explicitly for each:**
+
+1. **Did I make any false confidence claims?**
+   - Used "should work", "done", "tests pass", or "I'm confident" without inline evidence?
+   - Each instance is a trust withdrawal. Name them.
+
+2. **Did I show evidence inline, or reference it?**
+   - "I ran the tests and they passed" = referenced (does not count)
+   - "Ran tests: 247 passed, 0 failures. [exit 0]" = inline (counts)
+
+3. **Did I present any assumptions as facts?**
+   - Claimed something about code behavior without reading the code or running the command?
+
+4. **What is the trust balance for this session?**
+   - More deposits than withdrawals = trust maintained
+   - Any withdrawals = note them; they cost speed in future sessions
+
+**Report honestly.** If you made false confidence claims, name them. This is not a punishment — it is the calibration mechanism. A model that accurately reports its own false confidence claims is more trustworthy than one that doesn't.
+
+---
+
+## Step 6: Apply Updates (If Appropriate)
 
 If changes are warranted and the session scope allows:
 
@@ -112,7 +137,7 @@ If changes are warranted and the session scope allows:
 
 ---
 
-## Step 6: Generate Session Summary
+## Step 7: Generate Session Summary
 
 Produce a brief summary of lessons captured:
 
@@ -124,6 +149,11 @@ Produce a brief summary of lessons captured:
 **Key Patterns Added:**
 - [Pattern 1: brief description]
 - [Pattern 2: brief description]
+
+**Trust Audit:**
+- False confidence claims: [count + what they were, or "None"]
+- Evidence shown inline: [yes/mostly/no]
+- Trust balance: [positive/neutral/negative]
 
 **Deferred (Low Priority):**
 - [Pattern that was noted but not implemented]

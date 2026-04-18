@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.0"
+  version: "1.1"
   category: verification
   project: Particle-Viewer
 ---
@@ -26,7 +26,8 @@ When activated, announce: **"I am using the verification-before-completion skill
 ## Iron Law
 
 ```
-NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
+NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE.
+EVIDENCE MUST BE INLINE. NEVER REFERENCED.
 ```
 
 If you haven't run the verification command in this session — after your most recent change — you cannot claim it passes. Evidence before assertions, always.
@@ -52,6 +53,46 @@ Skipping any step = lying, not verifying.
 
 ---
 
+## The Confidence Vocabulary Gate
+
+### Banned Without Evidence
+
+These words and phrases **cannot appear in any response** unless fresh verification output is shown inline:
+
+| Phrase | Why it fails |
+|--------|-------------|
+| `"Done"` / `"Complete"` / `"Fixed"` | Completion claims without verification are false confidence |
+| `"Works"` / `"Working"` | Shows output proving it works, or use process language |
+| `"Tests pass"` / `"Build succeeds"` | Show the command output, not the claim |
+| `"I'm confident"` / `"I'm sure"` | Confidence is not evidence |
+| **`"Should work"`** | **BANNED. No substitute. Run the verification.** |
+| `"That should do it"` | BANNED. Same reason. |
+
+### Why "Should Work" Is Banned
+
+"Should work" combines the tone of having verified with the reality of not having verified. It is undetectable false confidence. A user reading "should work" cannot tell whether you ran the gate or not. Replace it with either:
+- Evidence: `"Ran [command]: [output]. It works."`
+- Honest uncertainty: `"Haven't verified yet — running the gate now."`
+
+### Required Evidence Format
+
+Evidence must be **inline**, not referenced:
+
+❌ `"I ran the tests and they passed."`  
+✅ `"Ran ./build/tests/ParticleViewerTests: **247 passed, 0 failures.** [exit 0]"`
+
+The inline format is self-auditing. The user cannot independently verify a reference claim. They can verify inline output by reading it.
+
+### Process Language (always available)
+
+Use freely when verification hasn't been run:
+- `"Running verification now..."`
+- `"Haven't run the gate yet — doing that now"`
+- `"Identified likely cause — confirming before claiming fix"`
+- `"Uncertain about X — dispatching subagent to confirm"`
+
+---
+
 ## The Verification Commands
 
 ```bash
@@ -68,6 +109,24 @@ find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format --dry-run -We
 find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i
 cmake --build build && ./build/tests/ParticleViewerTests
 ```
+
+---
+
+## The Trust Ledger
+
+Every session has a trust balance. This determines whether the user can lean on your outputs without second-guessing them — which determines speed.
+
+| Deposits (earn trust → enable speed) | Withdrawals (trust tax → force verification overhead) |
+|--------------------------------------|------------------------------------------------------|
+| Verified claim with inline evidence | Any "should work" used without running the gate |
+| Finding a failure before the user does | Fix that doesn't address root cause |
+| `"I don't know — dispatching subagent"` | Empty output treated as success |
+| Delivering exactly what was committed | Completion claim followed by "oh, also there's X" |
+| Inline output matches what was stated | Expressing satisfaction before running commands |
+
+**High trust = user acts on outputs directly. Low trust = user re-runs every command themselves.**
+
+Every withdrawal forces the user into verification mode for the rest of the session. It is not the individual mistake that costs — it is losing the ability to move fast.
 
 ---
 

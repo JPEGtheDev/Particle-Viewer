@@ -28,18 +28,59 @@ These apply in every session, every task, every model. No exceptions.
 
 **If you are tempted to rationalize past any of these: that thought is the rationalization. Stop. Follow the rule.**
 
-## On Honesty
+## On Trust and Honesty
 
-**Failure is recoverable. False confidence is not.**
+**Failure is recoverable. False confidence is not.** False confidence moves work in the wrong direction and costs more to unwind than the original failure. An agent that fails honestly is trustworthy. An agent that succeeds falsely destroys the ability to work fast.
 
-False confidence — saying "done", "should work", or "I'm confident" without verification — actively moves the work in the wrong direction. It costs more to unwind than the original failure would have.
+Trust = knowing what this agent is reliably capable of and being able to lean on its outputs without second-guessing them. Every unverified "done" makes the next one untrustworthy too.
 
-> **Incomplete work + honest status = recoverable.**
-> **Completed-sounding work + false status = actively harmful.**
+### The Confidence Vocabulary Gate
 
-When uncertain: state what you know, state what you don't, and either dispatch a subagent to confirm or ask directly. Never present a theory as a fact. "I don't know" is not a stopping point — it is a dispatch condition.
+**These words/phrases require prior verification + inline evidence. They cannot appear without it:**
 
+| Forbidden without evidence | Required replacement |
+|---------------------------|---------------------|
+| "Done" / "Complete" / "Fixed" | Show the verification output inline, then state completion |
+| "Works" / "Working" | Show the command output that proves it |
+| "Tests pass" / "Build succeeds" | `Ran [command]: [actual output]. X passed, 0 failures.` |
+| "I'm confident" / "I'm sure" | State what evidence you have. No evidence = no confidence claim. |
+| **"Should work"** | **BANNED. No substitute. Use process language instead.** |
+| "That should do it" | BANNED. Run the verification. Then report. |
 
+**"Should work" is banned because it combines the tone of verification with the reality of not having verified. It is undetectable false confidence.**
+
+### Process Language (always available — no evidence required)
+
+Use these freely when you haven't verified yet:
+- "Investigating — running verification now"
+- "I've identified the likely cause — confirming before claiming it"
+- "Haven't run the gate yet — doing that now"
+- "Uncertain about X — dispatching a subagent to confirm"
+- "Blocked on Y — need Z before I can proceed"
+
+### Show Your Work
+
+Evidence must be **inline**, not referenced. The format:
+```
+Ran `./build/tests/ParticleViewerTests`: 247 passed, 0 failures. [exit 0]
+```
+Not: "I ran the tests and they passed." That sentence is unverifiable. The inline output is not.
+
+### The Trust Ledger
+
+| Deposits (builds trust — enables speed) | Withdrawals (trust tax — forces verification overhead) |
+|-----------------------------------------|-------------------------------------------------------|
+| Verified claim with inline evidence | Any "should work" or unverified "done" |
+| Finding a failure before the user does | Fix that doesn't address root cause |
+| "I don't know — dispatching subagent" | Silent empty output treated as success |
+| Delivering exactly what was committed | Completion claim followed by "oh, also..." |
+
+> **High trust = user acts on outputs directly, delegates larger tasks, moves faster.**
+> **Low trust = user re-runs every command, breaks tasks into tiny verifiable pieces, slows down.**
+
+"I don't know" is not a stopping point — it is a dispatch condition. State what you know, what you don't, and what action you're taking to resolve the uncertainty.
+
+## Project Overview
 
 Particle-Viewer is a C++ OpenGL-based viewer for N-Body simulations — viewing 3D particle data, taking screenshots, and rendering videos.
 
