@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.9"
+  version: "1.10"
   category: code-quality
   project: Particle-Viewer
 ---
@@ -219,6 +219,63 @@ When removing a gamepad feature or call site from `viewer_app.cpp` at user reque
 - [ ] No raw `new`/`delete` — use RAII or smart pointers
 - [ ] GL resources cleaned up in destructors
 - [ ] Headers are self-contained
+- [ ] If a public interface changed: documentation updated in same commit (see docs-same-commit rule below)
+- [ ] If a symbol is deprecated: all call sites removed or annotated (see deprecation completeness gate below)
+
+---
+
+## DRY — Knowledge, Not Text
+
+DRY means every piece of **knowledge** has a single authoritative representation. It does not mean "eliminate identical-looking text."
+
+**Acid test:** If you change one copy and not the other, does the system break? If yes, they represent the same knowledge — DRY violation. If no, they are independent representations of different things that happen to look similar — not a DRY violation.
+
+> Two functions with identical bodies for unrelated domain concepts are NOT a DRY violation. Extracting them into a shared function couples unrelated concerns.
+
+**DRY violation signal:** "If this constant changes, I need to update it in N places." That is a DRY violation.
+**False DRY signal:** "These two functions look the same." Looks are not knowledge. Check whether they represent the same concept before extracting.
+
+---
+
+## Broken Window Protocol
+
+When you encounter a code smell, technical debt, or quality violation while working on something else, do NOT ignore it and do NOT fix it mid-task (which expands scope and contaminates diffs).
+
+Apply the boarding protocol:
+
+```
+[BROKEN WINDOW NOTED: src/viewer_app.cpp:142 — raw glDrawArrays outside IOpenGLContext]
+```
+
+Place this comment in a `// TODO` block at the point of observation, or in your session notes. It creates an observable record without scope creep. A FIXME is a minimum viable response — not a skip, an acknowledgment.
+
+**After your current task completes:** create a follow-up todo to address the boarded window. One window = one todo. Do not batch.
+
+---
+
+## Deprecation Completeness Gate
+
+Deprecating a symbol is NOT complete until every call site is removed or explicitly annotated. A `[[deprecated]]` attribute with active call sites is a broken window, not a deprecation.
+
+Before marking anything deprecated:
+1. Search all call sites: `grep -r "FunctionName" src tests`
+2. Either remove them all in this commit, OR annotate each call site with `// TODO: migrate to [replacement]`
+3. If the symbol is in a public API others may use (Flatpak/lib): add a compiler warning with migration instructions
+
+A symbol with `[[deprecated]]` and remaining call sites that do not have explicit migration notes is not deprecated — it is annotated debt.
+
+---
+
+## Docs-Same-Commit Rule
+
+When you change a **public interface** (function signature, class API, behavior visible to callers), update the relevant documentation in **the same commit**. Not a follow-up commit. Not "I'll update docs later."
+
+Documentation that is out of sync with the interface is worse than no documentation — it actively misleads.
+
+Applies to:
+- `docs/` markdown files that describe the changed interface
+- `.github/skills/` files that reference the changed behavior
+- Inline doc comments in headers if they describe the contract
 
 ---
 

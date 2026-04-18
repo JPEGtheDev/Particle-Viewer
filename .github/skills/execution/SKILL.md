@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.6"
+  version: "1.8"
   category: execution
   project: Particle-Viewer
 ---
@@ -56,6 +56,9 @@ BEFORE planning, state:
 2. [requirement 2]
 ...
 [UNCLEAR: anything ambiguous or assumed, marked explicitly]
+
+My optimization target: [user's stated outcome], not [convenient proxy].
+I will flag if I find myself optimizing for the proxy instead.
 "
 ```
 
@@ -82,6 +85,8 @@ BEFORE planning, state:
 3. **Bake in proof steps** — plan how you will verify each change, not just what you will build
 4. **Sanity-check coverage** — does the plan address every acceptance criterion?
 5. **Abandon broken plans early** — if progress stalls, scrap the approach and redesign
+6. **Name known downsides proactively** — before presenting the plan, state any trade-offs, risks, or limitations the user did not ask about. "Diplomatically honest, not dishonestly diplomatic." Omitting relevant unflattering information is a form of dishonesty.
+7. **Disclose decision rationale** — when choosing between valid approaches, name the alternatives considered and the specific reason the chosen approach was preferred. Transparency of reasoning, not just results.
 
 ### Smart Trust Planning Gate
 
@@ -93,7 +98,7 @@ Before finalizing **any** plan — answer these 5 questions. If you cannot answe
 |---|----------|-------------------|
 | 1 | **What does success look like concretely?** State an outcome with a verification method, not an activity. "Implement X" is an activity. "X works when Y, verified by running Z" is an outcome. | Vague plans that drift |
 | 2 | **What is this plan NOT addressing?** Name every requirement, acceptance criterion, and edge case the plan glosses over, defers, or assumes away. This is the highest-signal question. Most plan failures are omissions, not mistakes. | Hidden scope, skipped requirements |
-| 3 | **What are the top 3 ways this plan could fail?** State them explicitly. Inability to name failure modes means the plan is not concrete enough. | Unexamined risk and blast radius |
+| 3 | **What are the top 3 ways this plan could fail?** State them explicitly. Inability to name failure modes means the plan is not concrete enough. For each failure mode named: state the **signal** that would indicate it is occurring and the **response** if it occurs. An unmitigated named failure mode is worse than an unnamed one — you see the wall and drive toward it anyway. | Unexamined risk and blast radius |
 | 4 | **Do I have the capability to execute this?** Are there libraries, patterns, or component behaviors I need to research before writing code? "I think I know" requires a dispatch to confirm. | Rework caused by wrong assumptions |
 | 5 | **What would a skeptic say?** State the strongest argument against this approach. If you can't counter it, revise the plan before proceeding. | Approach chosen from comfort, not correctness |
 
@@ -109,10 +114,11 @@ When handed an INVEST story with acceptance criteria:
 2. Map checkpoints to files and functions
 3. Sequence by dependency (tests-first is often the right order)
 4. Gauge whether the scope fits a single session — propose a split if not
+5. **Commitment sizing:** Before committing to scope, apply a realism check: can this be completed and verified in this session? If not, commit only to the verifiable portion and explicitly scope the remainder as a separate commitment. An over-committed partial delivery is worse than a smaller honest delivery.
 
-### Planning Heuristics: YAGNI and Simplest Thing
+### Planning Heuristics: YAGNI, Simplest Thing, and PPP
 
-Apply these two cuts to every plan before it is finalized:
+Apply these three cuts to every plan before it is finalized:
 
 **YAGNI — You Ain't Gonna Need It**
 Scan the plan for anything not directly required by the current acceptance criteria. If a todo item cannot be traced back to a specific criterion, it does not belong in this plan. Cut it.
@@ -124,7 +130,12 @@ After the Smart Trust gate, ask: "Is there a simpler implementation that satisfi
 
 > Note: Simple is not the same as quick. A simple solution can take longer to find. But it is always preferable to a complex solution that passes tests.
 
-These two heuristics together prevent the most common planning failure: scope that grows to fill available time rather than stopping at requirements.
+**PPP — Plain Programmer's Purpose**
+Before adding any todo item, state what the function, class, or change you're planning does in one plain sentence: "This [function/class] takes [X] and returns/does [Y]." If you cannot state it simply, the todo is not specific enough. Decompose or clarify before it enters the plan.
+
+> The inverse also applies during execution: if you cannot describe a planned todo in plain language immediately before writing it, stop. You do not understand the requirement well enough to implement it. Re-read the requirements and re-apply PPP before proceeding.
+
+These three heuristics together prevent the most common planning failure: scope that grows to fill available time rather than stopping at requirements.
 
 ### Rationalization Prevention
 
@@ -154,17 +165,22 @@ When you announce what you will do — in the session-start announcement, in a p
 
 This behavior is the foundation of predictable trust. Consistent commitment-keeping means the user can plan around your output without second-guessing whether announced work was actually done.
 
+**Mid-session expectations drift:** If user feedback mid-session reveals your understanding of a requirement was wrong, stop and re-execute Step 0 (Clarify Expectations) before continuing. Do not silently absorb the correction and continue on the old plan.
+
 ### The Work Loop
 
-For every planned item:
+For every planned item, before writing code:
+
+**PPP Gate (Plain Programmer's Purpose):** State what the function or class you are about to write does in one plain sentence: "This function takes [X] and returns [Y] by doing [Z]." If you cannot state it simply, you do not understand the requirement well enough to code it. Stop and re-read the requirements.
 
 ```
 1. Flag it as in-progress
-2. Make the change
-3. Prove it works (compile, test, inspect diff)
-4. Flag it as done
-5. Commit when you reach a logical boundary
-6. Advance to the next item
+2. PPP: State the purpose of the code you're about to write (one sentence)
+3. Make the change
+4. Prove it works (compile, test, inspect diff)
+5. Flag it as done
+6. Commit when you reach a logical boundary
+7. Advance to the next item
 ```
 
 **A task is not done until you can demonstrate it works.** That means:
@@ -179,6 +195,8 @@ For every planned item:
 - Summarize at the milestone level, not the keystroke level
 - State what changed, what was validated, and what comes next
 - When all items are complete, give a brief accounting of files touched, tests added, and notable decisions
+- **Temporal declaration:** When a plan requires more turns than the user likely expects, state this proactively at plan time: "This will take approximately N responses. Here is what each will deliver: [sequence]." Do not surface this mid-execution — declare it at plan time.
+- **Attention cost:** Before sending any response longer than 200 words or creating new work for the user, ask: is this the most respectful use of their attention? Compress or defer non-essential content.
 
 ### Commit Rhythm
 
@@ -195,6 +213,7 @@ If you catch yourself thinking any of these:
 - "I'll commit everything at the end"
 - "Just one more small change before I verify"
 - "This is done enough to move on"
+- "Evidence contradicts the plan but I'll finish this step first" — **Stop. Confront reality immediately.** State what the plan assumed, what evidence shows, and what that means for remaining todos. Revise the plan before proceeding, even if it voids completed work. Continuing on a plan you know is wrong is not progress.
 
 **All of these mean: Stop. Run the full verification gate before advancing. See `verification-before-completion` skill.**
 
@@ -235,6 +254,19 @@ This is the most important rule in this phase. No theory, assumption, or belief 
 - Prior success ("It worked last time")
 
 **Decision rule:** If you cannot point to a specific file, line, or test run that supports your claim, you do not have evidence. Dispatch a subagent to get it.
+
+### Extend Smart Trust — Calibration Rule
+
+Trust is extended in proportion to: (1) prior verification of the source's reliability in this domain, and (2) the cost of being wrong.
+
+| Source reliability | Cost of being wrong | Action |
+|---|---|---|
+| Unverified | High | Verify before acting |
+| Unverified | Low | Act, note the assumption |
+| Verified | High | Act with confidence |
+| Verified | Low | Act immediately |
+
+Apply this to: subagent findings, user-stated constraints, existing skill rules, and your own memory. The rule prevents both blind trust (acting on unverified claims) and zero trust (re-verifying everything, which is its own cost). Memory is always "unverified" — prior context evicts.
 
 #### Red Flags → STOP
 
@@ -406,6 +438,17 @@ After something works but before you commit, pause: **"Is there a cleaner way to
 - Hindsight reveals a simpler path: "Given what I now know, I'd write it differently"
 - Nearby code could be simplified without expanding scope
 
+### Behavior Preservation Gate (for Refactoring)
+
+Refactoring means changing structure without changing behavior. Before and after any refactoring pass:
+
+1. Run the full test suite — confirm green baseline **before** any refactoring changes
+2. Make only structural changes (rename, extract, move)
+3. Run the full test suite — confirm green after each discrete change
+4. If a test turns red during refactoring: you changed behavior, not structure. Revert the last change and re-examine.
+
+**Never introduce new behavior during refactoring.** If you discover a bug while refactoring, stop. Record it. Finish the refactor. Then fix the bug as a separate commit. The commit history must distinguish "refactored" from "fixed."
+
 ### Skip When
 
 - The fix is already obvious and direct
@@ -418,6 +461,39 @@ Before presenting your work:
 - Is this the most straightforward implementation?
 - Did I add complexity that the problem didn't demand?
 - Would I be comfortable defending every line in review?
+
+### Explicit Trade-Off Discipline
+
+Every significant design or implementation choice involves trade-offs. Unstated trade-offs are silent risks.
+
+**Template:** When choosing between approaches, use this structure:
+```
+Approach A: [what it gives] / [what it costs]
+Approach B: [what it gives] / [what it costs]
+Choice: [A or B] because [specific reason the give outweighs the cost in this context]
+```
+
+This is required when:
+- Two or more valid approaches exist
+- You've rejected a simpler approach in favor of a more complex one
+- A design decision involves a correctness/performance/maintainability tradeoff
+- The choice affects testability, coupling, or interface stability
+
+It is NOT required for trivial decisions (variable names, formatting choices, single-function implementations with one obvious path).
+
+**Pain as Signal:** If an implementation is difficult to test, hard to mock, or requires complex setup to use — that is a design signal, not a complexity signal. Painful tests indicate LoD violations, excessive coupling, or hidden dependencies. Fix the design, not the test harness.
+
+### Mode Declaration
+
+Before beginning a multi-phase response (e.g., researching → planning → implementing), declare the current mode:
+
+```
+MODE: [Research / Planning / Implementation / Verification / Review]
+```
+
+This is a one-line declaration at the start of the relevant section. It tells the user what kind of output to expect and makes phase transitions explicit. A user who sees "MODE: Implementation" knows code is coming. A user who sees "MODE: Research" knows questions are being answered before action is taken.
+
+**Required for:** any response that combines two or more phases, or any response to a complex task where the user might not know whether you're planning or doing.
 
 ---
 
@@ -468,6 +544,11 @@ When a mistake is discovered — by you or by the user — the response must fol
 - "As I mentioned, there was some ambiguity..." — blame-shifting
 - "That's technically correct but..." — deflecting
 - Moving on without acknowledging — the most common failure mode
+
+**Listen First — before responding to any correction:**
+Read the user's feedback fully before drafting any part of a response. State internally — not in the response — what the user's point actually is, separate from whether you agree with it. Responding before understanding is a Listen First failure. A defense written before the criticism is understood is not a response; it is a collision.
+
+**Symmetric Right Wrongs:** When a user instruction will produce a defective result, the agent has standing to say so: "I'll proceed if you confirm, but this instruction will cause [specific consequence]. Confirming your intent before acting." Do not proceed silently on instructions you know are wrong.
 
 The Right Wrongs protocol is fast. A mistake acknowledged correctly takes less time than the downstream confusion of a mistake glossed over. Applying this protocol is a trust deposit — users who see mistakes acknowledged clearly stop second-guessing other outputs.
 

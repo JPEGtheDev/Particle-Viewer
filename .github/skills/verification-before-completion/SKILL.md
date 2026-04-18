@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.2"
+  version: "1.3"
   category: verification
   project: Particle-Viewer
 ---
@@ -31,6 +31,29 @@ EVIDENCE MUST BE INLINE. NEVER REFERENCED.
 ```
 
 If you haven't run the verification command in this session — after your most recent change — you cannot claim it passes. Evidence before assertions, always.
+
+---
+
+## The Done Definition Problem
+
+**"Done" is the most overloaded word in software development.** Every misuse is a false completion claim.
+
+| What you finished | Correct vocabulary | NOT "Done" |
+|-------------------|--------------------|------------|
+| Unit tests pass locally | "Verified locally, ready for pipeline" | ~~Done~~ |
+| CI green on branch | "CI green, ready for acceptance review" | ~~Done~~ |
+| Staging deployed and tested | "Staging verified, pending production" | ~~Done~~ |
+| Production deployed, monitored, working | **"Done"** (the only correct use) | — |
+
+**Gate:** Marking a todo "done" when unit tests pass = wrong definition. Invisible work remains.
+
+For this project (a desktop application, not a deployed service), the equivalent stages are:
+- "Locally verified" — builds + tests pass after the change
+- "Gate passed" — full pre-commit gate (build + tests + format + diff review) completed
+- "Committed" — code committed with passing gate
+- **"Done"** — committed, PR merged, branch clean
+
+Use stage vocabulary. Never use "Done" for a stage that is not the final stage.
 
 ---
 
@@ -69,6 +92,49 @@ The verification gate confirms **Results** — tests pass, build succeeds. But i
 The Results core is covered by the verification commands above. The first three are quality checks that evidence alone cannot catch — a test suite can pass while the wrong problem is solved perfectly.
 
 **Worst common violation — Intent:** An agent solves the easy part of a requirement (the part it's comfortable with) and presents it as the full solution. The tests pass. The build is clean. The requirement is not met. The 4 Cores check catches this by asking "did I solve what was asked, or what was convenient?"
+
+---
+
+## Combine Verification Instruments
+
+**No single verification technique removes more than ~70% of defects.** (Capers Jones research, cited in McConnell's *Code Complete*.)
+
+| Technique | Defect removal efficiency |
+|-----------|--------------------------|
+| Unit testing alone | 30–40% |
+| Code inspection/review | 45–70% |
+| **Both combined** | **>90%** |
+
+The IBM Cleanroom result: formal inspections achieved <0.1 defects/KLOC vs. industry average 15–50.
+
+**The implication:** "Tests pass" with no additional review still has a statistically likely defect rate of 30–70%. Tests catch execution-time defects. Code review catches logical, requirements, and interface defects that tests cannot surface.
+
+**Gate for this project:**
+
+Before claiming any PR ready:
+1. **Tests pass** — execution-time defects caught
+2. **Diff reviewed** — logical and interface defects caught (`git diff` read hunk by hunk)
+3. **Format verified** — `clang-format --dry-run` clean
+4. **Scope verified** — changes touch only what the task required; no accidental changes
+
+**Rationalization:** "Tests pass — I'm done." Counter: no single technique removes >70% of defects. Tests + diff review is the minimum combined instrument set.
+
+---
+
+## Pre-PR Checklist (PRR)
+
+Before creating any PR — answer all 6 questions:
+
+| # | Question | Why it matters |
+|---|----------|----------------|
+| 1 | **Blast radius:** Are the files touched the minimum necessary? | Excess scope = unintended side-effects |
+| 2 | **Monitoring:** Does CI detect regressions in the new behavior? | New behavior with no test = invisible breakage |
+| 3 | **Failure mode:** Does this fail loudly (error/exception) or silently? | Silent failures require active monitoring to catch |
+| 4 | **Rollback path:** Can this be reverted with `git revert`? | Irreversible changes need extra review |
+| 5 | **Dependency appropriateness:** Are you connecting to the right components? | Architectural violations that pass tests |
+| 6 | **Open issues:** Are there P0/P1 open action items in this area? | Shipping over an unresolved incident |
+
+A "no" or "unknown" on any item = resolve it or document it explicitly in the PR description before opening.
 
 ---
 

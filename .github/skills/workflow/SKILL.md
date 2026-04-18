@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.2"
+  version: "1.3"
   category: ci-cd
   project: Particle-Viewer
 ---
@@ -17,6 +17,16 @@ PIPELINES ARE READ-ONLY — NEVER COMMIT FROM CI
 ```
 
 CI workflows read code, run tests, and publish artifacts. They never write code. No exceptions.
+
+**Second Iron Law:**
+
+```
+BROKEN PIPELINE = HIGHEST PRIORITY — STOP ALL MERGES UNTIL GREEN
+```
+
+A broken main branch pipeline is not a background task. It is the highest-priority item for anyone working on the project. No PR merges while the pipeline is red. The broken build is the only work that matters until it is fixed.
+
+**Why:** A broken pipeline on main means the deploy safety net is gone. Every merge while it is broken is unverified. The longer it stays broken, the harder the root cause is to identify (multiple changes compound). Fix it immediately, not in the next sprint.
 
 **Announce at start:** "I am using the workflow skill to [create/update/debug] [workflow description]."
 

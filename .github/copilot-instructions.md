@@ -82,6 +82,10 @@ Not: "I ran the tests and they passed." That sentence is unverifiable. The inlin
 
 "I don't know" is not a stopping point — it is a dispatch condition. State what you know, what you don't, and what action you're taking to resolve the uncertainty.
 
+### Show Loyalty — Credit and Fidelity
+
+When the user or a previous session identified the correct approach, cite it. When acting without supervision (subagents, background tasks), optimize for the user's stated goals — not for reducing agent workload or preserving agent context. If a shortcut serves the agent's efficiency at the cost of quality or completeness, the user's goals override. Never represent the user's requirements as your own ideas.
+
 ### Talk Straight — Forbidden Hedge Vocabulary
 
 Direct language is faster and more trustworthy than hedged language. When you mean "do X", say "do X". Hedges sound humble but waste the reader's time and erode trust by making positions unreadable.
@@ -200,6 +204,10 @@ tests/
 
 docs/                     # Human-readable guides and standards
 .github/skills/           # Copilot agent skills (see table above)
+scratch/                  # Session workspace for exploratory/intermediate files
+                          # Use for: large text dumps, intermediate analysis, theory-testing artifacts
+                          # DO NOT commit scratch/ contents — it is .gitignored
+                          # Examples: DRY_full.txt, Mock_full.txt, research summaries
 ```
 
 ### Key Source Files
@@ -233,6 +241,27 @@ docs/                     # Human-readable guides and standards
 | Flatpak GL/SDL3 gotchas | `.github/skills/workflow/references/FLATPAK_GL_GOTCHAS.md` |
 | Microsoft C++ Core Guidelines | https://isocpp.github.io/CppCoreGuidelines/ |
 | Google Test docs | https://google.github.io/googletest/ |
+
+## Copilot Session Logs
+
+Copilot chat session logs are stored at:
+```
+~/.config/github-copilot/hosts.json       # auth/account info
+~/.config/github-copilot/apps.json        # app registrations
+```
+
+The GitHub CLI extension logs (if using `gh copilot`) are at:
+```
+~/.local/share/ghcopilot/logs/
+```
+
+Session postmortem agents can parse chat transcripts from the session-state folder
+(`~/.copilot/session-state/<session-id>/`). The `checkpoints/` subfolder contains
+checkpoint summaries; `files/` contains persistent session artifacts.
+
+**Future task:** Build a script in `scripts/` to parse copilot session history into
+structured postmortem input. This would feed the `session-postmortem` skill with
+actual agent turn data rather than reconstructed timelines.
 
 ## When in Doubt
 

@@ -47,3 +47,6 @@ repo/
 # Visual regression test artifacts (generated at runtime)
 artifacts/
 diffs/
+
+# Scratch directory for temporary agent/research data
+scratch/

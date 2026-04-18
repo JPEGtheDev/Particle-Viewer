@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.2"
+  version: "1.3"
   category: build
   project: Particle-Viewer
 ---
@@ -92,6 +92,28 @@ cmake --install build
 - Allowed as long as all tests pass and build succeeds
 - Visual regression tests are a hard requirement — must pass without modification unless the approver is explicitly shown the new output
 - Test updates for API changes (e.g., GoogleTest) are acceptable
+
+### One Version Rule
+
+**Iron Gate:** One version of each dependency in the build. No version aliases, no parallel installations, no `if(FOUND v1) else(use v2)` chains.
+
+**Rule:** Before adding or upgrading any dependency:
+1. Check if that library is already a transitive dependency of another component
+2. If it is: use the existing version — upgrade if needed, never add a parallel version
+3. If a diamond dependency arises (A needs lib@v1, B needs lib@v2): resolve by upgrading to the higher version and confirming both A and B still work
+4. Document the version pin (tag or commit SHA) in `CMakeLists.txt` — never use `HEAD` or `main` as a `FetchContent` ref in production builds
+
+**Gate:** `grep -r "FetchContent_Declare" CMakeLists.txt` — every `FetchContent_Declare` must have a `GIT_TAG` pinned to a specific version, not a branch name.
+
+```cmake
+# CORRECT — pinned to tag
+FetchContent_Declare(some_lib GIT_REPOSITORY ... GIT_TAG v1.2.3)
+
+# WRONG — pinned to branch (non-reproducible)
+FetchContent_Declare(some_lib GIT_REPOSITORY ... GIT_TAG main)
+```
+
+**Rationalization:** "The HEAD version has the fix we need." Counter: pin to the commit SHA that contains the fix, not to `HEAD`. Unpinned `HEAD` = a different build every `cmake` run.
 
 ---
 

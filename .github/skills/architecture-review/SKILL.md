@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.0"
+  version: "1.1"
   category: review
   project: Particle-Viewer
 ---
@@ -56,7 +56,43 @@ Layer 1 (innermost): Abstractions and utilities
 
 ---
 
-## Review Checklist
+## Hyrum's Law Gate
+
+> "With a sufficient number of users of an API, it does not matter what you promise in the contract: all observable behaviors of your system will be depended upon by somebody."
+
+Before modifying **any observable behavior** of an existing component — including undocumented behaviors, error messages, return value nuances, timing, side effects — ask:
+
+**"What else could currently be depending on this?"**
+
+This includes:
+- Tests that happen to rely on the current error message text
+- Callers that rely on the current return value for edge cases not covered by docs
+- Visual tests that rely on the current rendering output being exactly pixel-perfect
+
+**Gate:** If you cannot enumerate all call sites that might depend on the behavior being changed, dispatch an explore agent to find them before proceeding. Changing behavior without knowing who relies on it is a silent breaking change.
+
+This does not mean "never change behavior." It means: be deliberate. Know what you're breaking. Break it intentionally, with all dependents updated in the same commit.
+
+---
+
+## Barricade Model
+
+The codebase has a **dirty zone** (data that has not been validated) and a **clean zone** (data that has passed all validation). The barricade is the boundary between them.
+
+**Rules:**
+- Code in the clean zone never handles dirty data. If it receives data, that data is already validated.
+- Validation happens at the barricade, not scattered through clean-zone code
+- The barricade for this project: data enters dirty through file I/O, user input, and external APIs. It becomes clean after parsing and validation in the input handlers.
+
+| Zone | Contains | May assume |
+|------|----------|-----------|
+| Dirty | File bytes, user input strings, socket data | Nothing — validate everything |
+| Barricade | Parser, validator, loader functions | Converts dirty → clean |
+| Clean | ViewerApp state, Camera, Shader, Particle | Data is valid — no defensive checks needed |
+
+**Violation signal:** A class in Layer 2 (Camera, Shader, Particle) checking for null or empty data it received from ViewerApp. That check belongs at the barricade, not in the clean zone.
+
+---
 
 Run every item for each file under review:
 

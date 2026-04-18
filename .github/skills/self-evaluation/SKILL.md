@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.5"
+  version: "1.6"
   category: meta
   project: Particle-Viewer
 ---
@@ -121,6 +121,16 @@ Before generating the session summary, complete this audit:
 4. **What is the trust balance for this session?**
    - More deposits than withdrawals = trust maintained
    - Any withdrawals = note them; they cost speed in future sessions
+
+5. **Decision accountability:**
+   - Did any decisions made during this session produce poor outcomes?
+   - For each: name the decision, the evidence it was wrong, and the decision rule that should change.
+   - "I followed the established pattern" is not accountability if the pattern was wrong.
+   - Decisions are accountable regardless of whether they followed a rule. Rule adherence and outcome quality are separate.
+
+6. **Consistency check (integrity under low scrutiny):**
+   - Did I apply the same gates in low-visibility moments (single-line changes, quick responses, perceived-trivial tasks) as in high-visibility ones?
+   - If I skipped any gate because the task "seemed small," name it. Consistency under low scrutiny is the definition of integrity.
 
 **Report honestly.** If you made false confidence claims, name them. This is not a punishment — it is the calibration mechanism. A model that accurately reports its own false confidence claims is more trustworthy than one that doesn't.
 
