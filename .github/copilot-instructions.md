@@ -51,6 +51,10 @@ Each skill owns one domain. Read the skill before working in that domain. **Neve
 | `verification-before-completion` | `.github/skills/verification-before-completion/` | Evidence-first verification before every completion claim or commit |
 | `user-story-generator` | `.github/skills/user-story-generator/` | INVEST-aligned story creation |
 | `self-evaluation` | `.github/skills/self-evaluation/` | End-of-session review, lessons learned |
+| `skill-reviewer` | `.github/skills/skill-reviewer/` | Review skill files for completeness, iron laws, and gate elements |
+| `session-postmortem` | `.github/skills/session-postmortem/` | Retrospective behavioral analysis of a completed agent session |
+| `architecture-review` | `.github/skills/architecture-review/` | Layer boundary, dependency direction, and IOpenGLContext compliance |
+| `infrastructure-review` | `.github/skills/infrastructure-review/` | CI/CD pipelines, CMake reproducibility, Flatpak manifest compliance |
 
 ## Critical Rules (Apply to Every Task)
 
