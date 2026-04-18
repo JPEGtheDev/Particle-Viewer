@@ -5,9 +5,21 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.0"
+  version: "1.1"
   category: documentation
   project: Particle-Viewer
+---
+
+## Iron Law
+
+```
+DOCUMENT WHAT, NOT WHY — WHY LIVES IN SKILLS AND DOCS
+```
+
+Code comments explain *what* code does. Explanations >5 lines belong in `skills/` or `docs/`, not inline. Never duplicate content across doc files.
+
+**Announce at start:** "I am using the documentation skill to [write/update/review] [description]."
+
 ---
 
 # Instructions for Agent

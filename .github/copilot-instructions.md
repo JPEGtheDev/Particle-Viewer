@@ -2,6 +2,20 @@
 
 This is the agent onboarding document. It identifies the project, lists the skills that contain detailed rules, and states the few critical rules that apply to **every** task. All detailed guidelines live in skills.
 
+## Iron Laws — Always Active
+
+These apply in every session, every task, every model. No exceptions.
+
+| # | Law |
+|---|-----|
+| 1 | **NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST.** Write test → watch it fail → write code. See `testing` skill. |
+| 2 | **NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION.** Run `cmake --build build && ./build/tests/ParticleViewerTests` in THIS session. See `verification-before-completion` skill. |
+| 3 | **NO FIXES WITHOUT ROOT CAUSE INVESTIGATION.** Follow the 4-phase protocol. See `systematic-debugging` skill. |
+| 4 | **EVERY COMMIT USES CONVENTIONAL FORMAT.** `<type>[scope]: <description>` — wrong format breaks release automation. See `versioning` skill. |
+| 5 | **FORMAT BEFORE EVERY COMMIT.** `find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i`. CI rejects violations. |
+
+**If you are tempted to rationalize past any of these: that thought is the rationalization. Stop. Follow the rule.**
+
 ## Project Overview
 
 Particle-Viewer is a C++ OpenGL-based viewer for N-Body simulations — viewing 3D particle data, taking screenshots, and rendering videos.

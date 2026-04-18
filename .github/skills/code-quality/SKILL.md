@@ -5,9 +5,21 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.7"
+  version: "1.8"
   category: code-quality
   project: Particle-Viewer
+---
+
+## Iron Law
+
+```
+NO UNFORMATTED OR UNTIDY CODE SHIPS
+```
+
+Run clang-format AND clang-tidy BEFORE every commit. CI will reject violations. No exceptions.
+
+**Announce at start:** "I am using the code-quality skill to [format/lint/review] [description]."
+
 ---
 
 # Instructions for Agent

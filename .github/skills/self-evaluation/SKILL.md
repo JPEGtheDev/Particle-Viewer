@@ -5,9 +5,21 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.2"
+  version: "1.3"
   category: meta
   project: Particle-Viewer
+---
+
+## Iron Law
+
+```
+EVERY SESSION ENDS WITH SELF-EVALUATION — NO EXCEPTIONS
+```
+
+Read this skill BEFORE your final message. If you skip it: the session's lessons are lost. Every time. Without exception.
+
+**Announce at start:** "I am running the self-evaluation skill for this session."
+
 ---
 
 # Instructions for Agent

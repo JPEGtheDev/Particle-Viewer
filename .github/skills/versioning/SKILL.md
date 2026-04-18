@@ -5,9 +5,21 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.0"
+  version: "1.1"
   category: versioning
   project: Particle-Viewer
+---
+
+## Iron Law
+
+```
+EVERY COMMIT AND PR TITLE MUST USE CONVENTIONAL FORMAT
+```
+
+`<type>[scope]: <description>` — no exceptions. Wrong format breaks release automation.
+
+**Announce at start:** "I am using the versioning skill to [create commit/PR for] [description]."
+
 ---
 
 # Instructions for Agent

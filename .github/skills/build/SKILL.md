@@ -5,9 +5,21 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.0"
+  version: "1.1"
   category: build
   project: Particle-Viewer
+---
+
+## Iron Law
+
+```
+BUILD MUST PASS LOCALLY BEFORE EVERY PUSH
+```
+
+`cmake --build build` must exit 0 locally before pushing. No exceptions.
+
+**Announce at start:** "I am using the build skill to [build/configure/troubleshoot] [description]."
+
 ---
 
 # Instructions for Agent

@@ -5,9 +5,21 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.0"
+  version: "1.1"
   category: ci-cd
   project: Particle-Viewer
+---
+
+## Iron Law
+
+```
+PIPELINES ARE READ-ONLY — NEVER COMMIT FROM CI
+```
+
+CI workflows read code, run tests, and publish artifacts. They never write code. No exceptions.
+
+**Announce at start:** "I am using the workflow skill to [create/update/debug] [workflow description]."
+
 ---
 
 # Instructions for Agent
