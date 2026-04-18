@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.1"
+  version: "1.2"
   category: verification
   project: Particle-Viewer
 ---
@@ -53,7 +53,24 @@ Skipping any step = lying, not verifying.
 
 ---
 
-## The Confidence Vocabulary Gate
+## 4 Cores Final Check
+
+The verification gate confirms **Results** — tests pass, build succeeds. But it cannot confirm the first three cores. Run this check *after* the gate, before claiming done.
+
+| Core | Question | What it catches |
+|------|----------|-----------------|
+| **Integrity** | Does the implementation match exactly what was committed — no more, no less? | Scope creep, partial delivery, undisclosed limitations |
+| **Intent** | Am I solving the stated problem, or the comfortable version of it? | Solving an easier adjacent problem; avoiding the hard requirement |
+| **Capabilities** | Is this the right solution, or just the first one that worked? | Technically-passing implementation that creates future maintenance burden |
+| **Results** | Can I show verifiable inline evidence? | Covered by the gate above — cite it explicitly |
+
+**Failing any core = do not claim done. Resolve the gap first.**
+
+The Results core is covered by the verification commands above. The first three are quality checks that evidence alone cannot catch — a test suite can pass while the wrong problem is solved perfectly.
+
+**Worst common violation — Intent:** An agent solves the easy part of a requirement (the part it's comfortable with) and presents it as the full solution. The tests pass. The build is clean. The requirement is not met. The 4 Cores check catches this by asking "did I solve what was asked, or what was convenient?"
+
+---
 
 ### Banned Without Evidence
 

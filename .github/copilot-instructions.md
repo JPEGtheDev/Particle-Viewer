@@ -11,6 +11,7 @@ Before generating any output, ask yourself:
 3. **Encountered a bug or failure?** → Have I traced the root cause (not just guessed)? If not: load `systematic-debugging`.
 4. **Non-trivial task (3+ steps)?** → Have I loaded the required skills from the table below? If not: load them now.
 5. **Forming a theory or assumption?** → "I think" is not acceptable. Do I have empirical evidence (code, test output, documentation)? If not: dispatch a subagent to confirm before proceeding.
+6. **About to finalize a plan?** → Have I answered "What is this NOT addressing?" If no answer, or if the answer reveals a gap: stop. Revise the plan. Dispatch a Skeptic Agent for any 3+ todo plan. See `execution` skill Phase 1.
 
 **This checklist applies on EVERY turn. Not just session start.**
 

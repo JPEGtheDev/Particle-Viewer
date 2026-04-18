@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.4"
+  version: "1.5"
   category: execution
   project: Particle-Viewer
 ---
@@ -62,6 +62,24 @@ These govern every decision during execution:
 3. **Bake in proof steps** — plan how you will verify each change, not just what you will build
 4. **Sanity-check coverage** — does the plan address every acceptance criterion?
 5. **Abandon broken plans early** — if progress stalls, scrap the approach and redesign
+
+### Smart Trust Planning Gate
+
+Before finalizing **any** plan — answer these 5 questions. If you cannot answer them from existing knowledge, dispatch a research subagent first.
+
+**This gate precedes writing code. It is not optional for any multi-step task.**
+
+| # | Question | What it confronts |
+|---|----------|-------------------|
+| 1 | **What does success look like concretely?** State an outcome with a verification method, not an activity. "Implement X" is an activity. "X works when Y, verified by running Z" is an outcome. | Vague plans that drift |
+| 2 | **What is this plan NOT addressing?** Name every requirement, acceptance criterion, and edge case the plan glosses over, defers, or assumes away. This is the highest-signal question. Most plan failures are omissions, not mistakes. | Hidden scope, skipped requirements |
+| 3 | **What are the top 3 ways this plan could fail?** State them explicitly. Inability to name failure modes means the plan is not concrete enough. | Unexamined risk and blast radius |
+| 4 | **Do I have the capability to execute this?** Are there libraries, patterns, or component behaviors I need to research before writing code? "I think I know" requires a dispatch to confirm. | Rework caused by wrong assumptions |
+| 5 | **What would a skeptic say?** State the strongest argument against this approach. If you can't counter it, revise the plan before proceeding. | Approach chosen from comfort, not correctness |
+
+**Any unanswered question, or any answer that reveals a gap: stop. Revise the plan. Then proceed.**
+
+For any plan with 3+ todos or an architectural decision, dispatch a **Skeptic Agent** (see Phase 3) to answer questions 2 and 5 independently, before you start implementation.
 
 ### Decomposing a User Story
 
@@ -222,12 +240,60 @@ Read-only subagents (explore agents doing research) do not need a worktree.
 | Exploring unfamiliar APIs or libraries | Yes — explore agent | Keep investigation out of main context |
 | Scanning codebase for patterns (5+ files) | Yes — explore agent | Parallel search is faster |
 | Confirming a theory or assumption | Yes — explore agent | Unbiased confirmation, satisfies evidence mandate |
+| **Validating a plan before implementation** | **Yes — Skeptic Agent (see below)** | **No stake in the plan being good; finds omissions** |
 | Code review (per-file) | Yes — code-review agent, 1 per file | Cheap, thorough, out-of-band |
 | Skill review | Yes — general-purpose with skill-reviewer skill | Dispatch 1 per skill file |
 | Digesting multiple large files | Yes — explore agent | Collect summaries, not raw text |
 | Writing a single function inline | No — do inline | Fast enough for main context |
 | Hard problem needing multiple approaches | Yes — fan out to multiple general-purpose agents | Compare results empirically |
 | Architecture validation | Yes — general-purpose with architecture-review skill | Unbiased structural check |
+
+### The Skeptic Agent
+
+Dispatch this agent **before starting implementation** on any plan with 3+ todos or an architectural decision. Its job is not to approve the plan — it is to find what is missing or wrong.
+
+**When to dispatch:**
+- Any plan with 3+ concrete todos
+- Any change that touches 2+ layers in the architecture
+- Any time the answer to Smart Trust Question 2 ("What is this NOT addressing?") feels uncertain
+
+**Prompt template:**
+
+```
+You are a Skeptic Agent. Your job is to find what this plan is missing.
+You have no stake in the plan being good. Do not validate what looks correct.
+
+Requirements/acceptance criteria:
+[PASTE THE FULL REQUIREMENTS]
+
+Plan under review:
+[PASTE THE FULL PLAN WITH ALL TODOS]
+
+Answer ONLY these questions. Be specific and direct.
+
+1. What is this plan NOT addressing that the requirements ask for?
+   List every omission, deferred item, or assumption that was not explicitly validated.
+
+2. What assumptions is this plan making that might be wrong?
+   Name the assumption, then state what would need to be true for it to hold.
+
+3. What is the strongest argument against this approach?
+   State the best case for doing it differently.
+
+4. What is the most likely way this plan fails in practice?
+   Name the failure mode, not a generic risk.
+
+If you genuinely find no gaps after thorough analysis, state that explicitly
+and explain what you checked. A clean result is valid — but absence of
+findings must be earned, not assumed.
+
+Return a structured report with the 4 sections above.
+```
+
+**How to use the result:**
+- If the agent surfaces a gap: revise the plan before writing code
+- If the agent returns clean: record that confirmation and proceed
+- Do NOT skip revision because "the gaps are small" — a gap in the plan is a defect not yet written into code; it is cheap to fix now
 
 ### Reviewer Dispatch Pattern
 
