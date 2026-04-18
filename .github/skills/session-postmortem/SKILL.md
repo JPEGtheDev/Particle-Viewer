@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.0"
+  version: "1.1"
   category: review
   project: Particle-Viewer
 ---
@@ -22,9 +22,22 @@ YOU MUST examine the session for rationalization patterns. A clean outcome does 
 
 ---
 
-## Difference From Self-Evaluation
+## The Blameless Principle
 
-These two skills are distinct and NOT interchangeable:
+This postmortem is about **decisions and systems**, not character. Every failure is a decision that could be better-gated or better-informed. The language in the report must reflect this.
+
+| Blameful (forbidden) | Blameless (required) |
+|----------------------|---------------------|
+| "The agent was careless" | "The planning gate was not applied before code was written" |
+| "The agent didn't follow the rules" | "The rationalization table did not cover this excuse pattern" |
+| "The agent got lucky" | "The process produced a correct outcome by path rather than by gate" |
+| "The agent lied" | "The confidence vocabulary gate was not active for this claim type" |
+
+The goal is not to evaluate the agent — it is to find the gaps in the system that allowed the failure to occur undetected. A gap found is a skill improvement waiting to be written.
+
+---
+
+## Difference From Self-Evaluation
 
 | Skill | Who runs it | When | What it analyzes |
 |-------|-------------|------|-----------------|
@@ -35,16 +48,74 @@ Self-evaluation captures what was learned. Session postmortem finds where the ag
 
 ---
 
-## What to Analyze
+## The 5-Part Blameless Postmortem Structure
 
-Work through each question in sequence. Do not skip a question because the session "seemed fine."
+Work through every part. Do not skip a section because the session "seemed fine."
 
-1. **Iron Law compliance** — was TDD followed? Were verification commands (`cmake --build build`, `./build/tests/ParticleViewerTests`) actually run before claiming completion? Were root causes traced before fixes were applied?
-2. **Rationalization patterns** — did the agent express confidence without running verification? Make factual claims before executing commands? Bypass skill dispatch by acting in a domain without reading the relevant skill first?
-3. **Subagent usage** — were tasks delegated when the `execution` skill required delegation? Did the agent fill its own context with exploration work that should have gone to a subagent?
-4. **Context hygiene** — was the main context window used efficiently, or was it consumed by research, file reading, and exploration that blocked forward progress?
-5. **Skill loading** — were required skills loaded *before* acting in their domain, per the auto-load table in `copilot-instructions.md`? Or loaded after the fact, retroactively?
-6. **Correction moments** — when the user corrected the agent, what was the specific failure mode? Is that failure mode already present in the relevant skill's rationalization table? If not, it should be added.
+### Part 1: Timeline
+
+Reconstruct the session in chronological order. Focus on **decision points** — moments where the agent chose a path. Each entry: what happened, what was the agent's stated reason, what was the actual situation.
+
+```
+HH:MM - [Action taken] — [Stated reason if given] — [Observation]
+```
+
+Do not editorialize in the timeline. Record events.
+
+### Part 2: Root Cause
+
+For each failure or near-miss in the timeline, identify the **underlying cause**. Not the proximate cause ("the agent wrote code without a test") but the root cause ("no gate in the session-start checklist enforced TDD before the first `edit` call in this task type").
+
+Use "5 Whys" for each failure:
+```
+Why did X happen?
+  Because Y
+Why did Y happen?
+  Because Z
+...until you reach a system/gate gap, not a character judgment
+```
+
+### Part 3: Contributing Factors
+
+What conditions made the root cause more likely? These are not root causes — they are the environment that allowed the root cause to surface.
+
+Examples:
+- Ambiguous requirements that weren't clarified at session start
+- Missing rationalization table entry for a specific excuse pattern
+- Skill that was required but not in the auto-load table
+- Context pressure (long session, many files in flight)
+
+### Part 4: What Went Well
+
+Name the things that worked — gates that fired correctly, skills that were loaded proactively, subagents that were dispatched when required. This is not a consolation section — it identifies which gates are reliable and should be preserved.
+
+### Part 5: Action Items
+
+For every root cause and contributing factor, one concrete action item. Each must be:
+- **Specific** — names the exact skill file and section to update
+- **Triggerable** — describes exactly what should happen differently
+- **Owned** — states which skill or gate owns the change
+
+| # | Root Cause / Factor | Action Item | Target File |
+|---|---------------------|-------------|-------------|
+| 1 | [Root cause] | Add "[specific text]" to [section] | [skill file] |
+
+No vague items. "Be more careful" is not an action item. "Add the phrase 'X' to the rationalization table in execution Phase 2 under excuse 'Y'" is.
+
+---
+
+## Iron Law Compliance Check
+
+Run every item before generating the report:
+
+| Law | Followed | Evidence | Notes |
+|-----|----------|----------|-------|
+| TDD (no prod code without test) | ✅/❌/N/A | [what proves this] | |
+| Verification before completion | ✅/❌/N/A | [what proves this] | |
+| Root cause before fixes | ✅/❌/N/A | [what proves this] | |
+| Conventional commits | ✅/❌/N/A | [what proves this] | |
+| Skills loaded before acting | ✅/❌/N/A | [what proves this] | |
+| Commitments kept or acknowledged | ✅/❌/N/A | [what proves this] | |
 
 ---
 
@@ -56,34 +127,31 @@ Work through each question in sequence. Do not skip a question because the sessi
 ### Summary
 [1-2 sentence description of what the session accomplished]
 
+### Timeline
+[Chronological decision points]
+
+### Root Cause Analysis
+[5-Whys for each failure/near-miss]
+
+### Contributing Factors
+[Conditions that made failures more likely]
+
+### What Went Well
+[Gates that fired correctly, proactive behaviors]
+
+### Action Items
+| # | Root Cause / Factor | Action Item | Target File |
+|---|---------------------|-------------|-------------|
+
 ### Iron Law Compliance
-| Law | Followed | Evidence | Notes |
-|-----|----------|----------|-------|
-| TDD (no prod code without test) | ✅/❌/N/A | ... | ... |
-| Verification before completion | ✅/❌/N/A | ... | ... |
-| Root cause before fixes | ✅/❌/N/A | ... | ... |
-| Conventional commits | ✅/❌/N/A | ... | ... |
-
-### Behavioral Patterns Observed
-[List patterns observed: rationalization, premature completion claims, guessing without verification, etc.]
-
-### Failure Modes
-| Moment | What happened | What should have happened |
-|--------|---------------|--------------------------|
-| ... | ... | ... |
-
-### Skill Gaps Found
-[Excuses or behaviors NOT yet present in any rationalization table — these need to be added to a skill]
-
-### Recommended Skill Updates
-[Specific text to add to specific skills, with skill name and section]
+[Table from above]
 
 ### Verdict: HEALTHY / NEEDS IMPROVEMENT / SYSTEMIC ISSUE
 ```
 
 Verdict definitions:
 - **HEALTHY** — iron laws followed, no repeated failure modes, skills loaded proactively
-- **NEEDS IMPROVEMENT** — one or two isolated lapses, not repeated, skill updates would prevent recurrence
+- **NEEDS IMPROVEMENT** — one or two isolated lapses; skill updates would prevent recurrence
 - **SYSTEMIC ISSUE** — same failure mode appeared multiple times, or the agent bypassed an iron law and delivered a result anyway
 
 ---
@@ -94,12 +162,13 @@ If any of the following apply, the verdict is at minimum NEEDS IMPROVEMENT:
 
 - Agent expressed confidence before running verification commands
 - Agent proposed or applied fixes before establishing root cause
-- Agent claimed a task complete without running the pre-commit gate (`clang-format`, build, tests)
-- Agent loaded skills after acting in their domain (retroactive skill loading is compliance theater)
-- Agent kept research, file reading, and exploration in the main context instead of dispatching subagents
+- Agent claimed a task complete without running the pre-commit gate
+- Agent loaded skills after acting in their domain (retroactive skill loading)
+- Agent kept research and exploration in the main context instead of dispatching subagents
 - User had to correct the same behavior more than once in the same session
+- Agent dropped an announced commitment without acknowledging it
 
-If three or more of the above apply, the verdict is SYSTEMIC ISSUE and the relevant skills need immediate rationalization table updates.
+Three or more of the above = SYSTEMIC ISSUE. Relevant skills need immediate rationalization table updates.
 
 ---
 
@@ -107,12 +176,12 @@ If three or more of the above apply, the verdict is SYSTEMIC ISSUE and the relev
 
 | Excuse | Reality |
 |--------|---------|
-| "It was mostly fine, no need for a postmortem" | Systematic improvement requires systematic review. "Mostly fine" hides the one failure that will recur. |
+| "It was mostly fine, no need for a postmortem" | "Mostly fine" hides the one failure that will recur. Systematic review is required. |
 | "It was a one-off mistake, not a pattern" | Check the full session before concluding that. One-off mistakes look different from patterns only after you check. |
-| "The outcome was good, so the process must have been right" | Good outcome from bad process = lucky, not reliable. Process failures compound. |
-| "The user didn't complain" | Some failures are silent. The agent may have produced a plausible wrong answer that the user accepted. Postmortem finds those. |
+| "The outcome was good, so the process must have been right" | Good outcome from bad process = lucky, not reliable. The blameless principle exists to find the lucky path. |
+| "The user didn't complain" | Some failures are silent. The agent may have produced a plausible wrong answer the user accepted. Postmortem finds those. |
 | "Self-evaluation already covered this" | Self-eval is by the agent. Postmortem is external. Different perspective, different blind spots. Both are necessary. |
-| "The session was short, not worth analyzing" | Short sessions have failure modes too. The analysis is proportionate — a short session gets a short postmortem. |
+| "The session was short, not worth analyzing" | Short sessions have failure modes too. A short session gets a proportionate postmortem — 10 minutes, not an hour. |
 
 ---
 

@@ -12,6 +12,7 @@ Before generating any output, ask yourself:
 4. **Non-trivial task (3+ steps)?** → Have I loaded the required skills from the table below? If not: load them now.
 5. **Forming a theory or assumption?** → "I think" is not acceptable. Do I have empirical evidence (code, test output, documentation)? If not: dispatch a subagent to confirm before proceeding.
 6. **About to finalize a plan?** → Have I answered "What is this NOT addressing?" If no answer, or if the answer reveals a gap: stop. Revise the plan. Dispatch a Skeptic Agent for any 3+ todo plan. See `execution` skill Phase 1.
+7. **About to start multi-step work?** → Have I stated requirements back in my own words and labeled ambiguities `[UNCLEAR: ...]`? If not: state them before planning. See "Clarify Expectations" in `execution` Phase 1.
 
 **This checklist applies on EVERY turn. Not just session start.**
 
@@ -81,7 +82,22 @@ Not: "I ran the tests and they passed." That sentence is unverifiable. The inlin
 
 "I don't know" is not a stopping point — it is a dispatch condition. State what you know, what you don't, and what action you're taking to resolve the uncertainty.
 
-## Project Overview
+### Talk Straight — Forbidden Hedge Vocabulary
+
+Direct language is faster and more trustworthy than hedged language. When you mean "do X", say "do X". Hedges sound humble but waste the reader's time and erode trust by making positions unreadable.
+
+**Forbidden phrases — replace with direct statements:**
+
+| Forbidden | Why | Replace with |
+|-----------|-----|-------------|
+| "It might be worth considering..." | Non-committal — you have a recommendation; give it | "Do X because Y." |
+| "You could potentially try..." | Weasel qualifier — "potentially" adds nothing | "Try X." |
+| "This may need to be addressed" | Passive — either it does or it doesn't | "Address this: [specific fix]" |
+| "One option would be to..." | Option-listing is a deflection when you have a clear recommendation | "The right approach is X." |
+| "I'm not sure but maybe..." | False humility combined with a claim — pick one | Either "I don't know — dispatching to confirm" or state the claim with evidence |
+| "It seems like..." | Impressionistic — not evidence | State what you read, what you ran, what you observed |
+
+**The rule:** If you have a recommendation, state it directly. If you're uncertain, say "I don't know — here's how I'll find out." There is no space for language that hedges both ways simultaneously.
 
 Particle-Viewer is a C++ OpenGL-based viewer for N-Body simulations — viewing 3D particle data, taking screenshots, and rendering videos.
 

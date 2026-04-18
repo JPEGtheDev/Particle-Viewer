@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.5"
+  version: "1.6"
   category: execution
   project: Particle-Viewer
 ---
@@ -45,6 +45,26 @@ These govern every decision during execution:
 
 **Establish a clear plan before writing code** whenever the task involves 3+ steps or any architectural judgment.
 
+### Step 0: Clarify Expectations First
+
+**Before any plan is built** — restate your understanding of the requirements in your own words. This is the earliest-possible catch for "solved the wrong problem." Do not skip it because the requirements seem obvious.
+
+```
+BEFORE planning, state:
+"Here is what I understand you're asking for:
+1. [requirement 1]
+2. [requirement 2]
+...
+[UNCLEAR: anything ambiguous or assumed, marked explicitly]
+"
+```
+
+**Rules:**
+- Every ambiguity must be labeled `[UNCLEAR: ...]` — do not silently assume
+- If the requirements are a user story with acceptance criteria: number each criterion and confirm you can map it to a verifiable test
+- If the requirements have gaps: name the gap and state your assumption. The user can then correct before you've written a single line of code
+- A "this seems obvious" feeling is not permission to skip this step — it is the warning sign that you need it most
+
 ### Decision Table
 
 | Situation | Response |
@@ -52,7 +72,7 @@ These govern every decision during execution:
 | Obvious single-file fix | Implement immediately — no ceremony needed |
 | Changes spanning multiple files | Outline the sequence first |
 | Architectural or design choices | Specify the approach before touching code |
-| Ambiguous requirements | Research first (subagents are cheap) |
+| Ambiguous requirements | Clarify Expectations first — don't plan around unknown requirements |
 | User story with acceptance criteria | Decompose criteria into ordered checkpoints |
 
 ### Building the Plan
@@ -90,19 +110,49 @@ When handed an INVEST story with acceptance criteria:
 3. Sequence by dependency (tests-first is often the right order)
 4. Gauge whether the scope fits a single session — propose a split if not
 
+### Planning Heuristics: YAGNI and Simplest Thing
+
+Apply these two cuts to every plan before it is finalized:
+
+**YAGNI — You Ain't Gonna Need It**
+Scan the plan for anything not directly required by the current acceptance criteria. If a todo item cannot be traced back to a specific criterion, it does not belong in this plan. Cut it.
+
+> Forbidden rationalization: "We'll probably need it later." If it's not in the criteria, it's not in the plan.
+
+**Simplest Thing That Could Possibly Work**
+After the Smart Trust gate, ask: "Is there a simpler implementation that satisfies all acceptance criteria?" Simpler means: fewer files touched, fewer abstractions introduced, fewer dependencies added. If a simpler approach exists and the only argument against it is "the complex approach is more elegant," use the simple approach.
+
+> Note: Simple is not the same as quick. A simple solution can take longer to find. But it is always preferable to a complex solution that passes tests.
+
+These two heuristics together prevent the most common planning failure: scope that grows to fill available time rather than stopping at requirements.
+
 ### Rationalization Prevention
 
 | Excuse | Reality |
 |--------|---------|
 | "I'll start coding, plan as I go" | Unplanned multi-step work creates cascading mistakes. Write the plan. |
-| "It's obvious what needs to be done" | Obvious tasks still have sequencing and dependency risks. |
+| "It's obvious what needs to be done" | Obvious tasks still have sequencing and dependency risks. Apply Clarify Expectations. |
 | "The todo list wastes time" | Unmarked todos get skipped. The list IS the audit trail. |
 | "I'll update the todo list later" | Later never comes. Update BEFORE starting, AFTER finishing each item. |
 | "This is a small change, no plan needed" | Small changes become large ones. A 3-item plan takes 2 minutes. |
+| "I understand the requirements, no need to restate them" | Misunderstood requirements are the most expensive bug. Restate them anyway. |
+| "We'll probably need this later" | YAGNI. If it's not in the criteria, it's not in this plan. |
 
 ---
 
 ## Phase 2: Disciplined Iteration
+
+### Keep Commitments
+
+When you announce what you will do — in the session-start announcement, in a plan summary, or in a response — those statements are **commitments**, not intentions.
+
+**Rules:**
+- Every announced item must be delivered, OR explicitly acknowledged as undelivered before the response ends
+- The format for a missed commitment: `COMMITMENT NOT MET: I committed to [X]. I could not complete it because [specific reason]. Next step: [concrete action]`
+- Never let a commitment expire silently — do not end a response with an announced item quietly dropped
+- "I'll get to it next turn" is not a completion — only "I completed X, verified by [evidence]" is
+
+This behavior is the foundation of predictable trust. Consistent commitment-keeping means the user can plan around your output without second-guessing whether announced work was actually done.
 
 ### The Work Loop
 
@@ -122,6 +172,7 @@ For every planned item:
 - All tests green
 - Diff reviewed for side-effects
 - You would confidently submit this for code review
+
 
 ### Communicating Progress
 
@@ -390,9 +441,37 @@ The systematic-debugging skill contains the complete 4-phase protocol, 3-strikes
 
 ---
 
-## Phase 7: Continuous Skill Refinement
+## Phase 7: Continuous Skill Refinement and Right Wrongs
 
 **Correct course in real time, not just at session end.**
+
+### Right Wrongs — Error Correction Protocol
+
+When a mistake is discovered — by you or by the user — the response must follow this structure:
+
+```
+1. ACKNOWLEDGE: "I was wrong about [X]."
+   No minimizing. No "to be fair". No "as I mentioned earlier". No "technically...".
+   Plain statement.
+
+2. STATE WHAT WAS WRONG: "I stated [Y]. The correct answer is [Z]."
+   Specific. Not "I may have been unclear" — that shifts responsibility.
+
+3. STATE THE IMPACT: "This affected [what work / what understanding]."
+   If the mistake caused wasted work or wrong decisions, say so explicitly.
+
+4. FIX IT: [actual correction, with evidence if the correction is a claim]
+```
+
+**Forbidden responses to discovered mistakes:**
+- "To be fair, you could interpret it as..." — minimizing
+- "As I mentioned, there was some ambiguity..." — blame-shifting
+- "That's technically correct but..." — deflecting
+- Moving on without acknowledging — the most common failure mode
+
+The Right Wrongs protocol is fast. A mistake acknowledged correctly takes less time than the downstream confusion of a mistake glossed over. Applying this protocol is a trust deposit — users who see mistakes acknowledged clearly stop second-guessing other outputs.
+
+### Continuous Refinement
 
 After any mistake or user correction during a session:
 
