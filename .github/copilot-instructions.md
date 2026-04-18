@@ -21,6 +21,8 @@ Each skill owns one domain. Read the skill before working in that domain. **Neve
 | `workflow` | `.github/skills/workflow/` | CI/CD pipelines, artifacts, permissions, Flatpak GL gotchas |
 | `documentation` | `.github/skills/documentation/` | Docs conventions, linking, formatting, skill authoring |
 | `execution` | `.github/skills/execution/` | Autonomous execution protocol, planning, verification, bug fixing |
+| `systematic-debugging` | `.github/skills/systematic-debugging/` | Root cause investigation protocol for bugs, failures, and errors |
+| `verification-before-completion` | `.github/skills/verification-before-completion/` | Evidence-first verification before every completion claim or commit |
 | `user-story-generator` | `.github/skills/user-story-generator/` | INVEST-aligned story creation |
 | `self-evaluation` | `.github/skills/self-evaluation/` | End-of-session review, lessons learned |
 
@@ -52,11 +54,12 @@ Before writing code, read the skill(s) relevant to your task from the Skills Dir
 | Any implementation work | `execution` |
 | Writing or editing C++ code | `execution`, `code-quality` |
 | Writing or editing tests | `execution`, `code-quality`, `testing` |
-| Creating a PR or commit | `versioning` |
+| Creating a PR or commit | `versioning`, `verification-before-completion` |
 | CI/CD or workflow changes | `workflow` |
 | Build system or dependency changes | `build` |
 | Writing or editing documentation | `documentation` |
-| Bug fixes or error resolution | `execution` |
+| Bug fixes or error resolution | `execution`, `systematic-debugging` |
+| Any failure or unexpected behavior | `systematic-debugging`, `verification-before-completion` |
 
 If unsure, read `code-quality` — it applies to nearly every code task.
 
