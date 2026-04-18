@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.1"
+  version: "1.2"
   category: ci-cd
   project: Particle-Viewer
 ---
@@ -144,6 +144,33 @@ Before presenting workflow changes, verify:
 - [ ] Job dependencies are correct (`needs:` ordering)
 - [ ] `if: always()` on artifact upload and PR comment steps where needed
 - [ ] Artifact retention set appropriately (default: 30 days)
+
+---
+
+## Rationalization Prevention
+
+| Excuse | Reality |
+|--------|---------|
+| "I need to commit from CI to fix this issue" | NEVER. Fix the code locally, push, let CI re-run. Committing from CI creates loops. |
+| "Broad permissions are easier than figuring out minimal ones" | Broad permissions are a security risk. Use minimal permissions — write only what's needed. |
+| "I'll test this workflow change in CI" | Test locally with `act` or trace the logic manually. Don't waste CI minutes on avoidable failures. |
+| "Artifact retention doesn't matter much" | Excessive retention wastes storage. PRs: short retention. Releases: longer. |
+| "The trigger seems right, I'll push and check" | Incorrect triggers cause runaway pipelines or missing runs. Verify the trigger logic before pushing. |
+| "This job doesn't need to wait for the other to finish" | Race conditions in CI are hard to debug. Use `needs:` dependencies explicitly. |
+
+---
+
+## Red Flags — STOP
+
+If you catch yourself thinking any of these, stop and follow the rule:
+- Typing `git commit` or `git push` inside a workflow `run:` step
+- "I'll just set `permissions: write-all` for now"
+- "Let me push this workflow change and see if it works"
+- Adding a `workflow_run` trigger without verifying it won't cause infinite loops
+- `secrets.GITHUB_TOKEN` used with `write` permission for something that only needs `read`
+- Artifact upload without a `retention-days:` value
+
+**All of these mean: Pipelines are read-only. Verify trigger logic and permissions before every push. Never commit from CI.**
 
 ---
 

@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.3"
+  version: "1.4"
   category: meta
   project: Particle-Viewer
 ---
@@ -138,6 +138,33 @@ Produce a brief summary of lessons captured:
 3. **Don't restructure existing skills** — Add to existing sections, don't reorganize
 4. **Don't add lessons that are standard programming practice** — Focus on project-specific patterns
 5. **Don't forget to check existing docs first** — Avoid adding what's already there
+
+---
+
+## Rationalization Prevention
+
+| Excuse | Reality |
+|--------|---------|
+| "I didn't make any mistakes, no need to evaluate" | Every session has lessons. No lessons found = evaluation wasn't thorough enough. |
+| "I'll do the self-evaluation next session" | Lessons evaporate overnight. Capture them now while the context is live. |
+| "The user seemed satisfied, so the session went well" | User satisfaction ≠ no lessons. Look for near-misses, slow spots, and subtle errors. |
+| "Self-evaluation is for big failures only" | Small improvements compound. Consistent small lessons beat occasional big ones. |
+| "I already updated one skill — that's enough" | Evaluate all active domains. One skill update is rarely complete coverage. |
+| "There's no time — the session is over" | 5 minutes of self-evaluation saves hours in future sessions. Make time. |
+
+---
+
+## Red Flags — STOP
+
+If you catch yourself thinking any of these, stop and follow the rule:
+- About to send a final message without having read the self-evaluation skill
+- "No lessons learned this session"
+- "The user is waiting, I'll skip self-eval"
+- Updated code but haven't checked if any skills are now stale
+- "I already know what I'd write — no need to actually write it"
+- Closing a session without the Session Self-Evaluation block in the final message
+
+**All of these mean: Read `.github/skills/self-evaluation/SKILL.md` and complete every step. Then include the `### Session Self-Evaluation` block before your final message.**
 
 ---
 

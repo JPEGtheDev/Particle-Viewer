@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.8"
+  version: "1.9"
   category: code-quality
   project: Particle-Viewer
 ---
@@ -219,6 +219,33 @@ When removing a gamepad feature or call site from `viewer_app.cpp` at user reque
 - [ ] No raw `new`/`delete` — use RAII or smart pointers
 - [ ] GL resources cleaned up in destructors
 - [ ] Headers are self-contained
+
+---
+
+## Rationalization Prevention
+
+| Excuse | Reality |
+|--------|---------|
+| "I'll run clang-format once at the end before the PR" | Format after every meaningful change. Catch issues early, not in bulk. |
+| "clang-tidy has too many false positives, I'll skip it" | Fix or suppress with justification in code. Suppression without reason is tech debt. |
+| "The naming is close enough to the convention" | Exact naming prevents confusion across sessions and contributors. |
+| "Formatting is cosmetic, doesn't affect behavior" | Unformatted code gets rejected by CI. It's a hard gate, not a preference. |
+| "I'll clean up the style in a follow-up PR" | Style debt compounds. Clean it now while context is fresh. |
+| "The auto-formatter will handle it" | Run the auto-formatter explicitly — it doesn't run itself. |
+
+---
+
+## Red Flags — STOP
+
+If you catch yourself thinking any of these, stop and follow the rule:
+- About to commit without running `clang-format -i`
+- "clang-tidy warning but it seems like a false positive"
+- "The naming is slightly different but close enough"
+- "I'll clean up formatting in the next commit"
+- "The CI will format it automatically"
+- Writing code and planning to format "later in this session"
+
+**All of these mean: Run `find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i` and `clang-tidy` before every commit. No exceptions.**
 
 ---
 

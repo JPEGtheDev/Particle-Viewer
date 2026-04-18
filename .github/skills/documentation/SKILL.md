@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.1"
+  version: "1.2"
   category: documentation
   project: Particle-Viewer
 ---
@@ -127,6 +127,33 @@ Before presenting documentation, verify:
 - [ ] No duplication with other docs — reference instead of repeat
 - [ ] Table of contents matches section headings
 - [ ] Documentation matches current code state
+
+---
+
+## Rationalization Prevention
+
+| Excuse | Reality |
+|--------|---------|
+| "I'll document it after it's working" | Documentation written separately from code drifts immediately. Write it with the code. |
+| "The code is self-documenting" | Code explains what. Docs and skills explain why, when, and the design rationale. |
+| "A long comment will do for now" | Comments >5 lines of explanation belong in `skills/` or `docs/`. Move it. |
+| "I'll update the docs in a follow-up" | Follow-up docs never match the implementation. Update alongside the change. |
+| "This is internal code, no docs needed" | Internal code is the hardest to understand 6 months later. Document it. |
+| "The skill already covers this" | Check for duplication — if both a skill and a doc cover it, one is wrong. Consolidate. |
+
+---
+
+## Red Flags — STOP
+
+If you catch yourself thinking any of these, stop and follow the rule:
+- Writing a code comment longer than 5 lines
+- "I'll add documentation in the next PR"
+- Two files saying the same thing in different words
+- Copying content from a skill into a doc file (or vice versa)
+- "This is obvious, no docs needed"
+- Updating code without checking if related docs are now stale
+
+**All of these mean: Document what the code does, and put the why in `skills/` or `docs/`. Update docs alongside code changes.**
 
 ---
 

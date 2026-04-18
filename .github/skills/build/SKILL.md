@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.1"
+  version: "1.2"
   category: build
   project: Particle-Viewer
 ---
@@ -116,6 +116,33 @@ Run from the build directory, or ensure `Viewer-Assets/shaders/` exists alongsid
 
 **Flatpak build issues:**
 See the `workflow` skill and [FLATPAK_GL_GOTCHAS.md](../workflow/references/FLATPAK_GL_GOTCHAS.md).
+
+---
+
+## Rationalization Prevention
+
+| Excuse | Reality |
+|--------|---------|
+| "Small change, can't break the build" | Even single-line changes break builds. Run `cmake --build build` first. |
+| "CI will catch it if the build fails" | CI is a safety net. Don't push broken builds intentionally. |
+| "It built fine yesterday" | Dependencies change. State changes. Build locally before every push. |
+| "The CMake error is too confusing to parse" | Read the first 10 lines of error output — that's always where the root cause is. |
+| "I'll fix the FetchContent pin later" | Unpinned dependencies produce non-reproducible builds. Pin to tag/commit now. |
+| "The tests don't need to be in the build target" | All test targets must build cleanly. No orphaned test binaries. |
+
+---
+
+## Red Flags — STOP
+
+If you catch yourself thinking any of these, stop and follow the rule:
+- "I'll push and see if CI builds it"
+- "This small change couldn't break CMake"
+- "The dependency version doesn't really matter"
+- "I don't understand the CMake error but it probably works"
+- "I'll update the dependency pin in a follow-up"
+- About to push without running `cmake --build build` locally
+
+**All of these mean: Run `cmake --build build` locally. Read the full output. Fix errors before pushing.**
 
 ---
 

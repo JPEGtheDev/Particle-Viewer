@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.1"
+  version: "1.2"
   category: versioning
   project: Particle-Viewer
 ---
@@ -122,6 +122,33 @@ Verify the commit message/PR title uses the correct type. Manual override via `w
 
 **Need a release:**
 Just push conventional commits to master — it's automatic.
+
+---
+
+## Rationalization Prevention
+
+| Excuse | Reality |
+|--------|---------|
+| "The commit type doesn't matter much" | Wrong type = wrong version bump. `fix` → patch, `feat` → minor, `feat!` → major. Automation parses this. |
+| "I'll fix the commit message after the PR is merged" | Merged commit messages are permanent. The PR title IS the squash commit message. |
+| "This feels like a feat but it's technically a fix" | Ask: does it add a new user-visible behavior? Yes → `feat`. No → `fix`. |
+| "The PR title is close enough to conventional format" | Close enough = broken parsing. The format must be exact. |
+| "I'll write a proper commit message once the work is done" | Write the commit type first — it clarifies scope and prevents scope creep. |
+| "scope is optional so I'll skip it" | Scope makes large PRs navigable. Use it whenever the change is domain-specific. |
+
+---
+
+## Red Flags — STOP
+
+If you catch yourself thinking any of these, stop and follow the rule:
+- About to write a commit message without checking the type first
+- "feat or fix, doesn't really matter"
+- Commit message starts with a capital letter or ends with a period
+- PR title doesn't start with `<type>[scope]:` format
+- "I'll change the PR title later if needed"
+- Working on a hotfix and tempted to use `feat` to "be safe"
+
+**All of these mean: Check the type first. `feat` = new user-visible behavior, `fix` = corrects existing behavior, `docs` = documentation only. When in doubt, read the `versioning` skill.**
 
 ---
 
