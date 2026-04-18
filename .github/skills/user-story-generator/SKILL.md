@@ -5,9 +5,43 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.0"
-  framework: INVEST
+  version: "1.1"
+
   project: Particle-Viewer
+---
+
+## Iron Law
+
+```
+NO STORY SHIPS WITHOUT INVEST VALIDATION AND ACCEPTANCE CRITERIA
+```
+
+Every story must be Independent, Negotiable, Valuable, Estimable, Small, Testable — and have at least one acceptance criterion. No exceptions.
+
+**Announce at start:** "I am using the user-story-generator skill to create/refine a story for [brief description]."
+
+## Rationalization Prevention
+
+| Excuse | Reality |
+|--------|---------|
+| "The story is clear enough, INVEST is overkill" | INVEST catches scope creep and untestable requirements before sprint start. |
+| "Acceptance criteria can be added later" | Stories without acceptance criteria can't be verified as done. Add them now. |
+| "This story is too big but we'll split it in sprint" | Split it now. Big stories hide risk and block delivery. |
+| "The story depends on another, but we'll handle it" | Dependent stories can't be independently delivered. Redesign the split. |
+| "We can estimate it after starting" | Inestimable stories signal unclear scope. Clarify before committing. |
+| "Good enough — the team will figure out the details" | Vague stories produce vague implementations. Write precise acceptance criteria. |
+
+## Red Flags — STOP
+
+- Story has no acceptance criteria
+- Story requires another story to be done first ("depends on #X")
+- Story spans multiple unrelated components or layers
+- "We'll know it's done when it feels right"
+- Story takes more than one sprint to deliver
+- Can't write a failing test for the acceptance criteria
+
+**All of these mean: split the story, clarify the criteria, or restructure the work.**
+
 ---
 
 # Instructions for Agent
