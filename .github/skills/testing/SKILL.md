@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for GitHub Copilot and similar AI coding agents
 metadata:
   author: JPEGtheDev
-  version: "1.3"
+  version: "1.4"
   category: testing
   project: Particle-Viewer
 ---
@@ -297,7 +297,49 @@ For mock-related anti-patterns, see [references/testing-anti-patterns.md](refere
 
 ---
 
-## Key Types for Visual Regression
+## OpenGL Visual Testing: What Can and Cannot Be Tested Automatically
+
+OpenGL rendering is an inherently visual process. Pixel output depends on GPU drivers, platform, and rendering state that unit tests cannot fully capture. This section defines the testing boundary.
+
+### What MockOpenGL CAN test (unit tests — TDD applies fully)
+
+- Shader compilation logic (uniform locations, program linking)
+- Buffer creation and binding sequences (VAO, VBO, EBO)
+- Draw call parameters (primitive type, index count, offset)
+- State machine transitions (depth test, blending, viewport)
+- Camera matrix calculations
+- Particle data loading and transformation
+- Any logic in `viewer_app`, `camera`, `shader` that doesn't produce pixels
+
+**TDD iron law applies here without exception.** Write the failing MockOpenGL test first.
+
+### What visual regression tests cover (NOT unit tests)
+
+- Final rendered pixel output
+- Color correctness and blending
+- Particle rendering at scale
+- UI overlay rendering
+
+**Visual regression tests are the safety net for pixel output.** However:
+- Baselines require **human approval** — an automated test cannot judge whether a new visual is "correct"
+- A visual regression test proves the output **hasn't changed**, not that it was correct to begin with
+- "It's all in the eye of the beholder" — accept this, and make baseline approval an explicit human step
+
+### TDD nuance for visual regression
+
+The TDD iron law (`NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST`) applies differently here:
+
+| Path | TDD rule |
+|------|----------|
+| Logic (MockOpenGL, unit tests) | Full RED-GREEN-REFACTOR. No exceptions. |
+| New visual baseline (first render) | Write the test framework first. Run it against no baseline (fail). Human approves the first baseline. THEN the test is green. |
+| Changing existing visual output | Delete the old baseline. Test fails. Implement the change. Human reviews the new diff. Approve new baseline. Green. |
+
+**Never auto-approve a visual baseline.** The human must look at the rendered output.
+
+---
+
+
 
 | Type | Location | Purpose |
 |------|----------|---------|

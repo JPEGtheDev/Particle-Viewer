@@ -2,6 +2,18 @@
 
 This is the agent onboarding document. It identifies the project, lists the skills that contain detailed rules, and states the few critical rules that apply to **every** task. All detailed guidelines live in skills.
 
+## Before Every Response — Run This Checklist
+
+Before generating any output, ask yourself:
+
+1. **About to write C++ code?** → Have I written a failing test first? If not: stop. Write the test.
+2. **About to say "done", "should work", or express satisfaction?** → Have I run `cmake --build build && ./build/tests/ParticleViewerTests` in this session? If not: run it now.
+3. **Encountered a bug or failure?** → Have I traced the root cause (not just guessed)? If not: load `systematic-debugging`.
+4. **Non-trivial task (3+ steps)?** → Have I loaded the required skills from the table below? If not: load them now.
+5. **Forming a theory or assumption?** → "I think" is not acceptable. Do I have empirical evidence (code, test output, documentation)? If not: dispatch a subagent to confirm before proceeding.
+
+**This checklist applies on EVERY turn. Not just session start.**
+
 ## Iron Laws — Always Active
 
 These apply in every session, every task, every model. No exceptions.
