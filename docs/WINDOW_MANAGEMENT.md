@@ -1,6 +1,14 @@
-# Window and Resolution Management
+---
+title: "Window and Resolution Management"
+description: "How to configure window resolution, fullscreen mode, and persistence settings in Particle-Viewer."
+domain: architecture
+subdomain: sdl3
+tags: [architecture, sdl3, window, opengl]
+related:
+  - "IMGUI_INTEGRATION.md"
+---
 
-Particle-Viewer provides flexible window and resolution management to adapt to your display setup.
+# Window and Resolution Management
 
 ## Changing Resolution
 
@@ -14,7 +22,7 @@ Particle-Viewer provides flexible window and resolution management to adapt to y
    - **1440p (2560x1440)** - 2K/QHD
    - **4K (3840x2160)** - Ultra HD
 
-**Note:** If your monitor is smaller than the selected resolution, the application will automatically clamp the resolution to fit your monitor while maintaining aspect ratio. The menu will show "(clamped to WxH)" next to options that exceed your monitor size.
+**Note:** The application clamps resolutions larger than your monitor while maintaining aspect ratio. The menu shows "(clamped to WxH)" next to options that exceed your monitor size.
 
 ### Via Command Line
 
@@ -28,7 +36,7 @@ You can specify an initial resolution when launching:
 
 ### Manual Resizing
 
-You can also manually resize the window by dragging the window edges. The viewport and projection will automatically adjust to maintain correct aspect ratio.
+You can also manually resize the window by dragging the edges. The viewport and projection automatically adjust to maintain aspect ratio.
 
 ## Fullscreen Mode
 
@@ -70,13 +78,13 @@ fullscreen=0
 ```
 
 **Fields:**
-- `width` - Window width in pixels (windowed mode)
-- `height` - Window height in pixels (windowed mode)
+- `width` - Window width in pixels
+- `height` - Window height in pixels
 - `fullscreen` - `1` for fullscreen, `0` for windowed
 
 ### Resetting Configuration
 
-To reset to defaults, simply delete the configuration file. The application will use default settings (1280x720 windowed) on next launch.
+Delete the configuration file to reset to defaults (1280x720 windowed).
 
 ## Tips
 
@@ -91,13 +99,7 @@ If you try to set a resolution larger than your monitor, the application will:
 
 ### Performance Considerations
 
-Higher resolutions require more GPU power:
-- **720p**: Smooth on most systems
-- **1080p**: Recommended for most modern systems
-- **1440p**: Requires a mid-range or better GPU
-- **4K**: Requires a high-end GPU for smooth framerates
-
-If you experience low framerates, try a lower resolution.
+Higher resolutions require more GPU power. For low framerates, try a lower resolution.
 
 ### Debug Mode
 
@@ -106,7 +108,7 @@ Press **F3** to toggle debug mode, which shows:
 - Camera position and orientation
 - Frame rate (FPS)
 
-This can help verify your resolution settings are applied correctly.
+This can help verify resolution settings are applied correctly.
 
 ## Troubleshooting
 
@@ -136,6 +138,10 @@ If your resolution isn't persisting between sessions:
 ### Visual Distortion
 
 If particles or the scene appears stretched:
-- The projection matrix updates automatically on resize
 - Try toggling fullscreen and back to reset
 - If the issue persists, restart the application
+
+## Related
+
+- [IMGUI_INTEGRATION.md](IMGUI_INTEGRATION.md) — Dear ImGui integration, menu system, and SDL3 event order.
+- [CONTROLLER_MAPPING.md](CONTROLLER_MAPPING.md) — Gamepad input mappings and keyboard equivalents.
