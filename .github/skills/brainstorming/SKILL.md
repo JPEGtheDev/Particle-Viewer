@@ -147,10 +147,36 @@ When the gate is fully passed, output this record. It becomes part of the PR des
 
 **Test strategy:** [how correctness will be verified]
 
-**Gate passed:** YES — handing off to writing-plans
+**Gate passed:** YES — awaiting user approval
 ```
 
-After outputting this record: load `writing-plans` skill. Do NOT begin implementation directly.
+After presenting this record: **STOP. Ask the user:**
+
+> "Does this design look right? Should I proceed to planning?"
+
+**Wait for explicit user approval before loading `writing-plans`.**
+
+| User response | Action |
+|---------------|--------|
+| Approves | Load `writing-plans` skill with the Design Decision Record as context |
+| Has questions or concerns | Return to the relevant phase; resolve before presenting again |
+| Changes requirements | Restart from Phase 1 with the updated requirements |
+
+Do NOT load `writing-plans` without user acknowledgment. The Design Decision Record is the contract — the user must accept it before planning begins.
+
+---
+
+## Multi-Subsystem Tasks
+
+If the task spans **2+ independent subsystems** (different architectural layers, different files with no shared interface, or clearly separate responsibilities):
+
+1. Name each subsystem explicitly and state why each is independent
+2. Run Phases 1–5 for **each subsystem separately** — one Design Decision Record per subsystem
+3. Present all records to the user together; get approval for all before proceeding
+4. Hand off to `writing-plans` with all approved records as context — one plan per subsystem
+5. Each subsystem plan runs its own Skeptic Agent review independently
+
+**Do NOT create a single Design Decision Record for a task with independent subsystems.** A merged record hides coupling between subsystems. Identify the boundary first, then design each side separately.
 
 ---
 

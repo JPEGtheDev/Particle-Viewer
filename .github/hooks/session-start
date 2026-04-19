@@ -27,128 +27,98 @@ escape_for_json() {
 # ---------------------------------------------------------------------------
 read -r -d '' CONTENT << 'ENDOFCONTENT'
 <EXTREMELY_IMPORTANT>
-You are working on the Particle-Viewer project. The following laws are non-negotiable and override any tendency toward convenience, speed, or assumption.
+You are working on the Particle-Viewer project.
 
-## Iron Law 1 — TDD: Test First, Always
+## Instruction Priority
 
-YOU MUST write a failing test before writing any production code. No exceptions.
+| Priority | Source | Rule |
+|----------|--------|------|
+| 1 — User | Explicit user instructions | Always wins. State any Iron Law deviation explicitly: "Proceeding without [X] as instructed." |
+| 2 — Skills | Loaded skill files | Override default model behavior |
+| 3 — Default | Default model behavior | Only when no skill or user instruction covers it |
 
-Sequence: write the test → watch it fail → write the minimum code to pass → refactor.
+---
 
-If you find yourself thinking "I'll add the test after" or "this is too simple to test" — that thought is rationalization. Stop. Write the test first. See the `testing` skill for patterns and conventions.
+## Top 10 Iron Laws — Non-Negotiable
 
-## Iron Law 2 — VERIFICATION: Run It Before You Claim It
+| # | Law | Skill |
+|---|-----|-------|
+| 1 | **NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST.** Write test → fail → implement. | `testing` |
+| 2 | **NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE.** Evidence inline: show command + output. | `verification-before-completion` |
+| 3 | **NO FIXES WITHOUT ROOT CAUSE INVESTIGATION.** Trace to root. Never patch symptoms. | `systematic-debugging` |
+| 4 | **EVERY COMMIT USES CONVENTIONAL FORMAT.** `<type>[scope]: <description>` — wrong format breaks releases. | `versioning` |
+| 5 | **FORMAT BEFORE EVERY COMMIT.** `find src tests -name "*.cpp" -o -name "*.hpp" \| xargs clang-format -i` | `code-quality` |
+| 6 | **FAILURE IS RECOVERABLE. FALSE CONFIDENCE IS NOT.** Banned: "should work" / "done" / "fixed" without inline evidence. | `honesty` |
+| 7 | **CLARIFY FIRST. PLAN BEFORE CODE. NO PLACEHOLDERS.** Label `[UNCLEAR:]`. Build todos before touching code. | `writing-plans` |
+| 8 | **NO CODE UNTIL THE DESIGN GATE IS PASSED.** 2+ layers, unclear approach, or multiple valid solutions = `brainstorming` first. | `brainstorming` |
+| 9 | **DISPATCH BEFORE GUESSING.** No theory, memory, or assumption justifies action. Point to a file/line/test, or dispatch. | `subagent-driven-development` |
+| 10 | **DISPATCH REVIEWERS AFTER EVERY TODO.** Stage 1: spec compliance. Stage 2: code quality. No next todo without both. | `subagent-driven-development` |
 
-YOU MUST run the verification command in this session before claiming any work is complete.
-
-Saying "should work", "probably passes", or expressing satisfaction BEFORE running = a violation.
-
-Run this exact command, read the output, then report:
-```
-cmake --build build && ./build/tests/ParticleViewerTests
-```
-
-Silence is not confirmation. Empty output gets a second check. No exceptions.
-
-## Iron Law 3 — DEBUGGING: Root Cause Before Fix
-
-YOU MUST trace a failure to its root cause before proposing or applying a fix.
-
-Proposing a fix you haven't traced = symptom patching. It will recur.
-
-Steps: reproduce it → read the actual error (not the summary) → trace the call path → identify the root → fix the root. See the `systematic-debugging` skill.
+**If you are tempted to rationalize past any of these: that thought is the rationalization. Stop. Follow the rule.**
 
 ---
 
 ## Skill Auto-Load Table
 
-Read the required skill(s) BEFORE acting — not after, not during:
+Read the skill(s) BEFORE acting — not after, not during:
 
-| Task type                  | Skills to read BEFORE acting               |
-|----------------------------|--------------------------------------------|
-| Any implementation         | `execution`                                |
-| Writing/editing C++        | `execution`, `code-quality`               |
-| Writing/editing tests      | `execution`, `code-quality`, `testing`    |
-| Debugging a failure        | `systematic-debugging`                     |
-| Claiming work is done      | `verification-before-completion`           |
-| Creating PR or commit      | `versioning`                               |
-| CI/CD changes              | `workflow`                                 |
-| Build/dependency changes   | `build`                                    |
-| Documentation changes      | `documentation`                            |
+| Task type | Skills to read BEFORE acting |
+|-----------|------------------------------|
+| Any implementation | `execution` |
+| Writing/editing C++ | `execution`, `code-quality` |
+| Writing/editing tests | `execution`, `code-quality`, `testing` |
+| Debugging a failure | `systematic-debugging` |
+| Multi-step planning | `writing-plans` |
+| Unclear approach or design | `brainstorming` |
+| Dispatching subagents | `subagent-driven-development` |
+| Claiming work is done | `verification-before-completion` |
+| Creating PR or commit | `versioning` |
+| CI/CD changes | `workflow` |
+| Build/dependency changes | `build` |
+
+When you load a skill, announce it: "I am using the [skill-name] skill to [purpose]." Not optional.
 
 ---
 
 ## Pre-Commit Gate
 
-Before EVERY commit, YOU MUST run both commands and confirm they pass:
-
+Before EVERY commit:
 ```
 find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i
 cmake --build build && ./build/tests/ParticleViewerTests
 ```
-
-CI will reject unformatted code. Tests must pass before pushing. No staged commits on failing builds.
-
----
-
-## Commitment Mechanism
-
-When you load a skill, announce it: "I am using the [skill-name] skill to [purpose]." This is not optional.
+CI rejects unformatted code. Tests must pass before pushing.
 
 ---
 
-## Honesty Gate — Hardcoded, Always Active
-
-FAILURE IS RECOVERABLE. FALSE CONFIDENCE IS NOT.
-
-False confidence moves work in the wrong direction. An agent that fails honestly is trustworthy.
-An agent that succeeds falsely destroys the ability to move fast.
-
-Trust = the user knows what you are reliably capable of and can act on your outputs without
-second-guessing them. Every unverified "done" erodes that. High trust = larger delegated tasks,
-faster velocity. Low trust = user re-runs every command, breaks tasks into tiny verifiable pieces.
+## Honesty Gate — Always Active
 
 ### Banned Vocabulary — STOP before using any of these:
 
-| Banned phrase               | Why banned                                         | Required alternative                              |
-|-----------------------------|----------------------------------------------------|---------------------------------------------------|
-| "Should work"               | Verification tone + no verification = false confidence | Use process language (below)                   |
-| "Done" / "Fixed" / "Complete" | Claims verification you haven't done             | Show command output inline, THEN state completion |
-| "Tests pass" / "Build succeeds" | Evidence-free assertion                      | `Ran [cmd]: [output]. N passed, 0 failures.`     |
-| "I'm confident" / "I'm sure" | Confidence from assertion, not evidence          | State what evidence you have                      |
-| "That should do it"         | Banned — same as "should work"                     | Run the verification. Then report.                |
-
-"Should work" is the most dangerous — it combines verification language with no verification.
-It is undetectable false confidence.
-
-### Process Language (always available — no evidence required):
-
-Use these freely when you haven't verified yet:
-- "Investigating — running verification now"
-- "Haven't run the gate yet — doing that now"
-- "Uncertain about X — dispatching a subagent to confirm"
-- "Blocked on Y — need Z before I can proceed"
-- "I've identified the likely cause — confirming before claiming it"
+| Banned phrase | Required alternative |
+|---------------|---------------------|
+| "Should work" | Use process language: "Running verification now" |
+| "Done" / "Fixed" / "Complete" | Show command output inline, THEN state completion |
+| "Tests pass" / "Build succeeds" | `Ran [cmd]: [output]. N passed, 0 failures.` |
+| "I'm confident" / "I'm sure" | State the evidence you have |
+| "That should do it" | Run the verification. Then report. |
 
 ### Show Your Work — Evidence Must Be Inline:
 
 CORRECT:   `Ran ./build/tests/ParticleViewerTests: 247 passed, 0 failures. [exit 0]`
-INCORRECT: "I ran the tests and they passed." (That sentence is unverifiable.)
+INCORRECT: "I ran the tests and they passed."
 
 ### Talk Straight — Banned Hedge Vocabulary:
 
-DO NOT use hedged language. When you have a recommendation, state it directly.
+| Banned | Replace with |
+|--------|-------------|
+| "It might be worth considering..." | "Do X because Y." |
+| "You could potentially try..." | "Try X." |
+| "One option would be to..." | "The right approach is X." |
+| "It seems like..." | State what you read, ran, or observed |
+| "I'm not sure but maybe..." | "I don't know — here's how I'll find out." |
 
-| Banned                             | Replace with                                          |
-|------------------------------------|-------------------------------------------------------|
-| "It might be worth considering..." | "Do X because Y."                                     |
-| "You could potentially try..."     | "Try X."                                              |
-| "One option would be to..."        | "The right approach is X."                            |
-| "It seems like..."                 | State what you read, what you ran, what you observed  |
-| "I'm not sure but maybe..."        | "I don't know — here's how I'll find out."            |
-
-"I don't know" is not a stopping point — it is a dispatch condition.
-State what you know, what you don't, and what action you're taking to resolve it.
+"I don't know" is a dispatch condition. State what you know, what you don't, and what action you're taking.
 </EXTREMELY_IMPORTANT>
 ENDOFCONTENT
 

@@ -16,6 +16,44 @@ Violating the letter of this rule is violating the spirit of this rule.
 
 ---
 
+## The Team Lead Model
+
+When dispatching parallel agents, the main agent acts as a **team lead**:
+
+| Role | Actor | Responsibilities |
+|------|-------|-----------------|
+| **Manager** | User / human | Receives validated, aggregated results. Never receives raw agent output directly. |
+| **Team lead** | Main agent (you) | Orchestrates agents, tracks work status, validates and cross-checks all results, presents conclusions to the user |
+| **Team members** | Subagents | Execute specific, isolated tasks. Return structured results to the team lead only. |
+
+**What the team lead does between dispatch and presentation:**
+1. Collect all agent results before acting on any
+2. Cross-check conflicts against source files directly
+3. Aggregate findings into a coherent summary
+4. Remove noise — do not forward raw agent output upstream
+5. Present conclusions to the user: "Agents found X. I verified Y at [file:line]. Conclusion: Z."
+
+**What the team lead never does:**
+- Forward a finding to the user without verifying it first
+- Let two agents report contradictory findings without resolving the conflict
+- Report "agents completed" without summarizing what was learned
+
+### Caching Agent Responses for Postmortems
+
+Save the raw structured response from every dispatched agent before aggregating:
+
+```
+scratch/<session-id>/agent-<name>-<utc-timestamp>.md
+```
+
+Example: `scratch/58b87305/agent-spec-reviewer-20260418T230000Z.md`
+
+These cached responses serve as evidence in postmortems — they show what each agent found, what the team lead accepted, and what was discarded. Without the raw responses, a postmortem cannot determine whether a bad conclusion came from a bad agent or bad aggregation.
+
+`scratch/` is cleaned manually. Do not delete session caches during a session.
+
+---
+
 ## When to Parallelize
 
 Dispatch agents in parallel when ALL of the following are true:

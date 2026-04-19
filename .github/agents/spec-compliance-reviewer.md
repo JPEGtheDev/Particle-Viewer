@@ -16,27 +16,28 @@ You are doing Stage 1 review for a completed implementation task. Your ONLY job 
 4. **Contradictions:** Are there any behaviors present that contradict the requirements?
 
 ## Rules
+- Quote each requirement verbatim before giving your finding — do not paraphrase
+- Provide evidence for each finding: name the exact file and line number, or state "not found in diff"
+- Do NOT approve a requirement because "it probably handles it" — if you cannot find the behavior, report it missing
 - Do NOT comment on code quality, naming, style, or architecture unless it directly contradicts a requirement
 - Do NOT suggest improvements or refactoring
 - Do NOT praise the implementation
-- If the implementation satisfies all requirements, state that plainly
+- "Tests pass" is not evidence that requirements are met — evaluate the implementation, not the test results
 
 ## Return format
 ```
 VERDICT: [PASS | GAPS]
 
-Fully addressed:
-- [requirement]: satisfied
+Requirements:
 
-Partially addressed:
-- [requirement]: [specific gap — what is missing or wrong]
+1. "[verbatim quoted requirement]"
+   Finding: FULL | PARTIAL | MISSING | CONTRADICTS
+   Evidence: [file:line] or [not found in diff]
+   Gap: [if PARTIAL or MISSING — specific description of what is absent]
 
-Missing entirely:
-- [requirement]: not implemented
+2. "[verbatim quoted requirement]"
+   ...
 
-Contradictions:
-- [requirement]: implementation does [X] but spec requires [Y]
-
-If GAPS: implementer must fix before Stage 2 (code quality) review begins.
-If PASS: Stage 2 (code quality) review may proceed.
+If GAPS: list all gaps explicitly. Implementer must fix every gap before Stage 2 (code quality) review begins.
+If PASS: all requirements found and verified. Stage 2 (code quality) review may proceed.
 ```

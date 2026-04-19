@@ -47,7 +47,9 @@ Use this skill for every one of these situations:
 
 ## The Four Phases
 
-Each phase MUST be completed in order. You cannot enter Phase 3 without completing Phase 2. You cannot propose fixes without completing Phase 1.
+**Important scope boundary:** A request to "debug" or "investigate" is a request for root cause analysis and a findings report — NOT a request to fix. Present your findings and wait for explicit instruction before applying any fix. This applies even when the fix seems obvious.
+
+Each phase MUST be completed in order.
 
 ### Phase 1: Root Cause Investigation
 
@@ -129,6 +131,7 @@ If you find yourself thinking any of the following, **STOP and return to Phase 1
 | "I've already looked at it, I know the problem" | Looking at symptoms ≠ understanding root cause. |
 | "The test is flaky, just rerun it" | Flaky = non-determinism = root cause needed. |
 | "One more fix attempt" (after 2+ failures) | 3+ failures = architectural problem. Question the approach. |
+| "I found it — patching it now" | "Debug" means investigate and report. It does not mean fix. Present findings, wait for instruction. |
 
 ---
 

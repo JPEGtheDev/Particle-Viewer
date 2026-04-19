@@ -171,6 +171,18 @@ Apply to every line of a skill:
 
 **The test:** Can the agent rationalize past this sentence? If yes, make it a rule.
 
+### Acronym Rule
+
+**Spell out all terms on first use.** Do not introduce acronyms unless they are universally known (TDD, CI, PR, API). Project-specific and skill-specific abbreviations are forbidden — they require context the reader may not have, and lower-end models will silently misinterpret or skip them.
+
+Examples:
+- WRONG: "After the DDR is approved, hand off to writing-plans."
+- RIGHT: "After the Design Decision Record is approved, hand off to writing-plans."
+- WRONG: "See the VBC skill for the verification gate."
+- RIGHT: "See the `verification-before-completion` skill for the verification gate."
+
+Apply this rule to every sentence in every skill file, including rationalization tables, return formats, and quick reference blocks.
+
 ---
 
 ## Size and Token Efficiency
@@ -205,10 +217,30 @@ Rules:
 
 ### Compression Rules
 
-1. **Move heavy reference to a `references/` file.** Link from SKILL.md with one line.
-2. **Never repeat content another skill owns.** Cross-reference with a one-line pointer.
-3. **One example per pattern.** Delete redundant examples.
-4. **Description field never summarizes workflow.** See Element 1. Known failure mode: description saying "code review between tasks" caused models to do one review; triggering-conditions-only description caused models to follow the two-stage flowchart correctly.
+1. **Move heavy reference to a `references/` file — never delete it.**
+
+   GOOD: Skill file has one pointer: `See references/NAMING_RULES.md for full naming tables.`
+   BAD: Naming tables deleted to save lines — the same naming mistakes now recur with no documented reason why the rule exists.
+
+2. **Never delete content when compressing — move it.** Move excess to `references/`. Decision rationale, examples, and "why we did this" explanations belong in references even if not loaded every session. A deleted "why" gets rediscovered the hard way.
+
+   GOOD: References file states: "We use `m_` prefix because clang-tidy rule `readability-identifier-naming` enforces it — removing the prefix silently breaks CI."
+   BAD: Rationale removed to save lines. Next engineer removes `m_` prefixes not knowing why. CI breaks.
+
+3. **Never repeat content another skill owns.** Cross-reference with a one-line pointer.
+
+   GOOD: `execution` skill says: "For commit format, see the `versioning` skill."
+   BAD: `execution` skill copies the full conventional commit table from `versioning` — both diverge over time.
+
+4. **One example per pattern.** Delete redundant examples.
+
+   GOOD: One test name example showing `ClassName_Action_ExpectedResult`.
+   BAD: Six variations of the same pattern — models pick the last example seen, not the rule.
+
+5. **Description field never summarizes workflow.** See Element 1.
+
+   GOOD: `description: Use when writing or reviewing any test for Particle-Viewer.`
+   BAD: `description: Use when writing tests. Follows AAA pattern, enforces naming, handles Google Test patterns.` — models followed the description instead of reading the skill body.
 
 ---
 

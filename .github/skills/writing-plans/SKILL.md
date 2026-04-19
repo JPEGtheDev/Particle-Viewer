@@ -144,6 +144,10 @@ If you genuinely find no gaps after thorough analysis, state that explicitly.
 | "I'll update todos later" | Later never comes — update before starting, after finishing |
 | "I understand the requirements" | Misunderstood requirements are the most expensive bug |
 | "We'll probably need this later" | YAGNI — not in criteria means not in this plan |
+| "The plan looks good — I'll just start" | A plan presented is not a plan approved. Wait for explicit instruction. |
+| "The user implied I should proceed" | Implied is not explicit. "Looks good", "go ahead", or "start" are approval. Silence is not. |
+| "I found the bug — fixing it now" | A request to debug or research is not a request to fix. Present findings first. Wait for instruction. |
+| "I see the issue — let me just patch it" | Patching without direction wastes work. Root cause + presentation + user decision = the correct sequence. |
 
 ---
 
@@ -173,5 +177,9 @@ TDD task structure: RED / GREEN / REFACTOR / COMMIT as separate todos
     ↓
 Plan review: covers all criteria? downsides named?
     ↓
+Present plan to user — WAIT for explicit approval
+    ↓
 Begin execution (invoke execution skill)
 ```
+
+**Do NOT invoke execution without explicit user approval.** Presenting a plan is not approval. "Looks good" is approval. "Go ahead" is approval. Silence is not approval — wait.
