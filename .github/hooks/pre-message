@@ -36,6 +36,17 @@ If you have no memory of bootstrapping this session, load `session-bootstrap` no
 | 10 | DISPATCH REVIEWERS AFTER EVERY TODO. |
 
 If you are tempted to rationalize past any of these: that thought is the rationalization. Stop. Follow the rule.
+
+---
+
+## Skill Reload Triggers — STOP and Reload When:
+
+1. Picking up a new todo — reload the skill(s) for that todo's domain
+2. After 3 user prompts without a skill reload — reload the skill for whatever you are doing
+3. After a user correction or redirect — reload the misapplied skill immediately
+4. After context compaction — any compaction requires full skill reload for the active domain
+
+Do NOT say "I remember the skill content." Load fresh. Skill routing table is in `session-bootstrap`.
 </IMPORTANT>
 ENDOFCONTENT
 
