@@ -43,6 +43,63 @@ Self-evaluation captures what was learned. Session postmortem finds where the ag
 
 ---
 
+## External Reviewer Protocol (Required)
+
+A self-assessment cannot find what the agent rationalized away. **An external reviewer reads the raw event log cold — no session memory, no emotional investment in the outcome.** This is not optional. A postmortem with only self-assessment is incomplete.
+
+### Setup
+
+Derive the paths for the session being reviewed:
+
+```
+SESSION_ID:       [session ID — shown in workspace.yaml or .copilot/session-state/ directory name]
+EVENTS_LOG:       ~/.copilot/session-state/[SESSION_ID]/events.jsonl
+WORKSPACE:        ~/.copilot/session-state/[SESSION_ID]/
+SELF_ASSESSMENT:  ~/.copilot/session-state/[SESSION_ID]/postmortem.md  (if self-eval already ran)
+OUTPUT:           ~/.copilot/session-state/[SESSION_ID]/postmortem-external.md
+```
+
+### Protocol
+
+1. **Dispatch the external reviewer subagent** using `.github/agents/postmortem-reviewer.md` with the above paths filled in. The reviewer reads `events.jsonl` directly — no pre-export needed.
+
+2. **Run self-assessment in parallel** (the main agent does Parts 1–5 from memory while the reviewer works).
+
+3. **Wait for the reviewer to complete.** Read its output from `postmortem-external.md`.
+
+4. **Reconcile.** Where the external reviewer and self-assessment agree: note the convergence. Where they conflict: the external reviewer's log-cited findings are authoritative. The self-assessment's uncited claims are not.
+
+5. **Merge into the final report.** The final postmortem includes both perspectives. Discrepancies between self-assessment and external review are explicitly noted — they are themselves a finding.
+
+**Precedence rule:** External reviewer findings backed by log evidence override self-assessment claims backed only by memory. A gate "remembered" as having fired but absent from the log did not fire.
+
+---
+
+## Batch Analysis Protocol
+
+To run postmortems on older sessions that were never reviewed:
+
+```bash
+# List all sessions, find those without an external postmortem
+for dir in ~/.copilot/session-state/*/; do
+  session_id=$(basename "$dir")
+  if [ ! -f "$dir/postmortem-external.md" ] && [ -f "$dir/events.jsonl" ]; then
+    echo "$session_id"
+  fi
+done
+```
+
+Dispatch up to 4 reviewer subagents in parallel, each pointed at a different `events.jsonl`. Use `postmortem-reviewer.md` for each. Collect results as they complete.
+
+**Priority order for batch review:**
+1. Sessions where a self-assessment `postmortem.md` exists but no external review — highest value, direct comparison available
+2. Sessions with a `plan.md` but no postmortem at all — likely had structured work with no retrospective
+3. Sessions with only checkpoint files — lower priority, less context available
+
+**What to do with batch findings:** If a pattern appears in 2 or more sessions (same gate skipped, same rationalization, same lucky path), that pattern becomes a STRONG action item in the next skill update. Single-session findings are noted but not acted on until confirmed.
+
+---
+
 ## The 5-Part Blameless Postmortem Structure
 
 Work through every part. Do not skip a section because the session "seemed fine."
@@ -205,6 +262,11 @@ Run every item before generating the report:
 ### Where We Got Lucky
 [Correct outcomes produced without reliable process — highest-priority action items]
 
+### External Reviewer Findings
+[Summary of external reviewer's findings — log-cited evidence only]
+[Discrepancies with self-assessment explicitly noted]
+[If external review not yet complete: "PENDING — external reviewer dispatched"]
+
 ### Prompt Feedback
 [User prompt quality review — patterns found, quoted examples, effects, recommendations]
 [If no issues: state explicitly with supporting evidence]
@@ -238,6 +300,7 @@ If any of the following apply, the verdict is at minimum NEEDS IMPROVEMENT:
 - User had to correct the same behavior more than once in the same session
 - Agent dropped an announced commitment without acknowledging it
 - Prompt Feedback section was omitted or left as a placeholder
+- **External reviewer was not dispatched — postmortem is self-assessment only**
 
 Three or more of the above = SYSTEMIC ISSUE. Relevant skills need immediate rationalization table updates.
 
@@ -253,6 +316,7 @@ Three or more of the above = SYSTEMIC ISSUE. Relevant skills need immediate rati
 | "The user didn't complain" | Some failures are silent. The agent may have produced a plausible wrong answer the user accepted. Postmortem finds those. |
 | "Self-evaluation already covered this" | Self-eval is by the agent. Postmortem is external. Different perspective, different blind spots. Both are necessary. |
 | "The session was short, not worth analyzing" | Short sessions have failure modes too. A short session gets a proportionate postmortem — 10 minutes, not an hour. |
+| "I'll skip the external reviewer, it's just overhead" | The external reviewer reads events the agent rationalized away. Skipping it means the postmortem finds only what the agent was willing to find. |
 
 ---
 
