@@ -6,12 +6,10 @@ description: Use when estimating effort, premium request counts, or model tier s
 ## Iron Law
 
 ```
-EVERY STORY GETS AN EFFORT ESTIMATE AND MODEL RECOMMENDATION
+YOU MUST INCLUDE AN EFFORT ESTIMATE AND MODEL RECOMMENDATION IN EVERY STORY. NO EXCEPTIONS.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.
-
-Include the Effort Estimate section in every generated story. No exceptions.
 
 **Announce at start:** "I am using the user-story-estimation skill to estimate effort for [story name]."
 
@@ -121,6 +119,19 @@ Every generated story must include this section:
 - "I'll add the estimate later" — add it now
 - Recommending Advanced model for a clearly mechanical task
 - Estimate range exceeds 50 requests for an S-sized story — recategorize as M
+- Dispatching a premium agent for a task clearly scoped as XS or S
+
+---
+
+## Before Committing to an Estimate
+
+BEFORE committing to an estimate, verify:
+1. The story is INVEST-valid (Independent, Negotiable, Valuable, Estimable, Small, Testable)
+2. All unknowns are identified and noted in the estimate
+3. The task breakdown reflects the actual work, not a best-case scenario
+
+✓ All met → commit to the estimate
+✗ Any unmet → resolve unknowns and recheck INVEST compliance before estimating
 
 ---
 
@@ -131,3 +142,5 @@ Every generated story must include this section:
 | "Estimates are just guesses anyway" | Calibrated estimates improve sprint planning; validated examples improve calibration |
 | "The model tier doesn't matter that much" | Wrong tier wastes budget or loses quality on critical tasks |
 | "I'll estimate after implementation" | Pre-estimation exposes scope uncertainty before it causes overruns |
+| "The story is straightforward, premium model isn't needed" | Story complexity is not always visible at estimation time. Use the model tier the standard prescribes for the story size. |
+| "I'll update the estimate after starting" | Estimates set expectations. Changing them mid-task without communication breaks trust. Revise estimates before beginning, not during. |
