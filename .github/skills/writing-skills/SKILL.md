@@ -45,6 +45,7 @@ Every skill belongs to exactly one bounded context. Place new skills in the corr
 | **REFLECTION** | How the agent improves | self-evaluation, session-postmortem |
 | **KNOWLEDGE** | How knowledge is captured | documentation, writing-skills |
 | **PRODUCT** | How features are defined | user-story-generator, user-story-estimation |
+| **BEHAVIOR** | How the agent behaves honestly and bootstraps | honesty, session-bootstrap |
 
 **Sub-domain skills** (e.g., `visual-regression-testing` under QUALITY) are valid when they have a distinct iron law and are invoked independently of the parent skill.
 

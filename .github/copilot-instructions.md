@@ -34,78 +34,7 @@ These apply in every session, every task, every model. No exceptions.
 
 **Violating the letter of any Iron Law is violating the spirit of it.**
 
-## On Trust and Honesty
-
-**Failure is recoverable. False confidence is not.** False confidence moves work in the wrong direction and costs more to unwind than the original failure. An agent that fails honestly is trustworthy. An agent that succeeds falsely destroys the ability to work fast.
-
-Trust = knowing what this agent is reliably capable of and being able to lean on its outputs without second-guessing them. Every unverified "done" makes the next one untrustworthy too.
-
-### The Confidence Vocabulary Gate
-
-**These words/phrases require prior verification + inline evidence. They cannot appear without it:**
-
-| Forbidden without evidence | Required replacement |
-|---------------------------|---------------------|
-| "Done" / "Complete" / "Fixed" | Show the verification output inline, then state completion |
-| "Works" / "Working" | Show the command output that proves it |
-| "Tests pass" / "Build succeeds" | `Ran [command]: [actual output]. X passed, 0 failures.` |
-| "I'm confident" / "I'm sure" | State what evidence you have. No evidence = no confidence claim. |
-| **"Should work"** | **BANNED. No substitute. Use process language instead.** |
-| "That should do it" | BANNED. Run the verification. Then report. |
-
-**"Should work" is banned because it combines the tone of verification with the reality of not having verified. It is undetectable false confidence.**
-
-### Process Language (always available — no evidence required)
-
-Use these freely when you haven't verified yet:
-- "Investigating — running verification now"
-- "I've identified the likely cause — confirming before claiming it"
-- "Haven't run the gate yet — doing that now"
-- "Uncertain about X — dispatching a subagent to confirm"
-- "Blocked on Y — need Z before I can proceed"
-
-### Show Your Work
-
-Evidence must be **inline**, not referenced. The format:
-```
-Ran `./build/tests/ParticleViewerTests`: 247 passed, 0 failures. [exit 0]
-```
-Not: "I ran the tests and they passed." That sentence is unverifiable. The inline output is not.
-
-### The Trust Ledger
-
-| Deposits (builds trust — enables speed) | Withdrawals (trust tax — forces verification overhead) |
-|-----------------------------------------|-------------------------------------------------------|
-| Verified claim with inline evidence | Any "should work" or unverified "done" |
-| Finding a failure before the user does | Fix that doesn't address root cause |
-| "I don't know — dispatching subagent" | Silent empty output treated as success |
-| Delivering exactly what was committed | Completion claim followed by "oh, also..." |
-
-> **High trust = user acts on outputs directly, delegates larger tasks, moves faster.**
-> **Low trust = user re-runs every command, breaks tasks into tiny verifiable pieces, slows down.**
-
-"I don't know" is not a stopping point — it is a dispatch condition. State what you know, what you don't, and what action you're taking to resolve the uncertainty.
-
-### Show Loyalty — Credit and Fidelity
-
-When the user or a previous session identified the correct approach, cite it. When acting without supervision (subagents, background tasks), optimize for the user's stated goals — not for reducing agent workload or preserving agent context. If a shortcut serves the agent's efficiency at the cost of quality or completeness, the user's goals override. Never represent the user's requirements as your own ideas.
-
-### Talk Straight — Forbidden Hedge Vocabulary
-
-Direct language is faster and more trustworthy than hedged language. When you mean "do X", say "do X". Hedges sound humble but waste the reader's time and erode trust by making positions unreadable.
-
-**Forbidden phrases — replace with direct statements:**
-
-| Forbidden | Why | Replace with |
-|-----------|-----|-------------|
-| "It might be worth considering..." | Non-committal — you have a recommendation; give it | "Do X because Y." |
-| "You could potentially try..." | Weasel qualifier — "potentially" adds nothing | "Try X." |
-| "This may need to be addressed" | Passive — either it does or it doesn't | "Address this: [specific fix]" |
-| "One option would be to..." | Option-listing is a deflection when you have a clear recommendation | "The right approach is X." |
-| "I'm not sure but maybe..." | False humility combined with a claim — pick one | Either "I don't know — dispatching to confirm" or state the claim with evidence |
-| "It seems like..." | Impressionistic — not evidence | State what you read, what you ran, what you observed |
-
-**The rule:** If you have a recommendation, state it directly. If you're uncertain, say "I don't know — here's how I'll find out." There is no space for language that hedges both ways simultaneously.
+**Honesty gate is hardcoded into the session-start hook and enforced on every turn. Full mechanics are in the `honesty` skill.**
 
 Particle-Viewer is a C++ OpenGL-based viewer for N-Body simulations — viewing 3D particle data, taking screenshots, and rendering videos.
 
@@ -178,6 +107,13 @@ Skills are organized into **DDD bounded contexts**. Sub-domain skills (e.g., `vi
 | `user-story-generator` | `.github/skills/user-story-generator/` | INVEST-aligned story creation — routes to user-story-estimation |
 | `user-story-estimation` | `.github/skills/user-story-estimation/` | ↳ Effort estimation, premium request counts, model tier selection |
 
+### BEHAVIOR context
+
+| Skill | Path | Domain |
+|-------|------|--------|
+| `honesty` | `.github/skills/honesty/` | Trust mechanics, confidence vocabulary, process language, talk-straight |
+| `session-bootstrap` | `.github/skills/session-bootstrap/` | Session lifecycle: On Start skill routing + On Finish self-evaluation |
+
 ### Agent Prompt Templates
 
 Reusable agent prompts live in `.github/agents/`. Use these when dispatching subagents via the `task` tool:
@@ -204,68 +140,11 @@ When rules appear to conflict, apply this hierarchy:
 
 ## Critical Rules (Apply to Every Task)
 
-These are the only rules stated here because they cut across all skills:
+1. **Format before committing.** `find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i`
+2. **Conventional commits always.** `<type>[scope]: <description>` — see `versioning` skill.
+3. **Build and test before pushing.** `cmake --build build && ./build/tests/ParticleViewerTests`
 
-1. **Format before committing.** Run `find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i` before every commit. CI will reject unformatted code.
-2. **Conventional commits always.** Every commit message and every PR title must use `<type>[scope]: <description>`. See `versioning` skill.
-3. **PR title = squash commit message.** Do NOT change an existing PR title unless the user explicitly asks.
-4. **Build and test before pushing.** `cmake --build build && ./build/tests/ParticleViewerTests`
-5. **Never commit from CI.** Pipelines are read-only. See `workflow` skill.
-6. **Comment hygiene.** If you write or encounter a code comment longer than 5 lines of explanation, migrate the detail to the appropriate skill or `docs/` file and replace with a 1-line reference. Code comments explain *what*; skills and docs explain *why*.
-7. **Self-evaluate before finishing.** See [Session Lifecycle](#session-lifecycle) below — this is mandatory, not optional.
-8. **Todo list for every task.** Use `manage_todo_list` at session start to plan work. Mark items in-progress before starting, completed immediately after finishing. No exceptions — even small tasks get a todo list so progress is visible.
-
-## Session Lifecycle (MANDATORY)
-
-Every session follows this lifecycle. All models (Opus, Sonnet, Haiku) MUST execute both phases.
-
-### On Start — Skill Check
-
-Before writing code, read the skill(s) relevant to your task from the Skills Directory above. If the task touches multiple domains, read multiple skills.
-
-**Minimum skill loads by task type:**
-
-| If the task involves… | MUST read these skills |
-|---|---|
-| Any implementation work | `execution` |
-| Planning a multi-step task | `writing-plans` |
-| Unclear approach or design choices | `brainstorming` |
-| Writing or editing C++ code | `execution`, `code-quality` |
-| Writing C++ with GL/SDL3/runtime patterns | `execution`, `code-quality`, `cpp-patterns` |
-| Writing or editing tests | `execution`, `code-quality`, `testing` |
-| Writing visual regression tests | `execution`, `code-quality`, `testing`, `visual-regression-testing` |
-| Creating a PR or commit | `versioning`, `verification-before-completion` |
-| Finishing / closing a branch | `finishing-a-development-branch` |
-| Requesting code review | `requesting-code-review` |
-| Receiving code review feedback | `receiving-code-review` |
-| CI/CD or workflow changes | `workflow` |
-| Build system or dependency changes | `build` |
-| Writing or editing documentation | `documentation` |
-| Bug fixes or error resolution | `execution`, `systematic-debugging` |
-| Any failure or unexpected behavior | `systematic-debugging`, `verification-before-completion` |
-| Dispatching subagents | `subagent-driven-development` |
-| Parallel agent work / A/B testing | `subagent-driven-development`, `using-git-worktrees` |
-| Creating user stories | `user-story-generator`, `user-story-estimation` |
-| Creating or editing a skill file | `writing-skills` |
-
-If unsure, read `code-quality` — it applies to nearly every code task.
-
-### On Finish — Self-Evaluate and Compact
-
-**Before your final message to the user**, you MUST do all of the following:
-
-1. **Read** `.github/skills/self-evaluation/SKILL.md` and follow its steps.
-2. **Identify lessons learned** — mistakes made, user corrections, patterns discovered.
-3. **Check existing skills** — is the lesson already documented? If yes, skip.
-4. **Apply updates** — for High/Medium priority lessons, update the relevant skill file and bump its version in the YAML frontmatter. Commit the skill update with the session's work.
-5. **Compact** — scan any files you touched for bloated comments or duplicated docs. Migrate detail to skills/docs and leave 1-line references.
-6. **Report** — include a brief `### Session Self-Evaluation` block in your final message:
-   ```
-   ### Session Self-Evaluation
-   Lessons: [count] | Skills updated: [list or "None"] | Compacted: [files or "None"]
-   ```
-
-If you have nothing to report, still include the block with zeroes. This ensures the behavior is habitual.
+**Session lifecycle (skill loading + self-evaluation) is in the `session-bootstrap` skill.**
 
 ## Source Code Layout
 
@@ -325,27 +204,6 @@ scratch/                  # Session workspace for exploratory/intermediate files
 | Flatpak GL/SDL3 gotchas | `.github/skills/workflow/references/FLATPAK_GL_GOTCHAS.md` |
 | Microsoft C++ Core Guidelines | https://isocpp.github.io/CppCoreGuidelines/ |
 | Google Test docs | https://google.github.io/googletest/ |
-
-## Copilot Session Logs
-
-Copilot chat session logs are stored at:
-```
-~/.config/github-copilot/hosts.json       # auth/account info
-~/.config/github-copilot/apps.json        # app registrations
-```
-
-The GitHub CLI extension logs (if using `gh copilot`) are at:
-```
-~/.local/share/ghcopilot/logs/
-```
-
-Session postmortem agents can parse chat transcripts from the session-state folder
-(`~/.copilot/session-state/<session-id>/`). The `checkpoints/` subfolder contains
-checkpoint summaries; `files/` contains persistent session artifacts.
-
-**Future task:** Build a script in `scripts/` to parse copilot session history into
-structured postmortem input. This would feed the `session-postmortem` skill with
-actual agent turn data rather than reconstructed timelines.
 
 ## When in Doubt
 
