@@ -37,7 +37,7 @@ Do NOT say "I remember the skill content." A remembered skill is an unverified s
 
 ### `honesty` Is Always Active
 
-`honesty` has no automatic enforcement mechanism. It applies on every turn because it is declared as a behavioral commitment — not because anything enforces it automatically. Treat it as permanently loaded. Load the full skill explicitly for postmortems and communication audits.
+Treat as permanently loaded. Load the full skill for postmortems and communication audits.
 
 ---
 
@@ -72,6 +72,7 @@ domains, read multiple skills in parallel (they are independent reads).
 | Parallel agent work / A/B testing            | `subagent-driven-development`, `using-git-worktrees` |
 | Creating user stories                        | `user-story-generator`, `user-story-estimation`    |
 | Creating or editing a skill file             | `writing-skills`, `skill-reviewer`                 |
+| Resuming from a prior session with pending SQL todos | `writing-plans`; dispatch Skeptic before first implementation step |
 | Schema design, new data structure, or plan with ≥5 implementation items | `brainstorming`, `writing-plans` |
 | Auditing communication quality or postmortem | `honesty`, `session-postmortem`                    |
 
@@ -85,6 +86,8 @@ If unsure, read `code-quality` — it applies to every code task.
 ---
 
 ## On Finish — Self-Evaluate and Compact
+
+**Self-evaluation fires at session END.** If a major task completes mid-session with no further work planned, treat it as session end and execute On Finish now.
 
 **Before your final message to the user**, execute all of the following:
 
@@ -109,6 +112,7 @@ behavior is habitual, not conditional.
 
 ## Red Flags — STOP
 
+- Starting implementation when SQL has pending todos from a prior session without dispatching Skeptic — **STOP. Dispatch Skeptic before the first implementation step.**
 - Starting to code before reading the required skill — **STOP. Load the skill now. Do not write one line first.**
 - Skipping the skill-load announcement — **STOP. State "I am using the [skill] skill to [purpose]." No skip.**
 - Finishing a session without running `self-evaluation` — **STOP. Read `.github/skills/self-evaluation/SKILL.md` now.**

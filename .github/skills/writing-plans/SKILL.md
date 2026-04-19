@@ -9,6 +9,8 @@ description: Use when starting any multi-step task, story, or feature work.
 CLARIFY FIRST. PLAN BEFORE CODE. NO PLACEHOLDERS.
 ```
 
+YOU MUST follow this law on every task. No exceptions.
+
 Violating the letter of this rule is violating the spirit of this rule.
 
 **Announce at start:** "I am using the writing-plans skill to plan [brief description]."
@@ -129,9 +131,9 @@ If you genuinely find no gaps after thorough analysis, state that explicitly.
 **YAGNI:** If a todo cannot be traced to a specific acceptance criterion, cut it.
 > Forbidden: "We'll probably need it later."
 
-**Simplest Thing That Could Possibly Work:** After the Smart Trust gate, ask if a simpler implementation satisfies all criteria. Fewer files, fewer abstractions, fewer dependencies.
+**Simplest Thing That Could Possibly Work:** After the Smart Trust gate, verify a simpler implementation satisfies all criteria. Fewer files, fewer abstractions, fewer dependencies.
 
-**PPP — Plain Programmer's Purpose:** For every todo, state in one sentence: "This [function/class] takes [X] and does [Y]." If you cannot state it simply, the todo is not specific enough — decompose it.
+**PPP — Plain Programmer's Purpose:** Per todo: "This [function/class] takes [X] and does [Y]." Can't state it simply? Decompose.
 
 ---
 
@@ -148,7 +150,7 @@ If you genuinely find no gaps after thorough analysis, state that explicitly.
 | "The plan looks good — I'll just start" | A plan presented is not a plan approved. Wait for explicit instruction. |
 | "The user implied I should proceed" | Implied is not explicit. "Looks good", "go ahead", or "start" are approval. Silence is not. |
 | "I found the bug — fixing it now" | A request to debug or research is not a request to fix. Present findings first. Wait for instruction. |
-| "I see the issue — let me just patch it" | Patching without direction wastes work. Root cause + presentation + user decision = the correct sequence. |
+| "Plan states a numerical estimate (word count, file size, line count) without measuring" | Measure before writing. Run `wc -w` or `wc -l`. Unverified numerical claims in plans cause failed acceptance criteria. |
 | "It's just a quick test, I don't need todos" | Any multi-step task without SQL todos has no Skeptic dispatch gate. The 3-todo Skeptic rule cannot fire if todos were never created. Create todos first, then execute. |
 | "Implementation revealed a dependency on a second file — I'll modify it" | Scope expansion requires user authorization. STOP. State the dependency and ask before touching any file not in the original plan. |
 
@@ -160,6 +162,17 @@ If you genuinely find no gaps after thorough analysis, state that explicitly.
 - Each plan MUST produce working, testable software on its own
 - Realism check: can this be completed and verified in this session? If not, commit to the verifiable portion only. State the remainder as a separate commitment explicitly.
 - An over-committed partial delivery is worse than a smaller honest delivery.
+
+---
+
+## Red Flags — STOP
+
+- Code or file edits before Step 0 (restate requirements) is complete — **STOP. Do Step 0 now.**
+- Plan has ≥3 todos, Skeptic not dispatched — **STOP. Dispatch Skeptic before first implementation step.**
+- Any todo lacks a concrete description — **STOP. Fill every description before starting.**
+- Plan states a numerical estimate without a `wc` measurement — **STOP. Measure first. Run `wc -w` or `wc -l`.**
+- Next todo started without prior todo's 2-stage review passing — **STOP. Both stages required before advancing.**
+- Implementation started before user gives explicit plan approval — **STOP. Wait for "go ahead."**
 
 ---
 
@@ -184,5 +197,3 @@ Present plan to user — WAIT for explicit approval
     ↓
 Begin execution (invoke execution skill)
 ```
-
-**Do NOT invoke execution without explicit user approval.** Presenting a plan is not approval. "Looks good" is approval. "Go ahead" is approval. Silence is not approval — wait.
