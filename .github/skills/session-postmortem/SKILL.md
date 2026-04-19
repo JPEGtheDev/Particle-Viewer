@@ -98,6 +98,45 @@ This section is separate from "What Went Well" and is the most commonly omitted 
 
 "Got lucky" items are highest-priority action items. A system that produces correct outcomes by luck is not reliable — the next session the luck may not hold. Name each lucky path and identify the gate that would have caught it if the luck had run out.
 
+### Part 4c: User Prompt Quality Review
+
+This section is not optional and is not softened to avoid conflict. Poor prompts create conditions that make agent failure more likely — finding those patterns serves both parties.
+
+**The blameless principle applies here too.** Prompt quality review is about prompt patterns, not the user's judgment or intelligence. The same person who writes excellent prompts on Tuesday writes ambiguous ones on Friday under deadline pressure. The goal is to name the pattern so future sessions don't repeat it.
+
+**What to evaluate:**
+
+| Pattern | What it looks like | Why it matters |
+|---|---|---|
+| Multi-part prompt with no priority order | A single message with 8–12 separate instructions | Agent must guess what matters most; important items get buried or dropped |
+| Approval mid-execution | "yes, proceed" or "I was adding commentary" while the agent was already acting | Creates ambiguous ownership of the direction — what was approved, what wasn't? |
+| Scope addition after implementation starts | "also add..." after a plan has been confirmed | Forces replanning mid-execution; earlier work may be invalidated |
+| Implicit requirements treated as obvious | Requirements not stated because "it's obvious" | Agent optimizes for the stated goal, not the unstated one |
+| Contradictory instructions in the same message | Two rules that cannot both be followed | Agent picks one silently; user is surprised by the choice |
+| "Just do it" for a task needing design review | "just implement X directly" for a multi-subsystem change | Bypasses brainstorming gate by framing the task as simple |
+| Moving goalposts without acknowledgment | Changing requirements mid-session without noting what changed | Agent may be building toward an invalidated target without knowing it |
+
+**What the review should produce:**
+
+For each pattern found, cite the specific message or exchange where it occurred. Name what the effect was (lost work, wrong direction, wasted subagent runs). Give one concrete recommendation for how that type of prompt could be written differently next time.
+
+Do not soften findings. A prompt that cost three subagent runs and a revert deserves to be called that, with the example quoted.
+
+**Format:**
+
+```
+#### Prompt Feedback
+
+**Pattern found:** [name from table above]
+**Example (quoted or paraphrased):** "[the prompt or relevant portion]"
+**Effect:** [what it caused — misdirection, wasted agents, ambiguity not caught until late]
+**Recommendation:** [one specific, actionable change for future prompts of this type]
+```
+
+If no patterns are found after genuine review, state that explicitly with evidence. Do not omit this section — an empty section with "no issues found" and supporting evidence is the correct output when prompts were clean.
+
+---
+
 ### Part 5: Action Items
 
 For every root cause and contributing factor, one concrete action item. Each must be:
@@ -163,6 +202,13 @@ Run every item before generating the report:
 ### What Went Well
 [Gates that fired correctly, proactive behaviors]
 
+### Where We Got Lucky
+[Correct outcomes produced without reliable process — highest-priority action items]
+
+### Prompt Feedback
+[User prompt quality review — patterns found, quoted examples, effects, recommendations]
+[If no issues: state explicitly with supporting evidence]
+
 ### Action Items
 | # | Root Cause / Factor | Action Item | Target File |
 |---|---------------------|-------------|-------------|
@@ -191,6 +237,7 @@ If any of the following apply, the verdict is at minimum NEEDS IMPROVEMENT:
 - Agent kept research and exploration in the main context instead of dispatching subagents
 - User had to correct the same behavior more than once in the same session
 - Agent dropped an announced commitment without acknowledging it
+- Prompt Feedback section was omitted or left as a placeholder
 
 Three or more of the above = SYSTEMIC ISSUE. Relevant skills need immediate rationalization table updates.
 
