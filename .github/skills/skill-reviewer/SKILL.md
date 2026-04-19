@@ -11,13 +11,13 @@ A SKILL WITHOUT AN IRON LAW IS DOCUMENTATION, NOT ENFORCEMENT
 
 Violating the letter of this rule is violating the spirit of this rule.
 
-Every skill YOU MUST have all five gate elements. Missing any one = incomplete skill. No exceptions.
+Every skill YOU MUST have all four gate elements. Missing any one = incomplete skill. No exceptions.
 
 **Announce at start:** "I am using the skill-reviewer skill to review [skill-name]."
 
 ---
 
-## The Five Gate Elements
+## The Four Gate Elements
 
 Every skill MUST contain ALL of the following. Missing any one element is an automatic FAIL.
 
@@ -25,7 +25,6 @@ Every skill MUST contain ALL of the following. Missing any one element is an aut
 2. **Announcement requirement** — explicit line: "Announce at start: I am using [skill] to [purpose]"
 3. **Rationalization Prevention table** — minimum 5 rows, each naming a specific excuse with a specific counter
 4. **Red Flags→STOP section** — minimum 5 trigger thoughts, each with a concrete action to take
-5. **Version** — YAML frontmatter `version:` field, present and current
 
 ---
 
@@ -37,11 +36,10 @@ Run every item for each skill file under review:
 - [ ] Announcement requirement is explicit (exact wording required, not implied)?
 - [ ] Rationalization Prevention table present with ≥5 rows?
 - [ ] Red Flags→STOP section present with ≥5 trigger thoughts?
-- [ ] Version field in YAML frontmatter?
 - [ ] Skill-specific commands present (not generic placeholder examples)?
 - [ ] Cross-references to at least 1 related skill?
 - [ ] Domain language is correct (C++/CMake/Google Test specific — not Python/JS/generic)?
-- [ ] No absolute paths present (no `/home/...`, `/usr/...`, or any machine-specific prefix — use template variables or relative references only)?
+- [ ] No absolute paths (no `/home/...`, `/usr/...`, or machine-specific prefix — use template variables or relative references only)?
 
 ✓ All pass → verdict: PASS
 ✗ Any unmet → verdict: NEEDS WORK — list every failing item in the Issues Found section
@@ -52,19 +50,19 @@ Run every item for each skill file under review:
 
 For every skill file being reviewed:
 
-1. Dispatch ONE skill-reviewer agent per file (parallel — do not wait for one before starting the next)
-2. Provide the agent: skill file path, list of recent changes (if any), and the five-element checklist above
-3. Collect ALL reports before acting on any of them
-4. For each FAIL item: update the skill and re-dispatch a review of that specific element
+1. Dispatch one agent per file — parallel, don't wait.
+2. Give each agent: file path, recent changes, and the four-element checklist.
+3. Collect all reports before acting.
+4. For each FAIL: update the skill and re-dispatch a review of that element.
 
 ---
 
 ## Review Report Format
 
-A skill-reviewer agent MUST return its findings in this exact structure:
+Each skill-reviewer agent MUST return findings in this exact structure:
 
 ```markdown
-## Skill Review: [skill-name] v[version]
+## Skill Review: [skill-name]
 
 ### Gate Elements
 | Element | Present | Quality | Notes |
@@ -73,7 +71,6 @@ A skill-reviewer agent MUST return its findings in this exact structure:
 | Announcement | ✅/❌ | Clear/Vague | ... |
 | Rationalization Table | ✅/❌ | N rows | ... |
 | Red Flags→STOP | ✅/❌ | N items | ... |
-| Version | ✅/❌ | vX.Y | ... |
 
 ### Issues Found
 [List each issue with file:line reference]
@@ -81,7 +78,7 @@ A skill-reviewer agent MUST return its findings in this exact structure:
 ### Verdict: PASS / NEEDS WORK
 ```
 
-A verdict of NEEDS WORK means the skill MUST be updated before it can be dispatched in production use.
+NEEDS WORK means the skill MUST be updated before production dispatch.
 
 ---
 
@@ -102,13 +99,13 @@ If you catch yourself thinking any of the following, STOP and re-examine before 
 
 | Excuse | Reality |
 |--------|---------|
-| "It has some enforcement language, close enough" | All five elements are required. Partial is FAIL. No exceptions. |
+| "It has some enforcement language, close enough" | All four elements are required. Partial is FAIL. No exceptions. |
 | "The rationalization table is implied by the red flags" | They serve different cognitive functions. Both are required independently. |
-| "This skill is simple, it doesn't need all elements" | All skills need all elements. Consistency is the point. Simplicity is not an exemption. |
-| "I'll add the missing table later" | Later never comes. A skill without all five elements is incomplete. Add it now. |
+| "This skill is simple, it doesn't need all elements" | All skills need all elements. Consistency is the point. |
+| "I'll add the missing table later" | Later never comes. A skill without all four elements is incomplete. Add it now. |
 | "The iron law is already stated in the announcement" | They are separate sections with separate functions. Both are required. |
-| "The domain language seems fine, I won't check closely" | Generic examples (Python, npm, pip) in a C++/CMake skill are a FAIL. Check every command. |
-| "The absolute path is just an example, not a real path" | Any literal machine-specific path in a skill is a portability violation. Use a template variable. FAIL. |
+| "The domain language seems fine, I won't check closely" | Python/npm/pip examples in a C++/CMake skill are a FAIL. Check every command. |
+| "I can review inline — the file is small" | Inline review is biased. Dispatch task(agent_type="code-review"). Producing a review table inline = this violation. |
 
 ---
 
