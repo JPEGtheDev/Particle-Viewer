@@ -6,7 +6,8 @@ description: Use when receiving code review feedback on a PR or code change.
 ## Iron Law
 
 ```
-EVERY COMMENT GETS A GENUINE RESPONSE. YOU MUST CATEGORIZE AND ADDRESS EVERY COMMENT. "LGTM THANKS" IS NOT A RESPONSE. NO EXCEPTIONS.
+EVERY COMMENT GETS A GENUINE RESPONSE. YOU MUST CATEGORIZE AND ADDRESS EVERY COMMENT. "LGTM THANKS" IS NOT A RESPONSE.
+No exceptions.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.
@@ -15,12 +16,12 @@ Violating the letter of this rule is violating the spirit of this rule.
 
 ---
 
-## Before Acting on Review Feedback
+## BEFORE PROCEEDING
 
-BEFORE acting on any review feedback, verify:
-1. You have read all comments in the review
-2. Every comment is categorized (must-fix / defer / discuss)
-3. No must-fix comment is dismissed without investigation
+- [ ] I have read every comment fully before drafting any response
+- [ ] Every comment is categorized (must-fix / defer / discuss)
+- [ ] No must-fix comment is dismissed without investigation
+- [ ] I am not about to defend rather than understand
 
 ✓ All met → proceed to address comments
 ✗ Any unmet → complete the triage before taking action

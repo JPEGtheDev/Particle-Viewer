@@ -101,6 +101,18 @@ BEFORE DISPATCHING PARALLEL AGENTS, verify:
 
 ---
 
+## BEFORE PROCEEDING
+
+- [ ] All tasks are truly independent — no agent needs another agent's output to start
+- [ ] Return format is explicitly defined for every agent before dispatch
+- [ ] No more than 4 agents in flight on Standard accounts (or within your confirmed Enterprise limit)
+- [ ] Read-only agents have no shared write targets; write agents each have an isolated worktree
+
+✓ All met → dispatch agents
+✗ Any unmet → resolve the dependency, define the return format, or serialize the dispatch before proceeding
+
+---
+
 ## Concurrency Rules
 
 **Copilot Enterprise:** No practical concurrency limit. Dispatch as many as the task warrants.
@@ -185,3 +197,13 @@ See `using-git-worktrees` skill for full worktree lifecycle.
 | "One agent can do all this" | Sequential agents fill your context. Parallel agents preserve it. |
 | "I don't need to verify — the agent found it" | Findings are hypotheses. You verify before you propagate. |
 | "I'll use general-purpose — it can do everything" | general-purpose for read-only research wastes context and produces serial output. Use explore for research across many files. |
+| "I'll run them sequentially — parallel is harder to coordinate" | YOU MUST run independent tasks in parallel. Sequential dispatch wastes turns. |
+| "The agents can share the same branch — I'll merge their changes manually" | YOU MUST use worktrees for parallel agents with side effects. Shared branches produce conflicts. |
+
+---
+
+## Related Skills
+
+- [`subagent-driven-development`](.github/skills/subagent-driven-development/) — orchestration framework; parallel dispatch is a specialized case of subagent dispatch
+- [`using-git-worktrees`](.github/skills/using-git-worktrees/) — required for any parallel write agents; isolation guarantee
+- [`execution`](.github/skills/execution/) — work loop and commit rhythm that parallel dispatch operates within

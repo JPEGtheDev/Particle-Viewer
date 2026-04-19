@@ -6,7 +6,8 @@ description: Use when preparing to request a code review on a PR or change.
 ## Iron Law
 
 ```
-REVIEWS ARE TARGETED, NOT CEREMONIAL. YOU MUST STATE WHAT TO LOOK FOR IN EVERY REVIEW REQUEST. NO EXCEPTIONS.
+REVIEWS ARE TARGETED, NOT CEREMONIAL. YOU MUST STATE WHAT TO LOOK FOR IN EVERY REVIEW REQUEST.
+No exceptions.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.
@@ -15,9 +16,7 @@ Violating the letter of this rule is violating the spirit of this rule.
 
 ---
 
-## Before Requesting Review
-
-Do not request review until:
+## BEFORE PROCEEDING
 
 - [ ] CI is green on the branch
 - [ ] `verification-before-completion` gate has been run in this session

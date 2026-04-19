@@ -6,7 +6,8 @@ description: Use when estimating effort, premium request counts, or model tier s
 ## Iron Law
 
 ```
-YOU MUST INCLUDE AN EFFORT ESTIMATE AND MODEL RECOMMENDATION IN EVERY STORY. NO EXCEPTIONS.
+YOU MUST INCLUDE AN EFFORT ESTIMATE AND MODEL RECOMMENDATION IN EVERY STORY.
+No exceptions.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.
@@ -123,12 +124,13 @@ Every generated story must include this section:
 
 ---
 
-## Before Committing to an Estimate
+## BEFORE PROCEEDING
 
-BEFORE committing to an estimate, verify:
-1. The story is INVEST-valid (Independent, Negotiable, Valuable, Estimable, Small, Testable)
-2. All unknowns are identified and noted in the estimate
-3. The task breakdown reflects the actual work, not a best-case scenario
+- [ ] The story has been validated against INVEST (Independent, Negotiable, Valuable, Estimable, Small, Testable)
+- [ ] All unknowns are identified and noted in the estimate
+- [ ] The task breakdown reflects the actual work, not a best-case scenario
+- [ ] All skill dispatches needed have been identified
+- [ ] If the story requires >3 agents, the Wave structure has been accounted for
 
 ✓ All met → commit to the estimate
 ✗ Any unmet → resolve unknowns and recheck INVEST compliance before estimating
