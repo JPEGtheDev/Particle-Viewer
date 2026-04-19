@@ -1,6 +1,6 @@
 ---
 name: self-evaluation
-description: Use when completing any session to capture lessons learned, identify skill updates, and improve agent effectiveness. Runs end-of-session quality checks before finalizing work.
+description: Use when completing any session.
 ---
 
 ## Iron Law
@@ -8,6 +8,8 @@ description: Use when completing any session to capture lessons learned, identif
 ```
 EVERY SESSION ENDS WITH SELF-EVALUATION — NO EXCEPTIONS
 ```
+
+Violating the letter of this rule is violating the spirit of this rule.
 
 Read this skill BEFORE your final message. If you skip it: the session's lessons are lost. Every time. Without exception.
 

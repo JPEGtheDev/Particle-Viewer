@@ -1,6 +1,6 @@
 ---
 name: execution
-description: Use when executing any non-trivial implementation work. Governs the work loop, commit rhythm, mode declaration, behavior preservation, and continuous refinement. For planning, use writing-plans. For delegation, use subagent-driven-development.
+description: Use when executing any non-trivial implementation work. For planning, use writing-plans. For delegation, use subagent-driven-development.
 ---
 
 ## Iron Law
@@ -8,6 +8,8 @@ description: Use when executing any non-trivial implementation work. Governs the
 ```
 PLAN BEFORE CODE. PROVE BEFORE SHIPPING. DELEGATE BEFORE DROWNING.
 ```
+
+Violating the letter of this rule is violating the spirit of this rule.
 
 **Announce at start:** "I am using the execution skill to [implement/fix/refactor] [brief description]."
 
@@ -22,7 +24,7 @@ For completion claims → invoke **verification-before-completion** skill.
 
 - **Keep It Simple:** Straightforward approach first. Introduce abstraction only when it pays for itself.
 - **Senior-Level Standards:** Diagnose root causes. Refuse temporary workarounds.
-- **Surgical Precision:** Touch only what the task requires. A smaller diff is almost always better.
+- **Surgical Precision:** Touch only what the task requires. A smaller diff is always better.
 - **Drive to Completion:** Act on what you know. Resolve blockers yourself.
 
 ---
@@ -117,6 +119,10 @@ After something works but before you commit: **"Is there a cleaner way to expres
 2. Structural changes only (rename, extract, move) — no new behavior
 3. Green after each discrete change
 4. If a test turns red: you changed behavior. Revert and re-examine.
+
+✓ All steps green → proceed to commit
+✗ Baseline fails → fix tests before refactoring; do not start structural changes
+✗ Any step turns red → you changed behavior; revert before proceeding
 
 **If you discover a bug while refactoring: stop, record it, finish the refactor, then fix the bug as a separate commit.**
 

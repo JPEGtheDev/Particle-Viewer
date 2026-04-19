@@ -1,6 +1,6 @@
 ---
 name: architecture-review
-description: Use when adding new classes, refactoring code, or reviewing PRs for Particle-Viewer. Reviews C++ code for clean architecture compliance, including layer boundaries, dependency direction, and IOpenGLContext abstraction.
+description: Use when adding new classes, refactoring code, or reviewing PRs for Particle-Viewer.
 ---
 
 ## Iron Law
@@ -8,6 +8,8 @@ description: Use when adding new classes, refactoring code, or reviewing PRs for
 ```
 DEPENDENCIES FLOW INWARD — INNER LAYERS NEVER DEPEND ON OUTER LAYERS
 ```
+
+Violating the letter of this rule is violating the spirit of this rule.
 
 YOU MUST verify dependency direction for every new class and every refactor. A layer violation in a PR means the PR is NOT mergeable until it is fixed. No exceptions.
 
@@ -97,6 +99,9 @@ Run every item for each file under review:
 - [ ] Does `src/testing/PixelComparator` acquire OpenGL state directly, rather than receiving an `Image`? (VIOLATION)
 - [ ] Do any UI files (`ui/`) reach into `graphics/` internals beyond `IOpenGLContext`? (VIOLATION)
 - [ ] Are there circular `#include` dependencies between any two files in the same layer?
+
+✓ All pass → verdict: CLEAN
+✗ Any fail → verdict: VIOLATIONS FOUND — document every failure in the Review Report
 
 ---
 

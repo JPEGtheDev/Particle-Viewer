@@ -1,6 +1,6 @@
 ---
 name: workflow
-description: Use when creating GitHub Actions workflows, adding CI jobs, configuring artifact uploads, or reviewing pipeline configuration for Particle-Viewer. Covers pipeline safety rules, permissions, and artifact patterns.
+description: Use when creating GitHub Actions workflows, adding CI jobs, configuring artifact uploads, or reviewing pipeline configuration for Particle-Viewer.
 ---
 
 ## Iron Law
@@ -9,6 +9,8 @@ description: Use when creating GitHub Actions workflows, adding CI jobs, configu
 PIPELINES ARE READ-ONLY — NEVER COMMIT FROM CI
 ```
 
+Violating the letter of this rule is violating the spirit of this rule.
+
 CI workflows read code, run tests, and publish artifacts. They never write code. No exceptions.
 
 **Second Iron Law:**
@@ -16,6 +18,8 @@ CI workflows read code, run tests, and publish artifacts. They never write code.
 ```
 BROKEN PIPELINE = HIGHEST PRIORITY — STOP ALL MERGES UNTIL GREEN
 ```
+
+Violating the letter of this rule is violating the spirit of this rule.
 
 A broken main branch pipeline is not a background task. It is the highest-priority item for anyone working on the project. No PR merges while the pipeline is red. The broken build is the only work that matters until it is fixed.
 
@@ -147,6 +151,9 @@ Before presenting workflow changes, verify:
 - [ ] Job dependencies are correct (`needs:` ordering)
 - [ ] `if: always()` on artifact upload and PR comment steps where needed
 - [ ] Artifact retention set appropriately (default: 30 days)
+
+✓ All met → proceed with presenting workflow changes
+✗ Any unmet → fix before presenting
 
 ---
 

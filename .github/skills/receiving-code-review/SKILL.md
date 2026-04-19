@@ -1,6 +1,6 @@
 ---
 name: receiving-code-review
-description: Use when receiving code review feedback on a PR or code change. Governs how to process, respond to, and act on reviewer comments. Bans performative agreement and requires genuine engagement with every non-trivial point.
+description: Use when receiving code review feedback on a PR or code change.
 ---
 
 ## Iron Law
@@ -8,6 +8,8 @@ description: Use when receiving code review feedback on a PR or code change. Gov
 ```
 EVERY COMMENT GETS A GENUINE RESPONSE. "LGTM THANKS" IS NOT A RESPONSE.
 ```
+
+Violating the letter of this rule is violating the spirit of this rule.
 
 **Announce at start:** "I am using the receiving-code-review skill to process review feedback on [PR/change]."
 

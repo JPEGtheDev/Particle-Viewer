@@ -1,6 +1,6 @@
 ---
 name: documentation
-description: Use when creating docs, updating guides, writing API references, or reviewing documentation for Particle-Viewer. Covers file organization, linking, formatting, and content standards.
+description: Use when creating docs, updating guides, writing API references, or reviewing documentation for Particle-Viewer.
 ---
 
 ## Iron Law
@@ -8,6 +8,8 @@ description: Use when creating docs, updating guides, writing API references, or
 ```
 DOCUMENT WHAT, NOT WHY — WHY LIVES IN SKILLS AND DOCS
 ```
+
+Violating the letter of this rule is violating the spirit of this rule.
 
 Code comments explain *what* code does. Explanations >5 lines belong in `skills/` or `docs/`, not inline. Never duplicate content across doc files.
 
@@ -29,7 +31,7 @@ When activated, write documentation that follows the project's established conve
 
 ## Core Principle: Documentation Lives Close to Code
 
-Documentation should be discoverable, accurate, and maintained alongside the code it describes.
+Documentation MUST be discoverable, accurate, and maintained alongside the code it describes.
 
 ---
 
@@ -74,7 +76,7 @@ Ask the user what they need:
 
 - **Always use relative paths** between docs (e.g., `../TESTING_STANDARDS.md` from `docs/testing/`)
 - **Verify link targets exist** before adding links
-- **Consider the source file's directory** when computing relative paths
+- **Always account for the source file's directory** when computing relative paths
 - **Link to specific sections** with anchors when referencing a subsection
 
 ### Content Standards
@@ -128,6 +130,9 @@ Before presenting documentation, verify:
 - [ ] No duplication with other docs — reference instead of repeat
 - [ ] Table of contents matches section headings
 - [ ] Documentation matches current code state
+
+✓ All pass → documentation is ready to present
+✗ Any unmet → resolve all failing items before presenting documentation
 
 ---
 

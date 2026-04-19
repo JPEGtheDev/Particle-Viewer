@@ -1,6 +1,6 @@
 ---
 name: requesting-code-review
-description: Use when preparing to request a code review on a PR or change. Governs how to select reviewers, write the review request, and dispatch review agents. Ensures review is targeted, not ceremonial.
+description: Use when preparing to request a code review on a PR or change.
 ---
 
 ## Iron Law
@@ -8,6 +8,8 @@ description: Use when preparing to request a code review on a PR or change. Gove
 ```
 REVIEWS ARE TARGETED, NOT CEREMONIAL. EVERY REVIEW REQUEST STATES WHAT TO LOOK FOR.
 ```
+
+Violating the letter of this rule is violating the spirit of this rule.
 
 **Announce at start:** "I am using the requesting-code-review skill to prepare a review request for [PR/change]."
 
@@ -21,6 +23,9 @@ Do not request review until:
 - [ ] `verification-before-completion` gate has been run in this session
 - [ ] PR description is complete (see `finishing-a-development-branch` Step 4)
 - [ ] You have reviewed your own diff and addressed obvious issues
+
+✓ All met → proceed to request review
+✗ Any unmet → resolve all unmet items before requesting review
 
 Requesting review against a red CI or an incomplete PR description wastes the reviewer's time and erodes trust.
 
@@ -97,7 +102,7 @@ When requesting human review, match the reviewer to the concern:
 | Test coverage | Anyone who has worked on testing infrastructure |
 | Performance | Anyone with profiling or benchmarking experience |
 
-Do not add reviewers as a formality. Each reviewer should have a specific reason for being on the list.
+Do not add reviewers as a formality. Each reviewer MUST have a specific reason for being on the list.
 
 ---
 

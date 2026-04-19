@@ -1,6 +1,6 @@
 ---
 name: subagent-driven-development
-description: Use when delegating implementation tasks, confirming theories, running parallel research, or reviewing completed work. Governs subagent dispatch, 2-stage review, status codes, and the empirical evidence mandate.
+description: Use when delegating implementation tasks, confirming theories, running parallel research, or reviewing completed work.
 ---
 
 ## Iron Law
@@ -8,6 +8,8 @@ description: Use when delegating implementation tasks, confirming theories, runn
 ```
 DISPATCH BEFORE GUESSING — SUBAGENTS ARE CHEAP, WRONG ASSUMPTIONS ARE EXPENSIVE
 ```
+
+Violating the letter of this rule is violating the spirit of this rule.
 
 **Announce at start:** "I am using the subagent-driven-development skill to [dispatch/review/confirm] [brief description]."
 

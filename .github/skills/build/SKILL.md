@@ -9,6 +9,8 @@ description: Use when building, adding dependencies, configuring CMake options, 
 BUILD MUST PASS LOCALLY BEFORE EVERY PUSH
 ```
 
+Violating the letter of this rule is violating the spirit of this rule.
+
 `cmake --build build` must exit 0 locally before pushing. No exceptions.
 
 **Announce at start:** "I am using the build skill to [build/configure/troubleshoot] [description]."

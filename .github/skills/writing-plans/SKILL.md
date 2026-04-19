@@ -1,6 +1,6 @@
 ---
 name: writing-plans
-description: Use when starting any multi-step task, story, or feature work. Establishes scope, clarifies requirements, builds a verifiable todo list, and gates the plan before any code is written.
+description: Use when starting any multi-step task, story, or feature work.
 ---
 
 ## Iron Law
@@ -8,6 +8,8 @@ description: Use when starting any multi-step task, story, or feature work. Esta
 ```
 CLARIFY FIRST. PLAN BEFORE CODE. NO PLACEHOLDERS.
 ```
+
+Violating the letter of this rule is violating the spirit of this rule.
 
 **Announce at start:** "I am using the writing-plans skill to plan [brief description]."
 
@@ -65,7 +67,7 @@ Every todo must contain what an engineer needs to execute it. These are **plan f
 
 ### Task Granularity (TDD Steps)
 
-Each task should be one concrete action (2–5 minutes). For implementation tasks, follow TDD structure:
+Each task MUST be one concrete action (2–5 minutes). For implementation tasks, follow TDD structure:
 
 ```
 Task N: [Feature or component name]
@@ -98,7 +100,8 @@ Answer before finalizing any plan. Dispatch a research subagent if you cannot an
 | 4 | **Do I have the capability?** Any libraries or patterns requiring research before coding? | Wrong assumptions |
 | 5 | **What would a skeptic say?** Strongest argument against this approach | Comfort choices |
 
-**Any unanswered question or revealed gap: stop, revise, then proceed.**
+✓ All 5 questions answered with no gaps → proceed to Skeptic Agent or implementation
+✗ Any unanswered question or revealed gap → stop, revise the plan, then re-run the gate
 
 For plans with 3+ todos or an architectural decision, dispatch a **Skeptic Agent** before implementation:
 
@@ -147,7 +150,7 @@ If you genuinely find no gaps after thorough analysis, state that explicitly.
 ## Scope and Commitment Sizing
 
 - If a plan covers multiple independent subsystems, split into one plan per subsystem
-- Each plan should produce working, testable software on its own
+- Each plan MUST produce working, testable software on its own
 - Realism check: can this be completed and verified in this session? If not, commit to the verifiable portion only. State the remainder as a separate commitment explicitly.
 - An over-committed partial delivery is worse than a smaller honest delivery.
 

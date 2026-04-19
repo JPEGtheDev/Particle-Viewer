@@ -1,6 +1,6 @@
 ---
 name: session-postmortem
-description: Use after a session completes to analyze agent behavior patterns, identify where iron laws were bypassed, and extract durable lessons. Analyzes behavior, not just outcomes.
+description: Use after a session completes.
 ---
 
 ## Iron Law
@@ -8,6 +8,8 @@ description: Use after a session completes to analyze agent behavior patterns, i
 ```
 ANALYZE BEHAVIOR, NOT JUST OUTCOMES — FIND WHERE THE MODEL RATIONALIZED
 ```
+
+Violating the letter of this rule is violating the spirit of this rule.
 
 YOU MUST examine the session for rationalization patterns. A clean outcome does not prove a clean process. No exceptions.
 
@@ -135,6 +137,9 @@ Run every item before generating the report:
 | Conventional commits | ✅/❌/N/A | [what proves this] | |
 | Skills loaded before acting | ✅/❌/N/A | [what proves this] | |
 | Commitments kept or acknowledged | ✅/❌/N/A | [what proves this] | |
+
+✓ All followed → note compliance in report
+✗ Any violated → verdict is SYSTEMIC ISSUE for the violated law — document in action items
 
 ---
 

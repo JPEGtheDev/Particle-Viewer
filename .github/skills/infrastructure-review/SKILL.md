@@ -1,6 +1,6 @@
 ---
 name: infrastructure-review
-description: Use when adding workflows, modifying CMakeLists.txt, or updating Flatpak manifests for Particle-Viewer. Reviews CI/CD pipelines, CMake build system, and Flatpak packaging for safety, artifact correctness, and build reproducibility.
+description: Use when adding workflows, modifying CMakeLists.txt, or updating Flatpak manifests for Particle-Viewer.
 ---
 
 ## Iron Law
@@ -8,6 +8,8 @@ description: Use when adding workflows, modifying CMakeLists.txt, or updating Fl
 ```
 PIPELINES MUST BE REPRODUCIBLE AND READ-ONLY — INFRASTRUCTURE CHANGES NEED REVIEW
 ```
+
+Violating the letter of this rule is violating the spirit of this rule.
 
 YOU MUST review every change to `.github/workflows/`, `CMakeLists.txt`, and `flatpak/` before merge. A pipeline that commits, pushes, or uses unpinned dependencies is NOT mergeable. No exceptions.
 
@@ -29,6 +31,9 @@ Run every item for each changed `.github/workflows/*.yml` file:
 - [ ] Matrix builds cover required platforms (Linux at minimum; Windows/macOS if the project targets them)
 - [ ] `actions/checkout` and other third-party actions pinned to a specific SHA, not a floating tag
 
+✓ All pass → pipeline is safe to merge
+✗ Any unmet → verdict: ISSUES FOUND — document in review report
+
 ### 2. CMake Build Checks
 
 Run every item for each changed `CMakeLists.txt`:
@@ -39,6 +44,9 @@ Run every item for each changed `CMakeLists.txt`:
 - [ ] Install rules present for release builds (`install(TARGETS ...)`)
 - [ ] No hardcoded absolute paths — all paths relative or constructed via CMake variables
 
+✓ All pass → build is reproducible
+✗ Any unmet → verdict: ISSUES FOUND — document in review report
+
 ### 3. Flatpak Manifest Checks
 
 Run every item for any changed file under `flatpak/`:
@@ -48,6 +56,9 @@ Run every item for any changed file under `flatpak/`:
 - [ ] App ID matches `com.jpegthedev.ParticleViewer` naming convention
 - [ ] Runtime version pinned to a specific release (not a floating `latest`)
 - [ ] `--share=network` absent from finish-args unless network access is explicitly required and documented
+
+✓ All pass → Flatpak manifest is compliant
+✗ Any unmet → verdict: ISSUES FOUND — document in review report
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: brainstorming
-description: Use when a task needs design exploration before any implementation begins. Enforces a HARD-GATE between discovery and code. Required for any task with unclear approach, significant architecture impact, or multiple valid solutions.
+description: Use when a task needs design exploration before any implementation begins. Required for any task with unclear approach, significant architecture impact, or multiple valid solutions.
 ---
 
 ## Iron Law
@@ -8,6 +8,8 @@ description: Use when a task needs design exploration before any implementation 
 ```
 NO CODE UNTIL THE DESIGN GATE IS PASSED.
 ```
+
+Violating the letter of this rule is violating the spirit of this rule.
 
 If you are about to write code and have not answered the design questions below, STOP. Complete this skill first.
 
@@ -81,7 +83,8 @@ Before exiting brainstorming and entering implementation:
 - [ ] Architecture impact assessed (layer boundaries, dependency direction)
 - [ ] Test strategy stated
 
-**If any checkbox is unchecked: do not proceed to implementation.** Return to the relevant question.
+✓ All checked → proceed to implementation
+✗ Any unchecked → return to the relevant design question; do not proceed
 
 ---
 

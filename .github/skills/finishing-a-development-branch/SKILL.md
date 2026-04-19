@@ -1,6 +1,6 @@
 ---
 name: finishing-a-development-branch
-description: Use when a development branch is complete and ready to merge. Governs the branch ceremony: verification, cleanup, squash strategy, PR creation, and what to do after merge. Prevents silent drops and half-finished work from landing on main.
+description: Use when a development branch is complete and ready to merge. Prevents silent drops and half-finished work from landing on main.
 ---
 
 ## Iron Law
@@ -8,6 +8,8 @@ description: Use when a development branch is complete and ready to merge. Gover
 ```
 A BRANCH IS NOT DONE UNTIL IT IS CLEAN, VERIFIED, AND EXPLICITLY CLOSED.
 ```
+
+Violating the letter of this rule is violating the spirit of this rule.
 
 **Announce at start:** "I am using the finishing-a-development-branch skill to close out [branch name]."
 
@@ -24,7 +26,8 @@ find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i
 git diff  # verify no unintended changes from formatting
 ```
 
-**All four must pass.** If any fail, fix them before proceeding. Do not open a PR against a red branch.
+✓ All four pass → proceed to Step 2
+✗ Any fail → fix before proceeding; do not open a PR against a red branch
 
 See `verification-before-completion` skill for the complete gate.
 

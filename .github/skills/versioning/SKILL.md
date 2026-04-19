@@ -1,6 +1,6 @@
 ---
 name: versioning
-description: Use when creating PRs, writing commit messages, understanding version bumps, or troubleshooting release issues for Particle-Viewer. Manages semantic versioning, conventional commits, and release automation.
+description: Use when creating PRs, writing commit messages, understanding version bumps, or troubleshooting release issues for Particle-Viewer.
 ---
 
 ## Iron Law
@@ -8,6 +8,8 @@ description: Use when creating PRs, writing commit messages, understanding versi
 ```
 EVERY COMMIT AND PR TITLE MUST USE CONVENTIONAL FORMAT
 ```
+
+Violating the letter of this rule is violating the spirit of this rule.
 
 `<type>[scope]: <description>` — no exceptions. Wrong format breaks release automation.
 
@@ -79,7 +81,7 @@ The PR title **MUST** use conventional commits format:
 **DO NOT modify the PR title** unless the user explicitly asks.
 
 - The PR title represents the **overall feature or fix**, not individual subtasks
-- Individual commits within the PR should still use conventional format
+- Individual commits within the PR MUST still use conventional format
 - Update the PR **description** (not title) to track subtask progress
 
 ---
@@ -94,6 +96,9 @@ Before a PR can merge:
 - [ ] Build succeeds on all platforms
 - [ ] Unit tests pass
 - [ ] CI formatting checks pass
+
+✓ All met → PR is ready to merge
+✗ Any unmet → resolve before opening or merging the PR
 
 ---
 

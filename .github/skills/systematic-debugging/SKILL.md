@@ -1,6 +1,6 @@
 ---
 name: systematic-debugging
-description: Use when encountering any bug, test failure, build error, or unexpected behavior. Must be read BEFORE proposing any fix. Governs the 4-phase root cause investigation protocol.
+description: Use when encountering any bug, test failure, build error, or unexpected behavior. Must be read BEFORE proposing any fix.
 ---
 
 # Instructions for Agent
@@ -21,6 +21,8 @@ When activated, announce: **"I am using the systematic-debugging skill to invest
 ```
 NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 ```
+
+Violating the letter of this rule is violating the spirit of this rule.
 
 This is not a guideline. No exceptions.
 If you haven't completed Phase 1, you cannot propose fixes.

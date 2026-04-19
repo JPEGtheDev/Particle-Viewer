@@ -23,6 +23,8 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE.
 EVIDENCE MUST BE INLINE. NEVER REFERENCED.
 ```
 
+Violating the letter of this rule is violating the spirit of this rule.
+
 If you haven't run the verification command in this session — after your most recent change — you cannot claim it passes. Evidence before assertions, always.
 
 ---
@@ -286,6 +288,9 @@ Agent reports: "Done" / "Complete" / "Fixed" / "Committed"
     ↓
 4. ONLY THEN claim the subagent's work is complete
 ```
+
+✓ All steps passed → claim the subagent's work is complete
+✗ Any step failed → do not relay the completion claim; investigate and fix before claiming done
 
 **Gate rule:** An agent's "Done" claim is a hypothesis. Your verification makes it a fact.
 

@@ -1,6 +1,6 @@
 ---
 name: skill-reviewer
-description: Use when authoring or updating skills to review files for completeness, iron laws, and mechanical gate patterns. Dispatch 1 instance per skill file. Returns a structured review report.
+description: Use when authoring or updating skill files.
 ---
 
 ## Iron Law
@@ -8,6 +8,8 @@ description: Use when authoring or updating skills to review files for completen
 ```
 A SKILL WITHOUT AN IRON LAW IS DOCUMENTATION, NOT ENFORCEMENT
 ```
+
+Violating the letter of this rule is violating the spirit of this rule.
 
 Every skill YOU MUST have all five gate elements. Missing any one = incomplete skill. No exceptions.
 
@@ -39,6 +41,9 @@ Run every item for each skill file under review:
 - [ ] Skill-specific commands present (not generic placeholder examples)?
 - [ ] Cross-references to at least 1 related skill?
 - [ ] Domain language is correct (C++/CMake/Google Test specific — not Python/JS/generic)?
+
+✓ All pass → verdict: PASS
+✗ Any unmet → verdict: NEEDS WORK — list every failing item in the Issues Found section
 
 ---
 
