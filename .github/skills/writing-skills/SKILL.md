@@ -33,7 +33,14 @@ Before creating, editing, or shipping any skill or agent template:
    - [ ] GATE FUNCTION: `## BEFORE PROCEEDING` with numbered conditions + ✓/✗ branches
    - [ ] RATIONALIZATION TABLE: `## Rationalization Prevention` with ≥5 rows
 
-3. **Reference reading gate:**
+3. **Alexandrian form check** — every non-trivial rule MUST answer:
+   - **Context:** When does this rule apply? When does it NOT apply?
+   - **Forces:** What tension or constraint does this rule resolve?
+   - A rule without Context and Forces cannot be applied correctly in edge cases.
+   - New skills: MUST include Context + Forces for every non-trivial rule.
+   - Existing skills: add Context + Forces incrementally when touched — no big-bang retrofit.
+
+4. **Reference reading gate:**
    - Editing frontmatter only (no anatomy changes)? → reference files optional
    - Modifying or adding anatomy elements? → read `references/SKILL_ANATOMY_ELEMENTS.md` before any edits
 
@@ -98,6 +105,32 @@ See `references/SKILL_ANATOMY_ELEMENTS.md` for full element schemas, bad/good ex
 
 ---
 
+## Alexandrian Pattern Form
+
+Every non-trivial rule in a skill file MUST answer four questions. Rules that omit Context and Forces are applied by rote and misfire in edge cases.
+
+```
+Context:      When does this rule apply? What situation triggers it?
+              When does it NOT apply? What are the explicit exceptions?
+Forces:       What tension or constraint does this rule resolve?
+              What goes wrong without it?
+Solution:     The rule itself — what to do.
+Consequences: What does this approach sacrifice or trade off?
+```
+
+**Example — bare rule (wrong):**
+> Never swallow GL errors silently.
+
+**Example — Alexandrian form (correct):**
+> **Context:** Applies when writing any OpenGL call that can fail (shader compile, buffer allocation, framebuffer completeness). Does NOT apply to `glGetError()` polling loops where error accumulation is intentional.
+> **Forces:** Silent GL errors propagate broken state downstream, making root cause invisible at the point of symptom. Continuing in unknown state causes more damage than stopping.
+> **Solution:** Always check `glGetShaderiv(GL_COMPILE_STATUS)` after shader compile. Log and terminate for unrecoverable state; log and return false for recoverable failures.
+> **Consequences:** Terminates the application on unrecoverable errors — correct for developer builds; end-user releases may need a graceful degradation path instead.
+
+**Compliance gate:** New skills ship with Alexandrian form on every non-trivial rule. Existing skills add it incrementally when touched — the BigBatchRewrite anti-pattern applies here too.
+
+---
+
 ## Voice Authority Rules
 
 See `references/VOICE_AUTHORITY_RULES.md` for the full voice quality rules (authority table, Absolute Path Rule, Acronym Rule). Apply all three to every line of every skill.
@@ -129,6 +162,7 @@ See `references/SIZE_AND_COMPRESSION.md` for word count targets, the GPT-4.1 mec
 | "Rationalization tables are overkill" | They are the highest-ROI element — they name and counter excuses before they occur |
 | "This pattern only comes up occasionally" | If it's occasional, it belongs in a reference doc, not a skill |
 | "I'll add the gate function later" | A skill without a gate is a suggestion, not a constraint |
+| "Context and Forces are extra writing overhead" | Rules without context are applied by rote and misfire in edge cases. The overhead is the point — it forces clarity about when the rule actually applies. |
 
 ---
 

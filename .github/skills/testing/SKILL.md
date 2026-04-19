@@ -174,6 +174,25 @@ TEST(DataLoadingPipelineTest, LoadSettings_ValidFile_PopulatesParticles)
 
 ---
 
+## Test Double Taxonomy
+
+Use the **least sophisticated double** that answers your question. Reaching for `EXPECT_CALL` when a stub suffices is over-engineering.
+
+| Double | Behavior | Verifies Calls? | When to Use |
+|--------|----------|-----------------|-------------|
+| **Stub** | No-op methods; returns null/zero/false | No | You need `IOpenGLContext` to not crash; you don't care what it called |
+| **Fake** | Returns programmable values via setters | No | You need to control what `glGetError()` returns without interaction verification |
+| **Mock** | Returns values AND verifies call expectations | Yes — test fails if expected calls are not made | You must assert `glDrawArrays` was called exactly once with specific arguments |
+| **Shunt / SelfShunt** | The test fixture itself implements the interface | Inspected in teardown | Lowest setup overhead when the fixture plays both collaborator and verifier |
+
+**Google Mock mapping:** Stub → subclass returning constants. Fake → subclass with setters. Mock → `MOCK_METHOD` + `EXPECT_CALL` + `Times()`. Shunt → `TEST_F` fixture inherits from the interface.
+
+**Key principle:** Mock the *role* (interface), not the concrete object. `MockOpenGLContext` mocks `IOpenGLContext` — stable across implementation changes.
+
+**When NOT to use Google Mock:** If the question is "does this run without crashing?", a stub suffices. Only use `EXPECT_CALL` when the interaction itself is the behavior under test.
+
+---
+
 ## Step 4: Apply Test File Organization
 
 ### Directory Structure
@@ -202,6 +221,7 @@ Before presenting tests, verify:
 - [ ] Test name follows `UnitName_StateUnderTest_ExpectedResult` pattern
 - [ ] Expected values are named variables in Arrange (not inline literals in Assert)
 - [ ] One logical concept per test
+- [ ] Saw the new test FAIL before writing production code (confirms the test can detect failure; a test that passes immediately is broken)
 - [ ] External dependencies are mocked (OpenGL, file I/O)
 - [ ] No testing of external libraries (std::, third-party code)
 - [ ] Group related configuration into structs/POCOs instead of flat variables
@@ -227,6 +247,7 @@ If you catch yourself thinking any of these, STOP and start over with RED:
 - "Just this once" or "This is different because..."
 - Test passes immediately without seeing it fail first
 - "I need to get the implementation right before I know what to test"
+- Fixed a bug without writing a regression test that reproduces it first
 
 **All of these mean: Delete any code written before the test. Start over with RED.**
 
@@ -244,6 +265,7 @@ If you catch yourself thinking any of these, STOP and start over with RED:
 | "Tests after achieve the same goals" | Tests-after answer "what does this do?" Tests-first answer "what SHOULD this do?" |
 | "Deleting X hours of work is wasteful" | Sunk cost. Keeping untested code is technical debt. |
 | "TDD slows me down" | TDD is faster than debugging production failures. |
+| "The bug was a one-off, no regression test needed" | One-off bugs recur after the next refactoring. A regression test takes 5 minutes; a re-investigation takes hours. |
 
 ---
 
@@ -262,6 +284,8 @@ If you catch yourself thinking any of these, STOP and start over with RED:
 6. **Visual test resolution.** Use the viewer's default resolution (1280x720) for visual regression tests unless specifically testing other resolutions. Non-default resolutions can cause warping and scaling artifacts.
 
 7. **Camera positioning for visual tests.** Don't blindly copy debug camera coordinates — debug shows interactive state, not ideal test framing. Extract the viewing **direction** from debug output, then calculate **distance** based on desired viewport coverage: `distance = subject_size / (coverage_% * tan(FOV/2))`. See `docs/visual-regression/camera-positioning-lessons-learned.md`.
+
+8. **Every bug fix requires a regression test.** Write a test that reproduces the bug (fails before the fix). Fix the code. Confirm the test now passes. A bug fixed without a test is a bug scheduled for a return visit. See the Bug Fix Workflow in the `code-quality` skill.
 
 ---
 

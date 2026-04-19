@@ -51,6 +51,33 @@ When writing C++ code for this project, apply these patterns consistently.
 - Use assertions for preconditions and invariants
 - Open binary data files with `"rb"` mode for cross-platform correctness
 
+### FailFast — Surface Errors at Their Source
+
+A system that terminates on detecting bad state causes less damage than one that continues in an unknown state. **ExceptionHiding** — silently swallowing an error — transfers the symptom downstream where the root cause is invisible.
+
+| Error type | Mechanism | Example |
+|---|---|---|
+| Programmer error (invariant violation) | `assert()` | `assert(vao != 0 && "VAO must be initialized before bind")` |
+| Unrecoverable state | `std::terminate()` or `throw` | GL context creation failure |
+| User-recoverable error | Log + return `false`/error code | Missing particle data file |
+
+```cpp
+// WRONG — ExceptionHiding: swallows compile error, propagates broken shader
+glCompileShader(shader);
+
+// CORRECT — FailFast: surface at source
+GLint success = 0;
+glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+if (!success) {
+    char log[512];
+    glGetShaderInfoLog(shader, 512, nullptr, log);
+    std::cerr << "Shader compile error: " << log << "\n";
+    std::terminate();
+}
+```
+
+**Rule:** Never check GL/SDL error returns and then continue silently. Log and terminate for unrecoverable state; log and return `false` for recoverable failures.
+
 ---
 
 ## Memory Management
@@ -151,6 +178,22 @@ Applies to:
 - Inline doc comments in headers describing the contract
 
 Documentation out of sync with the interface actively misleads. Not a follow-up commit. Same commit.
+
+---
+
+## OpenGL-Specific Code Smell Catalog
+
+These smells are not caught by clang-tidy. Catch them in code review.
+
+| Smell | OpenGL Manifestation | Fix |
+|---|---|---|
+| **MagicNumber** | Raw GLenum inline: `glTexImage2D(..., 0x8051, ...)` | Named constant: `constexpr GLenum kInternalFormat = GL_RGB8` |
+| **DataClumps** | `(GLuint vao, GLuint vbo, GLuint ebo)` always passed together | Extract `struct GpuMesh { GLuint vao, vbo, ebo; }` |
+| **PrimitiveObsession** | `int textureUnit` for `GL_TEXTURE0` binding point | `enum class TextureUnit : GLint` or typed wrapper |
+| **ArrowAntiPattern** | `if (gladLoad()) { if (SDL_Init()) { if (createWindow()) { ... } } }` | RAII wrappers — each resource cleans itself up on scope exit |
+| **SpeculativeGenerality** | Abstract render interface with exactly one concrete implementation | Remove the abstraction until a second implementation exists |
+| **CopyAndPasteProgramming** | VAO setup duplicated per render pass; shader variants copied with minor edits | `setupVAO()` extracted function; GLSL `#define` or UBO for variants |
+| **ExceptionHiding** | `glCompileShader()` with no `glGetShaderiv(GL_COMPILE_STATUS)` check | Always check, log, and terminate on unrecoverable GL errors (see FailFast above) |
 
 ---
 

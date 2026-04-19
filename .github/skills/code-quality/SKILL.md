@@ -167,6 +167,28 @@ When removing a gamepad feature or call site from `viewer_app.cpp` at user reque
 
 ---
 
+## Code Smell Review Checklist
+
+Static analysis catches syntax violations. These structural smells require human review on every PR:
+
+| Smell | What to Look For |
+|---|---|
+| **DuplicatedCode** | Same logic block in 2+ places? Extract it. |
+| **LongMethod** | Method longer than ~30 lines? Apply ExtractMethod. |
+| **GodClass** | One class controlling too many subsystems? Split responsibilities. |
+| **DataClumps** | Same 2+ variables always travelling together? Introduce a struct. |
+| **PrimitiveObsession** | Domain concepts as raw `int`, `float`, or `GLenum`? Introduce typed wrappers. |
+| **FeatureEnvy** | Method references another class's data more than its own? Apply MoveMethod. |
+| **MagicNumber** | Literals in GL calls or formulas? Name them as constants. |
+| **ArrowAntiPattern** | More than 3 levels of nesting? Introduce guard clauses or RAII. |
+| **SpeculativeGenerality** | Abstraction with exactly one implementation? Remove it until a second arrives. |
+| **CommentSubstitutingForCode** | Comment explains WHAT the code does (not WHY)? Rename or refactor instead. |
+
+✓ All checked → no structural smells found
+✗ Any flagged → log `[BROKEN WINDOW NOTED]` or fix before commit (see `cpp-patterns` skill)
+
+---
+
 ## Review Checklist
 
 - [ ] `clang-format -i` run on all changed files
