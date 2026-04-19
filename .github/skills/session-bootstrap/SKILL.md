@@ -1,10 +1,8 @@
 ---
 name: session-bootstrap
-version: 1.0.0
+version: 1.2.0
 description: >
-  Use at the start of every session to determine which skills to load. Contains the
-  On Start skill routing table (minimum skills by task type) and the On Finish
-  self-evaluation steps. LOAD THIS SKILL FIRST before any other domain skill.
+  Use at the start of every session to determine which skills to load before acting.
 ---
 
 ## Iron Law
@@ -15,13 +13,18 @@ READ THE SKILL. THEN ACT. NEVER ACT THEN READ.
 
 Violating the letter of this rule is violating the spirit of this rule.
 
-Skills contain rules that change what you should do. Reading a skill AFTER acting defeats
-the purpose. If you find yourself thinking "I'll check the skill after I start" — stop.
-Read the skill first.
+YOU MUST read all required skills before writing any code or sending any plan. No exceptions.
+Skills contain rules that change what you do. Reading a skill AFTER acting defeats the purpose.
+
+**Announce at start:** "I am using the session-bootstrap skill to load required skills for this session."
 
 ---
 
 ## On Start — Minimum Skill Loads by Task Type
+
+**`honesty` is always active.** It is hardcoded into the session-start hook and applies to
+every turn, every task, every model. You do not need to explicitly load it — but load the
+full skill when running a postmortem or when communication quality is being audited.
 
 Before writing code, read the skill(s) relevant to your task. If the task touches multiple
 domains, read multiple skills in parallel (they are independent reads).
@@ -48,10 +51,9 @@ domains, read multiple skills in parallel (they are independent reads).
 | Parallel agent work / A/B testing            | `subagent-driven-development`, `using-git-worktrees` |
 | Creating user stories                        | `user-story-generator`, `user-story-estimation`    |
 | Creating or editing a skill file             | `writing-skills`                                   |
-| Reviewing trust/honesty behavior             | `honesty`                                          |
-| Running a session retrospective              | `session-postmortem`                               |
+| Auditing communication quality or postmortem | `honesty`, `session-postmortem`                    |
 
-If unsure, read `code-quality` — it applies to nearly every code task.
+If unsure, read `code-quality` — it applies to every code task.
 
 **Loading protocol:**
 1. Identify task type(s) from the table above
@@ -85,10 +87,11 @@ behavior is habitual, not conditional.
 
 ## Red Flags — STOP
 
-- Starting to code before reading the required skill
-- Skipping the skill-load announcement
-- Finishing a session without running `self-evaluation`
-- Treating the "On Finish" steps as optional
+- Starting to code before reading the required skill — **STOP. Load the skill now. Do not write one line first.**
+- Skipping the skill-load announcement — **STOP. State "I am using the [skill] skill to [purpose]." No skip.**
+- Finishing a session without running `self-evaluation` — **STOP. Read `.github/skills/self-evaluation/SKILL.md` now.**
+- Treating the "On Finish" steps as optional — **STOP. They are mandatory. Execute every step.**
+- Saying "I remember the skill content" — **STOP. Memory degrades. Skills update. Load fresh every session.**
 
 ---
 
@@ -98,5 +101,12 @@ behavior is habitual, not conditional.
 |----------------------------------------------------|----------------------------------------------------|---------------------------------------------|
 | "This task is simple — I don't need the skill"     | Simple tasks still violate iron laws when unskilled | Load the skill. Takes 5 seconds.           |
 | "I remember the skill from last session"           | Memory degrades; skills update; load fresh          | Load the skill now.                        |
-| "I'll self-evaluate if anything went wrong"        | Self-evaluation finds what you didn't notice wrong | Always self-evaluate.                      |
+| "I'll self-evaluate if anything went wrong"        | Self-evaluation finds what you didn't notice wrong | Always self-evaluate. No conditional.      |
 | "Skipping announcement to save space"              | Announcement is the commitment mechanism           | State it. No skip.                         |
+| "I'll skim the skill — I know the gist"            | Skimming misses updates and specific gate conditions | Read fully. The gate conditions are the point. |
+
+## Related Skills
+
+- `self-evaluation` — the On Finish step calls this skill directly
+- `honesty` — always-active; hardcoded into session-start hook; never needs explicit loading
+- `writing-skills` — governs skill authoring; load when creating or editing a skill

@@ -1,5 +1,6 @@
 ---
 name: writing-skills
+version: 1.3.0
 description: Use when creating a new skill, editing an existing skill, or reviewing a skill for quality compliance.
 ---
 
@@ -10,6 +11,9 @@ NO SKILL SHIPS WITHOUT MEETING THE 5-ELEMENT ANATOMY CHECK
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.
+
+YOU MUST verify all 5 elements are present before shipping any skill. No exceptions.
+Missing any single element means the skill is incomplete — fix it before using it.
 
 **Announce at start:** "I am using the writing-skills skill to [create/edit/review] the [skill-name] skill."
 
@@ -184,13 +188,13 @@ When a skill exceeds its hard limit, split by domain. Each split must have a dis
 
 ## Red Flags — STOP
 
-- Creating a skill for a pattern that occurs in fewer than 1% of sessions
-- Description field contains "covers", "enforces", "provides", "includes" → rewrites workflow
-- Iron Law does not include the "letter/spirit" line
-- No BEFORE PROCEEDING gate
-- No rationalization table
-- Skill contains "should", "prefer", "consider"
-- Skill size exceeds hard limit
+- Creating a skill for a pattern in fewer than 1% of sessions — **STOP. Write a reference doc instead.**
+- Description field contains "covers", "enforces", "provides", "includes" — **STOP. It summarizes workflow. Rewrite to "Use when [conditions]."**
+- Iron Law lacks "letter/spirit" line — **STOP. Add "Violating the letter of this rule is violating the spirit of this rule." now.**
+- Iron Law lacks "YOU MUST" and "No exceptions." — **STOP. Both phrases are required. Add them.**
+- No BEFORE PROCEEDING gate — **STOP. Add a gate with explicit YES/NO branches before shipping.**
+- No rationalization table — **STOP. Add ≥5 rows now. A skill without one is a suggestion.**
+- Skill contains "should", "prefer", "consider" — **STOP. Replace every instance with MUST, DO NOT, or an explicit imperative.**
 
 ---
 
@@ -203,3 +207,11 @@ When a skill exceeds its hard limit, split by domain. Each split must have a dis
 | "Rationalization tables are overkill" | They are the highest-ROI element — they name and counter excuses before they occur |
 | "This pattern only comes up occasionally" | If it's occasional, it belongs in a reference doc, not a skill |
 | "I'll add the gate function later" | A skill without a gate is a suggestion, not a constraint |
+
+---
+
+## Related Skills
+
+- `skill-reviewer` — runs the 5-element gate check on completed skills; dispatch 1 per file
+- `documentation` — governs how skill reference docs are structured, formatted, and linked
+- `self-evaluation` — reviews skills updated during a session using this checklist
