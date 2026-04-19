@@ -150,6 +150,7 @@ If you genuinely find no gaps after thorough analysis, state that explicitly.
 | "I found the bug — fixing it now" | A request to debug or research is not a request to fix. Present findings first. Wait for instruction. |
 | "I see the issue — let me just patch it" | Patching without direction wastes work. Root cause + presentation + user decision = the correct sequence. |
 | "It's just a quick test, I don't need todos" | Any multi-step task without SQL todos has no Skeptic dispatch gate. The 3-todo Skeptic rule cannot fire if todos were never created. Create todos first, then execute. |
+| "Implementation revealed a dependency on a second file — I'll modify it" | Scope expansion requires user authorization. STOP. State the dependency and ask before touching any file not in the original plan. |
 
 ---
 

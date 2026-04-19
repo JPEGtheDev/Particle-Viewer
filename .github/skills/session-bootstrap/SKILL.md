@@ -71,7 +71,8 @@ domains, read multiple skills in parallel (they are independent reads).
 | Dispatching subagents                        | `subagent-driven-development`                      |
 | Parallel agent work / A/B testing            | `subagent-driven-development`, `using-git-worktrees` |
 | Creating user stories                        | `user-story-generator`, `user-story-estimation`    |
-| Creating or editing a skill file             | `writing-skills`                                   |
+| Creating or editing a skill file             | `writing-skills`, `skill-reviewer`                 |
+| Schema design, new data structure, or plan with ≥5 implementation items | `brainstorming`, `writing-plans` |
 | Auditing communication quality or postmortem | `honesty`, `session-postmortem`                    |
 
 If unsure, read `code-quality` — it applies to every code task.
