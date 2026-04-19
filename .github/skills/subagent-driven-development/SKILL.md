@@ -74,10 +74,12 @@ Before dispatching any subagent:
 
 1. The todo has a single, clear objective — no compound tasks bundled together.
 2. The agent prompt includes all necessary context: file paths, constraints, and return format.
-3. A dedicated worktree exists for any agent that modifies files.
+3. A dedicated worktree exists for any agent that modifies files; `using-git-worktrees` skill is loaded.
+4. If a pre-built template exists in `.github/agents/` for this task type: use it instead of injecting rules inline. Available templates: `implementer.md`, `skeptic.md`, `spec-compliance-reviewer.md`, `code-quality-reviewer.md`, `researcher.md`, `postmortem-reviewer.md`.
+5. Agent type is correct for the task: explore for read-only research, code-review for analysis, general-purpose+worktree for file modifications, task for build/test/lint.
 
-✓ All 3 met → dispatch the agent
-✗ Any unmet → refine the todo, complete the prompt, or create the worktree before dispatching
+✓ All 5 met → dispatch the agent
+✗ Any unmet → refine the todo, complete the prompt, create the worktree, or select the correct agent type before dispatching
 
 ---
 
@@ -124,6 +126,8 @@ These thoughts mean stop immediately:
 | "It probably passes..." | Run the test suite |
 | "I remember that..." | Memory is always unverified — dispatch |
 | "Based on how it usually works..." | Dispatch to confirm the actual behavior |
+| "Dispatching a file-modifying agent without creating a worktree first" | STOP. Create the worktree and load `using-git-worktrees` before dispatch. |
+| "A template exists but I'll build the prompt manually" | STOP. Use the pre-built template from `.github/agents/`. Do not reinvent it. |
 
 ---
 
@@ -272,6 +276,8 @@ Match model tier to task complexity. Instructions must be written for GPT-4.1 ba
 | "I verified one file, the rest are probably fine" | Each file requires its own code-quality reviewer. One agent per file is the rule — no extrapolation across files. |
 | "The subagent said PASS, that's good enough" | A subagent's self-assessment is not a review. PASS from an implementer means dispatch Stage 1 — not skip it. |
 | "I'll do a quick scan instead of dispatching a code-review agent" | A quick scan inherits your assumptions. A dispatched code-review agent does not. Dispatch the agent. |
+| "I'll add the worktree after dispatching" | Worktrees MUST exist before dispatch. The agent needs the worktree path in its prompt — it cannot create its own isolation after the fact. |
+| "I'll include the rules in the prompt instead of using a template" | Injected rules drift between sessions. Pre-built templates in `.github/agents/` are the single source of truth. Use them. |
 
 ---
 

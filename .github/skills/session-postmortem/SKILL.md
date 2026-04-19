@@ -82,7 +82,7 @@ The `scratch/` directory contains session artifacts written during the session (
 
 1. **Dispatch the external reviewer subagent** using `.github/agents/postmortem-reviewer.md` with the above paths filled in. The reviewer reads `events.jsonl` directly — no pre-export needed.
 
-2. **Run self-assessment in parallel** (the main agent does Parts 1–5 from memory while the reviewer works). **INDEPENDENCE GATE: Begin self-assessment immediately after dispatching. Do NOT wait for or read `postmortem-external.md` before writing `postmortem.md`. Reading the external review first invalidates the independence requirement — the self-assessment is then just a copy.**
+2. **Run self-assessment in parallel** (the main agent does Parts 1–5 from memory while the reviewer works). **INDEPENDENCE GATE: Write the self-assessment FROM MEMORY ONLY — do NOT read `events.jsonl`, checkpoints, `plan.md`, or any session artifact before writing `postmortem.md`. `postmortem.md` MUST be created on disk before you read any source data. Only after the file exists may you read session data or wait for the external review to complete. Reading session artifacts first means the self-assessment is a log summary, not independent assessment. Do NOT announce yourself as "external reviewer" or "cold read" in your own context — that role belongs exclusively to the dispatched subagent.**
 
 3. **Wait for the reviewer to complete.** Read its output from `postmortem-external.md`.
 

@@ -35,17 +35,15 @@ Reload the relevant skill(s) immediately when ANY of these occur:
 
 Do NOT say "I remember the skill content." A remembered skill is an unverified skill. Load fresh.
 
-### `honesty` Is Always Active
+### `honesty` — Required First Load Every Session
 
-Treat as permanently loaded. Load the full skill for postmortems and communication audits.
+YOU MUST invoke `honesty` at session start, before any other skill. The session-start hook attempts to auto-load it, but hooks fail silently. If the hook failed, honesty is NOT in working context unless explicitly invoked. The declaration "honesty is always active" in `copilot-instructions.md` activates the declaration, not the 900-word rule body. Without invocation, the confidence vocabulary rules, process language rules, and trust audit are absent from working context.
 
 ---
 
 ## On Start — Minimum Skill Loads by Task Type
 
-**`honesty` is always active.** It is hardcoded into the session-start hook and applies to
-every turn, every task, every model. You do not need to explicitly load it — but load the
-full skill when running a postmortem or when communication quality is being audited.
+**Step 1 — invoke `honesty` before consulting this table.** `honesty` is required before any task-specific skill, every session, regardless of task type.
 
 Before writing code, read the skill(s) relevant to your task. If the task touches multiple
 domains, read multiple skills in parallel (they are independent reads).
@@ -79,17 +77,21 @@ domains, read multiple skills in parallel (they are independent reads).
 If unsure, read `code-quality` — it applies to every code task.
 
 **Loading protocol:**
-1. Identify task type(s) from the table above
-2. Load all required skills before writing a single line of code or sending a plan
-3. Announce each skill load: "I am using the [skill-name] skill to [purpose]."
+1. Invoke `honesty` first — every session, regardless of task type
+2. Identify task type(s) from the table above
+3. Load all required skills before writing a single line of code or sending a plan
+4. Announce each skill load: "I am using the [skill-name] skill to [purpose]."
 
 BEFORE PROCEEDING with any session work, verify:
-1. Task type(s) identified from the On Start table above
-2. All required skills for this task type loaded (in parallel if multiple domains)
-3. Skill load announcement made for each loaded skill
-4. If resuming a prior session: SQL pending todos checked; Skeptic dispatched before first implementation step
+1. `honesty` invoked first — before any other skill
+2. Task type(s) identified from the On Start table above
+3. All required skills for this task type loaded (in parallel if multiple domains)
+4. Skill load announcement made for each loaded skill
+5. If resuming a prior session: SQL pending todos checked; Skeptic dispatched before first implementation step
+6. If this task requires reading 3+ files for research or review: an explore or code-review agent is dispatched for that work — NOT done inline
+7. Session hooks checked: if sessionStart or userPromptSubmitted hook failed, all skills MUST be invoked manually this session — no auto-loading is available
 
-✓ All 4 met → proceed with session work
+✓ All 7 met → proceed with session work
 ✗ Any unmet → complete the unmet step now before writing code or sending a plan
 
 ---
@@ -140,9 +142,11 @@ behavior is habitual, not conditional.
 | "I'll self-evaluate if anything went wrong"        | Self-evaluation finds what you didn't notice wrong | Always self-evaluate. No conditional.      |
 | "Skipping announcement to save space"              | Announcement is the commitment mechanism           | State it. No skip.                         |
 | "I'll skim the skill — I know the gist"            | Skimming misses updates and specific gate conditions | Read fully. The gate conditions are the point. |
+| "'Always active' means I don't need to invoke honesty" | The declaration activates the rule reference, not the rule body. Without invocation, the confidence vocabulary and process language rules are absent. | Invoke `honesty` explicitly. Every session. |
+| "I'm just gathering context, not reviewing"        | Research reading to inform a plan is still review. Inline review is biased by your assumptions. | Dispatch an explore or code-review agent for any 3+ file research task. |
 
 ## Related Skills
 
 - `self-evaluation` — the On Finish step calls this skill directly
-- `honesty` — always-active; hardcoded into session-start hook; never needs explicit loading
+- `honesty` — MUST be explicitly invoked at session start; hooks fail silently; full rule body is not in context until invoked
 - `writing-skills` — governs skill authoring; load when creating or editing a skill

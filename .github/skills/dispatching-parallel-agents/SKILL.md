@@ -55,6 +55,22 @@ These cached responses serve as evidence in postmortems — they show what each 
 
 ---
 
+## Agent Type Selection
+
+Before dispatching any agent, select the correct type. The wrong type wastes context and produces lower-quality output.
+
+| Task type | Correct agent | Wrong choice |
+|-----------|--------------|--------------|
+| Read-only research across 3+ files — patterns, symbols, hypotheses | `explore` | `general-purpose` |
+| Code compliance, style, logic, or spec review | `code-review` | `general-purpose` |
+| Multi-step implementation with file modifications | `general-purpose` + worktree | `explore` |
+| Build, test, or lint execution — success/failure result only | `task` | `general-purpose` |
+| Any read-only + write combination | Separate explore and general-purpose agents | One general-purpose for everything |
+
+**Routing rule:** Use the most constrained agent type that can complete the job. `general-purpose` can do everything — which means it accumulates context, produces serial output, and contaminates findings with session assumptions for work that a constrained agent would complete faster and cleaner.
+
+---
+
 ## When to Parallelize
 
 Dispatch agents in parallel when ALL of the following are true:
@@ -168,3 +184,4 @@ See `using-git-worktrees` skill for full worktree lifecycle.
 | "I'll share my session context — it's helpful" | It contaminates their search. They'll confirm your assumptions instead of testing them. |
 | "One agent can do all this" | Sequential agents fill your context. Parallel agents preserve it. |
 | "I don't need to verify — the agent found it" | Findings are hypotheses. You verify before you propagate. |
+| "I'll use general-purpose — it can do everything" | general-purpose for read-only research wastes context and produces serial output. Use explore for research across many files. |
