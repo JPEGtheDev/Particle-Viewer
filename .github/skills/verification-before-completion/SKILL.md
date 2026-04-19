@@ -238,6 +238,7 @@ If you find yourself thinking any of the following, you are about to make an unv
 - "Just a small change, can't have broken anything"
 - Expressing satisfaction ("Great!", "Done!", "That should do it!") before running commands
 - About to write a commit message without having run the gate commands
+- Verified 1 of N parallel edits (N ≥ 3) — **STOP. View at least 3 of the N edited files. "They all look the same" is an assumption, not evidence. A malformed edit still counts as a changed file.**
 
 **All of these mean: Run the verification commands NOW. Then state your claim.**
 
@@ -255,6 +256,7 @@ If you find yourself thinking any of the following, you are about to make an unv
 | "Just this once" | No exceptions. |
 | "I already manually verified" | Manual ≠ automated. Results can't be reproduced or cited. |
 | "Build passed, tests must be fine" | Build and tests are separate gates. |
+| "They all follow the same pattern" | If the pattern was wrong once, it was wrong for all N. For N ≥ 3 parallel edits of the same structure: view at least 3 of the edited files before committing — not 1. |
 
 ---
 

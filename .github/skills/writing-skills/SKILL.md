@@ -66,6 +66,8 @@ Every skill MUST contain all five elements:
 
 Any absent element = skill is incomplete. Fix before shipping.
 
+**Frontmatter also applies to agent templates:** `.github/agents/*.md` prompt template files require the same `name` + `description` YAML frontmatter block as skill files. Missing frontmatter causes parse errors when the CLI loads the agent.
+
 ---
 
 See `references/SKILL_ANATOMY_ELEMENTS.md` for full element schemas, bad/good examples, and rationale for each element.
@@ -111,6 +113,16 @@ See `references/SIZE_AND_COMPRESSION.md` for word count targets, the GPT-4.1 mec
 - `skill-reviewer` — runs the 5-element gate check on completed skills; dispatch 1 per file
 - `documentation` — governs how skill reference docs are structured, formatted, and linked
 - `self-evaluation` — reviews skills updated during a session using this checklist
+
+## Reference Reading Gate
+
+```
+Editing frontmatter only (no anatomy changes)?
+  YES → reference files optional
+  NO  → SKILL_ANATOMY_ELEMENTS.md MUST be read before making changes
+Creating a new skill or modifying anatomy elements (iron law, gate, rationalization table)?
+  → View references/SKILL_ANATOMY_ELEMENTS.md now — before any edits
+```
 
 ## References
 
