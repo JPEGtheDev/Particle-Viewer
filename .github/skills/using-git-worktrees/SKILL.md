@@ -38,14 +38,26 @@ Benefits:
 ### Create
 
 ```bash
-# Create worktree on a new branch
-git worktree add ../Particle-Viewer-agent-<name> -b agent/<name>
+# Step 1: Verify .worktrees is gitignored
+git check-ignore -q .worktrees || echo "ADD .worktrees TO .gitignore FIRST"
 
-# Create worktree tracking an existing branch
-git worktree add ../Particle-Viewer-agent-<name> <branch-name>
+# Step 2: Create the worktree on a new branch
+git worktree add .worktrees/agent-<name> -b agent/<name>
+# If nonzero exit: log the error, do NOT dispatch
+#   stale lock:    git worktree prune; then retry
+#   path exists:   remove or rename
+#   branch in use: choose a different name
+
+# Step 3: Verify you are NOT in the main directory
+git -C .worktrees/agent-<name> rev-parse --show-toplevel
+# Must equal the absolute path of .worktrees/agent-<name>, NOT the main repo root
+
+# Step 4: Verify branch isolation
+git -C .worktrees/agent-<name> branch --show-current
+# Must NOT equal the active development branch
 ```
 
-Use `../Particle-Viewer-agent-<name>` as the path — one level up from the repo root, named descriptively.
+Use `.worktrees/agent-<name>` as the path — inside the repo, gitignored, named descriptively.
 
 ### List active worktrees
 
@@ -56,7 +68,7 @@ git worktree list
 ### Remove when done
 
 ```bash
-git worktree remove ../Particle-Viewer-agent-<name>
+git worktree remove .worktrees/agent-<name>
 git branch -d agent/<name>   # only after merging or discarding
 ```
 
@@ -97,10 +109,10 @@ When "I think" is not enough and empirical evidence is needed:
 
 ```bash
 # Approach A
-git worktree add ../Particle-Viewer-approach-a -b agent/approach-a
+git worktree add .worktrees/approach-a -b agent/approach-a
 
 # Approach B
-git worktree add ../Particle-Viewer-approach-b -b agent/approach-b
+git worktree add .worktrees/approach-b -b agent/approach-b
 
 # Dispatch two agents — one per worktree — with identical test harness
 # Compare: test results, line count, coupling, readability
@@ -113,11 +125,12 @@ This pattern replaces "I think approach A is better" with measurable output.
 
 ## Red Flags — STOP
 
-- Subagent working directly in the main repo directory
+- Subagent working directly in the main repo directory — **STOP. Create a worktree in `.worktrees/` first.**
 - Subagent output committed to `main` or the active feature branch without review
 - Worktree left alive after the work is merged or discarded (leaks branch clutter)
 - Dispatch to a worktree without passing the worktree path in the agent prompt
 - Merging a worktree branch before reviewing the full diff: `git diff main..agent/<name>`
+- Using `git worktree list | wc -l` to check if you are in a worktree — **STOP. This does NOT tell you which worktree you are in. Use `git rev-parse --show-toplevel` and compare against the expected path.**
 - "I reviewed the diff mentally — running `git diff main..agent/<name>` explicitly is redundant" — **STOP. Run the diff command. Mental review is not a structural check.**
 
 ---

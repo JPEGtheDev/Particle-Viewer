@@ -74,7 +74,31 @@ Before dispatching any subagent:
 
 1. The todo has a single, clear objective — no compound tasks bundled together.
 2. The agent prompt includes all necessary context: file paths, constraints, and return format.
-3. A dedicated worktree exists for any agent that modifies files; `using-git-worktrees` skill is loaded.
+3. A dedicated worktree exists for any **write-side** agent (one that modifies files). Run these checks before dispatch — advisory text is not enough:
+
+   ```bash
+   # 1. Ensure .worktrees/ is gitignored before first use
+   git check-ignore -q .worktrees || echo "ADD .worktrees TO .gitignore FIRST — stop here"
+
+   # 2. Create the worktree
+   git worktree add .worktrees/agent-<name> -b agent/<name>
+   # If nonzero exit: log error, do NOT dispatch, surface to user. Common causes:
+   #   - stale lock file: git worktree prune; then retry
+   #   - path already exists: remove it or rename
+   #   - branch name already registered: choose a different branch name
+
+   # 3. Verify path is a non-main worktree
+   git -C .worktrees/agent-<name> rev-parse --show-toplevel
+   # Output must be the absolute path of .worktrees/agent-<name> — NOT the main repo root
+
+   # 4. Verify branch isolation
+   git -C .worktrees/agent-<name> branch --show-current
+   # Output must NOT equal the current development branch (e.g. docs/execution-skill-overhaul or main)
+   ```
+
+   **Read-only agents are EXEMPT** from the worktree requirement: `explorer`, `researcher`, `spec-compliance-reviewer`, `code-quality-reviewer`, `architecture-reviewer`, `infrastructure-reviewer`. They cannot pollute a branch.
+
+   The worktree path confirmed by the above checks is the value to pass as `{{WORKTREE_PATH}}` in the agent prompt.
 4. If a pre-built template exists in `.github/agents/` for this task type: use it instead of injecting rules inline. Available templates: `implementer.md`, `skeptic.md`, `spec-compliance-reviewer.md`, `code-quality-reviewer.md`, `researcher.md`, `postmortem-reviewer.md`, `explorer.md`, `architecture-reviewer.md`, `infrastructure-reviewer.md`.
 5. Agent type is correct for the task: explore for read-only research, code-review for analysis, general-purpose+worktree for file modifications, task for build/test/lint.
 
@@ -276,6 +300,7 @@ Match model tier to task complexity. Instructions must be written for GPT-4.1 ba
 | "I verified one file, the rest are probably fine" | Each file requires its own code-quality reviewer. One agent per file is the rule — no extrapolation across files. |
 | "The subagent said PASS, that's good enough" | A subagent's self-assessment is not a review. PASS from an implementer means dispatch Stage 1 — not skip it. |
 | "I'll do a quick scan instead of dispatching a code-review agent" | A quick scan inherits your assumptions. A dispatched code-review agent does not. Dispatch the agent. |
+| "The skill says use worktrees — I'll follow it when I remember" | The skill is not re-read before every dispatch. The worktree PATH in the prompt is the structural check — not re-reading the skill. No path in the prompt = no dispatch. Run the 4-step verification above first. |
 | "I'll add the worktree after dispatching" | Worktrees MUST exist before dispatch. The agent needs the worktree path in its prompt — it cannot create its own isolation after the fact. |
 | "I'll include the rules in the prompt instead of using a template" | Injected rules drift between sessions. Pre-built templates in `.github/agents/` are the single source of truth. Use them. |
 | "I already know what to do — the researcher step is overhead" | YOU MUST dispatch the researcher.md template to confirm assumptions before acting. |
