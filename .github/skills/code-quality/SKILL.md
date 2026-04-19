@@ -9,7 +9,7 @@ description: Use when writing or reviewing C++ code, running pre-commit checks, 
 NO UNFORMATTED OR UNTIDY CODE SHIPS
 ```
 
-Run clang-format AND clang-tidy BEFORE every commit. CI will reject violations. No exceptions.
+YOU MUST run clang-format AND clang-tidy BEFORE every commit. CI will reject violations. No exceptions.
 
 Violating the letter of this rule is violating the spirit of this rule.
 
@@ -104,7 +104,7 @@ These require **manual inspection** after running clang-format — tools don't a
 | Element | Convention | Example |
 |---------|-----------|---------|
 | Classes/Structs/Enums | `PascalCase` | `ParticleSystem`, `RenderSettings` |
-| Functions/Methods | `camelCase` (preferred, not enforced) | `initializeBuffers`, `getParticleCount` |
+| Functions/Methods | `camelCase` (USE camelCase; not enforced by clang-tidy) | `initializeBuffers`, `getParticleCount` |
 | Variables/Parameters | `snake_case` | `particle_count`, `delta_time` |
 | Member variables | `snake_case` + trailing `_` for private | `window_width`, `camera_` |
 | Constants/Macros | `UPPER_CASE` | `MAX_PARTICLES`, `PI` |
@@ -179,6 +179,9 @@ When removing a gamepad feature or call site from `viewer_app.cpp` at user reque
 - [ ] Headers are self-contained
 - [ ] If a public interface changed: documentation updated in same commit (see cpp-patterns skill)
 - [ ] If a symbol is deprecated: all call sites removed or annotated (see cpp-patterns skill)
+
+✓ All 10 met → proceed to commit
+✗ Any unmet → complete the failing step before committing
 
 ---
 

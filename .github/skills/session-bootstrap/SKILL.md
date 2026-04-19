@@ -83,6 +83,15 @@ If unsure, read `code-quality` — it applies to every code task.
 2. Load all required skills before writing a single line of code or sending a plan
 3. Announce each skill load: "I am using the [skill-name] skill to [purpose]."
 
+BEFORE PROCEEDING with any session work, verify:
+1. Task type(s) identified from the On Start table above
+2. All required skills for this task type loaded (in parallel if multiple domains)
+3. Skill load announcement made for each loaded skill
+4. If resuming a prior session: SQL pending todos checked; Skeptic dispatched before first implementation step
+
+✓ All 4 met → proceed with session work
+✗ Any unmet → complete the unmet step now before writing code or sending a plan
+
 ---
 
 ## On Finish — Self-Evaluate and Compact
@@ -122,7 +131,7 @@ behavior is habitual, not conditional.
 
 ---
 
-## Rationalization Table
+## Rationalization Prevention
 
 | Rationalization                                    | Why it fails                                       | Correct action                              |
 |----------------------------------------------------|----------------------------------------------------|---------------------------------------------|

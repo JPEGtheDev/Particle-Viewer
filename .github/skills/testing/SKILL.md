@@ -11,6 +11,8 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
 Violating the letter of this rule is violating the spirit of this rule.
 
+YOU MUST write a failing test before writing any production code. No exceptions.
+
 Write the test. Watch it fail. THEN write code.
 
 If you wrote code before the test: **Delete it. Start over.** No exceptions.
@@ -207,6 +209,9 @@ Before presenting tests, verify:
 - [ ] Tests compile and pass
 - [ ] For visual regression tests: see visual-regression-testing skill checklist
 
+✓ All 10 met → proceed to write/run tests
+✗ Any unmet → resolve the unmet condition before presenting tests to the user
+
 ---
 
 ## Red Flags — STOP
@@ -298,11 +303,11 @@ Tests that mirror the implementation's structure detect nothing — they fail to
 - Test what the function is supposed to do, not how it currently does it
 - If the test would pass for any implementation that uses the same algorithm, it is not testing a contract — it is testing an implementation coincidence
 
-Signal: if modifying the test file requires looking at the source file, the test is likely mirroring implementation structure. The test should be written from requirements, not from reading the implementation.
+Signal: if modifying the test file requires looking at the source file, the test is mirroring implementation structure. The test MUST be written from requirements, not from reading the implementation.
 
 - Use `EXPECT_*` (non-fatal) for most assertions; use `ASSERT_*` (fatal) only when a test cannot meaningfully continue after failure
 - If a test seems to test external library behavior, focus on the wrapper/integration instead
-- If Arrange and Act seem identical, the test might be a constructor test — put expected values in Arrange, constructor call in Act
+- If Arrange and Act are identical, the test is a constructor test — put expected values in Arrange, constructor call in Act
 
 ---
 
