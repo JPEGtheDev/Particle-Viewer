@@ -18,6 +18,30 @@ Missing any single element means the skill is incomplete — fix it before using
 
 ---
 
+## BEFORE PROCEEDING
+
+Before creating, editing, or shipping any skill or agent template:
+
+1. **Creating a new skill?** Will it be invoked in ≥1% of sessions?
+   - YES → proceed
+   - NO → write a reference doc in the relevant skill's `references/` instead; do not create a skill
+
+2. **5-element anatomy check** — all 5 MUST be present:
+   - [ ] FRONTMATTER: `name` + `description` starting with "Use when..."
+   - [ ] IRON LAW: ALL CAPS rule + "Violating the letter..." line + "YOU MUST" + "No exceptions."
+   - [ ] ANNOUNCEMENT: `**Announce at start:** "I am using the [skill] to [purpose]."`
+   - [ ] GATE FUNCTION: `## BEFORE PROCEEDING` with numbered conditions + ✓/✗ branches
+   - [ ] RATIONALIZATION TABLE: `## Rationalization Prevention` with ≥5 rows
+
+3. **Reference reading gate:**
+   - Editing frontmatter only (no anatomy changes)? → reference files optional
+   - Modifying or adding anatomy elements? → read `references/SKILL_ANATOMY_ELEMENTS.md` before any edits
+
+✓ All met → proceed
+✗ Any unmet → resolve the unmet item before touching the skill file
+
+---
+
 # Instructions for Agent
 
 ## The 1% Threshold Gate
