@@ -6,8 +6,9 @@ description: Use when multiple independent read-only research tasks can run simu
 ## Iron Law
 
 ```
-PARALLEL AGENTS ARE FOR READ-ONLY WORK ONLY.
-FILE MODIFICATIONS REQUIRE WORKTREES — ONE WORKTREE PER AGENT.
+YOU MUST RESTRICT PARALLEL AGENTS TO READ-ONLY WORK ONLY.
+YOU MUST PROVIDE EACH WRITE AGENT WITH ITS OWN ISOLATED WORKTREE — ONE WORKTREE PER AGENT.
+No exceptions.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.
@@ -73,6 +74,15 @@ Dispatch agents in parallel when ALL of the following are true:
 - Multiple write agents on the same files (race condition)
 - Tasks requiring shared state or coordinated decisions
 
+BEFORE DISPATCHING PARALLEL AGENTS, verify:
+1. All tasks are truly independent — no agent needs another agent's output to start
+2. Return format is explicitly defined for every agent before dispatch
+3. No more than 4 agents in flight on Standard accounts (or within your confirmed Enterprise limit)
+4. Read-only agents have no shared write targets; write agents each have an isolated worktree
+
+✓ All met → dispatch agents
+✗ Any unmet → resolve the dependency, define the return format, or serialize the dispatch before proceeding
+
 ---
 
 ## Concurrency Rules
@@ -134,6 +144,18 @@ git -C .worktrees/agent-feature-b diff main
 ```
 
 See `using-git-worktrees` skill for full worktree lifecycle.
+
+---
+
+## Red Flags — STOP
+
+| Pattern | Action |
+|---------|--------|
+| Two or more agents assigned to the same file or overlapping file sets | STOP. Reassign to non-overlapping sets or serialize the dispatch. |
+| Dispatching agents without a defined return format | STOP. Define the exact return format for every agent before dispatching. |
+| Acting on one agent's result before all agents have returned | STOP. Collect ALL results first, then aggregate and verify. |
+| More than 4 concurrent agents on a Standard account without confirming the limit | STOP. Verify your account's concurrency limit before dispatching. |
+| Forwarding agent output to the user without verifying it against source files | STOP. Cross-check every finding against source files before presenting conclusions. |
 
 ---
 

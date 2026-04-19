@@ -6,7 +6,8 @@ description: Use when executing any non-trivial implementation work.
 ## Iron Law
 
 ```
-PLAN BEFORE CODE. PROVE BEFORE SHIPPING. DELEGATE BEFORE DROWNING.
+YOU MUST PLAN BEFORE CODE, PROVE BEFORE SHIPPING, AND DELEGATE BEFORE DROWNING.
+No exceptions.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.
@@ -208,6 +209,18 @@ After any mistake or user correction:
 4. **Gold-plating simple work** — match effort to complexity
 5. **Walking past defects** — address or log what you find
 6. **Believing empty output** — cross-check with a second method
+
+---
+
+## Rationalization Prevention
+
+| Excuse | Reality |
+|--------|---------|
+| "I already know what to do, the plan step is obvious" | Obvious steps fail in unexpected ways. YOU MUST execute the full PPP gate for every todo — no shortcuts. |
+| "The todo is small, no review needed" | Small todos introduce the same bugs as large ones. YOU MUST dispatch both reviewer stages after every todo without exception. |
+| "I'll review the spec compliance myself, no need to dispatch" | You wrote the code — you will rationalize away the gaps. Dispatch spec-compliance-reviewer.md every time. |
+| "The previous todo had no issues, this one is probably fine too" | Each todo is independent. Prior clean reviews do not carry over. Dispatch reviewers after this todo. |
+| "I'm close to the end, I'll skip the Skeptic for this todo" | End-of-plan todos are the most likely to drift from the original scope. The Skeptic Agent is mandatory regardless of position in the plan. |
 
 ---
 
