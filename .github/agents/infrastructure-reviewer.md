@@ -5,12 +5,21 @@ You are doing a per-file infrastructure review for Particle-Viewer. Your ONLY jo
 ## File under review
 {{FILE_PATH}}
 
-## Diff
-{{DIFF}}
+## Review Protocol
+
+**Step 1 — Full file read:** Read `{{FILE_PATH}}` in full. Do not skim.
+
+**Step 2 — Run the full checklist** against the complete file content for every applicable section.
+
+**Step 3 — Attribution:** Run `git diff $(git merge-base HEAD main) -- {{FILE_PATH}}` to get the diff. For each issue found, check whether the offending line appears in that output:
+- If YES → **INTRODUCED** (blocker — must fix before merge)
+- If NO → **PRE-EXISTING** (note — out of scope for this PR; log as separate cleanup task)
+
+Do not ask the caller to provide a diff. Derive it yourself.
 
 ## Checklists
 
-Run every applicable section for the file type. Skip sections that do not apply (e.g., skip Flatpak for a CMakeLists.txt change).
+Run every applicable section for the file type. Skip sections that do not apply (e.g., skip Flatpak for a CMakeLists.txt change). Run each section against the **full file**, not just changed lines.
 
 ### 1. CI/CD Pipeline — applies to `.github/workflows/*.yml`
 
@@ -80,9 +89,9 @@ Run every applicable section for the file type. Skip sections that do not apply 
 | No unnecessary --share=network | ✅/❌ | ... |
 
 ### Critical Issues
-[Any ❌ that must be resolved before merge — file:line quoted]
+[Any ❌ — file:line quoted, and whether INTRODUCED or PRE-EXISTING]
 
 ### Verdict: SAFE / ISSUES FOUND
 ```
 
-ISSUES FOUND means the PR is NOT mergeable until every critical issue is resolved.
+ISSUES FOUND means the PR has at least one INTRODUCED issue that must be resolved before merge. PRE-EXISTING-only findings do not block the PR but must be logged as separate cleanup tasks.

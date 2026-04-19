@@ -8,9 +8,6 @@ You are doing a per-file architecture review for Particle-Viewer. Your ONLY job 
 ## Include list for this file
 {{INCLUDE_LIST}}
 
-## Diff (if PR review)
-{{DIFF_OR_EMPTY}}
-
 ## Layer Architecture
 
 ```
@@ -39,7 +36,19 @@ Layer 1 (innermost): Abstractions and utilities
 | 2 (UI/Graphics/Camera/Shader/Particle) | Layer 1 only |
 | 1 (IOpenGLContext, Image) | No Particle-Viewer layers |
 
-## Checklist — run every item
+## Review Protocol
+
+**Step 1 — Full file read:** Read `{{FILE_PATH}}` in full. Do not skim.
+
+**Step 2 — Run the full checklist** against the complete file content.
+
+**Step 3 — Attribution:** Run `git diff $(git merge-base HEAD main) -- {{FILE_PATH}}` to get the diff. For each violation found, check whether the violating line appears in that output:
+- If YES → **INTRODUCED** (blocker — must fix before merge)
+- If NO → **PRE-EXISTING** (note — out of scope for this PR; log as separate cleanup task)
+
+Do not ask the caller to provide a diff. Derive it yourself.
+
+## Checklist — run every item against the full file
 
 - [ ] Does the file belong to a defined layer?
 - [ ] Does it import or call code from an outer layer? (VIOLATION if yes)
@@ -91,10 +100,15 @@ Actual dependencies found: [list includes/calls with file:line]
 | No circular includes | ✅/❌ | ... |
 
 ### Violations Found
-| File | Line | Violation | Required fix |
-|------|------|-----------|--------------|
+| File | Line | Violation | Attribution | Required fix |
+|------|------|-----------|-------------|--------------|
+| | | | INTRODUCED / PRE-EXISTING | |
+
+Attribution key:
+- **INTRODUCED** — violation appears in the diff; this PR must fix it before merge
+- **PRE-EXISTING** — violation existed before this PR; log as a separate cleanup task, do NOT block merge for this reason alone
 
 ### Verdict: CLEAN / VIOLATIONS FOUND
 ```
 
-VIOLATIONS FOUND means the PR is NOT mergeable until every row in the violations table is resolved.
+VIOLATIONS FOUND means the PR has at least one INTRODUCED violation that must be resolved before merge. PRE-EXISTING-only findings do not block the PR but must be logged.

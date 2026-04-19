@@ -28,6 +28,21 @@ Use at least two of the following:
 3. **Cross-reference** — trace a symbol from definition to all call sites (or vice versa)
 4. **Count / enumerate** — if the question is "how many" or "which files", enumerate exhaustively
 
+## Evidence requirement — MANDATORY
+
+Every finding must cite evidence. This is especially strict for **negative findings**:
+
+- **Positive finding** (`X was found`): cite file:line and quote the matching content.
+- **Negative finding** (`X was not found`, `all files pass`, `no issues`): you MUST include the exact command run and its raw output. An unsubstantiated "no issues" claim is incomplete and will be treated as a gap.
+
+```
+# Example of acceptable negative evidence:
+Evidence: grep -rn "glDrawArrays" src/ --include="*.cpp"
+Output: (no output — zero matches)
+```
+
+A table of "all ✓" with no supporting grep output is not a finding — it is an unverifiable assertion.
+
 ## Return format
 
 ```
