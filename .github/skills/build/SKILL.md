@@ -100,6 +100,9 @@ cmake --install build
 
 **Gate:** `grep -r "FetchContent_Declare" CMakeLists.txt` — every `FetchContent_Declare` must have a `GIT_TAG` pinned to a specific version, not a branch name.
 
+✓ All tags pinned to a version tag or commit SHA → proceed to add or upgrade the dependency
+✗ Any tag references a branch name → fix the ref before proceeding
+
 ```cmake
 # CORRECT — pinned to tag
 FetchContent_Declare(some_lib GIT_REPOSITORY ... GIT_TAG v1.2.3)

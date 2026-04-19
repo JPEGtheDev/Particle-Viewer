@@ -198,9 +198,10 @@ If the task spans **2+ independent subsystems** (different architectural layers,
 
 ---
 
-## Red Flags → STOP
+## Red Flags — STOP
 
 - Writing code before the gate checklist is fully checked → STOP. Complete the gate.
 - Any `[UNCLEAR:]` item not yet answered → STOP. Ask the clarifying question.
 - Handing off to `writing-plans` with any gap in the Design Decision Record → STOP. Fill the gap.
 - "TBD" appearing anywhere in the Design Decision Record → STOP. Resolve it.
+- Proceeding to implementation because the scope "feels clear enough" → STOP. Run the gate. Feelings are not evidence.

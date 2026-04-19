@@ -126,7 +126,7 @@ See `versioning` skill for conventional commit rules.
 
 ---
 
-## Red Flags → STOP
+## Red Flags — STOP
 
 - Opening a PR with failing tests
 - Squashing commits without reading the resulting diff

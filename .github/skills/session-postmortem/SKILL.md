@@ -17,6 +17,19 @@ YOU MUST examine the session for rationalization patterns. A clean outcome does 
 
 ---
 
+## BEFORE PROCEEDING — Postmortem Gate
+
+Before starting the postmortem analysis:
+
+1. The session being analyzed has completed — no further work is planned for that session.
+2. The session's `events.jsonl` log is accessible at `[SESSION_ID]/events.jsonl`.
+3. You are running as an EXTERNAL reviewer — you have not been the agent in the session being analyzed.
+
+✓ All 3 met → proceed through all postmortem parts in order
+✗ Any unmet → wait for the session to complete, locate the events log, or dispatch a separate external reviewer before proceeding
+
+---
+
 ## The Blameless Principle
 
 This postmortem is about **decisions and systems**, not character. Every failure is a decision that could be better-gated or better-informed. The language in the report must reflect this.
@@ -159,7 +172,7 @@ This section is separate from "What Went Well" and is the most commonly omitted 
 | Plan was followed → no rework | Plan wasn't followed → user didn't notice |
 | Test caught the regression | Test didn't exist → no regression this time |
 
-"Got lucky" items are highest-priority action items. A system that produces correct outcomes by luck is not reliable — the next session the luck may not hold. Name each lucky path and identify the gate that would have caught it if the luck had run out.
+"Got lucky" items are highest-priority action items. A system that produces correct outcomes by luck is not reliable — the next session the luck will not hold. Name each lucky path and identify the gate that would have caught it if the luck had run out.
 
 ### Part 4c: User Prompt Quality Review
 

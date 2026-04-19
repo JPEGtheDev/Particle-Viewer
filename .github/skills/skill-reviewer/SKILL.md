@@ -41,7 +41,7 @@ Run every item for each skill file under review:
 - [ ] Skill-specific commands present (not generic placeholder examples)?
 - [ ] Cross-references to at least 1 related skill?
 - [ ] Domain language is correct (C++/CMake/Google Test specific — not Python/JS/generic)?
-- [ ] No absolute paths (no `/home/...`, `/usr/...`, or machine-specific prefix — use template variables or relative references only)?
+- [ ] No absolute paths (no machine-specific prefixes — use `[REPO_ROOT]`, template variables, or relative references only)?
 
 ✓ All pass → verdict: PASS
 ✗ Any unmet → verdict: NEEDS WORK — list every failing item in the Issues Found section
@@ -94,7 +94,7 @@ If you catch yourself thinking any of the following, STOP and re-examine before 
 - "There are only 4 rows in the rationalization table, close enough" → Stop. Count them. ≥5 is the rule. 4 is a FAIL.
 - "The announcement is implied by the skill description" → Stop. It must be an explicit line. Implied is a FAIL.
 - "I'll note the issues but still give PASS" → Stop. There is no PASS with open issues. Verdict is NEEDS WORK.
-- "The path looks fine, it's just an example" → Stop. Any literal `/home/...` or machine-specific prefix is a FAIL regardless of context.
+- "The path looks fine, it's just an example" → Stop. Any machine-specific absolute path is a FAIL regardless of context.
 
 ---
 

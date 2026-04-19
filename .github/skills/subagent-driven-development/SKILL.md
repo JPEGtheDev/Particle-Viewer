@@ -68,6 +68,19 @@ Pick up next todo.
 
 ---
 
+## BEFORE PROCEEDING — SDD Dispatch Gate
+
+Before dispatching any subagent:
+
+1. The todo has a single, clear objective — no compound tasks bundled together.
+2. The agent prompt includes all necessary context: file paths, constraints, and return format.
+3. A dedicated worktree exists for any agent that modifies files.
+
+✓ All 3 met → dispatch the agent
+✗ Any unmet → refine the todo, complete the prompt, or create the worktree before dispatching
+
+---
+
 ## Why Subagents Are Mandatory
 
 Using subagents is discipline, not convenience:
