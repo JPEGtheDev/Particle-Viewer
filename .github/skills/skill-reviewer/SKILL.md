@@ -41,6 +41,7 @@ Run every item for each skill file under review:
 - [ ] Skill-specific commands present (not generic placeholder examples)?
 - [ ] Cross-references to at least 1 related skill?
 - [ ] Domain language is correct (C++/CMake/Google Test specific — not Python/JS/generic)?
+- [ ] No absolute paths present (no `/home/...`, `/usr/...`, or any machine-specific prefix — use template variables or relative references only)?
 
 ✓ All pass → verdict: PASS
 ✗ Any unmet → verdict: NEEDS WORK — list every failing item in the Issues Found section
@@ -93,6 +94,7 @@ If you catch yourself thinking any of the following, STOP and re-examine before 
 - "There are only 4 rows in the rationalization table, close enough" → Stop. Count them. ≥5 is the rule. 4 is a FAIL.
 - "The announcement is implied by the skill description" → Stop. It must be an explicit line. Implied is a FAIL.
 - "I'll note the issues but still give PASS" → Stop. There is no PASS with open issues. Verdict is NEEDS WORK.
+- "The path looks fine, it's just an example" → Stop. Any literal `/home/...` or machine-specific prefix is a FAIL regardless of context.
 
 ---
 
@@ -106,6 +108,7 @@ If you catch yourself thinking any of the following, STOP and re-examine before 
 | "I'll add the missing table later" | Later never comes. A skill without all five elements is incomplete. Add it now. |
 | "The iron law is already stated in the announcement" | They are separate sections with separate functions. Both are required. |
 | "The domain language seems fine, I won't check closely" | Generic examples (Python, npm, pip) in a C++/CMake skill are a FAIL. Check every command. |
+| "The absolute path is just an example, not a real path" | Any literal machine-specific path in a skill is a portability violation. Use a template variable. FAIL. |
 
 ---
 
