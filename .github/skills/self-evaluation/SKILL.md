@@ -6,7 +6,8 @@ description: Use when completing any session.
 ## Iron Law
 
 ```
-EVERY SESSION ENDS WITH SELF-EVALUATION — NO EXCEPTIONS
+YOU MUST END EVERY SESSION WITH SELF-EVALUATION.
+No exceptions.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.
@@ -19,15 +20,13 @@ Read this skill BEFORE your final message. If you skip it: the session's lessons
 
 ---
 
-## BEFORE PROCEEDING — Self-Evaluation Gate
+## BEFORE PROCEEDING
 
-Before starting the self-evaluation:
+- [ ] The session's primary task is complete — no further implementation work is planned for this session.
+- [ ] All commits from this session have been pushed or are staged and ready.
+- [ ] You have NOT yet sent the final message to the user.
 
-1. The session's primary task is complete — no further implementation work is planned for this session.
-2. All commits from this session have been pushed or are staged and ready.
-3. You have NOT yet sent the final message to the user.
-
-✓ All 3 met → proceed through all 7 steps in order
+✓ All met → proceed through all 7 steps in order
 ✗ Any unmet → complete remaining session work first; once no further work is planned, return here and execute all 7 steps
 
 ---

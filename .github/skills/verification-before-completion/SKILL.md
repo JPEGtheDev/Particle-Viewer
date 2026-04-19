@@ -19,13 +19,12 @@ When activated, announce: **"I am using the verification-before-completion skill
 ## Iron Law
 
 ```
-NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE.
+YOU MUST RUN VERIFICATION COMMANDS IN THIS SESSION BEFORE ANY COMPLETION CLAIM.
 EVIDENCE MUST BE INLINE. NEVER REFERENCED.
+No exceptions.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.
-
-YOU MUST run the verification commands in this session, after your most recent change, before making any completion claim. No exceptions.
 
 **Announce at start:** "I am using the verification-before-completion skill to verify [work item] before claiming completion."
 
@@ -68,8 +67,8 @@ BEFORE claiming any status or expressing satisfaction:
    - If YES: State claim WITH evidence inline
 5. ONLY THEN: Make the claim
 
-✓ All 5 steps completed → make the claim with inline evidence
-✗ Any step skipped → return to step 1; do not make the claim
+✓ All met → proceed
+✗ Any unmet → return to step 1; do not make the claim
 ```
 
 Skipping any step = lying, not verifying.

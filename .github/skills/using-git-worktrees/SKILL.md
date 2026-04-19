@@ -6,12 +6,11 @@ description: Use when running parallel agent work, testing an approach in isolat
 ## Iron Law
 
 ```
-NEVER LET A SUBAGENT COMMIT DIRECTLY TO THE MAIN WORKING BRANCH
+YOU MUST NEVER LET A SUBAGENT COMMIT DIRECTLY TO THE MAIN WORKING BRANCH.
+No exceptions.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.
-
-YOU MUST create a dedicated worktree for every subagent before dispatching it. No exceptions.
 
 Every subagent gets its own worktree. The main context reviews and merges.
 
@@ -119,6 +118,7 @@ This pattern replaces "I think approach A is better" with measurable output.
 - Worktree left alive after the work is merged or discarded (leaks branch clutter)
 - Dispatch to a worktree without passing the worktree path in the agent prompt
 - Merging a worktree branch before reviewing the full diff: `git diff main..agent/<name>`
+- "I reviewed the diff mentally — running `git diff main..agent/<name>` explicitly is redundant" — **STOP. Run the diff command. Mental review is not a structural check.**
 
 ---
 
@@ -131,6 +131,7 @@ This pattern replaces "I think approach A is better" with measurable output.
 | "Worktrees add overhead" | One git command. The cleanup time saved from a subagent polluting main more than compensates |
 | "I think this approach is right, no need for A/B" | "I think" is not evidence. Dispatch two agents and let the output decide. |
 | "The subagent promised not to touch main" | Subagent discipline is not a structural guarantee. Worktrees are. Create the worktree. |
+| "I'll clean up the worktree later — it's not hurting anything active" | Reality: YOU MUST remove worktrees immediately after merging or discarding. Stale worktrees accumulate into branch clutter that obscures active work. |
 
 ---
 

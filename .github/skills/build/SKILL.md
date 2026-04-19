@@ -6,7 +6,8 @@ description: Use when building, adding dependencies, configuring CMake options, 
 ## Iron Law
 
 ```
-BUILD MUST PASS LOCALLY BEFORE EVERY PUSH
+YOU MUST BUILD LOCALLY AND VERIFY IT PASSES BEFORE EVERY PUSH.
+No exceptions.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.

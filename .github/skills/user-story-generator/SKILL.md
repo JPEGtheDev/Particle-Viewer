@@ -6,7 +6,8 @@ description: Use when creating or refining user stories for Particle-Viewer.
 ## Iron Law
 
 ```
-NO STORY SHIPS WITHOUT INVEST VALIDATION AND ACCEPTANCE CRITERIA
+YOU MUST VALIDATE EVERY STORY AGAINST INVEST AND INCLUDE ACCEPTANCE CRITERIA BEFORE SHIPPING.
+No exceptions.
 ```
 Violating the letter of this rule is violating the spirit of this rule.
 

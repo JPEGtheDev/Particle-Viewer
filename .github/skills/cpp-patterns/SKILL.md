@@ -17,16 +17,15 @@ YOU MUST clean up all GL resources in destructors and update documentation in th
 
 ---
 
-## BEFORE PROCEEDING — C++ Pattern Application
+## BEFORE PROCEEDING
 
-Before applying any pattern:
+- [ ] Have I loaded the code-quality skill?
+- [ ] Am I about to introduce a GL resource without RAII?
+- [ ] Am I about to duplicate logic that already exists in the codebase?
+- [ ] Has the class or function I am changing been read — not recalled from memory?
 
-1. A failing test for the behavior you are implementing exists and you have observed its failure output.
-2. The specific pattern you are applying (resource management, DRY, deprecation, SDL3 gotcha, etc.) has been identified by name.
-3. The class or function you are changing has been read — not recalled from memory.
-
-✓ All 3 met → proceed
-✗ Any unmet → stop; write the failing test or read the target code before writing any production code
+✓ All met → proceed
+✗ Any unmet → load the code-quality skill, apply RAII, search for existing implementations, or read the target code before writing any production code
 
 ---
 

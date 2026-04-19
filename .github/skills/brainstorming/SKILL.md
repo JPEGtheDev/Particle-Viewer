@@ -6,8 +6,9 @@ description: Use when a task needs design exploration before any implementation 
 ## Iron Law
 
 ```
-NO CODE UNTIL THE DESIGN GATE IS PASSED.
+YOU MUST PASS THE DESIGN GATE BEFORE WRITING ANY CODE.
 NO AMBIGUITY ENTERS THE PLAN. EVERY [UNCLEAR:] MUST BE RESOLVED BEFORE WRITING-PLANS BEGINS.
+No exceptions.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.

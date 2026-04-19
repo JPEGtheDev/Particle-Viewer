@@ -6,7 +6,8 @@ description: Use when writing or maintaining visual regression tests, approving 
 ## Iron Law
 
 ```
-NEVER AUTO-APPROVE A VISUAL BASELINE — HUMAN MUST REVIEW EVERY NEW OR CHANGED RENDER
+YOU MUST NEVER AUTO-APPROVE A VISUAL BASELINE — HUMAN MUST REVIEW EVERY NEW OR CHANGED RENDER.
+No exceptions.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.
@@ -19,16 +20,14 @@ A visual regression test proves output **hasn't changed**, not that it was corre
 
 ---
 
-## BEFORE PROCEEDING — Visual Regression Pre-Check
+## BEFORE PROCEEDING
 
-Before writing or updating a visual regression test:
+- [ ] Any associated logic (non-pixel behavior) has a passing MockOpenGL or unit test already.
+- [ ] The test file is in `tests/visual-regression/` — not mixed with unit or integration tests.
+- [ ] If updating an existing baseline: the old baseline has been deleted and the test is confirmed failing.
+- [ ] Human baseline approval is an explicit, scheduled step in the workflow — not auto-commit.
 
-1. Any associated logic (non-pixel behavior) has a passing MockOpenGL or unit test already.
-2. The test file is in `tests/visual-regression/` — not mixed with unit or integration tests.
-3. If updating an existing baseline: the old baseline has been deleted and the test is confirmed failing.
-4. Human baseline approval is an explicit, scheduled step in the workflow — not auto-commit.
-
-✓ All 4 met → proceed
+✓ All met → proceed
 ✗ Any unmet → resolve the unmet condition before writing any test code or committing any baseline
 
 ---
@@ -177,6 +176,7 @@ Before presenting visual regression tests:
 
 ## Related Skills
 
-- `testing` — parent skill; TDD iron law and AAA naming conventions apply to all test files including visual regression tests
-- `code-quality` — code conventions, clang-format, and naming rules apply to test code in this directory
-- `cpp-patterns` — production class patterns (GL resource cleanup, RAII) used in visual test fixtures
+- [`testing`](.github/skills/testing/) — parent skill; TDD iron law and AAA naming conventions apply to all test files including visual regression tests
+- [`code-quality`](.github/skills/code-quality/) — code conventions, clang-format, and naming rules apply to test code in this directory
+- [`systematic-debugging`](.github/skills/systematic-debugging/) — use when investigating visual regression failures before proposing fixes
+- [`cpp-patterns`](.github/skills/cpp-patterns/) — production class patterns (GL resource cleanup, RAII) used in visual test fixtures

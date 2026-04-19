@@ -6,7 +6,8 @@ description: Use when authoring or updating skill files.
 ## Iron Law
 
 ```
-A SKILL WITHOUT AN IRON LAW IS DOCUMENTATION, NOT ENFORCEMENT
+YOU MUST ENSURE EVERY SKILL HAS ALL FIVE GATE ELEMENTS.
+No exceptions.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.
