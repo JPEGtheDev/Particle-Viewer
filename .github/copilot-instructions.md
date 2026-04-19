@@ -118,7 +118,7 @@ Skills are organized into **DDD bounded contexts**. Sub-domain skills (e.g., `vi
 | Skill | Path | Domain |
 |-------|------|--------|
 | `documentation` | `.github/skills/documentation/` | Docs conventions, linking, formatting, skill authoring |
-| `writing-skills` | `.github/skills/writing-skills/` | Skill authoring standard, DDD map, voice authority rules, anatomy gate |
+| `writing-skills` | `.github/skills/writing-skills/` | Skill authoring standard, DDD map, anatomy gate |
 
 ### PRODUCT context
 
