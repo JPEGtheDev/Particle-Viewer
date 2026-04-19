@@ -35,15 +35,17 @@ Reload the relevant skill(s) immediately when ANY of these occur:
 
 Do NOT say "I remember the skill content." A remembered skill is an unverified skill. Load fresh.
 
-### `honesty` — Required First Load Every Session
+### `honesty` — Co-Equal Peer Skill
 
-YOU MUST invoke `honesty` at session start, before any other skill. The session-start hook attempts to auto-load it, but hooks fail silently. If the hook failed, honesty is NOT in working context unless explicitly invoked. The declaration "honesty is always active" in `copilot-instructions.md` activates the declaration, not the 900-word rule body. Without invocation, the confidence vocabulary rules, process language rules, and trust audit are absent from working context.
+`honesty` is NOT managed by `session-bootstrap`. It is a co-equal peer skill with its own hook injection. The pre-message hook injects the Honesty Gate into every turn automatically. The session-start hook injects the full Honesty Gate at session start.
+
+If neither hook output is visible in context, load `honesty` explicitly before responding. Do NOT proceed with a task-specific skill while honesty content is absent from working context.
 
 ---
 
 ## On Start — Minimum Skill Loads by Task Type
 
-**Step 1 — invoke `honesty` before consulting this table.** `honesty` is required before any task-specific skill, every session, regardless of task type.
+Before writing code, read the skill(s) relevant to your task. `honesty` is injected by hook — load it explicitly only if hook output is absent.
 
 Before writing code, read the skill(s) relevant to your task. If the task touches multiple
 domains, read multiple skills in parallel (they are independent reads).

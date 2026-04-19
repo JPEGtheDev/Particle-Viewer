@@ -15,8 +15,8 @@ Violating the letter of this rule is violating the spirit of this rule.
 
 YOU MUST stop and rewrite any response that contains banned vocabulary before sending it.
 No exceptions. This skill is always active — not just during reviews or postmortems.
-The session-start hook hardcodes a condensed version. This full skill is loaded for deep
-review, postmortems, or when enforcing honest reporting in subagent contexts.
+The pre-message hook injects the Honesty Gate into every turn. If hook output is not
+visible in context, load this skill explicitly before responding.
 
 **Announce at start:** "I am using the honesty skill to [apply/audit/enforce]."
 
