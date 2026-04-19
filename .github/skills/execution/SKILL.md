@@ -1,6 +1,6 @@
 ---
 name: execution
-description: Use when executing any non-trivial implementation work. For planning, use writing-plans. For delegation, use subagent-driven-development.
+description: Use when executing any non-trivial implementation work.
 ---
 
 ## Iron Law
@@ -52,20 +52,24 @@ For every planned item, before writing code:
 **PPP Gate (Plain Programmer's Purpose):** State what the function or class you are about to write does in one plain sentence: "This function takes [X] and returns [Y] by doing [Z]." If you cannot state it simply, you do not understand the requirement well enough to code it. Stop and re-read the requirements.
 
 ```
-1. Flag it as in-progress
+1. Flag it as in-progress. Reload the relevant skill (session-bootstrap refresh rule).
 2. PPP: State the purpose of the code you're about to write (one sentence)
 3. Make the change
 4. Prove it works (compile, test, inspect diff)
 5. Flag it as done
-6. Commit when you reach a logical boundary
-7. Advance to the next item
+6. DISPATCH REVIEWERS — Stage 1: spec-compliance-reviewer.md, then Stage 2: code-quality-reviewer.md
+   Do NOT pick up the next todo until both stages pass.
+7. Commit when you reach a logical boundary
+8. Advance to the next item
 ```
 
-**A task is not done until you can demonstrate it works.** That means:
+**A task is not done until both reviewer stages pass.** Tests green is necessary but not sufficient.
+
 - Clean compilation
 - All tests green
 - Diff reviewed for side-effects
-- You would confidently submit this for code review
+- Stage 1 (spec compliance): PASS
+- Stage 2 (code quality): APPROVE or APPROVE WITH NITS resolved
 
 
 ### Communicating Progress

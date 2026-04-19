@@ -7,11 +7,10 @@ description: Use when a task needs design exploration before any implementation 
 
 ```
 NO CODE UNTIL THE DESIGN GATE IS PASSED.
+NO AMBIGUITY ENTERS THE PLAN. EVERY [UNCLEAR:] MUST BE RESOLVED BEFORE WRITING-PLANS BEGINS.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.
-
-If you are about to write code and have not answered the design questions below, STOP. Complete this skill first.
 
 **Announce at start:** "I am using the brainstorming skill to explore design options for [brief description]. No code will be written until the gate is passed."
 
@@ -32,9 +31,44 @@ This skill is required before writing code when ANY of the following are true:
 
 ---
 
-## HARD-GATE: Design Questions
+## Phase 1: Clarification (REQUIRED — do not skip)
 
-Answer all applicable questions before writing a single line of production code. If you cannot answer a question, dispatch a research subagent — do not guess.
+**Before answering any design questions:** ask clarifying questions. One question per response. Wait for the answer before asking the next.
+
+Label every ambiguity `[UNCLEAR: ...]`. Do NOT silently assume an answer to an unclear requirement.
+
+**AMBIGUITY BLOCK:** If any `[UNCLEAR:]` item remains unanswered, you MUST stop. Do not proceed to Phase 2. Ask the clarifying question. Wait for the answer. Then continue.
+
+Good clarifying questions:
+- "Should this work with existing data formats or a new format?"
+- "Is this feature gated by a user preference or always active?"
+- "Does 'fast' mean under 16ms per frame, or just noticeably faster?"
+
+Bad clarifying questions (don't ask):
+- Hypotheticals you can answer by reading the codebase
+- Questions where the existing architecture makes the answer obvious
+- Questions you are going to answer yourself anyway
+
+After all `[UNCLEAR:]` items are resolved: state "All ambiguities resolved. Proceeding to Phase 2."
+
+---
+
+## Phase 2: Explore Project Context
+
+Before proposing approaches, read the relevant area of the codebase:
+
+1. Identify which files will be affected — grep if needed, dispatch researcher agent if large
+2. Find existing patterns you must follow or are free to diverge from
+3. Identify any existing interfaces the change must comply with
+4. State what you found: "Existing pattern is X, found in Y. New code must follow this because Z."
+
+If you cannot answer a design question from reading the code, dispatch a researcher subagent — do not guess.
+
+---
+
+## Phase 3: HARD-GATE Design Questions
+
+Answer all applicable questions before writing a single line of production code.
 
 ### Required Questions (all tasks)
 
@@ -42,72 +76,62 @@ Answer all applicable questions before writing a single line of production code.
    State it in one sentence. If you cannot, the problem is not well-understood yet.
 
 2. **What are the top 3 alternative approaches?**
-   List them. If only one approach exists, state why the others are ruled out.
+   List them. If only one exists, state why the others are ruled out.
 
 3. **What are the trade-offs?**
-   For each approach: what does it give, what does it cost? Use the template:
    ```
    Approach A: [benefit] / [cost]
    Approach B: [benefit] / [cost]
-   Chosen: [A] because [specific reason the benefit outweighs the cost here]
+   Chosen: [A] because [specific reason]
    ```
 
 4. **Where does this code live?**
-   Name the file(s). If you are unsure, that is a gap — resolve it before coding.
+   Name exact file paths. "Somewhere in src/" is not an answer — it is a gap.
 
 5. **What does this NOT do?**
-   State the explicit boundary: what is out of scope, deferred, or assumed away.
+   State explicit scope boundary: what is out of scope, deferred, or assumed away.
 
 ### Additional Questions (architecture-impacting tasks)
 
 6. **Does this cross a layer boundary?**
-   If yes: is the dependency direction correct (outer → inner, never inner → outer)?
-   If no: confirm the change is confined to one layer.
+   Dependency direction must be outer → inner. Never inner → outer.
 
 7. **What existing code does this interact with?**
-   Name the interfaces and concrete classes. If you do not know, dispatch an explore agent.
+   Name the interfaces and concrete classes.
 
 8. **Can this be tested without a real OpenGL context?**
-   If no: why not, and what is the test strategy? (Visual regression? Mock context?)
+   If no: state the test strategy (visual regression, mock context).
 
 ---
 
-## Design Gate Checklist
+## Phase 4: Design Gate Checklist
 
-Before exiting brainstorming and entering implementation:
+Every item MUST be checked before handing off to `writing-plans`.
 
-- [ ] Simplest approach identified and either chosen or explicitly rejected with reason
+- [ ] All `[UNCLEAR:]` ambiguities resolved — none remain
+- [ ] Simplest approach identified and chosen or explicitly rejected with reason
 - [ ] All trade-offs named — none left implicit
-- [ ] Files named — no "somewhere in src/"
+- [ ] Exact file paths named — no "somewhere in src/"
 - [ ] Out-of-scope items explicitly listed
 - [ ] Architecture impact assessed (layer boundaries, dependency direction)
 - [ ] Test strategy stated
 
-✓ All checked → proceed to implementation
-✗ Any unchecked → return to the relevant design question; do not proceed
+✓ All checked → output Design Decision Record → hand off to `writing-plans`
+✗ Any unchecked → STOP. Return to the relevant phase. Do not proceed.
 
 ---
 
-## Rationalization Prevention
+## Phase 5: Design Decision Record
 
-| Excuse | Reality |
-|--------|---------|
-| "I know what to do, I'll just start" | If you knew, the design questions would take 2 minutes. Answer them. |
-| "We can refactor later" | Later never comes. Design debt compounds. 2 minutes now saves 2 hours later. |
-| "It's a small change" | Small changes in the wrong layer cause large regressions. |
-| "The approach is obvious" | Obvious approaches still need trade-offs named. That is what makes them defensible. |
-| "I'll figure it out as I code" | Exploratory coding without a gate creates uncommittable work. |
-
----
-
-## Output Format
-
-When brainstorming is complete, output a **Design Decision Record** before switching to implementation:
+When the gate is fully passed, output this record. It becomes part of the PR description.
 
 ```
 ## Design Decision Record
 
 **Problem:** [one sentence]
+
+**Ambiguities resolved:**
+- [UNCLEAR: X] → resolved as: [answer]
 
 **Chosen approach:** [one sentence]
 
@@ -115,27 +139,38 @@ When brainstorming is complete, output a **Design Decision Record** before switc
 - [Approach A]: rejected because [reason]
 - [Approach B]: rejected because [reason]
 
-**Trade-off accepted:** [what we give up by choosing this approach]
+**Trade-off accepted:** [what we give up]
 
-**Files affected:** [list]
+**Files affected:** [exact paths]
 
-**Out of scope:** [list]
+**Out of scope:** [explicit list]
 
 **Test strategy:** [how correctness will be verified]
 
-**Gate passed:** YES — proceeding to implementation
+**Gate passed:** YES — handing off to writing-plans
 ```
 
-This record becomes part of the PR description or commit message body.
+After outputting this record: load `writing-plans` skill. Do NOT begin implementation directly.
+
+---
+
+## Rationalization Prevention
+
+| Excuse | Reality |
+|--------|---------|
+| "I know what to do, I'll just start" | If you knew, the design questions take 2 minutes. Answer them first. |
+| "The requirement is clear enough" | Unresolved ambiguity is the most expensive bug — it shows up after code is written. |
+| "I'll clarify as I go" | Mid-implementation clarification means rework. Clarify first. |
+| "We can refactor later" | Design debt compounds. 2 minutes now saves 2 hours later. |
+| "The approach is obvious" | Obvious approaches still need trade-offs named to be defensible. |
+| "TBD for now" | TBD is not a file path. It is a deferred decision that will block the implementer. |
+| "I'll figure it out as I code" | Exploratory coding without a gate produces uncommittable work. |
 
 ---
 
 ## Red Flags → STOP
 
-If you catch yourself:
-- Writing code before completing the gate checklist
-- Skipping trade-off analysis because "the answer is obvious"
-- Naming "TBD" as a file location
-- Treating "we'll know more when we start" as a valid answer
-
-**All of these mean: you have not completed brainstorming. Return to the Design Gate.**
+- Writing code before the gate checklist is fully checked → STOP. Complete the gate.
+- Any `[UNCLEAR:]` item not yet answered → STOP. Ask the clarifying question.
+- Handing off to `writing-plans` with any gap in the Design Decision Record → STOP. Fill the gap.
+- "TBD" appearing anywhere in the Design Decision Record → STOP. Resolve it.

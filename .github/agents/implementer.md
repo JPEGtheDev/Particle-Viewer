@@ -24,10 +24,21 @@ You are implementing a feature for Particle-Viewer (C++20, OpenGL, CMake, Google
 
 ## Return format
 ```
-STATUS: [DONE | BLOCKED | PARTIAL]
+STATUS: [DONE | DONE_WITH_CONCERNS | PARTIAL | NEEDS_CONTEXT | BLOCKED]
 Branch: agent/{{AGENT_NAME}}
 Tests: [X passed, 0 failures]
 Files changed: [list]
+Completed: [if PARTIAL — what was finished and verified]
+Remaining: [if PARTIAL — what was not completed and why]
 Decisions made: [any non-obvious choices + justification]
-Blockers: [if BLOCKED or PARTIAL]
+Concerns: [if DONE_WITH_CONCERNS — describe what you flagged and why]
+Missing context: [if NEEDS_CONTEXT — exactly what information is needed]
+Blockers: [if BLOCKED — what cannot be resolved without external action]
 ```
+
+Status meanings:
+- DONE: Task complete. All verification gates passed. No concerns.
+- DONE_WITH_CONCERNS: Complete. Flagging issues for dispatcher review before merge.
+- PARTIAL: Partially complete. What was finished is tested and verified. Remaining work listed.
+- NEEDS_CONTEXT: Cannot proceed. Specific missing information listed.
+- BLOCKED: Cannot proceed. External dependency or environment issue described.

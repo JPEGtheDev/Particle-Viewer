@@ -1,6 +1,6 @@
 ---
 name: systematic-debugging
-description: Use when encountering any bug, test failure, build error, or unexpected behavior. Must be read BEFORE proposing any fix.
+description: Use when encountering any bug, test failure, build error, or unexpected behavior.
 ---
 
 # Instructions for Agent

@@ -1,6 +1,5 @@
 ---
 name: writing-skills
-version: 1.3.0
 description: Use when creating a new skill, editing an existing skill, or reviewing a skill for quality compliance.
 ---
 
@@ -42,7 +41,7 @@ Every skill belongs to exactly one bounded context. Place new skills in the corr
 
 | Context | Domain | Skills |
 |---------|--------|--------|
-| **EXECUTION** | How work is planned and done | execution, writing-plans, brainstorming, subagent-driven-development, using-git-worktrees |
+| **EXECUTION** | How work is planned and done | execution, writing-plans, brainstorming, subagent-driven-development, dispatching-parallel-agents, using-git-worktrees |
 | **QUALITY** | How code meets correctness standards | testing, visual-regression-testing, code-quality, cpp-patterns, verification-before-completion, systematic-debugging |
 | **DELIVERY** | How code ships | versioning, build, workflow, finishing-a-development-branch |
 | **REVIEW** | How work is validated | architecture-review, infrastructure-review, skill-reviewer, requesting-code-review, receiving-code-review |
@@ -174,7 +173,46 @@ Apply to every line of a skill:
 
 ---
 
-## Size Limits
+## Size and Token Efficiency
+
+**Why this matters:** Skills are written for GPT-4.1 as the baseline. Every instruction must be mechanically precise and literally executable — no nested conditionals, no implied reasoning chains. Verbose skills evict iron law content from the context window.
+
+### Word Count Targets
+
+| Skill type | Target words | Hard limit |
+|------------|-------------|------------|
+| EXECUTION / QUALITY (frequently loaded) | ≤ 400 words | 600 words |
+| DELIVERY / REVIEW / KNOWLEDGE | ≤ 500 words | 800 words |
+| Sub-domain skills | ≤ 200 words | 350 words |
+| Reference files (not SKILL.md) | No limit — loaded on demand |
+
+**Check before shipping:**
+```bash
+wc -w .github/skills/<skill-name>/SKILL.md
+```
+
+### Writing for Mechanical Execution (GPT-4.1 Baseline)
+
+Every line in every skill MUST satisfy this test: **Can a GPT-4.1 class model execute this instruction literally without inferring intent?**
+
+Rules:
+- Use imperative sentences. Not "you should check" — "Check. Stop if not met."
+- Flatten all conditional logic into sequential steps. No "if X then Y else Z" — write two separate rules.
+- No implicit dependencies. If a gate requires loading another skill, say: "Load `[skill]` now. Do not proceed until loaded."
+- Iron law comes FIRST — before explanation, before context.
+- Announcement comes SECOND — it is a commitment mechanism, not a courtesy.
+- Gate function comes THIRD — step-by-step with explicit STOP conditions.
+
+### Compression Rules
+
+1. **Move heavy reference to a `references/` file.** Link from SKILL.md with one line.
+2. **Never repeat content another skill owns.** Cross-reference with a one-line pointer.
+3. **One example per pattern.** Delete redundant examples.
+4. **Description field never summarizes workflow.** See Element 1. Known failure mode: description saying "code review between tasks" caused models to do one review; triggering-conditions-only description caused models to follow the two-stage flowchart correctly.
+
+---
+
+## Size Limits (Lines — secondary; word count above is primary)
 
 | Skill type | Target | Hard limit |
 |------------|--------|------------|
@@ -215,3 +253,7 @@ When a skill exceeds its hard limit, split by domain. Each split must have a dis
 - `skill-reviewer` — runs the 5-element gate check on completed skills; dispatch 1 per file
 - `documentation` — governs how skill reference docs are structured, formatted, and linked
 - `self-evaluation` — reviews skills updated during a session using this checklist
+
+## References
+
+- `writing-skills/references/MODEL_COMPATIBILITY.md` — patterns most likely to be skipped by lower-end models and how to write skills that survive them

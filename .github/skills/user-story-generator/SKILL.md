@@ -1,6 +1,6 @@
 ---
 name: user-story-generator
-description: Use when creating or refining user stories for Particle-Viewer. Load user-story-estimation alongside this skill when effort or model tier decisions are needed.
+description: Use when creating or refining user stories for Particle-Viewer.
 ---
 
 ## Iron Law

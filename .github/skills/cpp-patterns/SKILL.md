@@ -1,6 +1,6 @@
 ---
 name: cpp-patterns
-description: Use when implementing C++ code for Particle-Viewer, handling GL resources, working with SDL3, or applying DRY/deprecation/docs-commit patterns. Load alongside code-quality skill.
+description: Use when implementing C++ code for Particle-Viewer, handling GL resources, working with SDL3, or applying DRY/deprecation/docs-commit patterns.
 ---
 
 ## Iron Law

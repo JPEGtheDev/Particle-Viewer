@@ -1,8 +1,6 @@
 ---
 name: session-bootstrap
-version: 1.2.0
-description: >
-  Use at the start of every session to determine which skills to load before acting.
+description: Use at the start of every session.
 ---
 
 ## Iron Law
@@ -17,6 +15,29 @@ YOU MUST read all required skills before writing any code or sending any plan. N
 Skills contain rules that change what you do. Reading a skill AFTER acting defeats the purpose.
 
 **Announce at start:** "I am using the session-bootstrap skill to load required skills for this session."
+
+---
+
+## Skill Refresh — Mandatory
+
+**Stale skill context is worse than no skill.** Skills evolve. Context windows truncate. Skills loaded early in a session may no longer be active when you need them.
+
+### When to Reload a Skill
+
+Reload the relevant skill(s) immediately when ANY of these occur:
+
+1. **Picking up a new todo** — reload the skill(s) for that todo's domain before starting work
+2. **After 3 user prompts** without a skill reload — reload the skill for whatever you are currently doing
+3. **After a user correction or redirect** — the correction is evidence the skill was misapplied or is stale; reload it
+4. **After context compaction** — any compaction event requires full skill reload for the active domain
+
+**Announce the reload:** "Reloading `[skill-name]` — [reason: new todo / 3 prompts / correction]."
+
+Do NOT say "I remember the skill content." A remembered skill is an unverified skill. Load fresh.
+
+### `honesty` Is Always Active
+
+`honesty` has no automatic enforcement mechanism. It applies on every turn because it is declared as a behavioral commitment — not because anything enforces it automatically. Treat it as permanently loaded. Load the full skill explicitly for postmortems and communication audits.
 
 ---
 

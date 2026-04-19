@@ -1,6 +1,6 @@
 ---
 name: verification-before-completion
-description: Use when about to claim work is complete, fixed, or passing, before any completion claim, commit, or PR. Evidence before assertions. Verification gates are required, not optional.
+description: Use when about to claim work is complete, fixed, or passing, before any completion claim, commit, or PR.
 ---
 
 # Instructions for Agent

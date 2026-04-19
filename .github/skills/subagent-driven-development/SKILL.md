@@ -3,15 +3,67 @@ name: subagent-driven-development
 description: Use when delegating implementation tasks, confirming theories, running parallel research, or reviewing completed work.
 ---
 
-## Iron Law
+## Iron Laws
 
 ```
 DISPATCH BEFORE GUESSING — SUBAGENTS ARE CHEAP, WRONG ASSUMPTIONS ARE EXPENSIVE
+DISPATCH REVIEWERS AFTER EVERY TODO — SPEC COMPLIANCE FIRST, THEN CODE QUALITY — NO EXCEPTIONS
 ```
 
-Violating the letter of this rule is violating the spirit of this rule.
+Violating the letter of these rules is violating the spirit of these rules.
 
 **Announce at start:** "I am using the subagent-driven-development skill to [dispatch/review/confirm] [brief description]."
+
+---
+
+## The SDD Loop
+
+```
+Pick up todo
+    |
+    v
+Dispatch implementer subagent (implementer.md)
+    |
+    v
+Implementer returns status code
+    |
+    +-- NEEDS_CONTEXT --> Provide the missing information. Re-dispatch.
+    |
+    +-- BLOCKED --> Assess. Provide context if possible. Otherwise escalate to user.
+    |
+    +-- PARTIAL --> Read completed/remaining split.
+    |                Verify what was completed (build + tests).
+    |                Create new todo(s) for remaining work.
+    |                Proceed to review for the completed portion only.
+    |
+    +-- DONE_WITH_CONCERNS --> Read concerns before proceeding to review.
+    |                          Address concerns if correctness risk. Otherwise proceed.
+    |
+    +-- DONE
+         |
+         v
+Stage 1: Dispatch spec-compliance-reviewer (spec-compliance-reviewer.md)
+    |
+    +-- GAPS --> Implementer fixes gaps. Re-dispatch Stage 1.
+    |
+    +-- PASS
+         |
+         v
+Stage 2: Dispatch code-quality-reviewer (code-quality-reviewer.md)
+    |
+    +-- REQUEST CHANGES --> Implementer fixes. Re-dispatch Stage 2.
+    |
+    +-- APPROVE or APPROVE WITH NITS
+         |
+         v
+Mark todo done. Reload relevant skills (session-bootstrap refresh rule).
+Pick up next todo.
+    |
+    v
+(After all todos) → Dispatch final code reviewer → finishing-a-development-branch
+```
+
+**Do not advance past any todo until both Stage 1 and Stage 2 are PASS/APPROVE.**
 
 ---
 
@@ -81,62 +133,48 @@ These thoughts mean stop immediately:
 
 ## Implementer Status Codes
 
-Every subagent doing implementation work must report one of these four codes:
+Every subagent doing implementation work must report one of these five codes. Require it in every implementer prompt. Do not accept a response that does not include one.
 
 | Code | Meaning | Your response |
 |------|---------|---------------|
-| `DONE` | Task complete, all verification passed | Accept; run requesting-code-review |
-| `DONE_WITH_CONCERNS` | Complete but flagged issues for review | Accept; address concerns before merging |
-| `NEEDS_CONTEXT` | Blocked by missing information | Provide context; re-dispatch |
-| `BLOCKED` | Cannot proceed due to dependency or environment | Resolve blocker; re-dispatch or reassign |
-
-Require this code in every implementer prompt. Do not accept a response that doesn't include one.
+| `DONE` | Task complete, all verification passed, no concerns | Proceed to Stage 1 review |
+| `DONE_WITH_CONCERNS` | Complete but flagged issues for dispatcher review | Read concerns. Address if correctness risk. Otherwise proceed to Stage 1. |
+| `PARTIAL` | Partially complete — some items done and verified, rest not done | Verify completed portion. Create new todo(s) for remaining work. Proceed to Stage 1 for completed portion only. |
+| `NEEDS_CONTEXT` | Cannot proceed — specific missing information listed | Provide the missing information. Re-dispatch. |
+| `BLOCKED` | Cannot proceed — external dependency or environment issue described | Assess blocker. Provide context if possible. Otherwise escalate to user. |
 
 ---
 
 ## 2-Stage Review Protocol
 
-Every completed implementation task requires two reviews in this order:
+Every completed implementation task requires two reviews in this order. This is mandatory — not optional — after every single todo.
 
 ```
-Stage 1: Spec Compliance Review     ← ALWAYS FIRST
-Stage 2: Code Quality Review        ← ONLY after Stage 1 passes
+Stage 1: Spec Compliance Review     ← ALWAYS FIRST (spec-compliance-reviewer.md)
+Stage 2: Code Quality Review        ← ONLY after Stage 1 passes (code-quality-reviewer.md)
 ```
 
 **Never skip Stage 1.** Code that doesn't meet the spec doesn't benefit from quality review.
+
+**Worktree hygiene:** All implementer subagents MUST work in a worktree. Never dispatch an implementer to the main working tree. See Git Worktrees section below.
 
 ### Stage 1: Spec Compliance Review
 
 **Question:** Does the implementation do what the spec/requirements asked?
 
-Dispatch a general-purpose agent with this prompt:
+Use `.github/agents/spec-compliance-reviewer.md`. Provide:
+- Full requirements / acceptance criteria for the todo
+- Full diff or file contents of the implementation
 
-```
-You are a spec compliance reviewer. Your only job is to verify that the
-implementation matches the requirements — not to evaluate code quality.
-
-Requirements/acceptance criteria:
-[PASTE FULL REQUIREMENTS]
-
-Implementation to review (file paths + diffs):
-[PASTE DIFF OR FILE CONTENTS]
-
-Answer only these questions:
-1. Which requirements are fully addressed?
-2. Which requirements are partially addressed? (describe the gap)
-3. Which requirements are missing entirely?
-4. Are there any behaviors present that contradict the requirements?
-
-Return a structured report. Do not comment on code style, naming, or quality.
-```
-
-If Stage 1 returns any gaps: fix them before proceeding to Stage 2.
+If Stage 1 returns GAPS: implementer fixes gaps. Re-run Stage 1 before proceeding.
 
 ### Stage 2: Code Quality Review
 
 **Question:** Is the implementation clean, maintainable, and correct?
 
-Dispatch a code-review agent (1 per file) — see requesting-code-review skill.
+Use `.github/agents/code-quality-reviewer.md` — 1 agent per file changed.
+
+If Stage 2 returns REQUEST CHANGES: implementer fixes. Re-run Stage 2 before proceeding.
 
 ---
 
@@ -167,16 +205,21 @@ git worktree remove .worktrees/agent-task-name
 
 ## Model Selection
 
-Match model to task complexity:
+Match model tier to task complexity. Instructions must be written for GPT-4.1 baseline regardless of selected tier.
 
-| Task type | Model choice |
+| Task type | Default tier |
 |-----------|-------------|
-| Mechanical (grep, format, rename) | Cheapest capable model |
-| Research (reading, summarizing) | Cheap model |
-| Complex reasoning, architecture | Standard model |
-| Critical review, security, design | Premium model |
+| Mechanical: grep, rename, format, one-function change | Standard |
+| Research: read files, summarize patterns, compare approaches | Standard |
+| Implementation: multi-file, design judgment | Standard |
+| Review: spec compliance, code quality, architecture | Standard |
+| Architecture design, security, final review | Premium |
 
-Never dispatch a premium model for mechanical work. Reserve capacity for judgment-intensive tasks.
+**Using Premium for non-architecture tasks:** State the reasoning before dispatching. Example: "Dispatching Premium for this review because the change touches 3 layer boundaries." Do not dispatch Premium silently for mechanical work.
+
+**Concurrency:** Copilot Enterprise accounts have no practical agent concurrency limit. Dispatch as many parallel agents as the task warrants. Standard accounts: verify your limit before parallelizing.
+
+**For parallel read-only research:** Use `dispatching-parallel-agents` skill.
 
 ---
 
@@ -209,18 +252,36 @@ Never dispatch a premium model for mechanical work. Reserve capacity for judgmen
 
 ```
 Task to delegate
-    ↓
-Read-only? → explore agent (parallel up to 4)
-    ↓
-Needs file changes? → general-purpose + worktree
-    ↓
-Implementation completes → status code required (DONE/DONE_WITH_CONCERNS/NEEDS_CONTEXT/BLOCKED)
-    ↓
-DONE or DONE_WITH_CONCERNS?
-    ↓
-Stage 1: Spec Compliance Review → gaps found? → fix → re-review
-    ↓
-Stage 2: Code Quality Review (1 agent per file)
-    ↓
-All reviews clean → invoke requesting-code-review skill
+    |
+    +-- Read-only research? → dispatching-parallel-agents skill
+    |
+    +-- Needs file changes?
+         |
+         v
+    Create worktree (ALWAYS — never dispatch to main working tree)
+         |
+         v
+    Dispatch implementer (implementer.md)
+         |
+         v
+    Status code: DONE / DONE_WITH_CONCERNS / PARTIAL / NEEDS_CONTEXT / BLOCKED
+         |
+         +-- NEEDS_CONTEXT → provide info, re-dispatch
+         +-- BLOCKED → assess, escalate
+         +-- PARTIAL → verify completed, create todos for remaining, proceed for completed
+         +-- DONE_WITH_CONCERNS → read concerns, proceed if no correctness risk
+         +-- DONE
+              |
+              v
+    Stage 1: spec-compliance-reviewer.md → GAPS? → implementer fixes → re-run Stage 1
+              |
+              v
+    Stage 2: code-quality-reviewer.md (1 per file) → REQUEST CHANGES? → implementer fixes → re-run Stage 2
+              |
+              v
+    Mark todo done. Reload skills (session-bootstrap refresh rule).
+    Pick up next todo.
+              |
+              v
+    (After all todos) → final code review → finishing-a-development-branch
 ```

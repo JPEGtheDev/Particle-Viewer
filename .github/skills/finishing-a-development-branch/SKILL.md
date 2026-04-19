@@ -1,6 +1,6 @@
 ---
 name: finishing-a-development-branch
-description: Use when a development branch is complete and ready to merge. Prevents silent drops and half-finished work from landing on main.
+description: Use when a development branch is complete and ready to merge.
 ---
 
 ## Iron Law

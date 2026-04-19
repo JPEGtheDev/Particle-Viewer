@@ -18,23 +18,42 @@ Before generating any output, ask yourself:
 
 **This checklist applies on EVERY turn. Not just session start.**
 
+## Meta-Level Priority — Overrides Everything
+
+When instructions conflict, this order governs **at the meta level**:
+
+| Priority | Source | What it means |
+|----------|--------|---------------|
+| **1 — User** | Explicit user instructions (direct requests, corrections, project config overrides) | Always wins. If the user says "skip tests this time," do it. |
+| **2 — Skills** | Loaded skill files | Override default model behavior where they conflict |
+| **3 — Default** | Default model behavior | Only applies when no skill or user instruction covers the situation |
+
+**If the user overrides an Iron Law:** follow the user. State the override explicitly: "Proceeding without [X] as instructed — noting this deviates from Iron Law N."
+
+---
+
 ## Iron Laws — Always Active
 
-These apply in every session, every task, every model. No exceptions.
+These apply in every session, every task, every model. No exceptions unless the user explicitly overrides (Meta-Level Priority 1 above).
 
 | # | Law |
 |---|-----|
 | 1 | **NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST.** Write test → watch it fail → write code. See `testing` skill. |
-| 2 | **NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION.** Run `cmake --build build && ./build/tests/ParticleViewerTests` in THIS session. See `verification-before-completion` skill. |
+| 2 | **NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION.** Run `cmake --build build && ./build/tests/ParticleViewerTests` in THIS session. Evidence must be inline. See `verification-before-completion` skill. |
 | 3 | **NO FIXES WITHOUT ROOT CAUSE INVESTIGATION.** Follow the 4-phase protocol. See `systematic-debugging` skill. |
 | 4 | **EVERY COMMIT USES CONVENTIONAL FORMAT.** `<type>[scope]: <description>` — wrong format breaks release automation. See `versioning` skill. |
 | 5 | **FORMAT BEFORE EVERY COMMIT.** `find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i`. CI rejects violations. |
+| 6 | **FAILURE IS RECOVERABLE. FALSE CONFIDENCE IS NOT.** "Should work" is banned. No completion claim without inline evidence. See `honesty` skill. |
+| 7 | **CLARIFY FIRST. PLAN BEFORE CODE. NO PLACEHOLDERS.** Restate requirements, label `[UNCLEAR:]`, build todos before touching code. See `writing-plans` skill. |
+| 8 | **NO CODE UNTIL THE DESIGN GATE IS PASSED.** Unclear approach, architecture impact, or multiple valid solutions = load `brainstorming` first. |
+| 9 | **DISPATCH BEFORE GUESSING.** No theory, assumption, or memory is a basis for action. If you cannot point to a file, line, or test output — dispatch a subagent. See `subagent-driven-development` skill. |
+| 10 | **DISPATCH REVIEWERS AFTER EVERY TODO.** Stage 1: spec compliance. Stage 2: code quality. Never advance to the next todo with an unreviewed todo behind you. See `subagent-driven-development` skill. |
 
 **If you are tempted to rationalize past any of these: that thought is the rationalization. Stop. Follow the rule.**
 
 **Violating the letter of any Iron Law is violating the spirit of it.**
 
-**Honesty gate is hardcoded into the session-start hook and enforced on every turn. Full mechanics are in the `honesty` skill.**
+**`honesty` is always active and applies on every turn. Full mechanics in `.github/skills/honesty/SKILL.md`.**
 
 Particle-Viewer is a C++ OpenGL-based viewer for N-Body simulations — viewing 3D particle data, taking screenshots, and rendering videos.
 
@@ -54,6 +73,7 @@ Skills are organized into **DDD bounded contexts**. Sub-domain skills (e.g., `vi
 | `writing-plans` | `.github/skills/writing-plans/` | Plan building, scope gates, Skeptic Agent, YAGNI/PPP/STTCPW |
 | `brainstorming` | `.github/skills/brainstorming/` | HARD-GATE design exploration before any implementation begins |
 | `subagent-driven-development` | `.github/skills/subagent-driven-development/` | Subagent dispatch, 2-stage review, empirical evidence, worktrees |
+| `dispatching-parallel-agents` | `.github/skills/dispatching-parallel-agents/` | Parallel agent dispatch, isolation, result aggregation |
 | `using-git-worktrees` | `.github/skills/using-git-worktrees/` | Parallel agent isolation, A/B testing, branch safety for subagents |
 
 ### QUALITY context
@@ -111,7 +131,7 @@ Skills are organized into **DDD bounded contexts**. Sub-domain skills (e.g., `vi
 
 | Skill | Path | Domain |
 |-------|------|--------|
-| `honesty` | `.github/skills/honesty/` | Trust mechanics, confidence vocabulary, process language, talk-straight |
+| `honesty` | `.github/skills/honesty/` | **Always active.** Trust mechanics, confidence vocabulary, process language, talk-straight. Hardcoded into session-start hook. Load the full skill for postmortems or communication audits. |
 | `session-bootstrap` | `.github/skills/session-bootstrap/` | Session lifecycle: On Start skill routing + On Finish self-evaluation |
 
 ### Agent Prompt Templates
@@ -122,12 +142,13 @@ Reusable agent prompts live in `.github/agents/`. Use these when dispatching sub
 |----------|----------|
 | `implementer.md` | Dispatching an agent to implement a feature in a worktree |
 | `skeptic.md` | Reviewing a plan for gaps before implementation begins |
-| `code-quality-reviewer.md` | Reviewing code changes for quality and correctness |
+| `spec-compliance-reviewer.md` | Stage 1 post-todo review: does implementation match spec? (always first) |
+| `code-quality-reviewer.md` | Stage 2 post-todo review: code quality, correctness, standards (only after Stage 1 passes) |
 | `researcher.md` | Empirically confirming or denying a hypothesis |
 
 ### Instruction Priority Hierarchy
 
-When rules appear to conflict, apply this hierarchy:
+This is the **internal** rule precedence (within the skills system). For meta-level priority (user vs. skills vs. default), see the section at the top of this file.
 
 | Priority | Source | Scope |
 |----------|--------|-------|

@@ -1,6 +1,6 @@
 ---
 name: testing
-description: Use when writing or reviewing any test for Particle-Viewer. For visual regression tests specifically, also load the visual-regression-testing skill.
+description: Use when writing or reviewing any test for Particle-Viewer.
 ---
 
 ## Iron Law

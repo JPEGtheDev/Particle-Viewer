@@ -1,6 +1,5 @@
 ---
 name: honesty
-version: 1.2.0
 description: >
   Use when communication quality or trust is in question. Always active — applies
   to every session, every turn, every task.

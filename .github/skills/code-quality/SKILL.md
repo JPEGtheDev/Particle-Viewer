@@ -1,6 +1,6 @@
 ---
 name: code-quality
-description: Use when writing or reviewing C++ code, running pre-commit checks, or addressing formatting, naming, or static analysis violations. Load cpp-patterns alongside this skill for runtime C++ patterns.
+description: Use when writing or reviewing C++ code, running pre-commit checks, or addressing formatting, naming, or static analysis violations.
 ---
 
 ## Iron Law
