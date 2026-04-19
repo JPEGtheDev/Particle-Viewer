@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# Pre-message hook — fires on every UserPromptSubmit event.
+# Injects iron law reminder + bootstrap check into Claude's context
+# before every response. Proven pattern: 99% bootstrap adherence vs 60%
+# with session-start-only injection.
+
+escape_for_json() {
+  local s="$1"
+  s="${s//\\/\\\\}"
+  s="${s//\"/\\\"}"
+  s="${s//$'\n'/\\n}"
+  s="${s//$'\r'/\\r}"
+  s="${s//$'\t'/\\t}"
+  printf '%s' "$s"
+}
+
+read -r -d '' CONTENT << 'ENDOFCONTENT'
+<IMPORTANT>
+## Bootstrap Check
+
+If you have no memory of bootstrapping this session, load `session-bootstrap` now before responding.
+
+## Iron Laws — Active on Every Response
+
+| # | Law |
+|---|-----|
+| 1 | NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST. |
+| 2 | NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION. Run cmake in THIS session. Show output inline. |
+| 3 | NO FIXES WITHOUT ROOT CAUSE INVESTIGATION. |
+| 4 | EVERY COMMIT USES CONVENTIONAL FORMAT. `<type>[scope]: <description>` |
+| 5 | FORMAT BEFORE EVERY COMMIT. `find src tests -name "*.cpp" -o -name "*.hpp" \| xargs clang-format -i` |
+| 6 | FAILURE IS RECOVERABLE. FALSE CONFIDENCE IS NOT. "Should work" is banned. |
+| 7 | CLARIFY FIRST. PLAN BEFORE CODE. NO PLACEHOLDERS. |
+| 8 | NO CODE UNTIL THE DESIGN GATE IS PASSED. |
+| 9 | DISPATCH BEFORE GUESSING. |
+| 10 | DISPATCH REVIEWERS AFTER EVERY TODO. |
+
+If you are tempted to rationalize past any of these: that thought is the rationalization. Stop. Follow the rule.
+</IMPORTANT>
+ENDOFCONTENT
+
+context=$(escape_for_json "$CONTENT")
+
+if [[ -n "${CURSOR_PLUGIN_ROOT:-}" ]]; then
+  printf '{"context":"%s"}\n' "$context"
+elif [[ -n "${CLAUDE_PLUGIN_ROOT:-}" ]]; then
+  printf '{"context":"%s"}\n' "$context"
+else
+  printf '{"additionalContext":"%s"}\n' "$context"
+fi
