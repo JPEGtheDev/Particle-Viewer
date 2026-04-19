@@ -144,6 +144,34 @@ Required when: rejecting a simpler approach, making a correctness/performance/ma
 
 **Pain as Signal:** Difficult-to-test code signals a design problem. Fix the design, not the test harness.
 
+---
+
+## Make It Work, Make It Right, Make It Fast
+
+This three-phase progression, from Kent Beck, governs the order of quality concerns at the feature level:
+
+1. **Make it work** — pass the tests; behavior is correct
+2. **Make it right** — refactor: clean design, no duplication, clear names
+3. **Make it fast** — optimize: only after correctness and cleanliness are established
+
+**Relationship to the TDD cycle:**
+
+The TDD Red/Green/Refactor cycle enforces Make It Work → Make It Right at the *micro level* (each individual test). This macro rule enforces the same discipline at the *feature level*: do not optimize code that does not yet pass its tests; do not clean up code that does not yet work.
+
+**Gates:**
+
+| Phase | Gate question | If not met |
+|-------|---------------|-----------|
+| Make It Right | Do all tests pass? | Return to Make It Work |
+| Make It Fast | Is the design clean and duplication removed? | Return to Make It Right |
+
+**Red Flags:**
+- Optimizing code that does not yet pass its tests
+- Refactoring while tests are red (behavior is unknown)
+- Profiling before a clean design exists (profiling a mess optimizes the wrong thing)
+
+---
+
 ### Mode Declaration
 
 When a response combines two or more phases:
