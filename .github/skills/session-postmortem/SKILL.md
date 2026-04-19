@@ -69,7 +69,7 @@ The `scratch/` directory contains session artifacts written during the session (
 
 1. **Dispatch the external reviewer subagent** using `.github/agents/postmortem-reviewer.md` with the above paths filled in. The reviewer reads `events.jsonl` directly — no pre-export needed.
 
-2. **Run self-assessment in parallel** (the main agent does Parts 1–5 from memory while the reviewer works).
+2. **Run self-assessment in parallel** (the main agent does Parts 1–5 from memory while the reviewer works). **INDEPENDENCE GATE: Begin self-assessment immediately after dispatching. Do NOT wait for or read `postmortem-external.md` before writing `postmortem.md`. Reading the external review first invalidates the independence requirement — the self-assessment is then just a copy.**
 
 3. **Wait for the reviewer to complete.** Read its output from `postmortem-external.md`.
 
@@ -235,7 +235,8 @@ No vague items. "Be more careful" is not an action item. "Add the phrase 'X' to 
 ls ~/.copilot/session-state/[SESSION_ID]/postmortem.md
 ```
 
-If the file does not exist, use `create` or `edit` to write it now. A postmortem that exists only in the message stream is not a postmortem.
+If the file does not exist, use `create` to write it now.
+If the file already exists (multi-task session), use `edit` to append a new `## Phase N: [Task Name]` section — never create a second postmortem file. A postmortem that exists only in the message stream is not a postmortem.
 
 ---
 

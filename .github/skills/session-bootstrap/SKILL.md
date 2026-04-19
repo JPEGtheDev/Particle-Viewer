@@ -112,6 +112,7 @@ behavior is habitual, not conditional.
 
 ## Red Flags — STOP
 
+- A task just completed and no new user message has arrived — **STOP. Is this the session's last task? If so, treat it as session end. Load self-evaluation NOW before responding.**
 - Starting implementation when SQL has pending todos from a prior session without dispatching Skeptic — **STOP. Dispatch Skeptic before the first implementation step.**
 - Starting to code before reading the required skill — **STOP. Load the skill now. Do not write one line first.**
 - Skipping the skill-load announcement — **STOP. State "I am using the [skill] skill to [purpose]." No skip.**

@@ -168,6 +168,7 @@ If you genuinely find no gaps after thorough analysis, state that explicitly.
 ## Red Flags — STOP
 
 - Code or file edits before Step 0 (restate requirements) is complete — **STOP. Do Step 0 now.**
+- **HARD-GATE:** Plan has ≥5 todos, Skeptic not dispatched — **STOP. Dispatch Skeptic before first implementation step. No first edit until Skeptic result is read.**
 - Plan has ≥3 todos, Skeptic not dispatched — **STOP. Dispatch Skeptic before first implementation step.**
 - Any todo lacks a concrete description — **STOP. Fill every description before starting.**
 - Plan states a numerical estimate without a `wc` measurement — **STOP. Measure first. Run `wc -w` or `wc -l`.**
