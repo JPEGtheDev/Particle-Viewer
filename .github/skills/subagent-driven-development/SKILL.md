@@ -75,7 +75,7 @@ Before dispatching any subagent:
 1. The todo has a single, clear objective — no compound tasks bundled together.
 2. The agent prompt includes all necessary context: file paths, constraints, and return format.
 3. A dedicated worktree exists for any agent that modifies files; `using-git-worktrees` skill is loaded.
-4. If a pre-built template exists in `.github/agents/` for this task type: use it instead of injecting rules inline. Available templates: `implementer.md`, `skeptic.md`, `spec-compliance-reviewer.md`, `code-quality-reviewer.md`, `researcher.md`, `postmortem-reviewer.md`.
+4. If a pre-built template exists in `.github/agents/` for this task type: use it instead of injecting rules inline. Available templates: `implementer.md`, `skeptic.md`, `spec-compliance-reviewer.md`, `code-quality-reviewer.md`, `researcher.md`, `postmortem-reviewer.md`, `explorer.md`, `architecture-reviewer.md`, `infrastructure-reviewer.md`.
 5. Agent type is correct for the task: explore for read-only research, code-review for analysis, general-purpose+worktree for file modifications, task for build/test/lint.
 
 ✓ All 5 met → dispatch the agent

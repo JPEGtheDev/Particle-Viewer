@@ -145,6 +145,10 @@ Reusable agent prompts live in `.github/agents/`. Use these when dispatching sub
 | `spec-compliance-reviewer.md` | Stage 1 post-todo review: does implementation match spec? (always first) |
 | `code-quality-reviewer.md` | Stage 2 post-todo review: code quality, correctness, standards (only after Stage 1 passes) |
 | `researcher.md` | Empirically confirming or denying a hypothesis |
+| `postmortem-reviewer.md` | External review of a completed agent session retrospective |
+| `explorer.md` | Read-only multi-file research across many independent targets |
+| `architecture-reviewer.md` | Per-file layer boundary and IOpenGLContext compliance review |
+| `infrastructure-reviewer.md` | Per-file CI/CMake/Flatpak compliance review |
 
 ### Instruction Priority Hierarchy
 
