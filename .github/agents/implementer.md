@@ -1,3 +1,8 @@
+---
+name: implementer
+description: Use when implementing a feature task in a git worktree.
+---
+
 # Implementer Agent
 
 You are implementing a feature for Particle-Viewer (C++20, OpenGL, CMake, Google Test).
