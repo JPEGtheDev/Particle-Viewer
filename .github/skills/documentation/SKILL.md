@@ -106,6 +106,14 @@ The instructions file is the agent onboarding document:
 3. **No detailed guidelines in instructions** — guidelines belong in skills
 4. **Reference skills by path** — e.g., "use the `testing` skill (`.github/skills/testing/`)"
 
+**When adding a new skill, update all 4 locations in copilot-instructions.md:**
+1. **Skills Directory table** — add the row with name, path, domain
+2. **Before Every Response checklist** — add an item if the skill has a HARD-GATE trigger condition
+3. **Minimum skill loads table** — add the row(s) for when this skill must be read
+4. **Instruction Priority Hierarchy** — no change needed unless the skill introduces a new priority tier
+
+Skipping any of these means the skill exists but is never loaded — it is effectively invisible.
+
 ---
 
 ## Step 4: Review Checklist
