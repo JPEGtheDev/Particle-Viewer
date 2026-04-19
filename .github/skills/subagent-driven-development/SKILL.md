@@ -6,8 +6,9 @@ description: Use when delegating implementation tasks, confirming theories, runn
 ## Iron Laws
 
 ```
-DISPATCH BEFORE GUESSING — SUBAGENTS ARE CHEAP, WRONG ASSUMPTIONS ARE EXPENSIVE
-DISPATCH REVIEWERS AFTER EVERY TODO — SPEC COMPLIANCE FIRST, THEN CODE QUALITY — NO EXCEPTIONS
+YOU MUST DISPATCH BEFORE GUESSING — SUBAGENTS ARE CHEAP, WRONG ASSUMPTIONS ARE EXPENSIVE.
+YOU MUST DISPATCH REVIEWERS AFTER EVERY TODO — SPEC COMPLIANCE FIRST, THEN CODE QUALITY.
+No exceptions.
 ```
 
 Violating the letter of these rules is violating the spirit of these rules.
@@ -97,7 +98,7 @@ Using subagents is discipline, not convenience:
 
 If you cannot point to a specific file, line, or test run — dispatch a subagent.
 
-### Red Flags → STOP and Dispatch
+## Red Flags — STOP
 
 These thoughts mean stop immediately:
 
@@ -246,6 +247,18 @@ Match model tier to task complexity. Instructions must be written for GPT-4.1 ba
 | Dispatching without a clear return format | Agent returns noise |
 | Sharing full session history as context | Contaminates search; subagent inherits your assumptions |
 | Reporting DONE before 2-stage review | Code exists; correctness unverified |
+
+---
+
+## Rationalization Prevention
+
+| Excuse | Reality |
+|--------|---------|
+| "The subagent's description sounds right, I'll skip review" | Descriptions are summaries — they omit bugs. YOU MUST read the actual diff and dispatch the 2-stage review every time. |
+| "This is just docs, no code review needed" | Documentation errors ship as silently as code bugs. Stage 1 spec compliance applies to every todo without exception. |
+| "I verified one file, the rest are probably fine" | Each file requires its own code-quality reviewer. One agent per file is the rule — no extrapolation across files. |
+| "The subagent said PASS, that's good enough" | A subagent's self-assessment is not a review. PASS from an implementer means dispatch Stage 1 — not skip it. |
+| "I'll do a quick scan instead of dispatching a code-review agent" | A quick scan inherits your assumptions. A dispatched code-review agent does not. Dispatch the agent. |
 
 ---
 
