@@ -6,12 +6,24 @@ description: Use when receiving code review feedback on a PR or code change.
 ## Iron Law
 
 ```
-EVERY COMMENT GETS A GENUINE RESPONSE. "LGTM THANKS" IS NOT A RESPONSE.
+EVERY COMMENT GETS A GENUINE RESPONSE. YOU MUST CATEGORIZE AND ADDRESS EVERY COMMENT. "LGTM THANKS" IS NOT A RESPONSE. NO EXCEPTIONS.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.
 
 **Announce at start:** "I am using the receiving-code-review skill to process review feedback on [PR/change]."
+
+---
+
+## Before Acting on Review Feedback
+
+BEFORE acting on any review feedback, verify:
+1. You have read all comments in the review
+2. Every comment is categorized (must-fix / defer / discuss)
+3. No must-fix comment is dismissed without investigation
+
+✓ All met → proceed to address comments
+✗ Any unmet → complete the triage before taking action
 
 ---
 
@@ -104,6 +116,16 @@ The Right Wrongs protocol from the `execution` skill applies here directly. A re
 
 ---
 
+## Red Flags — STOP
+
+- Dismissing feedback without investigation
+- Responding to feedback with "that's out of scope"
+- Closing a comment without addressing it or explicitly deferring it with a tracking issue
+- Treating approval as permission to skip the fix list
+- Implementing a fix without re-running tests
+
+---
+
 ## Rationalization Prevention
 
 | Excuse | Reality |
@@ -112,3 +134,4 @@ The Right Wrongs protocol from the `execution` skill applies here directly. A re
 | "I'll fix this in a follow-up" | Follow-up without a tracking issue means never. Create the issue. |
 | "They misunderstood what I was doing" | Maybe. But if a reviewer misunderstands, the code is unclear. Clarify the code or the comment. |
 | "This is a style preference" | If it violates `code-quality` standards, it is not a preference — it is a defect. |
+| "The reviewer doesn't understand the full context" | Context is your job to provide. If the reviewer is confused, add context — do not dismiss the feedback. |

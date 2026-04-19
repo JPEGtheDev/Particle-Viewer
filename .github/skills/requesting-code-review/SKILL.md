@@ -6,7 +6,7 @@ description: Use when preparing to request a code review on a PR or change.
 ## Iron Law
 
 ```
-REVIEWS ARE TARGETED, NOT CEREMONIAL. EVERY REVIEW REQUEST STATES WHAT TO LOOK FOR.
+REVIEWS ARE TARGETED, NOT CEREMONIAL. YOU MUST STATE WHAT TO LOOK FOR IN EVERY REVIEW REQUEST. NO EXCEPTIONS.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.
@@ -115,6 +115,16 @@ If a reviewer approves without commenting on the specific concerns you listed:
 
 ---
 
+## Red Flags — STOP
+
+- Opening a pull request before the agent pre-review is complete and all BLOCKERs resolved
+- Requesting review without a description of what changed and what to focus on
+- Requesting review while CI is still running or red
+- Requesting review on a draft pull request
+- Failing to link the pull request to the issue it resolves
+
+---
+
 ## Rationalization Prevention
 
 | Excuse | Reality |
@@ -123,3 +133,4 @@ If a reviewer approves without commenting on the specific concerns you listed:
 | "I'll just ask for a quick look" | "Quick look" reviews find nothing. State what you want reviewed. |
 | "CI is red but it's a flaky test" | Red CI is red CI. Fix or document the flake; do not request review against it. |
 | "I'll address the agent findings after human review" | Agent BLOCKERs must be resolved first. Human review should not be spent on issues a machine already found. |
+| "I reviewed the diff myself, that's equivalent" | Self-review does not catch the issues a fresh reviewer catches. Dispatch anyway. |
