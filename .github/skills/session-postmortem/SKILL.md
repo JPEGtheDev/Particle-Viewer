@@ -84,7 +84,9 @@ The `scratch/` directory contains session artifacts written during the session (
 
 2. **Run self-assessment in parallel** (the main agent does Parts 1–5 from memory while the reviewer works). **INDEPENDENCE GATE: Write the self-assessment FROM MEMORY ONLY — do NOT read `events.jsonl`, checkpoints, `plan.md`, or any session artifact before writing `postmortem.md`. `postmortem.md` MUST be created on disk before you read any source data. Only after the file exists may you read session data or wait for the external review to complete. Reading session artifacts first means the self-assessment is a log summary, not independent assessment. Do NOT announce yourself as "external reviewer" or "cold read" in your own context — that role belongs exclusively to the dispatched subagent.**
 
-3. **Wait for the reviewer to complete.** Read its output from `postmortem-external.md`.
+   **If `postmortem.md` already exists** (multi-phase session): do NOT read its content to find an append anchor. Append with `## Phase N: [Task Name]` — construct a unique section heading without reading the existing file. "Finding the anchor" is not an exemption from the independence gate.
+
+3. **Wait for the reviewer to complete.** Read its output from `postmortem-external.md`. **The only permissible action between dispatching the external reviewer and `read_agent` returning is polling (`read_agent`). Do NOT announce a verdict, summarize findings, or output any assessment until `read_agent` returns. A verdict announced before the external review completes will be based on incomplete information and may directly contradict the reviewer's log-cited findings.**
 
 4. **Reconcile.** Where the external reviewer and self-assessment agree: note the convergence. Where they conflict: the external reviewer's log-cited findings are authoritative. The self-assessment's uncited claims are not.
 

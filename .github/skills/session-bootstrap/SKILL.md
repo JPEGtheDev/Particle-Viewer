@@ -93,6 +93,7 @@ If unsure, read `code-quality` — it applies to every code task.
 - [ ] If resuming a prior session: SQL pending todos checked; Skeptic dispatched before first implementation step
 - [ ] If this task requires reading 3+ files for research or review: an explore or code-review agent is dispatched — NOT done inline
 - [ ] Session hooks checked: if sessionStart or userPromptSubmitted hook failed, all skills MUST be invoked manually this session — no auto-loading is available
+- [ ] If a hook config fix was committed during this session: that fix is NOT active until the NEXT session. Do NOT claim hooks are working. The CLI reads hooks.json once at session start — in-session commits to hook files do not take effect until the session is restarted.
 
 ✓ All met → proceed with session work
 ✗ Any unmet → complete the unmet step now before writing code or sending a plan
@@ -146,6 +147,7 @@ behavior is habitual, not conditional.
 | "Skipping announcement to save space"              | Announcement is the commitment mechanism           | State it. No skip.                         |
 | "I'll skim the skill — I know the gist"            | Skimming misses updates and specific gate conditions | Read fully. The gate conditions are the point. |
 | "'Always active' means I don't need to invoke honesty" | The declaration activates the rule reference, not the rule body. Without invocation, the confidence vocabulary and process language rules are absent. | Invoke `honesty` explicitly. Every session. |
+| "I ran the hook script and it exited 0 — hooks are working" | Script execution ≠ CLI mechanism. The CLI reads hooks.json once at session start. An in-session fix to hooks.json is NOT active until the next session. Do not claim hooks are working until a new session confirms hook.end success=true. |
 | "I'm just gathering context, not reviewing"        | Research reading to inform a plan is still review. Inline review is biased by your assumptions. | Dispatch an explore or code-review agent for any 3+ file research task. |
 
 ## Related Skills
