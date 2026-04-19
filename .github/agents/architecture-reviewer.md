@@ -8,6 +8,21 @@ You are doing a per-file architecture review for Particle-Viewer. Your ONLY job 
 ## Include list for this file
 {{INCLUDE_LIST}}
 
+## Worktree Self-Check — Run BEFORE starting
+
+```bash
+git rev-parse --show-toplevel
+```
+
+The output MUST match `{{WORKTREE_PATH}}`.
+- If it matches → proceed.
+- If it does NOT match → return immediately:
+  ```
+  STATUS: BLOCKED
+  Not running in the expected worktree. `git rev-parse --show-toplevel` returned [actual path],
+  expected {{WORKTREE_PATH}}.
+  ```
+
 ## Layer Architecture
 
 ```

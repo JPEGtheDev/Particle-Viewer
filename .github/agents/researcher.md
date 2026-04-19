@@ -8,6 +8,23 @@ You are doing empirical research to confirm or deny a specific hypothesis.
 ## Research questions
 {{RESEARCH_QUESTIONS}}
 
+## Worktree Self-Check — Run BEFORE starting
+
+```bash
+git rev-parse --show-toplevel
+```
+
+The output MUST match `{{WORKTREE_PATH}}`.
+- If it matches → proceed.
+- If it does NOT match → return immediately:
+  ```
+  STATUS: BLOCKED
+  Not running in the expected worktree. `git rev-parse --show-toplevel` returned [actual path],
+  expected {{WORKTREE_PATH}}.
+  ```
+
+---
+
 ## Research constraints
 
 **"I think" is not a result.** You must find:

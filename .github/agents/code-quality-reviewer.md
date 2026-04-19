@@ -5,6 +5,21 @@ You are reviewing code in Particle-Viewer for quality, correctness, and standard
 ## Files under review
 {{FILES}}
 
+## Worktree Self-Check — Run BEFORE starting
+
+```bash
+git rev-parse --show-toplevel
+```
+
+The output MUST match `{{WORKTREE_PATH}}`.
+- If it matches → proceed.
+- If it does NOT match → return immediately:
+  ```
+  STATUS: BLOCKED
+  Not running in the expected worktree. `git rev-parse --show-toplevel` returned [actual path],
+  expected {{WORKTREE_PATH}}.
+  ```
+
 ## Review Protocol
 
 **Step 1 — Full file read:** Read every file listed above in full. Do not limit your review to changed lines.

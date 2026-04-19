@@ -74,7 +74,7 @@ Before dispatching any subagent:
 
 1. The todo has a single, clear objective — no compound tasks bundled together.
 2. The agent prompt includes all necessary context: file paths, constraints, and return format.
-3. A dedicated worktree exists for any **write-side** agent (one that modifies files). Run these checks before dispatch — advisory text is not enough:
+3. A worktree exists for this agent. **All agents — read-only and write-side alike — run in a worktree.** Run these checks before dispatch:
 
    ```bash
    # 1. Ensure .worktrees/ is gitignored before first use
@@ -87,18 +87,19 @@ Before dispatching any subagent:
    #   - path already exists: remove it or rename
    #   - branch name already registered: choose a different branch name
 
-   # 3. Verify path is a non-main worktree
+   # 3. Verify path is a worktree (not the main repo root)
    git -C .worktrees/agent-<name> rev-parse --show-toplevel
    # Output must be the absolute path of .worktrees/agent-<name> — NOT the main repo root
 
-   # 4. Verify branch isolation
+   # 4. Write-side agents only — verify branch isolation
    git -C .worktrees/agent-<name> branch --show-current
    # Output must NOT equal the current development branch (e.g. docs/execution-skill-overhaul or main)
+   # Read-only agents (explorer, researcher, reviewers, skeptic, postmortem) skip step 4.
    ```
 
-   **Read-only agents are EXEMPT** from the worktree requirement: `explorer`, `researcher`, `spec-compliance-reviewer`, `code-quality-reviewer`, `architecture-reviewer`, `infrastructure-reviewer`. They cannot pollute a branch.
+   The worktree path confirmed above is the value to pass as `{{WORKTREE_PATH}}` in the agent prompt.
 
-   The worktree path confirmed by the above checks is the value to pass as `{{WORKTREE_PATH}}` in the agent prompt.
+   **Why read-only agents also need worktrees:** The main context continues making commits while agents run. Without a worktree, a read-only agent observes a dirty working tree or partially-committed state — producing findings against a snapshot that no longer matches any branch. A worktree gives every agent a stable, isolated view at dispatch time.
 4. If a pre-built template exists in `.github/agents/` for this task type: use it instead of injecting rules inline. Available templates: `implementer.md`, `skeptic.md`, `spec-compliance-reviewer.md`, `code-quality-reviewer.md`, `researcher.md`, `postmortem-reviewer.md`, `explorer.md`, `architecture-reviewer.md`, `infrastructure-reviewer.md`.
 5. Agent type is correct for the task: explore for read-only research, code-review for analysis, general-purpose+worktree for file modifications, task for build/test/lint.
 

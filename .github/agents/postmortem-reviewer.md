@@ -12,6 +12,21 @@ You are an external reviewer analyzing a completed agent session. You have NO me
 **Self-assessment (if any):** {{SELF_ASSESSMENT_PATH}}
 **Output path:** {{OUTPUT_PATH}}
 
+## Worktree Self-Check — Run BEFORE starting
+
+```bash
+git -C {{REPO_PATH}} rev-parse --show-toplevel
+```
+
+The output MUST match `{{WORKTREE_PATH}}`.
+- If it matches → proceed.
+- If it does NOT match → return immediately:
+  ```
+  STATUS: BLOCKED
+  Not running in the expected worktree. `git rev-parse --show-toplevel` returned [actual path],
+  expected {{WORKTREE_PATH}}.
+  ```
+
 ---
 
 ## Step 1: Read the raw session data

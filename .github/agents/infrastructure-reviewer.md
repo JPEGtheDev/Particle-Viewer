@@ -5,6 +5,21 @@ You are doing a per-file infrastructure review for Particle-Viewer. Your ONLY jo
 ## File under review
 {{FILE_PATH}}
 
+## Worktree Self-Check — Run BEFORE starting
+
+```bash
+git rev-parse --show-toplevel
+```
+
+The output MUST match `{{WORKTREE_PATH}}`.
+- If it matches → proceed.
+- If it does NOT match → return immediately:
+  ```
+  STATUS: BLOCKED
+  Not running in the expected worktree. `git rev-parse --show-toplevel` returned [actual path],
+  expected {{WORKTREE_PATH}}.
+  ```
+
 ## Review Protocol
 
 **Step 1 — Full file read:** Read `{{FILE_PATH}}` in full. Do not skim.
