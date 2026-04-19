@@ -56,11 +56,11 @@ Derive the paths for the session being reviewed:
 ```
 REPO:             [git root of Particle-Viewer]
 SESSION_ID:       [session ID — shown in workspace.yaml or .copilot/session-state/ directory name]
-EVENTS_LOG:       ~/.copilot/session-state/[SESSION_ID]/events.jsonl
-WORKSPACE:        ~/.copilot/session-state/[SESSION_ID]/
+EVENTS_LOG:       [SESSION_ID]/events.jsonl
+WORKSPACE:        [SESSION_ID]/
 SCRATCH:          [REPO]/scratch/
-SELF_ASSESSMENT:  ~/.copilot/session-state/[SESSION_ID]/postmortem.md  (if self-eval already ran)
-OUTPUT:           ~/.copilot/session-state/[SESSION_ID]/postmortem-external.md
+SELF_ASSESSMENT:  [SESSION_ID]/postmortem.md  (if self-eval already ran)
+OUTPUT:           [SESSION_ID]/postmortem-external.md
 ```
 
 The `scratch/` directory contains session artifacts written during the session (intermediate analysis, theory-testing files, research dumps). It is `.gitignored` but may contain evidence of exploratory work not captured in the event log.
@@ -145,7 +145,7 @@ Examples:
 
 ### Part 4: What Went Well
 
-Name the things that worked — gates that fired correctly, skills that were loaded proactively, subagents that were dispatched when required. This is not a consolation section — it identifies which gates are reliable and should be preserved.
+Name the things that worked — gates that fired correctly, skills that were loaded proactively, subagents that were dispatched when required. This is not a consolation section — it identifies which gates are reliable and MUST be preserved.
 
 ### Part 4b: Where We Got Lucky
 
@@ -179,7 +179,7 @@ This section is not optional and is not softened to avoid conflict. Poor prompts
 | "Just do it" for a task needing design review | "just implement X directly" for a multi-subsystem change | Bypasses brainstorming gate by framing the task as simple |
 | Moving goalposts without acknowledgment | Changing requirements mid-session without noting what changed | Agent may be building toward an invalidated target without knowing it |
 
-**What the review should produce:**
+**What the review MUST produce:**
 
 For each pattern found, cite the specific message or exchange where it occurred. Name what the effect was (lost work, wrong direction, wasted subagent runs). Give one concrete recommendation for how that type of prompt could be written differently next time.
 
@@ -204,7 +204,7 @@ If no patterns are found after genuine review, state that explicitly with eviden
 
 For every root cause and contributing factor, one concrete action item. Each must be:
 - **Specific** — names the exact skill file and section to update
-- **Triggerable** — describes exactly what should happen differently
+- **Triggerable** — describes exactly what MUST happen differently
 - **Owned** — states which skill or gate owns the change
 
 **Dan Milstein Classification (apply to every action item):**
@@ -232,7 +232,7 @@ No vague items. "Be more careful" is not an action item. "Add the phrase 'X' to 
 **Before announcing the postmortem complete**, the final report MUST be written to disk:
 
 ```bash
-ls ~/.copilot/session-state/[SESSION_ID]/postmortem.md
+ls [SESSION_ID]/postmortem.md
 ```
 
 If the file does not exist, use `create` to write it now.

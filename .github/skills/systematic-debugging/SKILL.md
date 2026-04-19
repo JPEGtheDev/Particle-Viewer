@@ -24,8 +24,9 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 
 Violating the letter of this rule is violating the spirit of this rule.
 
-This is not a guideline. No exceptions.
-If you haven't completed Phase 1, you cannot propose fixes.
+YOU MUST complete Phase 1 root cause investigation before proposing any fix. No exceptions.
+
+**Announce at start:** "I am using the systematic-debugging skill to [brief description of issue]."
 
 ---
 
@@ -61,7 +62,13 @@ Each phase MUST be completed in order.
 - For **visual regression failures**: examine the diff image, compare pixels
 - For **CI failures**: reproduce locally with the equivalent command before touching code
 
-**You cannot proceed to Phase 2 until you can state: "The root cause is X because Y."**
+BEFORE proceeding to Phase 2, verify:
+1. The error message has been read completely.
+2. The failure reproduces consistently with identified reproduction steps.
+3. You can state: "The root cause is X because Y."
+
+✓ All 3 met → proceed to Phase 2
+✗ Any unmet → continue Phase 1 investigation; do not proceed
 
 ### Phase 2: Pattern Analysis
 

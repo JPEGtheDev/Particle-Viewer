@@ -11,9 +11,24 @@ EVERY SESSION ENDS WITH SELF-EVALUATION — NO EXCEPTIONS
 
 Violating the letter of this rule is violating the spirit of this rule.
 
-Read this skill BEFORE your final message. If you skip it: the session's lessons are lost. Every time. Without exception.
+YOU MUST complete all 7 steps and include the `### Session Self-Evaluation` block before your final message. No exceptions.
+
+Read this skill BEFORE your final message. If you skip it: the session's lessons are lost. Every time.
 
 **Announce at start:** "I am running the self-evaluation skill for this session."
+
+---
+
+## BEFORE PROCEEDING — Self-Evaluation Gate
+
+Before starting the self-evaluation:
+
+1. The session's primary task is complete — no further implementation work is planned for this session.
+2. All commits from this session have been pushed or are staged and ready.
+3. You have NOT yet sent the final message to the user.
+
+✓ All 3 met → proceed through all 7 steps in order
+✗ Any unmet → complete remaining session work first; once no further work is planned, return here and execute all 7 steps
 
 ---
 
@@ -119,7 +134,7 @@ Before generating the session summary, complete this audit:
 
 5. **Decision accountability:**
    - Did any decisions made during this session produce poor outcomes?
-   - For each: name the decision, the evidence it was wrong, and the decision rule that should change.
+   - For each: name the decision, the evidence it was wrong, and the decision rule that MUST change.
    - "I followed the established pattern" is not accountability if the pattern was wrong.
    - Decisions are accountable regardless of whether they followed a rule. Rule adherence and outcome quality are separate.
 

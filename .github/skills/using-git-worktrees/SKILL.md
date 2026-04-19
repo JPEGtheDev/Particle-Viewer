@@ -11,6 +11,8 @@ NEVER LET A SUBAGENT COMMIT DIRECTLY TO THE MAIN WORKING BRANCH
 
 Violating the letter of this rule is violating the spirit of this rule.
 
+YOU MUST create a dedicated worktree for every subagent before dispatching it. No exceptions.
+
 Every subagent gets its own worktree. The main context reviews and merges.
 
 **Announce at start:** "I am using the using-git-worktrees skill to create a worktree for [purpose]."
@@ -116,6 +118,7 @@ This pattern replaces "I think approach A is better" with measurable output.
 - Subagent output committed to `main` or the active feature branch without review
 - Worktree left alive after the work is merged or discarded (leaks branch clutter)
 - Dispatch to a worktree without passing the worktree path in the agent prompt
+- Merging a worktree branch before reviewing the full diff: `git diff main..agent/<name>`
 
 ---
 
@@ -127,3 +130,12 @@ This pattern replaces "I think approach A is better" with measurable output.
 | "I'll review the subagent output before merging" | Review happens in the main context; the subagent STILL needs its own worktree to work safely |
 | "Worktrees add overhead" | One git command. The cleanup time saved from a subagent polluting main more than compensates |
 | "I think this approach is right, no need for A/B" | "I think" is not evidence. Dispatch two agents and let the output decide. |
+| "The subagent promised not to touch main" | Subagent discipline is not a structural guarantee. Worktrees are. Create the worktree. |
+
+---
+
+## Related Skills
+
+- `subagent-driven-development` — governs how to dispatch subagents and review their work; worktrees are the isolation mechanism for every subagent dispatch
+- `dispatching-parallel-agents` — governs parallel agent dispatch patterns; every parallel agent MUST have its own dedicated worktree
+- `execution` — governs the overall work loop; worktrees support the commit rhythm and behavior preservation required by the execution skill

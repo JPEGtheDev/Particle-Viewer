@@ -11,9 +11,22 @@ NO C++ THAT VIOLATES RESOURCE MANAGEMENT OR BREAKS EXISTING ABSTRACTIONS
 
 Violating the letter of this rule is violating the spirit of this rule.
 
-Every class that owns GL resources cleans them up. Every public interface change updates docs in the same commit. No exceptions.
+YOU MUST clean up all GL resources in destructors and update documentation in the same commit as any public interface change. No exceptions.
 
 **Announce at start:** "I am using the cpp-patterns skill to [implement/review] [description]."
+
+---
+
+## BEFORE PROCEEDING — C++ Pattern Application
+
+Before applying any pattern:
+
+1. A failing test for the behavior you are implementing exists and you have observed its failure output.
+2. The specific pattern you are applying (resource management, DRY, deprecation, SDL3 gotcha, etc.) has been identified by name.
+3. The class or function you are changing has been read — not recalled from memory.
+
+✓ All 3 met → proceed
+✗ Any unmet → stop; write the failing test or read the target code before writing any production code
 
 ---
 
@@ -65,7 +78,7 @@ When writing C++ code for this project, apply these patterns consistently.
 ### SDL3 Gotchas
 
 - **Subsystem flags:** `SDL_Init` must include the flag for every SDL3 subsystem used. Missing a flag causes silent failure — no error, no events, no devices.
-- **`*ForID` query functions:** Prefer `SDL_Get*ForID()` variants (e.g., `SDL_GetJoystickGUIDForID`) over opening a joystick just to read a value then close it. Unnecessary open consumes a file handle.
+- **`*ForID` query functions:** Use `SDL_Get*ForID()` variants (e.g., `SDL_GetJoystickGUIDForID`) over opening a joystick just to read a value then close it. Unnecessary open consumes a file handle.
 - **Joystick type is distro-dependent:** `SDL_GetJoystickTypeForID()` returns `SDL_JOYSTICK_TYPE_GAMEPAD` on SteamOS but `SDL_JOYSTICK_TYPE_UNKNOWN` on generic Linux (OpenSuse, Ubuntu) because stock udev rules don't set the GAMEPAD property. Always pair type-based detection with a capability-based fallback: open the joystick, check `SDL_GetNumJoystickAxes() >= 4 && SDL_GetNumJoystickButtons() >= 6`, then close it.
 - **Gamepad hold-button state:** Don't route through `Camera::KeyReader()`. `KeyReader` has a single-press dispatch block — calling it every frame fires single-press handlers repeatedly. For hold-buttons that mirror keyboard held keys, add a dedicated method (e.g., `Camera::setSpeedBoost(bool)`).
 

@@ -25,7 +25,9 @@ EVIDENCE MUST BE INLINE. NEVER REFERENCED.
 
 Violating the letter of this rule is violating the spirit of this rule.
 
-If you haven't run the verification command in this session — after your most recent change — you cannot claim it passes. Evidence before assertions, always.
+YOU MUST run the verification commands in this session, after your most recent change, before making any completion claim. No exceptions.
+
+**Announce at start:** "I am using the verification-before-completion skill to verify [work item] before claiming completion."
 
 ---
 
@@ -65,6 +67,9 @@ BEFORE claiming any status or expressing satisfaction:
    - If NO: State actual status with evidence
    - If YES: State claim WITH evidence inline
 5. ONLY THEN: Make the claim
+
+✓ All 5 steps completed → make the claim with inline evidence
+✗ Any step skipped → return to step 1; do not make the claim
 ```
 
 Skipping any step = lying, not verifying.

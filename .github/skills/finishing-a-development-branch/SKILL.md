@@ -11,6 +11,8 @@ A BRANCH IS NOT DONE UNTIL IT IS CLEAN, VERIFIED, AND EXPLICITLY CLOSED.
 
 Violating the letter of this rule is violating the spirit of this rule.
 
+YOU MUST complete all five steps before considering a branch closed: verification gate, branch audit, commit cleanup, PR creation, and post-merge cleanup. No exceptions.
+
 **Announce at start:** "I am using the finishing-a-development-branch skill to close out [branch name]."
 
 ---
@@ -120,6 +122,7 @@ See `versioning` skill for conventional commit rules.
 | "The tests pass locally, CI will be fine" | CI has a different environment. It fails independently. Verify the diff, not the confidence. |
 | "It's close enough — I'll fix it in follow-up" | Undefined follow-up is a polite word for "never." Open a tracking issue with a due date or do it now. |
 | "The PR description can be filled in later" | PR descriptions written after the fact are summaries, not design records. Write them now. |
+| "CI passed on the branch, merge is safe" | CI on the branch does not verify the merge commit. Verify CI is green on main AFTER the merge. |
 
 ---
 
@@ -129,3 +132,4 @@ See `versioning` skill for conventional commit rules.
 - Squashing commits without reading the resulting diff
 - Merging without checking CI on main after merge
 - Closing a branch with OPEN acceptance criteria and no tracking issue
+- Pushing to open a PR without reading the full diff (`git diff main...HEAD`) line by line

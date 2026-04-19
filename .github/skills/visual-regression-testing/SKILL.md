@@ -11,9 +11,25 @@ NEVER AUTO-APPROVE A VISUAL BASELINE — HUMAN MUST REVIEW EVERY NEW OR CHANGED 
 
 Violating the letter of this rule is violating the spirit of this rule.
 
+YOU MUST get explicit human approval before committing any new or changed visual baseline. No exceptions.
+
 A visual regression test proves output **hasn't changed**, not that it was correct to begin with.
 
 **Announce at start:** "I am using the visual-regression-testing skill to [write/update/debug] visual regression tests for [description]."
+
+---
+
+## BEFORE PROCEEDING — Visual Regression Pre-Check
+
+Before writing or updating a visual regression test:
+
+1. Any associated logic (non-pixel behavior) has a passing MockOpenGL or unit test already.
+2. The test file is in `tests/visual-regression/` — not mixed with unit or integration tests.
+3. If updating an existing baseline: the old baseline has been deleted and the test is confirmed failing.
+4. Human baseline approval is an explicit, scheduled step in the workflow — not auto-commit.
+
+✓ All 4 met → proceed
+✗ Any unmet → resolve the unmet condition before writing any test code or committing any baseline
 
 ---
 
@@ -25,7 +41,7 @@ Load this skill when:
 - Writing visual regression tests (`tests/visual-regression/`)
 - Baseline images need to be created or updated
 - Debugging a visual regression failure
-- Deciding whether something should be a visual test vs a MockOpenGL unit test
+- Deciding whether something belongs in a visual test vs a MockOpenGL unit test
 
 ---
 
@@ -156,3 +172,11 @@ Before presenting visual regression tests:
 | "High tolerance is more robust" | High tolerance masks real regressions |
 | "I'll set the resolution later" | Wrong resolution causes artifacts in every subsequent baseline |
 | "Visual tests cover what the unit tests don't" | Visual tests are slow and cover pixels; unit tests cover logic. Both are needed. |
+
+---
+
+## Related Skills
+
+- `testing` — parent skill; TDD iron law and AAA naming conventions apply to all test files including visual regression tests
+- `code-quality` — code conventions, clang-format, and naming rules apply to test code in this directory
+- `cpp-patterns` — production class patterns (GL resource cleanup, RAII) used in visual test fixtures
