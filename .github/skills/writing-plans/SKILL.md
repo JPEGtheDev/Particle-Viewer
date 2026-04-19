@@ -44,6 +44,7 @@ My optimization target: [user's stated outcome], not [convenient proxy]."
 | Architectural decision | Specify approach before touching code |
 | Ambiguous requirements | Clarify first — do not plan around unknowns |
 | User story with acceptance criteria | Map each criterion to a checkpoint |
+| "Can you test X?" or "evaluate X?" without stated methodology | `[UNCLEAR: what does success look like? what is the baseline? does methodology matter?]` — ask before designing anything |
 
 ---
 
@@ -148,6 +149,7 @@ If you genuinely find no gaps after thorough analysis, state that explicitly.
 | "The user implied I should proceed" | Implied is not explicit. "Looks good", "go ahead", or "start" are approval. Silence is not. |
 | "I found the bug — fixing it now" | A request to debug or research is not a request to fix. Present findings first. Wait for instruction. |
 | "I see the issue — let me just patch it" | Patching without direction wastes work. Root cause + presentation + user decision = the correct sequence. |
+| "It's just a quick test, I don't need todos" | Any multi-step task without SQL todos has no Skeptic dispatch gate. The 3-todo Skeptic rule cannot fire if todos were never created. Create todos first, then execute. |
 
 ---
 

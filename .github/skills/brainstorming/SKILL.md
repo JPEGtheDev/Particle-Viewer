@@ -147,6 +147,8 @@ When the gate is fully passed, output this record. It becomes part of the PR des
 
 **Test strategy:** [how correctness will be verified]
 
+**What would falsify this approach:** [name the result, finding, or evidence that would prove this approach is wrong — required for any test design, research methodology, or evaluation framework]
+
 **Gate passed:** YES — awaiting user approval
 ```
 
