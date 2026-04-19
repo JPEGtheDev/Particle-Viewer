@@ -49,15 +49,21 @@ A self-assessment cannot find what the agent rationalized away. **An external re
 
 ### Setup
 
+This skill is for the **Particle-Viewer** repository. All repo paths are relative to the git root of this project.
+
 Derive the paths for the session being reviewed:
 
 ```
+REPO:             [git root of Particle-Viewer]
 SESSION_ID:       [session ID — shown in workspace.yaml or .copilot/session-state/ directory name]
 EVENTS_LOG:       ~/.copilot/session-state/[SESSION_ID]/events.jsonl
 WORKSPACE:        ~/.copilot/session-state/[SESSION_ID]/
+SCRATCH:          [REPO]/scratch/
 SELF_ASSESSMENT:  ~/.copilot/session-state/[SESSION_ID]/postmortem.md  (if self-eval already ran)
 OUTPUT:           ~/.copilot/session-state/[SESSION_ID]/postmortem-external.md
 ```
+
+The `scratch/` directory contains session artifacts written during the session (intermediate analysis, theory-testing files, research dumps). It is `.gitignored` but may contain evidence of exploratory work not captured in the event log.
 
 ### Protocol
 

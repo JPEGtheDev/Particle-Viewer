@@ -7,6 +7,8 @@ You are an external reviewer analyzing a completed agent session. You have NO me
 **Session ID:** {{SESSION_ID}}
 **Events log:** {{EVENTS_JSONL_PATH}}
 **Session workspace:** {{SESSION_WORKSPACE_PATH}}
+**Repo root:** {{REPO_PATH}}
+**Scratch directory:** {{REPO_PATH}}/scratch/
 **Self-assessment (if any):** {{SELF_ASSESSMENT_PATH}}
 **Output path:** {{OUTPUT_PATH}}
 
@@ -27,7 +29,9 @@ Read these files in order:
 
 3. Each checkpoint file listed in the index — for milestone context, not as authoritative fact
 
-4. `{{SELF_ASSESSMENT_PATH}}` — if it exists, read it LAST. Compare its claims against what the log actually shows. Every discrepancy is a finding.
+4. `{{REPO_PATH}}/scratch/` — list and read any files present. Scratch files are session artifacts: research dumps, intermediate analysis, theory-testing files. They may reveal exploratory work that was not committed and is not visible in the event log. A scratch file that contradicts a committed conclusion is a finding.
+
+5. `{{SELF_ASSESSMENT_PATH}}` — if it exists, read it LAST. Compare its claims against what the log actually shows. Every discrepancy is a finding.
 
 5. Read `.github/skills/session-postmortem/SKILL.md` — this is the framework you will apply.
 
