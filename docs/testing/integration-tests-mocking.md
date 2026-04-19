@@ -39,11 +39,11 @@ Call counters (e.g., `MockOpenGL::compileShaderCalls`) are reset to zero by `res
 
 ## Coverage Considerations
 
-Integration tests should **not** be counted towards code coverage metrics.
+Integration tests MUST **not** be counted towards code coverage metrics.
 
 **Rationale:**
 - Integration tests exercise paths across multiple components and inflate coverage metrics
-- Coverage should measure how well **unit tests** exercise individual components
+- Coverage MUST measure how well **unit tests** exercise individual components
 - Counting integration tests can mask gaps in unit test coverage
 
 Currently all tests contribute to coverage reports. The intended future improvement is to generate separate coverage reports for unit tests only.
@@ -76,7 +76,7 @@ Each test is modifying shared state. Ensure `MockOpenGL::reset()` is called in `
 
 ### Coverage Report Missing Integration Tests
 
-Integration test **files** do not need coverage — the source under test is in `src/`. Coverage should report on `src/*.hpp` and `src/*.cpp`, not the test files themselves.
+Integration test **files** do not need coverage — the source under test is in `src/`. Coverage MUST report on `src/*.hpp` and `src/*.cpp`, not the test files themselves.
 
 ## Debugging Tips
 
