@@ -1,13 +1,6 @@
 ---
 name: build
-description: Build, configure, and troubleshoot the Particle-Viewer CMake project. Use when building, adding dependencies, configuring CMake options, troubleshooting build failures, or managing Flatpak packaging.
-license: MIT
-compatibility: Designed for GitHub Copilot and similar AI coding agents
-metadata:
-  author: JPEGtheDev
-  version: "1.3"
-  category: build
-  project: Particle-Viewer
+description: Use when building, adding dependencies, configuring CMake options, troubleshooting build failures, or managing Flatpak packaging for Particle-Viewer.
 ---
 
 ## Iron Law

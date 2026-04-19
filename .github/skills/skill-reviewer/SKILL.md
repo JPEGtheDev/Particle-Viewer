@@ -1,13 +1,6 @@
 ---
 name: skill-reviewer
-description: Review skill files for completeness, iron laws, and mechanical gate patterns. Dispatch 1 instance per skill file when authoring or updating skills. Returns a structured review report.
-license: MIT
-compatibility: Designed for GitHub Copilot and similar AI coding agents
-metadata:
-  author: JPEGtheDev
-  version: "1.0"
-  category: review
-  project: Particle-Viewer
+description: Use when authoring or updating skills to review files for completeness, iron laws, and mechanical gate patterns. Dispatch 1 instance per skill file. Returns a structured review report.
 ---
 
 ## Iron Law

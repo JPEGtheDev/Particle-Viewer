@@ -1,13 +1,6 @@
 ---
 name: infrastructure-review
-description: Review CI/CD pipelines, CMake build system, and Flatpak packaging for Particle-Viewer. Checks for pipeline safety, artifact correctness, build reproducibility, and Flatpak GL gotchas. Use when adding workflows, modifying CMakeLists.txt, or updating Flatpak manifests.
-license: MIT
-compatibility: Designed for GitHub Copilot and similar AI coding agents
-metadata:
-  author: JPEGtheDev
-  version: "1.0"
-  category: review
-  project: Particle-Viewer
+description: Use when adding workflows, modifying CMakeLists.txt, or updating Flatpak manifests for Particle-Viewer. Reviews CI/CD pipelines, CMake build system, and Flatpak packaging for safety, artifact correctness, and build reproducibility.
 ---
 
 ## Iron Law

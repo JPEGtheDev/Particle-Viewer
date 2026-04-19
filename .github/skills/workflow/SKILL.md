@@ -1,13 +1,6 @@
 ---
 name: workflow
-description: Write and maintain GitHub Actions CI/CD workflows for Particle-Viewer. Use when creating workflows, adding CI jobs, configuring artifact uploads, or reviewing pipeline configuration. Covers pipeline safety rules, permissions, and artifact patterns.
-license: MIT
-compatibility: Designed for GitHub Copilot and similar AI coding agents
-metadata:
-  author: JPEGtheDev
-  version: "1.3"
-  category: ci-cd
-  project: Particle-Viewer
+description: Use when creating GitHub Actions workflows, adding CI jobs, configuring artifact uploads, or reviewing pipeline configuration for Particle-Viewer. Covers pipeline safety rules, permissions, and artifact patterns.
 ---
 
 ## Iron Law

@@ -1,13 +1,6 @@
 ---
 name: versioning
-description: Manage semantic versioning, conventional commits, PR title requirements, and release automation. Use when creating PRs, writing commit messages, understanding version bumps, or troubleshooting release issues.
-license: MIT
-compatibility: Designed for GitHub Copilot and similar AI coding agents
-metadata:
-  author: JPEGtheDev
-  version: "1.2"
-  category: versioning
-  project: Particle-Viewer
+description: Use when creating PRs, writing commit messages, understanding version bumps, or troubleshooting release issues for Particle-Viewer. Manages semantic versioning, conventional commits, and release automation.
 ---
 
 ## Iron Law

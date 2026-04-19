@@ -1,13 +1,6 @@
 ---
 name: self-evaluation
-description: End-of-session self-evaluation for continuous improvement. Run before finalizing any session to capture lessons learned, identify skill updates, and improve agent effectiveness. Use when completing a task, reviewing work quality, or improving project skills.
-license: MIT
-compatibility: Designed for GitHub Copilot and similar AI coding agents
-metadata:
-  author: JPEGtheDev
-  version: "1.6"
-  category: meta
-  project: Particle-Viewer
+description: Use when completing any session to capture lessons learned, identify skill updates, and improve agent effectiveness. Runs end-of-session quality checks before finalizing work.
 ---
 
 ## Iron Law

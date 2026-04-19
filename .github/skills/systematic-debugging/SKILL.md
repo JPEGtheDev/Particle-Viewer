@@ -1,13 +1,6 @@
 ---
 name: systematic-debugging
-description: Use when encountering any bug, test failure, build error, or unexpected behavior. Must be read BEFORE proposing any fix.
-license: MIT
-compatibility: Designed for GitHub Copilot and similar AI coding agents
-metadata:
-  author: JPEGtheDev
-  version: "1.0"
-  category: debugging
-  project: Particle-Viewer
+description: Use when encountering any bug, test failure, build error, or unexpected behavior. Must be read BEFORE proposing any fix. Governs the 4-phase root cause investigation protocol.
 ---
 
 # Instructions for Agent
@@ -159,3 +152,66 @@ cmake --build build && ./build/tests/ParticleViewerTests
 
 - `testing` skill — for writing the failing test that reproduces the issue (Phase 4)
 - `verification-before-completion` skill — for verifying the fix actually resolved the issue before claiming done
+
+---
+
+## Multi-Component Debugging
+
+When a failure could involve multiple layers (e.g., OpenGL, SDL3, shader, parser, UI), standard per-file investigation is insufficient. Use this instrumentation template to isolate the layer boundary where the failure originates.
+
+### Layer Boundary Isolation Protocol
+
+Before proposing any fix in a multi-component failure:
+
+1. **Name the layers involved.** List every component the failing code path touches in execution order.
+   ```
+   Example: File picker → ViewerApp → SDL3Context → OpenGL → Shader → Render
+   ```
+
+2. **Identify the boundary between "working" and "broken."**
+   Ask: at which layer does the correct input produce incorrect output?
+   ```
+   Layer check: does [Layer A] receive correct input? → YES/NO
+   Layer check: does [Layer B] produce correct output given correct input? → YES/NO
+   ```
+   The first "NO" is the boundary where the failure lives.
+
+3. **Add instrumentation at that boundary.**
+   ```cpp
+   // Minimal boundary probe — remove after diagnosis
+   std::cerr << "[DEBUG boundary] input: " << input << " output: " << output << "\n";
+   ```
+
+4. **Run with instrumentation.** Read the output. State: "The failure is between [Layer A] and [Layer B] because [evidence]."
+
+5. **Remove all instrumentation before the fix commit.**
+
+### Common Multi-Component Failure Patterns
+
+| Symptom | Most likely boundary | Investigation action |
+|---------|---------------------|---------------------|
+| Renders blank / nothing visible | Shader or OpenGL state | Check `glGetError()` after each GL call; verify shader compile/link log |
+| Tests pass locally, fail in CI | Environment difference | Check: headless display? OpenGL driver? Font path? File path separator? |
+| Visual regression diff shows offset | Camera or viewport transform | Log camera matrix and viewport before render; compare against baseline |
+| SDL3 window creates but hangs | SDL3/OpenGL init sequence | Add `SDL_GetError()` and `glGetError()` probes at each init step |
+| Flatpak crash on startup | Library version mismatch | Run `ldd` on the binary; check manifest pinned versions |
+
+### Layer Taxonomy for This Project
+
+```
+User Input (SDL3 events)
+    ↓
+ViewerApp (main app logic, state machine)
+    ↓
+UI layer (ImGui menu — imgui_menu.hpp/cpp)
+    ↓
+Graphics layer (IOpenGLContext, SDL3Context)
+    ↓
+OpenGL driver (via GLAD)
+    ↓
+Shader (GLSL — Viewer-Assets/shaders/)
+    ↓
+GPU output
+```
+
+When debugging, identify which layer in this stack first produces incorrect behavior. Fix at that layer — not at the symptom layer above it.

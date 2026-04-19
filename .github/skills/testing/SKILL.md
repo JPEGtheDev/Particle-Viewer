@@ -1,13 +1,6 @@
 ---
 name: testing
-description: Write tests for Particle-Viewer following AAA pattern, naming conventions, and project testing standards. Use when writing unit tests, integration tests, visual regression tests, or reviewing test code. Covers Google Test patterns, mock usage, and visual comparison testing.
-license: MIT
-compatibility: Designed for GitHub Copilot and similar AI coding agents
-metadata:
-  author: JPEGtheDev
-  version: "1.5"
-  category: testing
-  project: Particle-Viewer
+description: Use when writing unit tests, integration tests, visual regression tests, or reviewing test code for Particle-Viewer. Follows AAA pattern, naming conventions, and project testing standards. Covers Google Test patterns, mock usage, and visual comparison testing.
 ---
 
 ## Iron Law

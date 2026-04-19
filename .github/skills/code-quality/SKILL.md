@@ -1,13 +1,6 @@
 ---
 name: code-quality
-description: Enforce code formatting, static analysis, naming conventions, and project-specific C++ patterns. Use when writing code, reviewing style, running clang tools, or checking pre-commit requirements.
-license: MIT
-compatibility: Designed for GitHub Copilot and similar AI coding agents
-metadata:
-  author: JPEGtheDev
-  version: "1.10"
-  category: code-quality
-  project: Particle-Viewer
+description: Use when writing C++ code, reviewing style, running clang tools, or checking pre-commit requirements. Enforces code formatting, static analysis, naming conventions, and project-specific C++ patterns.
 ---
 
 ## Iron Law

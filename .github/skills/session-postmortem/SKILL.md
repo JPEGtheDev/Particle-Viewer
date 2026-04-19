@@ -1,13 +1,6 @@
 ---
 name: session-postmortem
-description: Retrospective analysis of a copilot chat session. Used after a session completes to analyze agent behavior patterns, identify where iron laws were bypassed, and extract durable lessons. Different from self-evaluation — this analyzes BEHAVIOR, not just outcomes.
-license: MIT
-compatibility: Designed for GitHub Copilot and similar AI coding agents
-metadata:
-  author: JPEGtheDev
-  version: "1.2"
-  category: review
-  project: Particle-Viewer
+description: Use after a session completes to analyze agent behavior patterns, identify where iron laws were bypassed, and extract durable lessons. Analyzes behavior, not just outcomes.
 ---
 
 ## Iron Law

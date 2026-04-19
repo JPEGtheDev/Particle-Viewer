@@ -1,13 +1,6 @@
 ---
 name: user-story-generator
-description: Generate INVEST-aligned user stories with progressive disclosure for agile project management. Creates independent, small, testable stories with acceptance criteria, subtasks, and definitions of done. Use when creating user stories, planning sprints, breaking down epics, or refactoring work into manageable tasks.
-license: MIT
-compatibility: Designed for GitHub Copilot and similar AI coding agents
-metadata:
-  author: JPEGtheDev
-  version: "1.1"
-
-  project: Particle-Viewer
+description: Use when creating user stories, planning sprints, breaking down epics, or refactoring work into manageable tasks. Generates INVEST-aligned stories with progressive disclosure, acceptance criteria, subtasks, and definitions of done.
 ---
 
 ## Iron Law

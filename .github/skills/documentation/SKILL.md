@@ -1,13 +1,6 @@
 ---
 name: documentation
-description: Write and maintain documentation for Particle-Viewer following project conventions. Use when creating docs, updating guides, writing API references, or reviewing documentation. Covers file organization, linking, formatting, and content standards.
-license: MIT
-compatibility: Designed for GitHub Copilot and similar AI coding agents
-metadata:
-  author: JPEGtheDev
-  version: "1.2"
-  category: documentation
-  project: Particle-Viewer
+description: Use when creating docs, updating guides, writing API references, or reviewing documentation for Particle-Viewer. Covers file organization, linking, formatting, and content standards.
 ---
 
 ## Iron Law

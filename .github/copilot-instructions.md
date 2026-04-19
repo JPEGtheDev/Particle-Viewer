@@ -11,8 +11,10 @@ Before generating any output, ask yourself:
 3. **Encountered a bug or failure?** → Have I traced the root cause (not just guessed)? If not: load `systematic-debugging`.
 4. **Non-trivial task (3+ steps)?** → Have I loaded the required skills from the table below? If not: load them now.
 5. **Forming a theory or assumption?** → "I think" is not acceptable. Do I have empirical evidence (code, test output, documentation)? If not: dispatch a subagent to confirm before proceeding.
-6. **About to finalize a plan?** → Have I answered "What is this NOT addressing?" If no answer, or if the answer reveals a gap: stop. Revise the plan. Dispatch a Skeptic Agent for any 3+ todo plan. See `execution` skill Phase 1.
-7. **About to start multi-step work?** → Have I stated requirements back in my own words and labeled ambiguities `[UNCLEAR: ...]`? If not: state them before planning. See "Clarify Expectations" in `execution` Phase 1.
+6. **About to finalize a plan?** → Have I answered "What is this NOT addressing?" If no answer, or if the answer reveals a gap: stop. Revise the plan. Dispatch a Skeptic Agent for any 3+ todo plan. See `writing-plans` skill.
+7. **About to start multi-step work?** → Have I stated requirements back in my own words and labeled ambiguities `[UNCLEAR: ...]`? If not: state them before planning. See `writing-plans` skill.
+8. **Unclear approach, multiple valid solutions, or architecture impact?** → HARD-GATE: load `brainstorming` and answer all design questions before writing any code.
+9. **About to dispatch a subagent?** → Load `subagent-driven-development`. One clear objective per agent. State the return format. Verify results before propagating claims.
 
 **This checklist applies on EVERY turn. Not just session start.**
 
@@ -120,6 +122,12 @@ Each skill owns one domain. Read the skill before working in that domain. **Neve
 | `workflow` | `.github/skills/workflow/` | CI/CD pipelines, artifacts, permissions, Flatpak GL gotchas |
 | `documentation` | `.github/skills/documentation/` | Docs conventions, linking, formatting, skill authoring |
 | `execution` | `.github/skills/execution/` | Autonomous execution protocol, planning, verification, bug fixing |
+| `writing-plans` | `.github/skills/writing-plans/` | Plan building, scope gates, Skeptic Agent, YAGNI/PPP/STTCPW |
+| `brainstorming` | `.github/skills/brainstorming/` | HARD-GATE design exploration before any implementation begins |
+| `subagent-driven-development` | `.github/skills/subagent-driven-development/` | Subagent dispatch, 2-stage review, worktrees, empirical evidence |
+| `finishing-a-development-branch` | `.github/skills/finishing-a-development-branch/` | Branch ceremony, squash strategy, PR creation, post-merge cleanup |
+| `receiving-code-review` | `.github/skills/receiving-code-review/` | Processing review feedback without performative agreement |
+| `requesting-code-review` | `.github/skills/requesting-code-review/` | Targeted review requests, SHA-based dispatch, agent pre-review |
 | `systematic-debugging` | `.github/skills/systematic-debugging/` | Root cause investigation protocol for bugs, failures, and errors |
 | `verification-before-completion` | `.github/skills/verification-before-completion/` | Evidence-first verification before every completion claim or commit |
 | `user-story-generator` | `.github/skills/user-story-generator/` | INVEST-aligned story creation |
@@ -128,6 +136,19 @@ Each skill owns one domain. Read the skill before working in that domain. **Neve
 | `session-postmortem` | `.github/skills/session-postmortem/` | Retrospective behavioral analysis of a completed agent session |
 | `architecture-review` | `.github/skills/architecture-review/` | Layer boundary, dependency direction, and IOpenGLContext compliance |
 | `infrastructure-review` | `.github/skills/infrastructure-review/` | CI/CD pipelines, CMake reproducibility, Flatpak manifest compliance |
+
+### Instruction Priority Hierarchy
+
+When rules appear to conflict, apply this hierarchy:
+
+| Priority | Source | Scope |
+|----------|--------|-------|
+| 1 (highest) | Iron Laws in this file | Every turn, every model, no exceptions |
+| 2 | Loaded skill files | Active when the relevant domain is in play |
+| 3 | Session context / plan.md | Current session scope only |
+| 4 | Inferred convention | Only when no explicit rule exists |
+
+**Never use Priority 4 to override Priority 1–3.** If a skill is not loaded, the default is the iron law, not your best guess.
 
 ## Critical Rules (Apply to Every Task)
 
@@ -155,14 +176,20 @@ Before writing code, read the skill(s) relevant to your task from the Skills Dir
 | If the task involves… | MUST read these skills |
 |---|---|
 | Any implementation work | `execution` |
+| Planning a multi-step task | `writing-plans` |
+| Unclear approach or design choices | `brainstorming` |
 | Writing or editing C++ code | `execution`, `code-quality` |
 | Writing or editing tests | `execution`, `code-quality`, `testing` |
 | Creating a PR or commit | `versioning`, `verification-before-completion` |
+| Finishing / closing a branch | `finishing-a-development-branch` |
+| Requesting code review | `requesting-code-review` |
+| Receiving code review feedback | `receiving-code-review` |
 | CI/CD or workflow changes | `workflow` |
 | Build system or dependency changes | `build` |
 | Writing or editing documentation | `documentation` |
 | Bug fixes or error resolution | `execution`, `systematic-debugging` |
 | Any failure or unexpected behavior | `systematic-debugging`, `verification-before-completion` |
+| Dispatching subagents | `subagent-driven-development` |
 
 If unsure, read `code-quality` — it applies to nearly every code task.
 

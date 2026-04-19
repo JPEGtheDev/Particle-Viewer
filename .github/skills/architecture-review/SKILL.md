@@ -1,13 +1,6 @@
 ---
 name: architecture-review
-description: Review C++ code for clean architecture compliance in Particle-Viewer. Checks layer boundaries, dependency direction, IOpenGLContext abstraction, and component separation. Use when adding new classes, refactoring, or reviewing PRs.
-license: MIT
-compatibility: Designed for GitHub Copilot and similar AI coding agents
-metadata:
-  author: JPEGtheDev
-  version: "1.1"
-  category: review
-  project: Particle-Viewer
+description: Use when adding new classes, refactoring code, or reviewing PRs for Particle-Viewer. Reviews C++ code for clean architecture compliance, including layer boundaries, dependency direction, and IOpenGLContext abstraction.
 ---
 
 ## Iron Law
