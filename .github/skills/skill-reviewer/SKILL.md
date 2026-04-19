@@ -11,20 +11,21 @@ A SKILL WITHOUT AN IRON LAW IS DOCUMENTATION, NOT ENFORCEMENT
 
 Violating the letter of this rule is violating the spirit of this rule.
 
-Every skill YOU MUST have all four gate elements. Missing any one = incomplete skill. No exceptions.
+YOU MUST ensure every skill has all five gate elements. Missing any one = incomplete skill. No exceptions.
 
 **Announce at start:** "I am using the skill-reviewer skill to review [skill-name]."
 
 ---
 
-## The Four Gate Elements
+## The Five Gate Elements
 
 Every skill MUST contain ALL of the following. Missing any one element is an automatic FAIL.
 
 1. **Iron Law** — `## Iron Law` section with backtick-wrapped law statement, "No exceptions" language, and "YOU MUST" phrasing
 2. **Announcement requirement** — explicit line: "Announce at start: I am using [skill] to [purpose]"
-3. **Rationalization Prevention table** — minimum 5 rows, each naming a specific excuse with a specific counter
-4. **Red Flags→STOP section** — minimum 5 trigger thoughts, each with a concrete action to take
+3. **Gate Function** — at least one BEFORE PROCEEDING gate with numbered conditions and explicit YES/NO branches
+4. **Rationalization Prevention table** — minimum 5 rows, each naming a specific excuse with a specific counter
+5. **Red Flags→STOP section** — minimum 5 trigger thoughts, each with a concrete action to take
 
 ---
 
@@ -34,6 +35,7 @@ Run every item for each skill file under review:
 
 - [ ] Iron Law block present and uses hard language ("YOU MUST", "No exceptions", bright-line rule)?
 - [ ] Announcement requirement is explicit (exact wording required, not implied)?
+- [ ] Gate Function present (at least one BEFORE PROCEEDING gate with numbered conditions and YES/NO branches)?
 - [ ] Rationalization Prevention table present with ≥5 rows?
 - [ ] Red Flags→STOP section present with ≥5 trigger thoughts?
 - [ ] Skill-specific commands present (not generic placeholder examples)?
@@ -51,7 +53,7 @@ Run every item for each skill file under review:
 For every skill file being reviewed:
 
 1. Dispatch one agent per file — parallel, don't wait.
-2. Give each agent: file path, recent changes, and the four-element checklist.
+2. Give each agent: file path, recent changes, and the five-element checklist.
 3. Collect all reports before acting.
 4. For each FAIL: update the skill and re-dispatch a review of that element.
 
@@ -69,6 +71,7 @@ Each skill-reviewer agent MUST return findings in this exact structure:
 |---------|---------|---------|-------|
 | Iron Law | ✅/❌ | Strong/Weak | ... |
 | Announcement | ✅/❌ | Clear/Vague | ... |
+| Gate Function | ✅/❌ | Present/Absent | ... |
 | Rationalization Table | ✅/❌ | N rows | ... |
 | Red Flags→STOP | ✅/❌ | N items | ... |
 
@@ -99,10 +102,10 @@ If you catch yourself thinking any of the following, STOP and re-examine before 
 
 | Excuse | Reality |
 |--------|---------|
-| "It has some enforcement language, close enough" | All four elements are required. Partial is FAIL. No exceptions. |
+| "It has some enforcement language, close enough" | All five elements are required. Partial is FAIL. No exceptions. |
 | "The rationalization table is implied by the red flags" | They serve different cognitive functions. Both are required independently. |
 | "This skill is simple, it doesn't need all elements" | All skills need all elements. Consistency is the point. |
-| "I'll add the missing table later" | Later never comes. A skill without all four elements is incomplete. Add it now. |
+| "I'll add the missing table later" | Later never comes. A skill without all five elements is incomplete. Add it now. |
 | "The iron law is already stated in the announcement" | They are separate sections with separate functions. Both are required. |
 | "The domain language seems fine, I won't check closely" | Python/npm/pip examples in a C++/CMake skill are a FAIL. Check every command. |
 | "I can review inline — the file is small" | Inline review is biased. Dispatch task(agent_type="code-review"). Producing a review table inline = this violation. |

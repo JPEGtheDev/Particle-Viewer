@@ -12,6 +12,8 @@ NO AMBIGUITY ENTERS THE PLAN. EVERY [UNCLEAR:] MUST BE RESOLVED BEFORE WRITING-P
 
 Violating the letter of this rule is violating the spirit of this rule.
 
+YOU MUST complete Phases 1–4 and pass the Design Gate before writing any code or loading `writing-plans`. No exceptions.
+
 **Announce at start:** "I am using the brainstorming skill to explore design options for [brief description]. No code will be written until the gate is passed."
 
 ---

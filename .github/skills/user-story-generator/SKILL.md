@@ -10,7 +10,7 @@ NO STORY SHIPS WITHOUT INVEST VALIDATION AND ACCEPTANCE CRITERIA
 ```
 Violating the letter of this rule is violating the spirit of this rule.
 
-Every story must be Independent, Negotiable, Valuable, Estimable, Small, Testable — and have at least one acceptance criterion. No exceptions.
+YOU MUST validate every story against all six INVEST criteria (Independent, Negotiable, Valuable, Estimable, Small, Testable) and include at least one acceptance criterion before shipping. No exceptions.
 
 **Announce at start:** "I am using the user-story-generator skill to create/refine a story for [brief description]."
 
@@ -116,7 +116,7 @@ Based on their answers, ask **one or two follow-up questions** to clarify:
 ### For spikes:
 - "What's the key question we're trying to answer?"
 - "What would a successful spike deliver? (doc, PoC, recommendation)"
-- "How much time should we timebox this?"
+- "What timebox are you targeting for this?"
 
 ### For bugs:
 - "How do we reproduce this?"
@@ -136,7 +136,7 @@ Once you have enough context through conversation, **summarize your understandin
 > - **Value:** [what this enables or fixes]
 > - **Key outcomes:** [2-3 bullet points]
 > 
-> Does that sound right, or should I adjust anything before writing the full story?"
+> Does that sound right, or do you want any adjustments before I write the full story?"
 
 This gives them a chance to course-correct before you generate the full story.
 
@@ -217,7 +217,7 @@ Only after the user confirms, generate the story using this template:
 **Make the story specific and actionable.** Use concrete metrics, file paths, and technical details where appropriate.
 
 **If the story seems too large (L-sized or epic)**, mention this after generating and suggest breaking it down:
-> "This feels like a larger effort that might take 2-3+ days. Would you like me to break it into 3-4 smaller, independent stories?"
+> "This is a larger effort that will take 2-3+ days. Would you like me to break it into 3-4 smaller, independent stories?"
 
 ## Estimating Effort and Model Selection
 
@@ -320,7 +320,7 @@ These are better than:
 - "Provide story type and size estimate."
 
 ### Make Stories INVEST-Compliant
-Every generated story should be:
+Every generated story MUST be:
 - **Independent** – no hard dependencies on unstarted work
 - **Negotiable** – focus on "what" not "how"
 - **Valuable** – clear benefit stated in "So that" clause
