@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 # Pre-message hook — fires on every UserPromptSubmit event.
-# Injects iron law reminder + bootstrap check into Claude's context
-# before every response. Proven pattern: 99% bootstrap adherence vs 60%
-# with session-start-only injection.
+# Injects bootstrap check + full honesty skill + iron laws on every turn.
+# Honesty skill body is read from disk at runtime — no drift possible.
 
 escape_for_json() {
   local s="$1"
@@ -14,7 +13,17 @@ escape_for_json() {
   printf '%s' "$s"
 }
 
-read -r -d '' CONTENT << 'ENDOFCONTENT'
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
+
+# Load honesty skill body, stripping YAML front matter (--- ... ---)
+HONESTY_SKILL="$REPO_ROOT/.github/skills/honesty/SKILL.md"
+if [[ -f "$HONESTY_SKILL" ]]; then
+  HONESTY_BODY=$(awk 'BEGIN{fm=0} /^---$/{if(fm<2){fm++;next}} fm==2{print}' "$HONESTY_SKILL")
+else
+  HONESTY_BODY="[ERROR: honesty/SKILL.md not found at $HONESTY_SKILL]"
+fi
+
+read -r -d '' HEADER << 'ENDHEADER'
 <IMPORTANT>
 ## Bootstrap Check
 
@@ -22,33 +31,11 @@ If you have no memory of bootstrapping this session, load `session-bootstrap` no
 
 ---
 
-## Honesty Check — Apply to THIS Response Before Sending
+## Honesty Skill — Active on Every Turn
 
-```
-FAILURE IS RECOVERABLE. FALSE CONFIDENCE IS NOT.
-```
+ENDHEADER
 
-Before sending, verify ALL of these:
-
-1. No banned vocabulary:
-   - **"Should work"** — BANNED. No substitute. Use: "Running verification now."
-   - **"Done" / "Fixed" / "Complete"** — Show command output inline FIRST, then state completion.
-   - **"Tests pass" / "Build succeeds"** — Show `Ran [cmd]: [actual output]. N passed, 0 failures.`
-   - **"I'm confident" / "I'm sure"** — State the evidence you have. No evidence = no confidence claim.
-   - **"That should do it"** — BANNED. Run the verification. Then report.
-
-2. No forbidden hedges:
-   - "It might be worth considering..." → "Do X because Y."
-   - "You could potentially try..." → "Try X."
-   - "One option would be to..." → "The right approach is X."
-   - "It seems like..." → State what you read, ran, or observed.
-   - "I'm not sure but maybe..." → "I don't know — here's how I'll find out."
-
-3. Completion claims have inline verification output attached.
-4. Confidence expressions have empirical evidence cited inline.
-
-✓ All 4 met → send the response
-✗ Any unmet → rewrite the offending phrase or run the required verification. Do NOT send.
+read -r -d '' FOOTER << 'ENDFOOTER'
 
 ---
 
@@ -80,8 +67,9 @@ If you are tempted to rationalize past any of these: that thought is the rationa
 
 Do NOT say "I remember the skill content." Load fresh. Skill routing table is in `session-bootstrap`.
 </IMPORTANT>
-ENDOFCONTENT
+ENDFOOTER
 
+CONTENT="${HEADER}${HONESTY_BODY}${FOOTER}"
 context=$(escape_for_json "$CONTENT")
 
 if [[ -n "${CURSOR_PLUGIN_ROOT:-}" ]]; then
