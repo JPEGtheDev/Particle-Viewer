@@ -1,6 +1,6 @@
 ---
 name: user-story-generator
-description: Use when creating user stories, planning sprints, breaking down epics, or refactoring work into manageable tasks. Generates INVEST-aligned stories with progressive disclosure, acceptance criteria, subtasks, and definitions of done.
+description: Use when creating or refining user stories for Particle-Viewer. Load user-story-estimation alongside this skill when effort or model tier decisions are needed.
 ---
 
 ## Iron Law
@@ -8,6 +8,7 @@ description: Use when creating user stories, planning sprints, breaking down epi
 ```
 NO STORY SHIPS WITHOUT INVEST VALIDATION AND ACCEPTANCE CRITERIA
 ```
+Violating the letter of this rule is violating the spirit of this rule.
 
 Every story must be Independent, Negotiable, Valuable, Estimable, Small, Testable — and have at least one acceptance criterion. No exceptions.
 
@@ -87,9 +88,7 @@ Start by acknowledging what they've said and asking clarifying questions:
 > 
 > 1. **What problem does this solve?** (What's the user/business value?)
 > 2. **Is this a feature, refactor, spike, or bug fix?**
-> 3. **Rough scope estimate**—is this small (few hours), medium (1-2 days), or larger?
-> 
-> Feel free to skip any you're unsure about!"
+> 3. **Rough scope estimate**—is this small (few hours), medium (1-2 days), or larger?"
 
 ### If their request is vague:
 > "I can help with that! To create a good story, could you tell me more about:
@@ -222,95 +221,7 @@ Only after the user confirms, generate the story using this template:
 
 ## Estimating Effort and Model Selection
 
-For every story, estimate the **total premium requests** needed for implementation (including iteration/fixes) and recommend the appropriate AI model.
-
-### Premium Request Estimation Guidelines
-
-**Small (S) - 15-30 requests:**
-- Single file/class creation
-- Simple utilities or helpers
-- Basic configuration files
-- Bug fixes with clear root cause
-- Examples: Image format converter, config parser
-
-**Medium (M) - 30-70 requests:**
-- Multi-file features
-- Moderate integration work
-- Test suite creation
-- CI/CD workflow setup
-- Examples: Pixel comparator, GitHub Actions workflow, unit test suite
-
-**Large (L) - 70-120+ requests:**
-- Major architectural changes
-- Cross-cutting refactoring
-- Complex integration across multiple subsystems
-- Deep dependency changes
-- Examples: Global state elimination, layer separation, dependency injection
-
-**Factors that increase estimates:**
-- Complex algorithms or math
-- Need for mocking/abstraction layers
-- Tight integration with external APIs
-- Performance optimization requirements
-- Legacy code refactoring with unclear dependencies
-
-### Model Selection Guidelines
-
-**Small (Lightweight model):**
-- Simple, well-defined tasks
-- Straightforward patterns with clear examples
-- Basic file operations, simple utilities
-- When: Task requires speed and minimal context
-- Examples: PPM→PNG conversion, simple scripts
-
-**Standard (Mid-level model):**
-- Standard implementation work
-- Moderate complexity and integration
-- Test writing, CI/CD setup, feature development
-- When: Balanced complexity and context understanding needed
-- Examples: Pixel comparator, Google Test integration, most features
-
-**Advanced (Deep-reasoning model):**
-- Architectural decisions and deep refactoring
-- Complex integration across subsystems
-- Novel design and trade-off analysis
-- When: Task requires deep reasoning and architecture-level decisions
-- Examples: Dependency injection, global state elimination, layer separation
-
-### Estimation Process
-
-When estimating, consider:
-
-1. **Implementation complexity** (algorithm, logic, edge cases)
-2. **Integration effort** (how many files touched, dependencies)
-3. **Testing requirements** (unit, integration, mocking needed)
-4. **Iteration cycles** (likely rounds of fixes and refinements)
-5. **Documentation needs** (API docs, architecture diagrams)
-
-**Formula (rough):**
-- Base implementation: 40-60% of estimate
-- Testing and validation: 20-30%
-- Iteration and fixes: 15-25%
-- Documentation: 5-10%
-
-### Example Estimates
-
-**Framebuffer Capture (M, Standard, 30-40 requests):**
-- Implementation: 15-20 requests (OpenGL capture, PPM writing, vertical flip)
-- Testing: 8-12 requests (unit tests, headless validation)
-- Iteration: 5-6 requests (edge cases, performance tweaks)
-- Docs: 2-3 requests (API comments, README update)
-
-**Global State Elimination (L, Advanced, 80-100 requests):**
-- Implementation: 40-50 requests (manager classes, RAII, dependency wiring)
-- Testing: 20-25 requests (unit tests for all managers, integration tests)
-- Iteration: 15-20 requests (fixing circular deps, refactoring existing code)
-- Docs: 5-8 requests (architecture diagrams, migration guide)
-
-**Add & Enforce Coding Standards (S, Standard, estimated 20-25, actual 3 requests):**
-- *Real-world data from #27:* Foundation work was simpler than anticipated once style guide was in place
-- Shows that some "foundational" work can be lighter than expected if prerequisites are clear
-- Note: Consider if the story is setting up something else (will later stories be larger?)
+Load the `user-story-estimation` skill (`.github/skills/user-story-estimation/`) for S/M/L size breakdown, premium request ranges, model tier selection, and validated examples. Always include the Effort Estimate section in every generated story.
 
 ## Step 5: Continue the Conversation
 
@@ -344,7 +255,7 @@ Offer to format it:
 
 **ALWAYS load project context FIRST before generating any story.**
 
-Throughout the conversation, consult project-specific references **when relevant**:
+Throughout the conversation, Load project-specific references **when needed**:
 
 ### For Particle-Viewer stories:
 **Load [references/PARTICLE_VIEWER_CONTEXT.md](references/PARTICLE_VIEWER_CONTEXT.md) IMMEDIATELY when:**
@@ -383,22 +294,10 @@ Load [references/STORY_TEMPLATES.md](references/STORY_TEMPLATES.md) when:
 Think: "Let's figure this out together" not "Let me generate this for you."
 
 ### Be Conversational and Amicable
-Don't be robotic or formal. Talk naturally:
-- ✅ "Just to make sure I've got this right..."
-- ✅ "What do you think about..."
-- ✅ "Feel free to skip any questions you're not sure about"
-- ✅ "Would you like me to..." instead of "Do you want me to..."
-- ❌ "Please provide the following inputs for story generation"
-- ❌ "Querying user for additional parameters"
+Use natural, collaborative language. Avoid robotic input/output framing.
 
 ### Always Allow Overrides
-The user is in charge. If they say:
-- "Actually, make it simpler" → Do it immediately
-- "Use BDD format instead" → Switch without question
-- "Skip the questions, just generate" → Use sensible defaults and proceed
-- "That's not what I meant" → Apologize, clarify, and restart
-
-Never argue or defend your interpretation. Adapt instantly.
+Accept all redirects immediately. Never defend your interpretation.
 
 ### Embrace Progressive Disclosure
 **Don't front-load everything.** Build understanding gradually:

@@ -113,29 +113,79 @@ Particle-Viewer is a C++ OpenGL-based viewer for N-Body simulations — viewing 
 
 Each skill owns one domain. Read the skill before working in that domain. **Never duplicate skill content in this file.**
 
+Skills are organized into **DDD bounded contexts**. Sub-domain skills (e.g., `visual-regression-testing` under QUALITY) have their own iron law and are invoked independently — but the parent skill routes to them. The full DDD map lives in `writing-skills`. New skills require ≥1% session invocation frequency to justify creation; use reference docs otherwise.
+
+### EXECUTION context
+
+| Skill | Path | Domain |
+|-------|------|--------|
+| `execution` | `.github/skills/execution/` | Work loop, commit rhythm, mode declaration, behavior preservation |
+| `writing-plans` | `.github/skills/writing-plans/` | Plan building, scope gates, Skeptic Agent, YAGNI/PPP/STTCPW |
+| `brainstorming` | `.github/skills/brainstorming/` | HARD-GATE design exploration before any implementation begins |
+| `subagent-driven-development` | `.github/skills/subagent-driven-development/` | Subagent dispatch, 2-stage review, empirical evidence, worktrees |
+| `using-git-worktrees` | `.github/skills/using-git-worktrees/` | Parallel agent isolation, A/B testing, branch safety for subagents |
+
+### QUALITY context
+
+| Skill | Path | Domain |
+|-------|------|--------|
+| `testing` | `.github/skills/testing/` | AAA pattern, naming, mocks, test taxonomy — routes to sub-domains |
+| `visual-regression-testing` | `.github/skills/visual-regression-testing/` | ↳ OpenGL visual testing boundary, baseline approval, tolerance, camera framing |
+| `code-quality` | `.github/skills/code-quality/` | clang-format, clang-tidy, naming conventions, pre-commit — routes to cpp-patterns |
+| `cpp-patterns` | `.github/skills/cpp-patterns/` | ↳ GL resource management, SDL3 gotchas, DRY, Broken Window, Deprecation, Docs-Same-Commit |
+| `verification-before-completion` | `.github/skills/verification-before-completion/` | Evidence-first verification before every completion claim or commit |
+| `systematic-debugging` | `.github/skills/systematic-debugging/` | Root cause investigation protocol for bugs, failures, and errors |
+
+### DELIVERY context
+
 | Skill | Path | Domain |
 |-------|------|--------|
 | `versioning` | `.github/skills/versioning/` | Conventional commits, PR titles, semantic versioning, releases |
 | `build` | `.github/skills/build/` | CMake build, dependencies, Flatpak packaging, troubleshooting |
-| `code-quality` | `.github/skills/code-quality/` | clang-format, clang-tidy, naming, C++ patterns, pre-commit |
-| `testing` | `.github/skills/testing/` | AAA pattern, naming, mocks, visual regression, coverage |
 | `workflow` | `.github/skills/workflow/` | CI/CD pipelines, artifacts, permissions, Flatpak GL gotchas |
-| `documentation` | `.github/skills/documentation/` | Docs conventions, linking, formatting, skill authoring |
-| `execution` | `.github/skills/execution/` | Autonomous execution protocol, planning, verification, bug fixing |
-| `writing-plans` | `.github/skills/writing-plans/` | Plan building, scope gates, Skeptic Agent, YAGNI/PPP/STTCPW |
-| `brainstorming` | `.github/skills/brainstorming/` | HARD-GATE design exploration before any implementation begins |
-| `subagent-driven-development` | `.github/skills/subagent-driven-development/` | Subagent dispatch, 2-stage review, worktrees, empirical evidence |
 | `finishing-a-development-branch` | `.github/skills/finishing-a-development-branch/` | Branch ceremony, squash strategy, PR creation, post-merge cleanup |
-| `receiving-code-review` | `.github/skills/receiving-code-review/` | Processing review feedback without performative agreement |
-| `requesting-code-review` | `.github/skills/requesting-code-review/` | Targeted review requests, SHA-based dispatch, agent pre-review |
-| `systematic-debugging` | `.github/skills/systematic-debugging/` | Root cause investigation protocol for bugs, failures, and errors |
-| `verification-before-completion` | `.github/skills/verification-before-completion/` | Evidence-first verification before every completion claim or commit |
-| `user-story-generator` | `.github/skills/user-story-generator/` | INVEST-aligned story creation |
-| `self-evaluation` | `.github/skills/self-evaluation/` | End-of-session review, lessons learned |
-| `skill-reviewer` | `.github/skills/skill-reviewer/` | Review skill files for completeness, iron laws, and gate elements |
-| `session-postmortem` | `.github/skills/session-postmortem/` | Retrospective behavioral analysis of a completed agent session |
+
+### REVIEW context
+
+| Skill | Path | Domain |
+|-------|------|--------|
 | `architecture-review` | `.github/skills/architecture-review/` | Layer boundary, dependency direction, and IOpenGLContext compliance |
 | `infrastructure-review` | `.github/skills/infrastructure-review/` | CI/CD pipelines, CMake reproducibility, Flatpak manifest compliance |
+| `skill-reviewer` | `.github/skills/skill-reviewer/` | Review skill files for completeness, iron laws, and gate elements |
+| `requesting-code-review` | `.github/skills/requesting-code-review/` | Targeted review requests, SHA-based dispatch, agent pre-review |
+| `receiving-code-review` | `.github/skills/receiving-code-review/` | Processing review feedback without performative agreement |
+
+### REFLECTION context
+
+| Skill | Path | Domain |
+|-------|------|--------|
+| `self-evaluation` | `.github/skills/self-evaluation/` | End-of-session review, lessons learned |
+| `session-postmortem` | `.github/skills/session-postmortem/` | Retrospective behavioral analysis of a completed agent session |
+
+### KNOWLEDGE context
+
+| Skill | Path | Domain |
+|-------|------|--------|
+| `documentation` | `.github/skills/documentation/` | Docs conventions, linking, formatting, skill authoring |
+| `writing-skills` | `.github/skills/writing-skills/` | Skill authoring standard, DDD map, voice authority rules, anatomy gate |
+
+### PRODUCT context
+
+| Skill | Path | Domain |
+|-------|------|--------|
+| `user-story-generator` | `.github/skills/user-story-generator/` | INVEST-aligned story creation — routes to user-story-estimation |
+| `user-story-estimation` | `.github/skills/user-story-estimation/` | ↳ Effort estimation, premium request counts, model tier selection |
+
+### Agent Prompt Templates
+
+Reusable agent prompts live in `.github/agents/`. Use these when dispatching subagents via the `task` tool:
+
+| Template | Use when |
+|----------|----------|
+| `implementer.md` | Dispatching an agent to implement a feature in a worktree |
+| `skeptic.md` | Reviewing a plan for gaps before implementation begins |
+| `code-quality-reviewer.md` | Reviewing code changes for quality and correctness |
+| `researcher.md` | Empirically confirming or denying a hypothesis |
 
 ### Instruction Priority Hierarchy
 
@@ -179,7 +229,9 @@ Before writing code, read the skill(s) relevant to your task from the Skills Dir
 | Planning a multi-step task | `writing-plans` |
 | Unclear approach or design choices | `brainstorming` |
 | Writing or editing C++ code | `execution`, `code-quality` |
+| Writing C++ with GL/SDL3/runtime patterns | `execution`, `code-quality`, `cpp-patterns` |
 | Writing or editing tests | `execution`, `code-quality`, `testing` |
+| Writing visual regression tests | `execution`, `code-quality`, `testing`, `visual-regression-testing` |
 | Creating a PR or commit | `versioning`, `verification-before-completion` |
 | Finishing / closing a branch | `finishing-a-development-branch` |
 | Requesting code review | `requesting-code-review` |
@@ -190,6 +242,9 @@ Before writing code, read the skill(s) relevant to your task from the Skills Dir
 | Bug fixes or error resolution | `execution`, `systematic-debugging` |
 | Any failure or unexpected behavior | `systematic-debugging`, `verification-before-completion` |
 | Dispatching subagents | `subagent-driven-development` |
+| Parallel agent work / A/B testing | `subagent-driven-development`, `using-git-worktrees` |
+| Creating user stories | `user-story-generator`, `user-story-estimation` |
+| Creating or editing a skill file | `writing-skills` |
 
 If unsure, read `code-quality` — it applies to nearly every code task.
 

@@ -1,6 +1,6 @@
 ---
 name: code-quality
-description: Use when writing C++ code, reviewing style, running clang tools, or checking pre-commit requirements. Enforces code formatting, static analysis, naming conventions, and project-specific C++ patterns.
+description: Use when writing or reviewing C++ code, running pre-commit checks, or addressing formatting, naming, or static analysis violations. Load cpp-patterns alongside this skill for runtime C++ patterns.
 ---
 
 ## Iron Law
@@ -10,6 +10,8 @@ NO UNFORMATTED OR UNTIDY CODE SHIPS
 ```
 
 Run clang-format AND clang-tidy BEFORE every commit. CI will reject violations. No exceptions.
+
+Violating the letter of this rule is violating the spirit of this rule.
 
 **Announce at start:** "I am using the code-quality skill to [format/lint/review] [description]."
 
@@ -60,7 +62,7 @@ cmake --build build
 clang-tidy src/main.cpp -- -Isrc/glad/include
 ```
 
-**⚠️ Critical:** Never trust that `clang-format --dry-run -Werror` with no output means success. Always visually inspect `git diff` of modified files. Silent tool output can mask formatting issues.
+**⚠️ Critical:** Do NOT trust that `clang-format --dry-run -Werror` with no output means success. Always visually inspect `git diff` of modified files. Silent tool output can mask formatting issues.
 
 ---
 
@@ -121,7 +123,7 @@ clang-tidy src/main.cpp -- -Isrc/glad/include
 # Analyze using compilation database
 clang-tidy src/particle.hpp -p build
 
-# Auto-fix (use carefully)
+# Auto-fix (always review auto-fix output before committing — it can change behavior)
 clang-tidy -fix src/main.cpp -- -Isrc/glad/include
 ```
 
@@ -139,44 +141,7 @@ Header filter excludes embedded libs: `glad`, `tinyFileDialogs`, `stb_*`.
 
 ## Step 6: Project-Specific C++ Patterns
 
-### Data Organization
-- Group related member variables into POCOs/structs (e.g., `WindowConfig`, `SphereParams`)
-- Structs provide their own defaults to reduce constructor initializer lists
-- Use structs for vertex data (`QuadVertex` with x, y, u, v) instead of raw float arrays
-
-### Error Handling
-- Check return values from OpenGL and file I/O operations
-- Log errors to console with descriptive messages
-- Use assertions for preconditions and invariants
-- Open binary data files with `"rb"` mode for cross-platform correctness
-
-### Memory Management
-- Prefer stack allocation over heap
-- Use RAII for resource management
-- Smart pointers for dynamic memory
-- Clean up ALL GL resources in destructors (VAOs, VBOs, FBOs, RBOs, textures)
-- Prevent copy of classes that own GL resources (delete copy ctor/assignment)
-
-### OpenGL Usage
-- Check OpenGL errors after major operations
-- GLAD loader call: `gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)`
-- Shaders loaded from `Viewer-Assets/shaders/`
-- Modern VBO/VAO patterns for vertex data
-- Bounds-check SDL3 scancode values before indexing key state arrays
-- Prefer `glGetIntegerv(GL_VIEWPORT, ...)` over cached viewport values in render paths where viewport may change
-- `gl_PointSize` clamped by `GL_POINT_SIZE_RANGE` (max 256px on Mesa/llvmpipe)
-- For Flatpak/SDL3/GL gotchas: see `.github/skills/workflow/references/FLATPAK_GL_GOTCHAS.md`
-- **SDL3 subsystem flags:** `SDL_Init` in `SDL3Context.cpp` must include the flag for every SDL3 subsystem used. Adding gamepad input requires `SDL_INIT_GAMEPAD`; adding audio requires `SDL_INIT_AUDIO`; etc. Missing a flag causes the subsystem to silently fail — no error, no events, no devices.
-- **SDL3 `*ForID` query functions:** When querying joystick properties by instance ID, prefer the `SDL_Get*ForID()` variants (e.g. `SDL_GetJoystickGUIDForID`, `SDL_GetJoystickTypeForID`, `SDL_GetJoystickVendorForID`) over opening the joystick just to read the value and closing it. Opening a device unnecessarily consumes a file handle and triggers internal SDL3 reference counting.
-- **SDL3 joystick type is distro-dependent:** `SDL_GetJoystickTypeForID()` returns `SDL_JOYSTICK_TYPE_GAMEPAD` on SteamOS for hardware like the 8BitDo 2.4GHz dongle, but `SDL_JOYSTICK_TYPE_UNKNOWN` on generic Linux (OpenSuse, Ubuntu, etc.) because stock udev rules don't set the GAMEPAD property. Any SDL3 input fallback that only checks `SDL_JOYSTICK_TYPE_GAMEPAD` will silently fail on non-SteamOS distros. Always pair type-based detection with a capability-based fallback: open the joystick, check `SDL_GetNumJoystickAxes() >= 4 && SDL_GetNumJoystickButtons() >= 6`, then close it.
-- **Don't route gamepad hold-button state through `Camera::KeyReader()`:** `KeyReader` has a single-press dispatch block — calling it every frame with `is_pressed=true` would repeatedly fire single-press handlers for that key. For gamepad hold-buttons that mirror keyboard held keys (e.g. B → Shift for speed boost), add a dedicated method that sets only the key state directly (e.g. `Camera::setSpeedBoost(bool)`). See `src/camera.hpp` for the existing pattern.
-
-### Headers
-- Every header must include all headers it directly uses (no transitive include reliance)
-- Mark functions defined in headers as `inline` to avoid multiple-definition linker errors
-
-### ImGui Integration
-- See [`docs/IMGUI_INTEGRATION.md`](../../../docs/IMGUI_INTEGRATION.md) for architecture, FetchContent setup, menu system, and overlay positioning
+For runtime patterns (data organization, error handling, memory management, OpenGL/SDL3 usage, DRY, Broken Window Protocol, Deprecation, Docs-Same-Commit), load the `cpp-patterns` skill (`.github/skills/cpp-patterns/`).
 
 ---
 
@@ -212,63 +177,8 @@ When removing a gamepad feature or call site from `viewer_app.cpp` at user reque
 - [ ] No raw `new`/`delete` — use RAII or smart pointers
 - [ ] GL resources cleaned up in destructors
 - [ ] Headers are self-contained
-- [ ] If a public interface changed: documentation updated in same commit (see docs-same-commit rule below)
-- [ ] If a symbol is deprecated: all call sites removed or annotated (see deprecation completeness gate below)
-
----
-
-## DRY — Knowledge, Not Text
-
-DRY means every piece of **knowledge** has a single authoritative representation. It does not mean "eliminate identical-looking text."
-
-**Acid test:** If you change one copy and not the other, does the system break? If yes, they represent the same knowledge — DRY violation. If no, they are independent representations of different things that happen to look similar — not a DRY violation.
-
-> Two functions with identical bodies for unrelated domain concepts are NOT a DRY violation. Extracting them into a shared function couples unrelated concerns.
-
-**DRY violation signal:** "If this constant changes, I need to update it in N places." That is a DRY violation.
-**False DRY signal:** "These two functions look the same." Looks are not knowledge. Check whether they represent the same concept before extracting.
-
----
-
-## Broken Window Protocol
-
-When you encounter a code smell, technical debt, or quality violation while working on something else, do NOT ignore it and do NOT fix it mid-task (which expands scope and contaminates diffs).
-
-Apply the boarding protocol:
-
-```
-[BROKEN WINDOW NOTED: src/viewer_app.cpp:142 — raw glDrawArrays outside IOpenGLContext]
-```
-
-Place this comment in a `// TODO` block at the point of observation, or in your session notes. It creates an observable record without scope creep. A FIXME is a minimum viable response — not a skip, an acknowledgment.
-
-**After your current task completes:** create a follow-up todo to address the boarded window. One window = one todo. Do not batch.
-
----
-
-## Deprecation Completeness Gate
-
-Deprecating a symbol is NOT complete until every call site is removed or explicitly annotated. A `[[deprecated]]` attribute with active call sites is a broken window, not a deprecation.
-
-Before marking anything deprecated:
-1. Search all call sites: `grep -r "FunctionName" src tests`
-2. Either remove them all in this commit, OR annotate each call site with `// TODO: migrate to [replacement]`
-3. If the symbol is in a public API others may use (Flatpak/lib): add a compiler warning with migration instructions
-
-A symbol with `[[deprecated]]` and remaining call sites that do not have explicit migration notes is not deprecated — it is annotated debt.
-
----
-
-## Docs-Same-Commit Rule
-
-When you change a **public interface** (function signature, class API, behavior visible to callers), update the relevant documentation in **the same commit**. Not a follow-up commit. Not "I'll update docs later."
-
-Documentation that is out of sync with the interface is worse than no documentation — it actively misleads.
-
-Applies to:
-- `docs/` markdown files that describe the changed interface
-- `.github/skills/` files that reference the changed behavior
-- Inline doc comments in headers if they describe the contract
+- [ ] If a public interface changed: documentation updated in same commit (see cpp-patterns skill)
+- [ ] If a symbol is deprecated: all call sites removed or annotated (see cpp-patterns skill)
 
 ---
 

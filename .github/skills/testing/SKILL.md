@@ -1,6 +1,6 @@
 ---
 name: testing
-description: Use when writing unit tests, integration tests, visual regression tests, or reviewing test code for Particle-Viewer. Follows AAA pattern, naming conventions, and project testing standards. Covers Google Test patterns, mock usage, and visual comparison testing.
+description: Use when writing or reviewing any test for Particle-Viewer. For visual regression tests specifically, also load the visual-regression-testing skill.
 ---
 
 ## Iron Law
@@ -8,6 +8,8 @@ description: Use when writing unit tests, integration tests, visual regression t
 ```
 NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 ```
+
+Violating the letter of this rule is violating the spirit of this rule.
 
 Write the test. Watch it fail. THEN write code.
 
@@ -77,13 +79,11 @@ REFACTOR: Clean up
 
 ## Step 1: Determine Test Type
 
-Ask the user what they need:
-
-> "What would you like to test? I support:
-> 1. **Unit tests** — Test a single class/function in isolation
-> 2. **Integration tests** — Test component interactions
-> 3. **Visual regression tests** — Compare images pixel-by-pixel
-> 4. **Test review** — Check existing tests against our standards"
+Classify the test before writing it:
+- **Unit test** — single class/function in isolation → `tests/core/`
+- **Integration test** — component interactions → `tests/integration/`
+- **Visual regression test** — pixel comparison → load `visual-regression-testing` skill
+- **Test review** — check existing tests against standards → apply checklist in Step 5
 
 ---
 
@@ -168,32 +168,7 @@ TEST(DataLoadingPipelineTest, LoadSettings_ValidFile_PopulatesParticles)
 }
 ```
 
-### Visual Regression Tests (tests/visual-regression/)
-
-Use production classes (e.g., `Particle`) directly — **never duplicate production logic in test helpers**.
-Use `PixelComparator` and the `Image` class for pixel comparison.
-
-```cpp
-TEST_F(RenderingRegressionTest, RenderDefaultCube_AngledView_MatchesBaseline)
-{
-    // Arrange
-    Shader particleShader(vertexPath.c_str(), fragmentPath.c_str());
-    Particle particles;  // Uses production Particle class directly
-    glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 3000.0f);
-
-    // Act
-    glContext_.bindFramebuffer();
-    renderParticle(particles, particleShader, view, projection);
-    Image currentImage = glContext_.captureFramebuffer();
-
-    // Assert
-    Image baseline = Image::load(baselinePath, ImageFormat::PNG);
-    PixelComparator comparator;
-    ComparisonResult result = comparator.compare(baseline, currentImage, tolerance, true);
-    EXPECT_TRUE(result.matches);
-}
-```
+### Visual Regression Tests → see `visual-regression-testing` skill
 
 ---
 
@@ -227,13 +202,10 @@ Before presenting tests, verify:
 - [ ] One logical concept per test
 - [ ] External dependencies are mocked (OpenGL, file I/O)
 - [ ] No testing of external libraries (std::, third-party code)
-- [ ] Visual regression tests use production classes (Particle, Camera) — no duplicated test helpers
 - [ ] Group related configuration into structs/POCOs instead of flat variables
 - [ ] Resource cleanup: GL objects deleted in destructors/cleanup, check for leaks
-- [ ] Test `SetUp()` ensures all output directories exist (artifacts/, baselines/, diffs/)
-- [ ] Artifact `save()` return values are checked, not silently ignored
-- [ ] Visual test resolution matches viewer defaults (1280x720) unless specifically testing other resolutions
 - [ ] Tests compile and pass
+- [ ] For visual regression tests: see visual-regression-testing skill checklist
 
 ---
 
@@ -296,60 +268,6 @@ For mock-related anti-patterns, see [references/testing-anti-patterns.md](refere
 
 ---
 
-## OpenGL Visual Testing: What Can and Cannot Be Tested Automatically
-
-OpenGL rendering is an inherently visual process. Pixel output depends on GPU drivers, platform, and rendering state that unit tests cannot fully capture. This section defines the testing boundary.
-
-### What MockOpenGL CAN test (unit tests — TDD applies fully)
-
-- Shader compilation logic (uniform locations, program linking)
-- Buffer creation and binding sequences (VAO, VBO, EBO)
-- Draw call parameters (primitive type, index count, offset)
-- State machine transitions (depth test, blending, viewport)
-- Camera matrix calculations
-- Particle data loading and transformation
-- Any logic in `viewer_app`, `camera`, `shader` that doesn't produce pixels
-
-**TDD iron law applies here without exception.** Write the failing MockOpenGL test first.
-
-### What visual regression tests cover (NOT unit tests)
-
-- Final rendered pixel output
-- Color correctness and blending
-- Particle rendering at scale
-- UI overlay rendering
-
-**Visual regression tests are the safety net for pixel output.** However:
-- Baselines require **human approval** — an automated test cannot judge whether a new visual is "correct"
-- A visual regression test proves the output **hasn't changed**, not that it was correct to begin with
-- "It's all in the eye of the beholder" — accept this, and make baseline approval an explicit human step
-
-### TDD nuance for visual regression
-
-The TDD iron law (`NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST`) applies differently here:
-
-| Path | TDD rule |
-|------|----------|
-| Logic (MockOpenGL, unit tests) | Full RED-GREEN-REFACTOR. No exceptions. |
-| New visual baseline (first render) | Write the test framework first. Run it against no baseline (fail). Human approves the first baseline. THEN the test is green. |
-| Changing existing visual output | Delete the old baseline. Test fails. Implement the change. Human reviews the new diff. Approve new baseline. Green. |
-
-**Never auto-approve a visual baseline.** The human must look at the rendered output.
-
----
-
-
-
-| Type | Location | Purpose |
-|------|----------|---------|
-| `Image` | `src/Image.hpp` | RGBA pixel buffer with save/load (PPM, PNG) |
-| `ComparisonResult` | `src/testing/PixelComparator.hpp` | Match status, similarity, diff image |
-| `PixelComparator` | `src/testing/PixelComparator.hpp` | Pixel comparison engine |
-| `ImageFormat` | `src/Image.hpp` | Format enum (PPM, PNG) for Image::save/load |
-| `Particle` | `src/particle.hpp` | Production particle data (std::vector<glm::vec4>) |
-
----
-
 ## Test Size Taxonomy (SE@G Model)
 
 Apply this taxonomy when classifying tests and deciding where they belong:
@@ -382,9 +300,8 @@ Tests that mirror the implementation's structure detect nothing — they fail to
 
 Signal: if modifying the test file requires looking at the source file, the test is likely mirroring implementation structure. The test should be written from requirements, not from reading the implementation.
 
-- Ask if the user wants `EXPECT_*` (non-fatal) or `ASSERT_*` (fatal) assertions
-- For visual tests: recommend `0.0f` tolerance for synthetic data, `2.0f/255.0f` for GPU-rendered
-- If a test seems to test external library behavior, suggest focusing on the wrapper/integration instead
+- Use `EXPECT_*` (non-fatal) for most assertions; use `ASSERT_*` (fatal) only when a test cannot meaningfully continue after failure
+- If a test seems to test external library behavior, focus on the wrapper/integration instead
 - If Arrange and Act seem identical, the test might be a constructor test — put expected values in Arrange, constructor call in Act
 
 ---
