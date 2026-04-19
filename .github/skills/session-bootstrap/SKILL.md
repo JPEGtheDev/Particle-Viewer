@@ -84,16 +84,17 @@ If unsure, read `code-quality` — it applies to every code task.
 3. Load all required skills before writing a single line of code or sending a plan
 4. Announce each skill load: "I am using the [skill-name] skill to [purpose]."
 
-BEFORE PROCEEDING with any session work, verify:
-1. `honesty` invoked first — before any other skill
-2. Task type(s) identified from the On Start table above
-3. All required skills for this task type loaded (in parallel if multiple domains)
-4. Skill load announcement made for each loaded skill
-5. If resuming a prior session: SQL pending todos checked; Skeptic dispatched before first implementation step
-6. If this task requires reading 3+ files for research or review: an explore or code-review agent is dispatched for that work — NOT done inline
-7. Session hooks checked: if sessionStart or userPromptSubmitted hook failed, all skills MUST be invoked manually this session — no auto-loading is available
+## BEFORE PROCEEDING
 
-✓ All 7 met → proceed with session work
+- [ ] `honesty` invoked first — before any other skill
+- [ ] Task type(s) identified from the On Start table above
+- [ ] All required skills for this task type loaded (in parallel if multiple domains)
+- [ ] Skill load announcement made for each loaded skill
+- [ ] If resuming a prior session: SQL pending todos checked; Skeptic dispatched before first implementation step
+- [ ] If this task requires reading 3+ files for research or review: an explore or code-review agent is dispatched — NOT done inline
+- [ ] Session hooks checked: if sessionStart or userPromptSubmitted hook failed, all skills MUST be invoked manually this session — no auto-loading is available
+
+✓ All met → proceed with session work
 ✗ Any unmet → complete the unmet step now before writing code or sending a plan
 
 ---

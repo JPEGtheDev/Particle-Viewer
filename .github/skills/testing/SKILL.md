@@ -209,8 +209,8 @@ Before presenting tests, verify:
 - [ ] Tests compile and pass
 - [ ] For visual regression tests: see visual-regression-testing skill checklist
 
-✓ All 10 met → proceed to write/run tests
-✗ Any unmet → resolve the unmet condition before presenting tests to the user
+✓ All met → proceed
+✗ Any unmet → write the test first before touching implementation code
 
 ---
 
@@ -249,7 +249,7 @@ If you catch yourself thinking any of these, STOP and start over with RED:
 
 ## Key Design Principles (Learned from Review Feedback)
 
-1. **Use production classes in tests.** Visual regression tests should use `Particle` directly instead of re-implementing particle creation logic in a test helper class. This ensures tests stay in sync with production code.
+1. **Use production classes in tests.** Visual regression tests MUST use `Particle` directly instead of re-implementing particle creation logic in a test helper class. This ensures tests stay in sync with production code.
 
 2. **Group related data into POCOs/structs.** When a test or test helper has many flat member variables, group them into domain-specific structs (e.g., `RenderConfig`, `CameraSetup`). This mirrors the production code pattern.
 

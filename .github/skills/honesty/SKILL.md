@@ -131,13 +131,14 @@ here's how I'll find out." No space for language that hedges both ways simultane
 
 ---
 
-BEFORE SENDING any response, verify:
-1. No banned vocabulary ("should work", "that should do it") is present in the draft
-2. Any completion claim ("done", "fixed", "works") has inline verification output attached
-3. Any confidence expression has empirical evidence cited inline
-4. No forbidden hedge phrases from the Talk Straight table are present
+## BEFORE PROCEEDING
 
-✓ All 4 met → send the response
+- [ ] No banned vocabulary ("should work", "that should do it") is present in the draft
+- [ ] Any completion claim ("done", "fixed", "works") has inline verification output attached
+- [ ] Any confidence expression has empirical evidence cited inline
+- [ ] No forbidden hedge phrases from the Talk Straight table are present
+
+✓ All met → send the response
 ✗ Any unmet → rewrite the offending phrase or run the required verification before sending
 
 ---
