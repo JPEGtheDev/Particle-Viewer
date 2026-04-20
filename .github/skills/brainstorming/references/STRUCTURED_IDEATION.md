@@ -95,6 +95,35 @@ Anti-patterns to avoid in skill and doc files: unresolved debate left as prose, 
 
 ---
 
+## Six Thinking Hats (Structured Multi-Mode Decision-Making)
+
+When a design decision has strong advocates on multiple sides, use a structured thinking-modes sweep before deciding. The six modes:
+
+- **Facts (White):** What do we know? What information is missing?
+- **Feelings (Red):** What are the intuitions and gut reactions, without justification?
+- **Caution (Black):** What are the risks and things that could go wrong?
+- **Optimism (Yellow):** What are the benefits and things that could go right?
+- **Creativity (Green):** What alternatives have not been considered?
+- **Process (Blue):** How should we decide? What is the decision-making structure?
+
+The value is separating modes, not combining them. When everyone is in "caution mode" simultaneously, optimism is suppressed. When someone is in "creativity mode" and another is in "caution mode," they talk past each other. Run each hat sequentially; record the output before moving to the next. Source: C2 Wiki "SixThinkingHats".
+
+---
+
+## Brainstorm Protocol (Postpone Judgment)
+
+The generation phase and the evaluation phase must be strictly separated. During generation: no idea is evaluated — only recorded. Premature criticism kills generative thinking; the generator starts self-censoring and quantity drops. Dispatch a Skeptic Agent after generation, not during.
+
+Four rules for the generation phase:
+1. Postpone judgment — no evaluation, no "yes but", no "that won't work"
+2. Quantity breeds quality — the best idea is usually idea #17, not idea #3
+3. Hitchhike — build on others' ideas without owning them
+4. Register everything — no idea is too obvious or too silly to record
+
+After generation is complete: switch modes. Apply the Six Thinking Hats or a Skeptic Agent to evaluate the recorded ideas against constraints. Source: C2 Wiki "BrainStorm".
+
+---
+
 ## Related Skills
 
 - `brainstorming` — hard gate: load before any design with unclear approach
