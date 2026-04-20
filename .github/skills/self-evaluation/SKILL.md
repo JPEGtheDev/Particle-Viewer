@@ -205,6 +205,18 @@ Produce a brief summary of lessons captured:
 
 ---
 
+## Objectivity Block Is Structural
+
+Humans are structurally poor at evaluating their own work. The block is not a personal failing — it is an architectural constraint of human cognition. The response is not "try harder to be objective" but "use structural mechanisms that bypass the block":
+
+- Dispatch a separate reviewer agent rather than self-reviewing
+- Compare against the requirements written before the work began, not a remembered version
+- Use a checklist created before the session, not reconstructed from memory after it
+
+The corollary for session self-evaluation: the self-evaluation block applies here too. The evaluation in this section is imperfect by construction. Use it to surface what you can, knowing that a separate postmortem reviewer will catch what you cannot. Source: C2 Wiki "HumansAreLousyAtSelfEvaluation".
+
+---
+
 ## Red Flags — STOP
 
 If you catch yourself thinking any of these, stop and follow the rule:
