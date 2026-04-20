@@ -86,6 +86,38 @@ To evaluate whether a function is too long: memorize a chunk of it, close the fi
 
 YAGNI (You Are Not Going to Need It) governs feature additions — not refactoring, not naming, not structural clarity. Once and Only Once and YAGNI sit at opposite ends of a continuum. Refactoring moves code between them. Clean structure is foundational, not optional.
 
+## Global State Is a Smell
+
+A global variable is a hidden parameter to every function that reads it and a hidden side effect in every function that writes it. When code breaks after a change that "shouldn't have touched anything," a global is usually implicated. If shared state is required, make it explicit: pass it as a parameter, or encapsulate it in a single owner. Source: C2 Wiki "GlobalVariablesAreBad".
+
+## Do No Harm
+
+Every change to working code carries a risk. Before making a change, establish that it is necessary. "This could be better" is not sufficient justification. The burden of proof is on the change, not on the status quo. Source: C2 Wiki "FirstDoNoHarm".
+
+## What You Produce, Others Consume
+
+Code is not written for the compiler — it is written for the next person who reads it. That person is frequently yourself in three months. Optimize for readability by the reader, not for cleverness by the writer. Source: C2 Wiki "CodeForTheMaintainer".
+
+## Essential vs Accidental Complexity
+
+Essential complexity is inherent in the problem. Accidental complexity is introduced by the solution. Every line of code, every abstraction layer, every framework dependency is a cost. Justify each by pointing to the essential complexity it addresses. If you cannot, it is accidental and should be removed. Source: C2 Wiki "EssentialComplexity" / "AccidentalComplexity".
+
+## Actionable Error Messages
+
+An error message that says "something went wrong" forces the reader to reproduce the problem to diagnose it. An actionable error message says: what happened, what data caused it, and what the caller should do. Write every error message as if the only person reading it is a tired engineer at 2am with no access to the source code. Source: C2 Wiki "ActionableMistakeNotice".
+
+## No Clever Code
+
+Clever code is code that requires the reader to hold a mental model not derivable from the code's structure or names. Clever code is not a compliment — it is a future maintenance cost. If a solution requires a comment to explain its mechanism, replace it with a solution that does not. Source: C2 Wiki "CleverCode".
+
+## BandAid Anti-Pattern
+
+A BandAid fix applies a patch at the symptom site without addressing the origin of the problem. Signs: the fix must be applied in multiple places; the fix requires a comment explaining why it exists; the fix breaks under edge cases the original bug did not trigger. When a fix requires touching more than two callsites, stop — find the origin. Diagnostic use: see systematic-debugging/references/DEBUGGING_TACTICS.md — BandAid Detection. Source: C2 Wiki "BandAidSolution".
+
+## Bloated Reuse
+
+Reuse is not inherently good. A reused component that carries more dependencies than the caller needs is an anchor: it slows builds, creates implicit coupling, and forces unrelated upgrades. Prefer duplication of small, stable code over reuse of large, unstable components. Source: C2 Wiki "ReusabilitySmell".
+
 ---
 
 ## Related Skills
