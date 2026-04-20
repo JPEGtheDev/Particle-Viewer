@@ -84,6 +84,9 @@ Skills are organized into **DDD bounded contexts**. Sub-domain skills (e.g., `vi
 | `visual-regression-testing` | `.github/skills/visual-regression-testing/` | ↳ OpenGL visual testing boundary, baseline approval, tolerance, camera framing |
 | `code-quality` | `.github/skills/code-quality/` | clang-format, clang-tidy, naming conventions, pre-commit — routes to cpp-patterns |
 | `cpp-patterns` | `.github/skills/cpp-patterns/` | ↳ GL resource management, SDL3 gotchas, DRY, Broken Window, Deprecation, Docs-Same-Commit |
+| `contract-testing` | `.github/skills/contract-testing/` | ↳ Contract verification for every abstract type and interface |
+| `cpp-safety` | `.github/skills/cpp-safety/` | ↳ Scope-bound resource ownership, exception safety, destructor rules |
+| `oop-principles` | `.github/skills/oop-principles/` | ↳ Is-A/Has-A gate, SOLID check before any class hierarchy |
 | `verification-before-completion` | `.github/skills/verification-before-completion/` | Evidence-first verification before every completion claim or commit |
 | `systematic-debugging` | `.github/skills/systematic-debugging/` | Root cause investigation protocol for bugs, failures, and errors |
 

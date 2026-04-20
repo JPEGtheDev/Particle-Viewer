@@ -62,6 +62,12 @@ Use this skill for every one of these situations:
 
 Each phase MUST be completed in order.
 
+### Phase 0: Write the Problem Down First
+
+Before touching any tool, write one precise sentence describing the failure: what is failing, what was expected, and what actually happened. Vague problem statements produce vague investigations. If you cannot write the sentence, you do not yet understand the problem well enough to investigate it.
+
+See `references/DEBUGGING_TACTICS.md` for the full Feynman Algorithm and structured tactic selection.
+
 ### Phase 1: Root Cause Investigation
 
 - Read the error message **completely** — do not skim the last line and assume you understand it

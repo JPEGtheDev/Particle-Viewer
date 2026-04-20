@@ -262,3 +262,4 @@ If you catch yourself thinking any of these, stop and follow the rule:
 - clang-tidy config: `.clang-tidy`
 - Commit format: `versioning` skill (`.github/skills/versioning/`)
 - Testing patterns: `testing` skill (`.github/skills/testing/`)
+- Design principles: `references/DESIGN_PRINCIPLES.md` — Kent Beck's 4 rules, essential vs accidental complexity, code smell catalog, actionable error messages

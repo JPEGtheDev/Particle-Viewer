@@ -45,6 +45,8 @@ This skill is **mandatory** — `copilot-instructions.md` § Session Lifecycle r
 
 Every session produces insights that can improve future agent effectiveness. Capture these systematically.
 
+**Objectivity block:** Agents and humans are structurally poor at evaluating their own work. This is not a character flaw — it is a known bias. The explicit steps below exist to override it. Skipping steps because "it went well" is the bias asserting itself.
+
 ---
 
 ## Step 1: Review the Session

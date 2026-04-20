@@ -206,3 +206,9 @@ If the task spans **2+ independent subsystems** (different architectural layers,
 - Handing off to `writing-plans` with any gap in the Design Decision Record → STOP. Fill the gap.
 - "TBD" appearing anywhere in the Design Decision Record → STOP. Resolve it.
 - Proceeding to implementation because the scope "feels clear enough" → STOP. Run the gate. Feelings are not evidence.
+
+---
+
+## References
+
+- Structured ideation protocols: `references/STRUCTURED_IDEATION.md` — Six Thinking Hats table, BrainStorm two-phase protocol (generation separate from evaluation)

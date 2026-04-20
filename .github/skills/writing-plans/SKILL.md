@@ -198,3 +198,9 @@ Present plan to user — WAIT for explicit approval
     ↓
 Begin execution (invoke execution skill)
 ```
+
+---
+
+## References
+
+- Simplicity principles and dimensions: `references/SIMPLICITY_PRINCIPLES.md` — Simplest Thing gate, dimensions of simplicity table, assign problems not tasks

@@ -217,3 +217,11 @@ These smells are not caught by clang-tidy. Catch them in code review.
 | "Docs can be updated separately" | Stale docs mislead the next developer. Same commit is the rule. |
 | "It's a transitive include, it works" | Transitive includes break when source headers change. Be explicit. |
 | "Removing the call site is enough to remove the feature" | If the Camera method is architecturally valid, keep it. Only the call site was user preference. |
+
+---
+
+## Related Skills
+
+- `cpp-safety` — sub-domain skill; destructor must not throw and every resource must have a scope-bound owning guard — load this skill when the class owns any resource
+- `code-quality` — clang-format and naming conventions; cpp-patterns covers structural patterns, code-quality covers form
+- `oop-principles` — sub-domain skill; run Is-A / Has-A and SOLID gate before any new inheritance in C++ code

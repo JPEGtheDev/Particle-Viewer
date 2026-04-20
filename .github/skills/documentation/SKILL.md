@@ -55,6 +55,10 @@ Required fields: `title`, `description`, `domain`, `subdomain`, `tags`, `related
 
 Every doc file MUST end with a `## Related` section with at least one annotated link.
 
+### Document Mode vs Thread Mode
+
+All files in `docs/` MUST be **Document Mode** — readable independently, with no assumed conversational context. **Thread Mode** writing (responses that only make sense inside a conversation) belongs in chat, not in documentation. If a paragraph requires "as discussed above" or "in the previous message," it is Thread Mode. Rewrite it or cut it.
+
 ### Formatting Standards
 
 1. Use markdown for all documentation

@@ -94,6 +94,8 @@ For **low signal / noise**: ask for specifics. If no specifics come, treat as re
 
 ## The Disagreement Protocol
 
+**Attack ideas, not people.** Disagreement is about the code or the approach — never about the reviewer. Phrase every counter-argument as "this approach has [consequence]", not "you are wrong."
+
 When you genuinely believe a reviewer is wrong:
 
 1. **State your counter-argument directly.** "I disagree because [specific reason]."

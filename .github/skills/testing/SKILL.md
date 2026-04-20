@@ -338,3 +338,11 @@ Signal: if modifying the test file requires looking at the source file, the test
 ## CI Pipeline Rules
 
 For CI workflow rules (artifact uploads, permissions, PR comments), see the `workflow` skill (`.github/skills/workflow/`).
+
+---
+
+## Related Skills
+
+- `contract-testing` — sub-domain skill; every abstract type or interface requires a contract test fixture — load this skill when the type has 2+ implementations
+- `visual-regression-testing` — sub-domain skill; pixel-level output testing boundary; unit and contract tests do not replace visual regression
+- `code-quality` — clang-format and naming conventions apply to test code too
