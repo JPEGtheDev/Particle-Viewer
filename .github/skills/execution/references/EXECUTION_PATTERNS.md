@@ -39,6 +39,54 @@ Do not use technical debt as a rationalization for low-quality work. Use it only
 
 ---
 
+## Technical Debt Tracking Practices
+
+Marking debt inline (see Technical Debt Visibility above) is necessary but not sufficient. Individual inline markers are invisible to planning until someone reads every file. Close the loop with a tracked list.
+
+Practices:
+- Maintain a **Technical Debt List** — a centralized tracked list of known shortcuts, workarounds, and structural problems. Each entry names the debt, its impact, and the effort required to repay it.
+- Reference the debt list in planning. Debt that never appears in planning is debt that never gets repaid.
+
+Invisible debt compounds. Inline markers make it discoverable; the debt list makes it plannable.
+
+---
+
+## Relentless Testing as Integration Prerequisite
+
+Integration of any change into the shared codebase requires that all tests pass. This is not optional. A failing test on the integration branch means the branch is broken for everyone until it is fixed.
+
+"Relentless testing" means:
+- Tests run before every integration, not just before release
+- A failing test stops integration — it is not merged around, deferred, or silenced
+- The test suite is fast enough that developers run it habitually
+
+The cost of a broken integration is shared by the whole team. The cost of running the tests belongs to one developer. Keep that asymmetry in mind.
+
+---
+
+## Atomic Refactoring Steps
+
+Each refactoring step must leave the system in a working state. Never accumulate multiple refactoring changes across a session before verifying. After each step:
+1. Build succeeds
+2. All tests pass
+3. Behavior is identical to before the step
+
+Breaking refactoring into atomic steps makes it reversible at any point. If a step breaks the build, revert immediately — do not attempt to fix forward. Small steps with frequent verification are always safer than large restructuring with deferred verification.
+
+---
+
+## Refactoring Friction as Signal
+
+If a refactoring feels expensive, risky, or requires extensive coordination, that friction is information — not a reason to skip the refactoring. High friction signals:
+- Tight coupling that should be loosened
+- Missing abstractions that make changes ripple
+- Inadequate test coverage that makes changes risky
+- Unclear ownership that requires coordination
+
+Address the source of friction rather than working around it. A system that is hard to refactor is a system that is accumulating structural debt.
+
+---
+
 ## Related Skills
 
 - `execution` — work loop, commit rhythm, mode declaration
