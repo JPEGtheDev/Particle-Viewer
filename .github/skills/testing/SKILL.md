@@ -293,7 +293,7 @@ If you catch yourself thinking any of these, STOP and start over with RED:
 
 After completing test work, run the `self-evaluation` skill (`.github/skills/self-evaluation/`) to capture any new testing patterns learned during the session.
 
-For mock-related anti-patterns, see [references/testing-anti-patterns.md](references/testing-anti-patterns.md).
+For mock-related anti-patterns, see [references/testing-anti-patterns.md](references/testing-anti-patterns.md). For test smells across any language, see [references/TEST_SMELLS.md](references/TEST_SMELLS.md).
 
 ---
 
