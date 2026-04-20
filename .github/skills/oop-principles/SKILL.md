@@ -19,7 +19,7 @@ YOU MUST run the Is-A / Has-A gate and verify all five SOLID principles before a
 
 ## BEFORE PROCEEDING
 
-- [ ] Is this a new `class B : public A` relationship?
+- [ ] Is this a new inheritance relationship (B extends A)?
 - [ ] Does B pass a substitution test — can any code accepting A accept B without behavioral change?
 - [ ] Does the proposed hierarchy satisfy all five SOLID principles?
 ✓ All met → proceed  ✗ Any unmet → use composition or redesign

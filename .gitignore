@@ -49,4 +49,5 @@ artifacts/
 diffs/
 
 # Scratch directory for temporary agent/research data
-scratch/
+scratch/.worktrees/
+.worktrees/
