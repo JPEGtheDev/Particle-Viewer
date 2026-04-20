@@ -39,16 +39,15 @@ Do not use technical debt as a rationalization for low-quality work. Use it only
 
 ---
 
-## Make Technical Debt Visible
+## Technical Debt Tracking Practices
 
-Technical debt that is invisible is unmanageable. When debt is hidden, teams underestimate project complexity, stakeholders make uninformed decisions, and the code rots silently.
+Marking debt inline (see Technical Debt Visibility above) is necessary but not sufficient. Individual inline markers are invisible to planning until someone reads every file. Close the loop with a tracked list.
 
 Practices:
-- Maintain a **Technical Debt List** — a tracked list of known shortcuts, workarounds, and structural problems. Each entry names the debt, its impact, and the effort required to repay it.
+- Maintain a **Technical Debt List** — a centralized tracked list of known shortcuts, workarounds, and structural problems. Each entry names the debt, its impact, and the effort required to repay it.
 - Reference the debt list in planning. Debt that never appears in planning is debt that never gets repaid.
-- Add inline comments that name the debt explicitly: `// DEBT: this bypasses validation — see debt list #42`
 
-Invisible debt compounds. Making it visible is the first step toward repaying it.
+Invisible debt compounds. Inline markers make it discoverable; the debt list makes it plannable.
 
 ---
 
