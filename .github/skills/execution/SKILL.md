@@ -254,6 +254,8 @@ After any mistake or user correction:
 
 ## Quick Reference
 
+**Execution patterns (Profile Before Optimizing, Assign Problems Not Tasks, Technical Debt Visibility):** `.github/skills/execution/references/EXECUTION_PATTERNS.md`
+
 ```
 Task arrives
     ↓
