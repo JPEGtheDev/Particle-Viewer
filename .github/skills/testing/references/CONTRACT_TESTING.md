@@ -103,6 +103,18 @@ In practice: integrate tests into the build target so `cmake --build build` also
 
 ---
 
+## Unit Tests as Specification Constraints
+
+Unit tests are not just regression guards — they are programmer-defined compile-time constraints expressed at runtime. A test that cannot fail is not a test; it is a comment. When you write a test, you are asserting that a specific behavior is permanently required. Future implementers must not change the behavior; they must pass the constraint. Source: C2 Wiki "UnitTestsThatDontBreak".
+
+## Acceptance Test vs Unit Test Boundary
+
+Acceptance tests verify behavior from the outside (user-visible outcomes, system boundaries). Unit tests verify behavior from the inside (individual unit contracts). Never use an acceptance test where a unit test suffices — acceptance tests are slower and hide the specific locus of failure. Never use a unit test to verify acceptance criteria — the test may pass while the user-visible behavior is broken. The boundary is: does this test require the full system? If yes, it is an acceptance test. Source: C2 Wiki "AcceptanceTests".
+
+## Code So Simple It Has To Work
+
+Before adding a test for a trivial function, ask: "Is this code so simple that it visibly has to work?" If yes, the test adds maintenance cost without adding verification value. Apply this test to rule out tautological tests. The criteria: (a) zero branching, (b) no external dependencies, (c) behavior is visible from the name and signature alone. If all three hold, a test is optional. Source: C2 Wiki "CodeSmells" / "DoTheSimplestThingThatCouldPossiblyWork".
+
 ## Related Skills
 
 - `contract-testing` — iron law: every abstract type requires a contract test fixture
