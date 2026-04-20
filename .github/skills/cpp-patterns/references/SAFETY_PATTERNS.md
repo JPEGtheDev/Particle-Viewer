@@ -10,15 +10,22 @@ Combines pointer-to-implementation with a static null object for safe default st
 
 ```cpp
 class Animal {
-    struct Impl { virtual void speak() = 0; virtual ~Impl() = default; };
-    struct NullImpl : Impl { void speak() override {} };
-    static NullImpl& nullImpl() { static NullImpl n; return n; }
+    struct Impl {
+        virtual void speak() = 0;
+        virtual Impl* clone() const = 0;
+        virtual ~Impl() = default;
+    };
+    struct NullImpl : Impl {
+        void speak() override {}
+        NullImpl* clone() const override { return &instance(); }
+        static NullImpl& instance() { static NullImpl n; return n; }
+    };
 
     Impl* impl;
 public:
-    Animal() : impl(&nullImpl()) {}
-    Animal(const Animal& o) : impl(o.impl == &nullImpl() ? &nullImpl() : o.impl->clone()) {}
-    ~Animal() { if (impl != &nullImpl()) delete impl; }
+    Animal() : impl(&NullImpl::instance()) {}
+    Animal(const Animal& o) : impl(o.impl == &NullImpl::instance() ? &NullImpl::instance() : o.impl->clone()) {}
+    ~Animal() { if (impl != &NullImpl::instance()) delete impl; }
     void speak() { impl->speak(); }
 };
 ```
@@ -73,9 +80,9 @@ This restores testability and removes hidden coupling.
 
 ## Speculative Inheritance Hazard
 
-Template meta-hierarchies (CRTP base classes) and deep virtual hierarchies created before three or more real, concrete variants exist are structural debt. The cost: indirection, harder debugging, compile-time complexity.
+See `architecture-review/references/OOP_PRINCIPLES.md — Speculative Hierarchy Anti-Pattern` for the hierarchy design rule.
 
-Rule: introduce a base class only when real polymorphism need is proven by three or more concrete types actively in use. Resist the "what if" base class.
+C++-specific note: CRTP-based template hierarchies compound the hazard — they add compile-time complexity and harder debugging on top of the structural debt. Resist CRTP-style base classes until three or more real, concrete variants are actively in use.
 
 ---
 

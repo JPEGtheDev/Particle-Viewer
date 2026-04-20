@@ -33,7 +33,7 @@ Nouns name objects. Verbs name methods with side effects. Adjectives name decora
 
 ```cpp
 bool deviceIsPoweredOn();           // boolean accessor reads as predicate
-void takeItemsFrom(int n, List& l); // verb + preposition signals ownership transfer
+void takeItemsFrom(int n, std::vector<Item>& source); // verb + preposition signals ownership transfer
 window.moveTo(targetPoint);         // subject.verb(object)
 ```
 

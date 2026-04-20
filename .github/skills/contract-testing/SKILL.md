@@ -32,22 +32,9 @@ YOU MUST write a contract test fixture before shipping any interface with multip
 
 A contract test describes the behavioral invariants all implementations must satisfy. Violating a contract test violates the Liskov Substitution Principle.
 
-```cpp
-class IOpenGLContextContractTest : public ::testing::Test {
-protected:
-    virtual std::unique_ptr<IOpenGLContext> createContext() = 0;
-    void SetUp() override { context_ = createContext(); }
-    std::unique_ptr<IOpenGLContext> context_;
-};
+Use `TYPED_TEST_P` — not `TEST_F` — because `TEST_F` instantiates the fixture class directly and will not compile against a pure-virtual base. See `references/CONTRACT_TESTING.md` for the full `TYPED_TEST_P` / `INSTANTIATE_TYPED_TEST_SUITE_P` pattern.
 
-TEST_F(IOpenGLContextContractTest, Clear_DoesNotThrow) {
-    EXPECT_NO_THROW(context_->Clear(0, 0, 0, 1));
-}
-```
-
-Each concrete implementation runs the full contract fixture. A failing contract test means the hierarchy is wrong — fix the hierarchy, not the test.
-
-See `references/CONTRACT_TESTING.md` for full patterns and examples.
+A failing contract test means the hierarchy is wrong — fix the hierarchy, not the test.
 
 ---
 
@@ -55,16 +42,15 @@ See `references/CONTRACT_TESTING.md` for full patterns and examples.
 
 | Excuse | Reality |
 |---|---|
-| "Integration tests cover the contract" | Integration tests verify composition, not behavioral invariants. Contract tests are explicit. |
-| "There is only one implementation" | Write the fixture when the interface is defined. A second implementation arrives later. |
-| "The interface is simple, nothing to test" | Simple interfaces still have invariants (no-throw, non-null return, state preconditions). |
+| "Integration tests cover the contract" | Integration tests verify composition, not behavioral invariants. |
+| "There is only one implementation" | Write the fixture now. A second implementation arrives later. |
+| "The interface is simple, nothing to test" | Simple interfaces still have invariants (no-throw, non-null return). |
 | "The mock already tests the behavior" | Mocks verify interactions, not behavioral contracts. Both are needed. |
-| "I'll add contract tests when a bug appears" | A contract test prevents the bug. Adding it after means the protection was absent when it was needed. |
 
 ---
 
 ## Related Skills
 
-- [`testing`](.github/skills/testing/) — parent skill; Test Doubles taxonomy, the "saw the test fail" gate, and the AAA naming pattern all apply here
-- [`oop-principles`](.github/skills/oop-principles/) — sibling skill; contract tests directly enforce Liskov Substitution — run the Is-A / Has-A gate first
-- [`architecture-review`](.github/skills/architecture-review/) — sibling skill; interfaces with contract tests must also pass layer boundary review
+- [`testing`](.github/skills/testing/) — parent skill; Test Doubles taxonomy, saw-the-test-fail gate, AAA naming
+- [`oop-principles`](.github/skills/oop-principles/) — sibling; contract tests enforce Liskov Substitution
+- [`architecture-review`](.github/skills/architecture-review/) — sibling; interfaces also need layer boundary review

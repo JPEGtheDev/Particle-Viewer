@@ -82,9 +82,9 @@ Test coverage is one form of white-box testing, but not the only one. Structural
 
 ## Virtual Functions Across Process Boundaries
 
-Polymorphic objects with vtable pointers are invalid across process boundaries. The vtable pointer references memory in the originating process's address space — passing it via shared memory to another process causes a segfault.
+See `cpp-patterns/references/SAFETY_PATTERNS.md — Virtual Functions and Shared Memory Hazard` for full structural explanation.
 
-**Detection:** segfault on first virtual method call when object was received via IPC.
+**Detection signal:** segfault on first virtual method call when the object was received via IPC — the vtable pointer is invalid in the receiving process's address space.
 **Fix:** serialize to a plain-data structure on the sending side; reconstruct the polymorphic object on the receiving side.
 
 ---

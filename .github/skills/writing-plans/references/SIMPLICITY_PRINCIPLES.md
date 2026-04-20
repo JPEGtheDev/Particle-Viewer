@@ -77,13 +77,13 @@ Do not refactor toward a theoretical canonical form. Do not refactor stable code
 
 ## One Active Failing Test
 
-During implementation, maintain exactly one failing test at a time. When a test reveals that more tests are needed, write their names in a list — do not activate them all simultaneously. Work through the list one entry at a time.
+See `testing/references/CONTRACT_TESTING.md — One Active Failing Test` for the full rule.
 
-Planning implication: one active implementation todo at a time. Completing todos serially, with verification at each step, is faster than parallel activation of many unfinished tasks.
+Planning implication: one active implementation todo at a time. Completing todos serially, with verification at each step, is faster than parallel activation of many unfinished tasks. Stack future test names; do not activate them simultaneously.
 
 ---
 
-## Working Code Is Not Optional to Refactor
+## Do Not Refactor Stable Code Speculatively
 
 Refactor only when fixing a bug or adding a feature. Working, stable code that does not block forward progress is not a refactoring target — maintenance cost is real, not theoretical.
 

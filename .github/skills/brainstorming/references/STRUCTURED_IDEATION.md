@@ -49,7 +49,7 @@ Adapt the literary writers' workshop format for design and code review:
 2. **Author is silent:** the author observes while others discuss; does not defend
 3. **Summarize first:** one reviewer restates the work's intent in their own words — confirms understanding before critique
 4. **Positive feedback first:** state what works well and why
-5. **Suggestions for improvement:** frame as questions ("I wondered if...") not directives
+5. **Suggestions for improvement:** frame as conditional observations rather than judgments ("If the intent is X, this approach limits Y") — not directives, not unqualified verdicts. (Note: "I wondered if..." phrasing is for human collaborative workshops only — agent code review output must remain direct per the code-quality skill.)
 6. **Author responds last:** addresses clarifications only, not defenses
 
 The goal is learning, not verdict. This format reduces defensive responses and surfaces signal that direct critique suppresses.
@@ -87,17 +87,11 @@ The source code is the design. Minimal artifacts, maximum feedback. Long feedbac
 
 ---
 
-## Wiki / Knowledge Base Design Principles (Ward Cunningham)
+## Wiki / Knowledge Base Design Principles
 
-For any collaborative knowledge base (skills, documentation, wiki):
+See `documentation/references/` for documentation conventions. The principles for collaborative knowledge systems: Simple (low friction), Observable (visible diffs), Convergent (duplication removed), Tolerant (imperfect contributions welcome), Precise (titles answer the question they ask).
 
-- **Simple:** low friction to contribute; no complex markup required
-- **Observable:** changes are visible; diffs are readable
-- **Convergent:** duplication is recognized and removed over time
-- **Tolerant:** imperfect contributions are welcome; the system improves them
-- **Precise:** titles are unambiguous; content answers the question the title asks
-
-Anti-patterns: ThreadMode prose (unresolved debate left in the document), WalledGardens (information only accessible to insiders), VerbalDiarrhea (more words than content).
+Anti-patterns to avoid in skill and doc files: unresolved debate left as prose, information only accessible to insiders, more words than content.
 
 ---
 

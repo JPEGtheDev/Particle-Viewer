@@ -9,36 +9,36 @@ Source: Ward Cunningham's C2 wiki audit — patterns for writing tests against i
 Write a test fixture for the abstract type using a minimal mock implementation. This test fixture becomes the contract: every concrete subclass must pass it.
 
 ```cpp
-// Abstract fixture — tests the interface contract
+// Abstract typed fixture — parameterised over each concrete implementation
+template <typename T>
 class IOpenGLContextTest : public ::testing::Test {
 protected:
-    virtual IOpenGLContext* makeContext() = 0;
-    IOpenGLContext* ctx;
-    void SetUp() override { ctx = makeContext(); }
+    void SetUp() override { ctx_ = std::make_unique<T>(); }
+    std::unique_ptr<IOpenGLContext> ctx_;
 };
 
-// Concrete fixture — inherits all contracts, adds specifics
-class MockGLContextTest : public IOpenGLContextTest {
-    IOpenGLContext* makeContext() override { return new MockOpenGLContext(); }
-};
+TYPED_TEST_SUITE_P(IOpenGLContextTest);
+
+TYPED_TEST_P(IOpenGLContextTest, Clear_DoesNotThrow) {
+    EXPECT_NO_THROW(ctx_->Clear(0, 0, 0, 1));
+}
+
+REGISTER_TYPED_TEST_SUITE_P(IOpenGLContextTest, Clear_DoesNotThrow);
+
+// Instantiate once per concrete type — all contract tests run automatically:
+using GLContextImpls = ::testing::Types<MockOpenGLContext>;
+INSTANTIATE_TYPED_TEST_SUITE_P(AllImpls, IOpenGLContextTest, GLContextImpls);
 ```
 
-If any inherited test is inappropriate for a concrete subclass, that signals the behavior does not belong in the base type — redesign the hierarchy.
+`std::unique_ptr` owns the context — no manual `TearDown` required. If any inherited test is inappropriate for a concrete subclass, that signals the behavior does not belong in the base type — redesign the hierarchy.
 
 ---
 
 ## Two-Phase Composite Operation
 
-In any composite operation: **validate ALL children first, then execute ALL children.** Never interleave validate and execute.
+Validate all children before executing any. See `cpp-patterns/references/SAFETY_PATTERNS.md — Two-Phase Composite for GL State Safety` for the full C++ example.
 
-```
-composite.validate()   // side-effect-free; returns true/false
-composite.execute()    // only called after all validate() calls pass
-```
-
-`validate()` must be idempotent and free of side effects. This prevents partial-state corruption when validation fails mid-sequence.
-
-Applies directly to: multi-draw-call batches, particle constraint resolution, shader pipeline setup.
+Behavioral contract angle: `validate()` must be idempotent and free of side effects. If validation raises an error, no execution has occurred — the system is in its original state. Test `validate()` and `execute()` independently.
 
 ---
 
