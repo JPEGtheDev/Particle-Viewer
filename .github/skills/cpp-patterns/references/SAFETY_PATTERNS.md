@@ -134,6 +134,71 @@ Prefer `std::weak_ptr` over raw pointers for non-owning references to managed ob
 
 ---
 
+## No Exceptions in Destructor
+
+Destructors must not throw. Throwing from a destructor during stack unwinding (when another exception is already active) calls `std::terminate` and kills the process.
+
+If a destructor contains code that can fail:
+1. Wrap it in `try/catch`
+2. Log the error — do not re-throw
+3. Complete the cleanup regardless
+
+For RAII resource types (GL buffer handles, texture handles, shader programs), this is a critical correctness constraint — the resource must be released even if the release encounters an error. Source: C2 Wiki "BewareOfExceptionsInTheDestructor".
+
+---
+
+## Non-Virtual Interface (Template Method in C++)
+
+The Template Method pattern in C++ is implemented via the Non-Virtual Interface idiom:
+- The **public method** is non-virtual: it defines the algorithm skeleton
+- The **virtual methods** it calls are protected: they define the overridable steps
+
+```cpp
+class Renderer {
+public:
+    void render() {           // non-virtual: skeleton
+        preRender();
+        doRender();           // virtual: step subclasses override
+        postRender();
+    }
+protected:
+    virtual void doRender() = 0;
+    virtual void preRender() {}
+    virtual void postRender() {}
+};
+```
+
+This prevents subclasses from bypassing the algorithm skeleton (pre/post hooks always fire) while still allowing step customization. Prefer NVI over making public methods virtual. Source: C2 Wiki "TemplateMethodPattern".
+
+---
+
+## Command-Query Separation in OpenGL Code
+
+A method either returns a value (Query) or changes state (Command) — not both.
+
+In OpenGL code:
+- **Commands** (state-changing): `glBindVertexArray`, `glUseProgram`, `glBufferData` — no return value expected
+- **Queries** (state-reading): `glGetIntegerv`, `glGetError`, shader uniform lookups — no side effects expected
+
+Mixing them in a single function (e.g., bind-and-return-previous-binding) requires extra caution and explicit documentation of the side effect. When a method must return a value AND change state, document the side effect at the declaration site, not just the implementation. Source: C2 Wiki "CommandQuerySeparation".
+
+---
+
+## Fail Fast
+
+Terminate immediately on encountering irrecoverable state corruption rather than allowing corrupt state to propagate. The purpose is to prevent damage and generation of incorrect output — not to maintain availability.
+
+C++ implementation:
+- `assert(condition)` for invariants that must hold in debug builds
+- `std::terminate()` for unrecoverable runtime state corruption
+- Structured logging before termination: record the failing condition, the last known good state, and the call context
+
+Distinguish: fail-fast on process state corruption; graceful handling on recoverable input data errors. Do not use `std::terminate` as a catch-all for bad input.
+
+See also: `systematic-debugging/references/DEBUGGING_TACTICS.md — Fail Fast` for the general principle. Source: C2 Wiki "FailFast".
+
+---
+
 ## Related Skills
 
 - `cpp-safety` — iron law: every resource is owned by a scope-bound guard; destructors never throw

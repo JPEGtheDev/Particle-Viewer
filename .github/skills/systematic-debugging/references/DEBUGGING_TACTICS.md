@@ -101,6 +101,58 @@ See `cpp-patterns/references/SAFETY_PATTERNS.md — Virtual Functions and Shared
 
 ---
 
+## Feynman Algorithm (Write It Down First)
+
+Before running a debugger, opening a code editor, or dispatching an agent: write down the problem.
+
+Write one paragraph containing:
+1. What was expected to happen
+2. What actually happened
+3. Where the divergence was first observed
+4. What you have already ruled out
+
+If you cannot write this paragraph, you do not understand the problem yet. Return to observation. The act of writing forces the precision that silent thought avoids. "Writing exposes what you don't know" — Feynman.
+
+Corollary: if a subagent cannot restate the problem in its own words at the start of its output, its diagnosis is likely to be wrong. Source: C2 Wiki "FeynmanAlgorithm".
+
+---
+
+## BandAid Detection (Fix vs. Root Cause)
+
+Before committing any fix, run the BandAid check:
+
+A **BandAid** addresses the symptom without removing the cause. Signals:
+- The fix works but requires a qualifier: "this shouldn't happen anyway"
+- The fix changes caller behavior: "callers should not pass null here"
+- The fix is not testable in isolation — it only works with specific surrounding state
+- A new symptom appears after the fix
+
+A **real fix** can be explained in terms of the root cause: "This failed because X; removing X prevents the failure."
+
+If you cannot explain the fix in terms of the root cause, stop. Find the root cause first. See also: `code-quality/references/DESIGN_PRINCIPLES.md — BandAid Anti-Pattern` for the design-level definition. Source: C2 Wiki "BandAid".
+
+---
+
+## RubberDucking (Explain the Problem Aloud)
+
+Explaining a problem to an external listener — a rubber duck, a colleague, or an agent — forces sufficient precision that the solution often becomes apparent without further investigation.
+
+Why it works: speaking (or writing for an imaginary listener) engages different cognitive processes than silent thought. The friction slows down racing assumptions. You must sequence the facts in a communicable order, which surfaces gaps you didn't notice.
+
+Writing an unsent message achieves most of the benefit without acoustic feedback.
+
+The test: "Once a problem is described in sufficient detail, its solution is obvious." If the solution is not obvious after describing the problem, the description is not yet detailed enough. Keep describing.
+
+Applied to agent-assisted debugging: prompt the agent to explain the problem before proposing a fix. The explanation pass replicates rubber-ducking at scale. Source: C2 Wiki "RubberDucking".
+
+---
+
+## Fail Fast
+
+Terminate immediately on encountering irrecoverable state corruption rather than allowing corrupt state to propagate. General principle; see `cpp-patterns/references/SAFETY_PATTERNS.md — Fail Fast` for C++ implementation details (assertions, `std::terminate`, structured logging).
+
+---
+
 ## Related Skills
 
 - `systematic-debugging` — four-phase root cause protocol; HeisenBug patterns
