@@ -120,6 +120,48 @@ Reuse is not inherently good. A reused component that carries more dependencies 
 
 ---
 
+## Don't Repeat Yourself as Knowledge, Not Code
+
+The full principle: "Every piece of knowledge must have a single, unambiguous, authoritative representation in the system." This is broader than code deduplication. It applies to:
+- **Business rules** — logic encoded in multiple places diverges over time
+- **Data schemas** — same structure defined in DB, API contract, and UI model separately
+- **Configuration** — the same value hardcoded in three places
+
+Violating DRY on *knowledge* causes the system to have no single source of truth. When a rule changes, every copy must change — and at least one will be missed.
+
+**Acceptable mechanical duplication:** Some structural repetition is acceptable when:
+- The duplicated code serves different purposes that happen to look the same today (coincidental similarity)
+- The duplication lives in a test file asserting the same known value in multiple tests
+- Abstracting it would require a worse abstraction than the duplication
+
+The rule: eliminate duplication of *knowledge* relentlessly; tolerate duplication of *structure* when the alternative is a forced abstraction.
+
+---
+
+## Composed Method
+
+Organize methods so that each method does one thing at one level of abstraction. A method that mixes high-level coordination with low-level mechanics is harder to read than two methods — one that coordinates, one that executes.
+
+**Signal:** A method body that contains steps at different abstraction levels (e.g., a loop over records *and* raw string formatting *and* a database call) is a candidate for decomposition via Composed Method.
+
+**Result:** Each method can be read and understood in isolation. The top-level method reads like a specification; the detail lives one level down.
+
+---
+
+## Design Smell
+
+A design smell is a structural signal that a system's design is accumulating technical debt — analogous to code smells in Martin Fowler's catalog but operating at the module or subsystem level.
+
+Common design smells:
+- **Divergent Change** — one module changes for many unrelated reasons (SRP violation at module level)
+- **Shotgun Surgery** — one logical change requires editing many unrelated modules
+- **Parallel Inheritance Hierarchies** — adding a class in one hierarchy requires adding a corresponding class in another
+- **Middle Man** — a module that exists only to delegate to another
+
+Design smells are not fixable by local refactoring alone. They require architectural review and restructuring. Use `references/ANTIPATTERNS.md` in the architecture-review skill for higher-level structural failures.
+
+---
+
 ## Related Skills
 
 - `code-quality` — clang-format, naming conventions, smell checklist, pre-commit gate
