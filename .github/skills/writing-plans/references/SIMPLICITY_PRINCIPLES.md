@@ -125,6 +125,76 @@ A requirement is not clear until it has a verifiable acceptance criterion. "The 
 
 Before planning the work, identify the one simplification that removes the most future work. This is not premature optimization — it is asking "if we change the structure of the problem, how much of the solution disappears?" The question is: what is the highest-leverage simplification available before any code is written? Source: C2 Wiki "BigReductionUpFront".
 
+---
+
+## Refactoring Is a Requirement, Not a Reward
+
+Refactoring is not something done after "real work" is finished. It is part of delivering working software. A codebase that accumulates structure debt requires more effort to change — which means all future requirements cost more to implement.
+
+Consequences of treating refactoring as optional:
+- Velocity slows as the codebase grows
+- New requirements become harder to fit into an increasingly rigid structure
+- Developers avoid changing code they don't understand, creating zones of accumulating risk
+
+Build refactoring into the development cycle. It is not a separate task to be scheduled separately — it happens continuously as part of normal work.
+
+---
+
+## Refactoring Is Not Rewriting
+
+Refactoring means changing the structure of code without changing its observable behavior. It is not:
+- Rewriting a module from scratch
+- Changing what the code does while cleaning it up
+- Adding new features while restructuring
+
+"Refactoring" that changes behavior is not refactoring — it is combined refactoring and feature work. These must be separated to preserve rollback safety and test validity.
+
+**Rule:** During a refactoring session, the test suite must stay green at every step. If a step breaks a test, either the refactoring changed behavior (revert it) or the test was wrong (fix the test in a separate step, not the same commit).
+
+---
+
+## Refactoring Spectrum: Match Strategy to Context
+
+Three approaches match different contexts:
+
+**Refactor As You Go** — appropriate for active, well-tested code. Clean up as you touch code. Apply the Boy Scout Rule: leave the code slightly better than you found it. Keep changes small.
+
+**Refactor Mercilessly** — appropriate for code under heavy active development. Continuously improve the design until it clearly expresses the intent. Do not defer cleanup.
+
+**Refactor Daintily (legacy code)** — appropriate for untested or rarely-touched code. Make the smallest possible change that allows a test to be added. Add the test. Then improve incrementally. Never refactor legacy code without first adding tests that constrain behavior.
+
+Choosing the wrong strategy for the context creates risk:
+- Refactoring mercilessly on untested legacy code risks introducing silent regressions
+- Refactoring daintily on active well-tested code leaves unnecessary debt in place
+
+---
+
+## Low Hanging Fruit First
+
+When entering a codebase with accumulated debt, address the easiest improvements first. Benefits:
+- Quick wins build momentum and demonstrate value
+- Small improvements often reveal larger structural problems that were hidden
+- Clearing obvious noise makes the deeper problems easier to see
+
+Low hanging fruit: rename a misleading variable, extract a helper method, remove dead code, fix a misspelling in an interface. These are safe, fast, and improve readability immediately.
+
+Do not begin with the hardest structural problem. That is the last refactoring, not the first.
+
+---
+
+## Excessive Refactoring as Signal
+
+A system that requires continuous large-scale refactoring every iteration is signaling a design failure — not a refactoring success. Refactoring should reduce the cost of future change. If it never does, the design is not improving.
+
+Signs of excessive refactoring:
+- Every new feature requires restructuring multiple modules
+- Refactoring produces a new structure that also needs refactoring immediately
+- The team spends more time restructuring than adding behavior
+
+The root cause is usually an incorrect domain model or missed abstraction. Stop refactoring and address the design.
+
+---
+
 ## Related Skills
 
 - `writing-plans` — YAGNI, PPP, Skeptic Agent gate
