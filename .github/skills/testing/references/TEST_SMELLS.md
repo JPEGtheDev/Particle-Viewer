@@ -129,19 +129,17 @@ Test code requires its own refactoring discipline. Just like production code can
 
 ```
 ✗ BAD:
-  TEST(MathTest, Calculation_Works)
-  {
+  test "Calculation_Works":
       // Tests addition AND subtraction AND multiplication in one test
-      ASSERT_EQ(2 + 3, 5);
-      ASSERT_EQ(10 - 2, 8);
-      ASSERT_EQ(3 * 4, 12);
-  }
+      assertEq(add(2, 3), 5)
+      assertEq(subtract(10, 2), 8)
+      assertEq(multiply(3, 4), 12)
   // If assertion 2 fails, did addition work? Who knows — test did multiple things.
 
 ✓ GOOD:
-  TEST(MathTest, Addition_TwoPositives_ReturnsSum) { ... }
-  TEST(MathTest, Subtraction_LargerFromSmaller_ReturnsNegative) { ... }
-  TEST(MathTest, Multiplication_TwoPositives_ReturnsProduct) { ... }
+  test "Addition_TwoPositives_ReturnsSum": ...
+  test "Subtraction_LargerFromSmaller_ReturnsNegative": ...
+  test "Multiplication_TwoPositives_ReturnsProduct": ...
 ```
 
 **Why it hurts:**
@@ -164,20 +162,16 @@ Test code requires its own refactoring discipline. Just like production code can
 
 ```
 ✗ BAD:
-  TEST(ImageLoaderTest, LoadImage_ValidPath_Succeeds)
-  {
-      auto image = loadImage("test.png");
-      ASSERT_TRUE(image != nullptr);  // Too weak. Doesn't verify actual content.
-  }
+  test "LoadImage_ValidPath_Succeeds":
+      image = loadImage("test.png")
+      assertTrue(image != null)  // Too weak. Doesn't verify actual content.
 
 ✓ GOOD:
-  TEST(ImageLoaderTest, LoadImage_ValidPath_ReturnsCorrectDimensions)
-  {
-      auto image = loadImage("test.png");
-      ASSERT_EQ(image.width(), 256);
-      ASSERT_EQ(image.height(), 512);
-      ASSERT_GT(image.pixelData().size(), 0);  // Specific, observable outcome
-  }
+  test "LoadImage_ValidPath_ReturnsCorrectDimensions":
+      image = loadImage("test.png")
+      assertEq(image.width(), 256)
+      assertEq(image.height(), 512)
+      assertGt(image.pixelData().size(), 0)  // Specific, observable outcome
 ```
 
 **Why it hurts:**
@@ -200,38 +194,32 @@ Test code requires its own refactoring discipline. Just like production code can
 
 ```
 ✗ BAD:
-  TEST(VectorTest, Operations_Work)
-  {
-      vec.push_back(1);
-      vec.push_back(2);
-      vec.push_back(3);
+  test "Operations_Work":
+      vec.append(1)
+      vec.append(2)
+      vec.append(3)
       
-      ASSERT_EQ(vec.size(), 3);
-      ASSERT_EQ(vec[0], 1);
-      ASSERT_EQ(vec[1], 2);
-      ASSERT_EQ(vec[2], 3);
+      assertEq(vec.size(), 3)
+      assertEq(vec[0], 1)
+      assertEq(vec[1], 2)
+      assertEq(vec[2], 3)
       // If test fails, which assertion triggered? You have to re-run.
-  }
 
 ✓ GOOD (One assert per test):
-  TEST(VectorTest, PushBack_SingleElement_IncrementsSize)
-  {
-      vec.push_back(1);
-      ASSERT_EQ(vec.size(), 1);
-  }
+  test "Append_SingleElement_IncrementsSize":
+      vec.append(1)
+      assertEq(vec.size(), 1)
 
 ✓ ALSO GOOD (Multiple asserts with messages):
-  TEST(VectorTest, PushBack_ThreeElements_PopulatesCorrectly)
-  {
-      vec.push_back(1);
-      vec.push_back(2);
-      vec.push_back(3);
+  test "Append_ThreeElements_PopulatesCorrectly":
+      vec.append(1)
+      vec.append(2)
+      vec.append(3)
       
-      ASSERT_EQ(vec.size(), 3) << "Expected size 3 after three pushes";
-      ASSERT_EQ(vec[0], 1) << "First element should be 1";
-      ASSERT_EQ(vec[1], 2) << "Second element should be 2";
-      ASSERT_EQ(vec[2], 3) << "Third element should be 3";
-  }
+      assertEq(vec.size(), 3, "Expected size 3 after three appends")
+      assertEq(vec[0], 1, "First element should be 1")
+      assertEq(vec[1], 2, "Second element should be 2")
+      assertEq(vec[2], 3, "Third element should be 3")
 ```
 
 **Why it hurts:**
@@ -253,43 +241,39 @@ Test code requires its own refactoring discipline. Just like production code can
 
 ```
 ✗ BAD (duplicated setup):
-  TEST(ParserTest, ParseValidJSON_ReturnsObject) {
-      std::string json = "{ \"name\": \"test\", \"age\": 25 }";
-      Parser parser;
-      auto result = parser.parse(json);
-      ASSERT_TRUE(result.valid());
-  }
+  test "ParseValidJSON_ReturnsObject":
+      json = '{ "name": "test", "age": 25 }'
+      parser = new Parser()
+      result = parser.parse(json)
+      assertTrue(result.valid())
   
-  TEST(ParserTest, ParseJSON_ExtractsName) {
-      std::string json = "{ \"name\": \"test\", \"age\": 25 }";  // copied
-      Parser parser;
-      auto result = parser.parse(json);
-      ASSERT_EQ(result.name(), "test");
-  }
+  test "ParseJSON_ExtractsName":
+      json = '{ "name": "test", "age": 25 }'  // copied
+      parser = new Parser()
+      result = parser.parse(json)
+      assertEq(result.name(), "test")
   
-  TEST(ParserTest, ParseJSON_ExtractsAge) {
-      std::string json = "{ \"name\": \"test\", \"age\": 25 }";  // copied again
-      Parser parser;
-      auto result = parser.parse(json);
-      ASSERT_EQ(result.age(), 25);
-  }
+  test "ParseJSON_ExtractsAge":
+      json = '{ "name": "test", "age": 25 }'  // copied again
+      parser = new Parser()
+      result = parser.parse(json)
+      assertEq(result.age(), 25)
 
 ✓ GOOD (extracted helper):
-  std::string validTestJSON() {
-      return "{ \"name\": \"test\", \"age\": 25 }";
-  }
+  function validTestJSON():
+      return '{ "name": "test", "age": 25 }'
   
-  TEST(ParserTest, ParseValidJSON_ReturnsObject) {
-      Parser parser;
-      auto result = parser.parse(validTestJSON());
-      ASSERT_TRUE(result.valid());
-  }
+  test "ParseValidJSON_ReturnsObject":
+      result = new Parser().parse(validTestJSON())
+      assertTrue(result.valid())
   
-  TEST(ParserTest, ParseJSON_ExtractsName) {
-      Parser parser;
-      auto result = parser.parse(validTestJSON());
-      ASSERT_EQ(result.name(), "test");
-  }
+  test "ParseJSON_ExtractsName":
+      result = new Parser().parse(validTestJSON())
+      assertEq(result.name(), "test")
+  
+  test "ParseJSON_ExtractsAge":
+      result = new Parser().parse(validTestJSON())
+      assertEq(result.age(), 25)
 ```
 
 **Why it hurts:**
@@ -312,24 +296,22 @@ Key principle: **test duplication is more tolerable than production duplication*
 
 ```
 ✗ BAD: Over-abstracted test that obscures the behavior
-  TEST(CameraTest, SeniorityAllValid) {
-      auto cam = makeValidCamera(cameraPerspective);
-      verifyBehavior(cam, expectedStateA);
-  }
+  test "SeniorityAllValid":
+      cam = makeValidCamera(cameraPerspective)
+      verifyBehavior(cam, expectedStateA)
   // Reader has to trace through makeValidCamera and verifyBehavior to understand what's being tested
 
 ✓ GOOD: Test repeats some setup but intent is clear
-  TEST(CameraTest, MoveForward_IncreasesZPosition) {
+  test "MoveForward_IncreasesDepth":
       // Arrange
-      Camera camera(800, 600);
-      camera.cameraPos = glm::vec3(0.0f, 0.0f, 0.0f);
+      camera = new Camera(width: 800, height: 600)
+      camera.position = Vector3(0, 0, 0)
       
       // Act
-      camera.moveForward();
+      camera.moveForward()
       
       // Assert
-      EXPECT_LT(camera.cameraPos.z, 0.0f);
-  }
+      expectLt(camera.position.z, 0)
 ```
 
 The balance: extract duplication that obscures nothing; keep inline whatever the reader needs to understand the test's intent.
