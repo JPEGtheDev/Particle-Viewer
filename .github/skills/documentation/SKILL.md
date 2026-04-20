@@ -131,3 +131,5 @@ Before presenting documentation, verify:
 ## Reference
 
 For the domain taxonomy, frontmatter schema, and guide template, see [references/DOCUMENTATION_EXAMPLES.md](references/DOCUMENTATION_EXAMPLES.md).
+
+**Documentation principles (Doc1–Doc5, SelfDocumentingCode, LiterateProgramming):** `.github/skills/documentation/references/DOCUMENTATION_PRINCIPLES.md`
