@@ -183,4 +183,4 @@ If you catch yourself thinking any of the following, STOP before writing your ve
 - `infrastructure-review` — CMake build structure; architecture-review checks source structure
 - `oop-principles` — sub-domain skill; run Is-A / Has-A and SOLID gate for every class hierarchy change reviewed here
 
-**Design patterns and architectural principles:** `.github/skills/architecture-review/references/DESIGN_PATTERNS.md`
+**Design patterns and architectural principles:** `.github/skills/architecture-review/references/DESIGN_PATTERNS.md` and `.github/skills/architecture-review/references/ANTIPATTERNS.md`
