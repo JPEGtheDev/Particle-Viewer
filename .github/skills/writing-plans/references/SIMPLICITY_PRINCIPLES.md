@@ -105,6 +105,26 @@ Not every useful idea is a pattern. Forcing a pattern form onto advice dilutes p
 
 ---
 
+## Simplest Thing That Could Possibly Work (STTCPW)
+
+Before finalizing any design or implementation, ask: "Is there a simpler solution that satisfies all acceptance criteria?" The burden of proof is on the complex option, not the simple one. STTCPW is not "simplest thing that is easy to type" — it is "simplest thing that could pass all the tests." Reject solutions that satisfy criteria not in scope. Source: C2 Wiki "DoTheSimplestThingThatCouldPossiblyWork".
+
+## Dimensions of Simplicity
+
+Kent Beck's ordered checklist for assessing design quality: (1) Passes all tests. (2) Reveals intention — names, structure, and organization communicate what the code does without comment. (3) No duplication — each concept has exactly one home. (4) Fewest elements — no class, method, or variable that does not serve a purpose in criteria 1–3. Apply in order: criterion 1 gates criterion 2, which gates criterion 3, which gates criterion 4. Source: C2 Wiki "XpSimplicityRules".
+
+## Assign Problems, Not Tasks
+
+Delegate outcomes, not procedures. State what success looks like — the verifiable end state — and let the assignee determine the path. A task delegation says "do these five steps." A problem delegation says "the system must do X when Y; verify it." Task delegation creates followers who cannot adapt when the steps do not fit; problem delegation creates owners who can. This is the canonical definition. See `subagent-driven-development/SKILL.md` and `execution/SKILL.md` for project-level application. Source: C2 Wiki "AssignProblemsNotTasks".
+
+## Clear Requirements
+
+A requirement is not clear until it has a verifiable acceptance criterion. "The system should be fast" is not a requirement. "The system must respond within 200ms for 95% of requests under 100 concurrent users" is a requirement. Ambiguous requirements are the most expensive bug category: they are introduced at the design phase and surface at the acceptance phase. Source: C2 Wiki "RequirementsAsTests".
+
+## Big Reduction Up Front
+
+Before planning the work, identify the one simplification that removes the most future work. This is not premature optimization — it is asking "if we change the structure of the problem, how much of the solution disappears?" The question is: what is the highest-leverage simplification available before any code is written? Source: C2 Wiki "BigReductionUpFront".
+
 ## Related Skills
 
 - `writing-plans` — YAGNI, PPP, Skeptic Agent gate

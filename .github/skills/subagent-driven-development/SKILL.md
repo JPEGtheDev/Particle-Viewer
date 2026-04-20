@@ -270,6 +270,7 @@ Match model tier to task complexity. Instructions must be written for GPT-4.1 ba
 ## Delegation Quality Rules
 
 - **One clear objective per subagent** — no multi-part briefs
+- **Assign Problems Not Tasks:** delegate the outcome, not the steps — see `writing-plans/references/SIMPLICITY_PRINCIPLES.md#assign-problems-not-tasks`
 - **State the return format explicitly** — tell it exactly what to give back
 - **Provide complete context** — subagents are stateless
 - **Fresh context per task** — never share session history; it contaminates the subagent's search
