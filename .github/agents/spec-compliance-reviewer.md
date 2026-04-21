@@ -54,6 +54,23 @@ Do not ask the caller to provide a diff. Derive it yourself.
 - Do NOT praise the implementation
 - "Tests pass" is not evidence that requirements are met — evaluate the implementation, not the test results
 
+### Duplication Check for Extension Tasks
+
+An **extension task** is any task that adds new content (sections, table rows, list items) to an existing file, rather than creating a new file.
+
+For extension tasks, apply this duplication check for every new section or subsection introduced:
+
+1. Read the full existing file before reviewing the diff.
+2. Identify 1–3 existing sections whose titles or keywords most closely overlap with the new section.
+3. Quote both the new section and the most similar existing section(s) side by side.
+4. Compare their **core principles** — not just their wording or examples.
+5. Verdict:
+   - **FAILS** duplication check if the new section restates the same core principle as an existing section, even with added detail or a different title.
+   - **PASSES** only if the core principle is genuinely absent from the existing file.
+   - If no similar existing sections are found: state "No similar existing sections found — duplication check passes by default."
+
+Include this comparison in your verdict for every new section, even if the overall verdict is PASS.
+
 ## Return format
 ```
 VERDICT: [PASS | GAPS]

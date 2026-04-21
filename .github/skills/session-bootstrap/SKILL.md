@@ -90,7 +90,9 @@ If unsure, read `code-quality` — it applies to every code task.
 - [ ] Task type(s) identified from the On Start table above
 - [ ] All required skills for this task type loaded (in parallel if multiple domains)
 - [ ] Skill load announcement made for each loaded skill
+- [ ] `git status` checked in main working tree — if uncommitted changes exist with no active work in progress, identify their source (prior agent? manual edit?), read the diff, then commit or revert explicitly before starting new work. Ghost commits from prior agents are a recurring risk.
 - [ ] If resuming a prior session: SQL pending todos checked; Skeptic dispatched before first implementation step
+- [ ] Stored memories checked for user-specified model preference overrides — applies to all agent dispatch decisions this session
 - [ ] If this task requires reading 3+ files for research or review: an explore or code-review agent is dispatched — NOT done inline
 - [ ] Session hooks checked: if sessionStart or userPromptSubmitted hook failed, all skills MUST be invoked manually this session — no auto-loading is available
 - [ ] If a hook config fix was committed during this session: that fix is NOT active until the NEXT session. Do NOT claim hooks are working. The CLI reads hooks.json once at session start — in-session commits to hook files do not take effect until the session is restarted.
