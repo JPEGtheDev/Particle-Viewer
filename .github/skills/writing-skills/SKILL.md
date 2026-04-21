@@ -44,8 +44,14 @@ Before creating, editing, or shipping any skill or agent template:
    - Editing frontmatter only (no anatomy changes)? → reference files optional
    - Modifying or adding anatomy elements? → read `references/SKILL_ANATOMY_ELEMENTS.md` before any edits
 
+5. **Auditing existing skills (not creating or editing one)?** Before dispatching any agent:
+   - Run `wc -w .github/skills/*/SKILL.md` and compare results against `references/SIZE_AND_COMPRESSION.md` limits
+   - Enumerate every audit dimension explicitly in each agent's prompt
+   - The anatomy gate above applies to editing skills — audit use cases require their own dimension list; unnamed dimensions will not be checked
+
 ✓ All met → proceed
 ✗ Any unmet → resolve the unmet item before touching the skill file
+↳ Auditing (not creating/editing)? → The ✓/✗ above applies to creation/editing only. For auditing, run the step 5 sub-tasks; proceed once all dimensions are named in each agent's prompt.
 
 ---
 

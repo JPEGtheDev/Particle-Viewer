@@ -75,6 +75,8 @@ domains, read multiple skills in parallel (they are independent reads).
 | Resuming from a prior session with pending SQL todos | `writing-plans`; dispatch Skeptic before first implementation step |
 | Schema design, new data structure, or plan with ≥5 implementation items | `brainstorming`, `writing-plans` |
 | Auditing communication quality or postmortem | `honesty`, `session-postmortem`                    |
+| Any new plan with 2+ todos | `writing-plans`; dispatch Skeptic before first implementation step |
+| Auditing or reorganizing a collection of files, tasks, or artifacts with multiple valid structural approaches | `brainstorming`, `writing-plans` |
 
 If unsure, read `code-quality` — it applies to every code task.
 
@@ -136,6 +138,8 @@ behavior is habitual, not conditional.
 - Finishing a session without running `self-evaluation` — **STOP. Read `.github/skills/self-evaluation/SKILL.md` now.**
 - Treating the "On Finish" steps as optional — **STOP. They are mandatory. Execute every step.**
 - Saying "I remember the skill content" — **STOP. Memory degrades. Skills update. Load fresh every session.**
+- Branch about to be created, but the plan the user approved was the pre-Skeptic version — **STOP. Re-present the post-Skeptic revised plan. Wait for explicit user approval before creating the branch.**
+- About to make an irreversible change (branch creation, push) without the `execution` skill loaded — **STOP. Load `execution` before the first irreversible action.**
 
 ---
 

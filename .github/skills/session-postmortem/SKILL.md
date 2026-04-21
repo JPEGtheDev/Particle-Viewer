@@ -352,6 +352,7 @@ Three or more of the above = SYSTEMIC ISSUE. Relevant skills need immediate rati
 | "Self-evaluation already covered this" | Self-eval is by the agent. Postmortem is external. Different perspective, different blind spots. Both are necessary. |
 | "The session was short, not worth analyzing" | Short sessions have failure modes too. A short session gets a proportionate postmortem — 10 minutes, not an hour. |
 | "I'll skip the external reviewer, it's just overhead" | The external reviewer reads events the agent rationalized away. Skipping it means the postmortem finds only what the agent was willing to find. |
+| "User asked a direct question while the external reviewer is still running — I can answer while it finishes" | NO. The only permissible action between dispatching the external reviewer and `read_agent` returning is polling (`read_agent`). Do NOT answer the question, summarize findings, or output any assessment. Tell the user you are waiting for the external reviewer to complete, then continue polling. Any assessment made before `read_agent` returns will be based on incomplete information and may directly contradict the reviewer's log-cited findings. |
 
 ---
 
