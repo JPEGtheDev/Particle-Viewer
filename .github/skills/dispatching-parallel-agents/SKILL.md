@@ -152,6 +152,19 @@ When parallel agents return:
 
 ---
 
+## Citation Verification
+
+When any agent cites specific file names, page names, or resource paths as evidence, apply this gate **before accepting any cited finding into synthesis:**
+
+1. For each cited resource not directly confirmed by a read or listing tool in the agent's own work: verify the resource yourself by reading or listing it directly.
+2. Verification = the resource exists AND its content supports the claim.
+3. **If verification fails:** REJECT the finding. Record: `REJECTED: [resource] does not exist — citation unverified.` Do NOT re-dispatch the original agent for the same citation.
+4. **If verification passes:** accept the finding. Note: `VERIFIED: read [path] — content confirms [claim].`
+
+**Why:** Agents — especially when working with large archives or documentation sets — frequently cite plausible-but-nonexistent resources. Treating citations as hypotheses and verifying them before synthesis prevents hallucinated evidence from reaching conclusions.
+
+---
+
 ## Write Agents — Worktree Requirement
 
 When parallelizing write work (e.g., multiple implementers working on independent subsystems):

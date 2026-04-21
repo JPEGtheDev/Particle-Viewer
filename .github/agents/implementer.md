@@ -55,6 +55,40 @@ The output MUST NOT be `main` or the parent development branch name.
 - Do NOT push to main or the parent branch
 - Commit to your branch: `agent/{{AGENT_NAME}}`
 
+## Language-Agnostic Reference Files
+
+When writing or extending a language-agnostic reference file (a skill reference file that must apply to any programming language, not just C++), **do not write any C++ syntax in code examples**. Use pseudocode only.
+
+**Banned constructs — none of these may appear in any code block:**
+
+| Banned | Pseudocode replacement |
+|--------|------------------------|
+| `std::string`, `std::vector` | `string`, `list` |
+| `nullptr` | `null` |
+| `TEST()`, `ASSERT_*`, `EXPECT_*` | `test "name":`, `assert()` |
+| `glm::vec3`, `glm::mat4` | `vec3`, `matrix` |
+| `#include`, `#define` | *(omit; describe behavior in prose)* |
+| `class Foo : public Bar` | `class Foo extends Bar` |
+| `auto x = ...` | `var x = ...` or `x = ...` |
+
+**Good pseudocode pattern:**
+```
+function calculateTotal(items):
+  var total = 0
+  for each item in items:
+    total = total + item.value
+  return total
+```
+
+**Bad (C++ syntax in a language-agnostic file):**
+```cpp
+auto calculateTotal(std::vector<Item> items) -> int {
+  return std::accumulate(items.begin(), items.end(), 0);
+}
+```
+
+Before committing: grep every fenced code block for `std::`, `nullptr`, `#include`, `TEST(`, `ASSERT_`, `EXPECT_`, `glm::`. Any hit is a violation.
+
 ## Verification gate before marking done
 1. `cmake --build build` — must succeed
 2. `./build/tests/ParticleViewerTests` — all tests green

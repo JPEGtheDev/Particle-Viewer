@@ -251,6 +251,8 @@ git worktree remove .worktrees/agent-task-name
 
 Match model tier to task complexity. Instructions must be written for GPT-4.1 baseline regardless of selected tier.
 
+**Model preference priority (highest to lowest):** stored memory override → this tier table → current session default. Before dispatching any agent batch, check stored memories for a user-specified model preference. If found, that tier applies to ALL agents in this batch and overrides the table below. If the user states a model preference in the current session, store it as a memory fact immediately so it persists.
+
 | Task type | Default tier |
 |-----------|-------------|
 | Mechanical: grep, rename, format, one-function change | Standard |
