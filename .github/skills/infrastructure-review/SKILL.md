@@ -1,5 +1,6 @@
 ---
 name: infrastructure-review
+license: MIT
 description: Use when adding workflows, modifying CMakeLists.txt, or updating Flatpak manifests for Particle-Viewer.
 ---
 
@@ -51,7 +52,7 @@ Run every item for each changed `CMakeLists.txt`:
 
 Run every item for any changed file under `flatpak/`:
 
-- [ ] OpenGL extension permissions declared — required for GPU access in Flatpak sandbox (see `.github/skills/workflow/references/FLATPAK_GL_GOTCHAS.md`)
+- [ ] OpenGL extension permissions declared — required for GPU access in Flatpak sandbox (see `flatpak` skill)
 - [ ] SDL3 permissions correct for display and input device access
 - [ ] App ID matches `com.jpegthedev.ParticleViewer` naming convention
 - [ ] Runtime version pinned to a specific release (not a floating `latest`)
@@ -146,4 +147,4 @@ If you catch yourself thinking any of the following, STOP before writing your ve
 - `workflow` — owns CI/CD pipeline patterns; infrastructure-review enforces compliance with those patterns
 - `build` — owns CMake and Flatpak authoring; infrastructure-review checks the output for correctness
 - `architecture-review` — checks source-level structure; infrastructure-review checks build and pipeline structure
-- `.github/skills/workflow/references/FLATPAK_GL_GOTCHAS.md` — required reading for any Flatpak manifest change
+- `flatpak` skill — required reading for any Flatpak manifest change; owns MSAA, SDL3 module, NVIDIA GL, and setenv rules

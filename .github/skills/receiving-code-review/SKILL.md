@@ -1,5 +1,6 @@
 ---
 name: receiving-code-review
+license: MIT
 description: Use when receiving code review feedback on a PR or code change.
 ---
 

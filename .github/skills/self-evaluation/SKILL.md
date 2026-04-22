@@ -1,5 +1,6 @@
 ---
 name: self-evaluation
+license: MIT
 description: Use when completing any session.
 ---
 
@@ -62,16 +63,16 @@ Examine what happened during this session:
 
 ## Step 2: Categorize Lessons
 
-Classify each lesson into one of these categories:
+Classify each lesson into one of these categories. For the full routing table with examples, see `references/LESSONS_LEARNED_PATTERNS.md`.
 
-| Category | Examples | Update Target |
-|----------|----------|---------------|
-| **Code quality** | Binary file modes, const refs, resource cleanup | `code-quality` skill |
-| **Testing** | AAA violations, missing directory setup, save checks | `testing` skill |
-| **CI/CD** | Workflow structure, artifact patterns | `workflow` skill |
-| **Documentation** | Link fixes, formatting, content standards | `documentation` skill |
-| **Build** | CMake, dependencies, Flatpak packaging | `build` skill |
-| **Versioning** | PR title format, commit conventions, releases | `versioning` skill |
+| Category | Update Target |
+|----------|---------------|
+| **Code quality** | `code-quality` skill |
+| **Testing** | `testing` skill |
+| **CI/CD** | `workflow` skill |
+| **Documentation** | `documentation` skill |
+| **Build** | `build` skill |
+| **Versioning** | `versioning` skill |
 
 ---
 

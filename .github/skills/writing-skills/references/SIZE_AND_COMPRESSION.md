@@ -4,18 +4,21 @@
 
 ---
 
-## Word Count Targets
+## Token Count Targets
 
-| Skill type | Target words | Hard limit |
-|------------|-------------|------------|
-| EXECUTION / QUALITY (frequently loaded) | ≤ 400 words | 600 words |
-| DELIVERY / REVIEW / KNOWLEDGE | ≤ 500 words | 800 words |
-| Sub-domain skills | ≤ 200 words | 350 words |
+| Skill type | Target | Hard limit |
+|------------|--------|------------|
+| EXECUTION / QUALITY (frequently loaded) | ≤ 650 tokens | 1,000 tokens |
+| DELIVERY / REVIEW / KNOWLEDGE | ≤ 800 tokens | 1,300 tokens |
+| Sub-domain skills | ≤ 300 tokens | 600 tokens |
 | Reference files (not SKILL.md) | No limit — loaded on demand |
+| All types (agentskills.io spec cap) | — | 5,000 tokens |
+
+Token estimate: `chars / 4` is a reliable approximation for technical Markdown.
 
 **Check before shipping:**
 ```bash
-wc -w .github/skills/<skill-name>/SKILL.md
+wc -c .github/skills/<skill-name>/SKILL.md | awk '{print int($1/4) " tokens"}'
 ```
 
 ---
@@ -58,12 +61,28 @@ Rules:
 
 5. **Description field never summarizes workflow.** See `references/SKILL_ANATOMY_ELEMENTS.md` Element 1.
 
-   GOOD: `description: Use when writing or reviewing any test for Particle-Viewer.`
+   GOOD: `description: Use when writing or reviewing any test.`
    BAD: `description: Use when writing tests. Follows AAA pattern, enforces naming, handles Google Test patterns.` — models followed the description instead of reading the skill body.
 
 ---
 
-## Size Limits (Lines — secondary; word count above is primary)
+## Skill Composition Model
+
+Skills compose by name, never by cross-skill file path.
+
+**Rules:**
+- Reference files are **private** to their owning skill. A reference file in `skill-A/references/FOO.md` is owned by `skill-A`. Other skills must not link directly to it.
+- Cross-skill composition uses prose naming only: `"See the \`versioning\` skill"` or `"Load the \`testing\` skill"`.
+- Never write: `See [OOP_PRINCIPLES.md](../oop-principles/references/OOP_PRINCIPLES.md)` — this creates a brittle cross-skill file path dependency.
+
+**Why:** Direct cross-skill file path references break when skills are reorganized, renamed, or composed in a different context. Naming the owning skill is stable — the agent loads the skill and navigates from there.
+
+GOOD: `"For commit format, see the \`versioning\` skill."`
+BAD: `"See [CONVENTIONAL_COMMITS.md](../versioning/references/CONVENTIONAL_COMMITS.md)"` — cross-skill path, brittle.
+
+---
+
+## Size Limits (Lines — secondary; token count above is primary)
 
 | Skill type | Target | Hard limit |
 |------------|--------|------------|

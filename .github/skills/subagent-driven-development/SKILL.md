@@ -1,5 +1,6 @@
 ---
 name: subagent-driven-development
+license: MIT
 description: Use when delegating implementation tasks, confirming theories, running parallel research, or reviewing completed work.
 ---
 

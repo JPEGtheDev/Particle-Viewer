@@ -1,5 +1,6 @@
 ---
 name: build
+license: MIT
 description: Use when building, adding dependencies, configuring CMake options, troubleshooting build failures, or managing Flatpak packaging for Particle-Viewer.
 ---
 
@@ -136,7 +137,7 @@ Install OpenGL development packages. Ensure `OpenGL::GL` CMake target is availab
 Run from the build directory, or ensure `Viewer-Assets/shaders/` exists alongside the binary.
 
 **Flatpak build issues:**
-See the `workflow` skill and [FLATPAK_GL_GOTCHAS.md](../workflow/references/FLATPAK_GL_GOTCHAS.md).
+See the `flatpak` skill (`.github/skills/flatpak/`) for MSAA fallback, SDL3 module setup, NVIDIA GL workarounds, and setenv gotchas.
 
 ---
 
@@ -170,5 +171,5 @@ If you catch yourself thinking any of these, stop and follow the rule:
 ## Reference
 
 - Flatpak manifest: `flatpak/org.particleviewer.ParticleViewer.yaml`
-- Flatpak GL/SDL3 gotchas: `.github/skills/workflow/references/FLATPAK_GL_GOTCHAS.md`
+- Flatpak GL/SDL3 gotchas: see the `flatpak` skill (`.github/skills/flatpak/`)
 - Build scripts: `scripts/linuxBuildAndInstall.sh`, `scripts/build-flatpak.sh`

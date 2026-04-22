@@ -1,5 +1,6 @@
 ---
 name: visual-regression-testing
+license: MIT
 description: Use when writing or maintaining visual regression tests, approving visual baselines, or deciding whether something belongs in a VR test vs a MockOpenGL unit test.
 ---
 

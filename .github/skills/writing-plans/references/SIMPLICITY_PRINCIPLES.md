@@ -77,7 +77,7 @@ Do not refactor toward a theoretical canonical form. Do not refactor stable code
 
 ## One Active Failing Test
 
-See `testing/references/CONTRACT_TESTING.md — One Active Failing Test` for the full rule.
+See `contract-testing/references/CONTRACT_TESTING.md — One Active Failing Test` for the full rule.
 
 Planning implication: one active implementation todo at a time. Completing todos serially, with verification at each step, is faster than parallel activation of many unfinished tasks. Stack future test names; do not activate them simultaneously.
 

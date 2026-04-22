@@ -1,5 +1,6 @@
 ---
 name: verification-before-completion
+license: MIT
 description: Use when about to claim work is complete, fixed, or passing, before any completion claim, commit, or PR.
 ---
 
@@ -161,7 +162,7 @@ These words and phrases **cannot appear in any response** unless fresh verificat
 Evidence must be **inline**, not referenced:
 
 ❌ `"I ran the tests and they passed."`  
-✅ `"Ran ./build/tests/ParticleViewerTests: **247 passed, 0 failures.** [exit 0]"`
+✅ `"Ran <project-test-runner>: **247 passed, 0 failures.** [exit 0]"`
 
 The inline format is self-auditing. The user cannot independently verify a reference claim. They can verify inline output by reading it.
 
@@ -176,6 +177,8 @@ Use freely when verification hasn't been run:
 ---
 
 ## The Verification Commands
+
+> **Note (Particle-Viewer specific):** The commands below use this project's build system and test runner. Adapt `cmake --build build`, `./build/tests/ParticleViewerTests`, and the `find src tests` glob for your own project.
 
 ```bash
 # Build

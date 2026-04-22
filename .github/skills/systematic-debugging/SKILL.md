@@ -1,5 +1,6 @@
 ---
 name: systematic-debugging
+license: MIT
 description: Use when encountering any bug, test failure, build error, or unexpected behavior.
 ---
 
@@ -160,19 +161,7 @@ If you find yourself thinking any of the following, **STOP and return to Phase 1
 
 ## Project-Specific Commands
 
-```bash
-# Build failure — read the first 50 lines (root error is usually near the top)
-cmake --build build 2>&1 | head -50
-
-# Test failure — run the specific failing test in isolation
-./build/tests/ParticleViewerTests --gtest_filter=TestSuite.TestName
-
-# Visual regression — examine the diff image
-# Diffs are written to: tests/visual-regression/diffs/
-
-# CI failure — reproduce locally with the equivalent command before touching code
-cmake --build build && ./build/tests/ParticleViewerTests
-```
+For Particle-Viewer debug commands (build, test filter, visual regression diffs, CI reproduction), see `references/PV_DEBUG_REFERENCE.md`.
 
 ---
 
@@ -226,50 +215,12 @@ Before proposing any fix in a multi-component failure:
 
 ### Layer Taxonomy for This Project
 
-```
-User Input (SDL3 events)
-    ↓
-ViewerApp (main app logic, state machine)
-    ↓
-UI layer (ImGui menu — imgui_menu.hpp/cpp)
-    ↓
-Graphics layer (IOpenGLContext, SDL3Context)
-    ↓
-OpenGL driver (via GLAD)
-    ↓
-Shader (GLSL — Viewer-Assets/shaders/)
-    ↓
-GPU output
-```
-
-When debugging, identify which layer in this stack first produces incorrect behavior. Fix at that layer — not at the symptom layer above it.
+For the Particle-Viewer layer taxonomy (SDL3 events → ViewerApp → UI → Graphics → OpenGL → Shader → GPU), see `references/PV_DEBUG_REFERENCE.md`.
 
 ---
 
 ## HeisenBug Patterns in C++
 
-A HeisenBug is a bug that disappears or changes behavior when you attempt to observe or isolate it. In C++, several mechanisms cause this. Work through the table when a bug vanishes under investigation:
+For the full HeisenBug cause/symptom/investigation table and investigation checklist, see `references/CPP_HEISENBUG_PATTERNS.md`.
 
-| Cause | Symptom | Investigation action |
-|-------|---------|---------------------|
-| Uninitialized variable | Zero in debug builds (compilers zero-initialize stack in debug mode), garbage in release | Explicitly initialize all variables. Run with address sanitizer (`-fsanitize=address,undefined`). |
-| `assert(x = 5)` single-equals trap | Assignment inside `assert` executes in debug, but the entire expression is removed in release (`NDEBUG`) | Audit every `assert` statement for `=` vs `==`. |
-| Stack padding | Buffer overflow corrupts neighbor data in release, but is absorbed by debug padding | Run with address sanitizer. Never rely on stack layout. |
-| Debugger timing | Race condition disappears because step-through execution serializes threads | Test without the debugger attached. Use thread sanitizer (`-fsanitize=thread`). |
-| Compiler optimization | Undefined behavior that is visible at `-O0` is legally optimized away at `-O2` | Compare debug vs release. Run with undefined behavior sanitizer (`-fsanitize=undefined`). |
-| Logging/tracing changes timing | A log statement adds a memory barrier or slows execution enough to change a race | Remove logs before final diagnosis. |
-| Exception path masks crash | A `catch` block swallows the real fault location | Check exception handler coverage. Add specific re-throw or logging at catch boundaries. |
-
-### HeisenBug Investigation Checklist
-
-Before declaring "the bug disappeared":
-
-- [ ] Compare debug vs release build behavior: `cmake -DCMAKE_BUILD_TYPE=Debug` vs `Release`
-- [ ] Audit every `assert` for `=` (assignment) vs `==` (comparison)
-- [ ] Compile with sanitizers: `-fsanitize=address,undefined` — does the bug surface?
-- [ ] If a threading issue: run with thread sanitizer (`-fsanitize=thread`)
-- [ ] Test without the debugger attached — run the binary directly
-- [ ] Compile with `-O2` and `-O0` — does behavior differ between the two?
-- [ ] Check for uninitialized variables: `-Wuninitialized -Wall -Wextra`
-
-A bug that only reproduces in one build mode is a real bug with a real root cause. The difference in behavior is evidence — use it.
+A HeisenBug is a bug that disappears or changes behavior when you attempt to observe or isolate it. If a bug vanishes under investigation: load `references/CPP_HEISENBUG_PATTERNS.md` and work through the table before declaring it resolved.

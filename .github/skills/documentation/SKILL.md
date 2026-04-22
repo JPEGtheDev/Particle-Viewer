@@ -1,5 +1,6 @@
 ---
 name: documentation
+license: MIT
 description: Use when creating docs, updating guides, writing API references, or reviewing documentation for Particle-Viewer.
 ---
 
@@ -77,7 +78,7 @@ Update all 4 locations:
 3. **Minimum skill loads table** — add the row(s) for when this skill MUST be read
 4. **Instruction Priority Hierarchy** — only if the skill introduces a new priority tier
 
-Skipping any location makes the skill effectively invisible.
+Skipping any location makes the skill effectively invisible. For templates and code examples for each update location, see `references/DOCUMENTATION_EXAMPLES.md`.
 
 ---
 

@@ -1,5 +1,6 @@
 ---
 name: oop-principles
+license: MIT
 description: Use when adding inheritance, designing interfaces, or reviewing any class hierarchy for Particle-Viewer.
 ---
 

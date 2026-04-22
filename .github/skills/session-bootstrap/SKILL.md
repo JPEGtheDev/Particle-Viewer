@@ -1,5 +1,6 @@
 ---
 name: session-bootstrap
+license: MIT
 description: Use at the start of every session.
 ---
 
@@ -55,8 +56,8 @@ domains, read multiple skills in parallel (they are independent reads).
 | Any implementation work                      | `execution`                                        |
 | Planning a multi-step task                   | `writing-plans`                                    |
 | Unclear approach or design choices           | `brainstorming`                                    |
-| Writing or editing C++ code                  | `execution`, `code-quality`                        |
-| Writing C++ with GL/SDL3/runtime patterns    | `execution`, `code-quality`, `cpp-patterns`        |
+| Writing or editing code                      | `execution`, `code-quality`                        |
+| Writing code with rendering/runtime patterns | `execution`, `code-quality`, `cpp-patterns`        |
 | Writing or editing tests                     | `execution`, `code-quality`, `testing`             |
 | Writing visual regression tests              | `execution`, `code-quality`, `testing`, `visual-regression-testing` |
 | Creating a PR or commit                      | `versioning`, `verification-before-completion`     |
@@ -64,6 +65,7 @@ domains, read multiple skills in parallel (they are independent reads).
 | Requesting code review                       | `requesting-code-review`                           |
 | Receiving code review feedback               | `receiving-code-review`                            |
 | CI/CD or workflow changes                    | `workflow`                                         |
+| Flatpak packaging or GL runtime              | `flatpak`                                          |
 | Build system or dependency changes           | `build`                                            |
 | Writing or editing documentation             | `documentation`                                    |
 | Bug fixes or error resolution                | `execution`, `systematic-debugging`                |

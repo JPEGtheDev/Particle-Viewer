@@ -1,5 +1,6 @@
 ---
 name: contract-testing
+license: MIT
 description: Use when writing tests for any interface, abstract base class, or type with multiple implementations.
 ---
 

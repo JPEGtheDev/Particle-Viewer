@@ -1,5 +1,6 @@
 ---
 name: cpp-patterns
+license: MIT
 description: Use when implementing C++ code for Particle-Viewer, handling GL resources, working with SDL3, or applying DRY/deprecation/docs-commit patterns.
 ---
 
@@ -99,7 +100,7 @@ if (!success) {
 - Bounds-check SDL3 scancode values before indexing key state arrays
 - Use `glGetIntegerv(GL_VIEWPORT, ...)` over cached viewport values where viewport may change
 - `gl_PointSize` clamped by `GL_POINT_SIZE_RANGE` (max 256px on Mesa/llvmpipe)
-- For Flatpak/SDL3/GL gotchas: see `.github/skills/workflow/references/FLATPAK_GL_GOTCHAS.md`
+- For Flatpak/SDL3/GL gotchas: see the `flatpak` skill (`.github/skills/flatpak/`)
 
 ### SDL3 Gotchas
 

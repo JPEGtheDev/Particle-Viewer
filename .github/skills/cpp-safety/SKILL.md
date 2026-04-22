@@ -1,5 +1,6 @@
 ---
 name: cpp-safety
+license: MIT
 description: Use when writing or reviewing any C++ class that owns resources, has a destructor, or acquires in a constructor.
 ---
 
@@ -35,7 +36,7 @@ Throwing from a destructor during stack unwinding calls `std::terminate` — no 
 
 If the constructor acquires resource A then throws while acquiring resource B, A leaks — the destructor is never called on a partially-constructed object. Each acquisition must be handed to its own scope-bound guard before the next acquisition begins.
 
-See `references/SAFETY_PATTERNS.md` for ownership patterns and OpenGL-specific examples.
+See the `cpp-patterns` skill for ownership patterns and OpenGL-specific examples.
 
 ---
 

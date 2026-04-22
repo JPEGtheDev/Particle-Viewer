@@ -1,5 +1,6 @@
 ---
 name: writing-plans
+license: MIT
 description: Use when starting any multi-step task, story, or feature work.
 ---
 
@@ -75,9 +76,9 @@ Each task MUST be one concrete action (2–5 minutes). For implementation tasks,
 ```
 Task N: [Feature or component name]
 Files:
-  - Create: exact/path/to/file.hpp
-  - Modify: exact/path/to/existing.cpp
-  - Test:   tests/path/to/test.cpp
+  - Create: exact/path/to/NewFile.<ext>
+  - Modify: exact/path/to/ExistingFile.<ext>
+  - Test:   tests/path/to/TestFile.<ext>
 
 RED   todo: Write the failing test for [behavior]
 RED   todo: Run test — verify it fails for the right reason
@@ -170,7 +171,6 @@ If you genuinely find no gaps after thorough analysis, state that explicitly.
 
 - Code or file edits before Step 0 (restate requirements) is complete — **STOP. Do Step 0 now.**
 - **HARD-GATE:** Plan has ≥2 todos, Skeptic not dispatched — **STOP. Dispatch Skeptic before first implementation step. No first edit until Skeptic result is read.**
-- Plan has ≥2 todos, Skeptic not dispatched — **STOP. Dispatch Skeptic before first implementation step.**
 - Any todo lacks a concrete description — **STOP. Fill every description before starting.**
 - Plan states a numerical estimate without a `wc` measurement — **STOP. Measure first. Run `wc -w` or `wc -l`.**
 - Next todo started without prior todo's 2-stage review passing — **STOP. Both stages required before advancing.**

@@ -1,5 +1,6 @@
 ---
 name: requesting-code-review
+license: MIT
 description: Use when preparing to request a code review on a PR or change.
 ---
 

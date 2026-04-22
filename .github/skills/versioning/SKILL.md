@@ -1,5 +1,6 @@
 ---
 name: versioning
+license: MIT
 description: Use when creating PRs, writing commit messages, understanding version bumps, or troubleshooting release issues for Particle-Viewer.
 ---
 

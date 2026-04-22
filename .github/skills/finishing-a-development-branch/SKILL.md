@@ -1,5 +1,6 @@
 ---
 name: finishing-a-development-branch
+license: MIT
 description: Use when a development branch is complete and ready to merge.
 ---
 
