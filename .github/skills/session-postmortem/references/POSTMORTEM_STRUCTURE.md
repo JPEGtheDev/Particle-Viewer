@@ -41,7 +41,7 @@ Canonical template and verdict definitions for session postmortem reports.
 |---|---------------------|-------------|-------------|
 
 ### Iron Law Compliance
-[Insert the Iron Law Compliance Check table from session-postmortem SKILL.md]
+[Insert the Iron Law Compliance Check table from `references/POSTMORTEM_STRUCTURE.md`]
 
 ### Verdict: HEALTHY / NEEDS IMPROVEMENT / SYSTEMIC ISSUE
 ```

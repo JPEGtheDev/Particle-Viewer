@@ -33,6 +33,7 @@ Before starting the postmortem analysis:
 
 ## The 5-Part Blameless Postmortem Structure
 
+<!-- Keep part names in sync with POSTMORTEM_STRUCTURE.md -->
 ### Part 1: Timeline
 
 Reconstruct the session in chronological order.
