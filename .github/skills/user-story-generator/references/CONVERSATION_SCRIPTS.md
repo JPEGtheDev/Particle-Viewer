@@ -1,3 +1,5 @@
+# Story Elicitation Conversation Scripts
+
 ## How This Skill is Invoked
 
 In VS Code, users will activate this skill by:
@@ -83,6 +85,12 @@ This gives them a chance to course-correct before you generate the full story.
 
 **If they say "looks good" or "go ahead"**, proceed to Step 4.  
 **If they redirect or adjust**, update your understanding and re-confirm.
+
+---
+
+**Step 4 — Generate the Story:** See `references/STORY_TEMPLATE.md` for the full story template.
+
+---
 
 ## Step 5: Continue the Conversation
 

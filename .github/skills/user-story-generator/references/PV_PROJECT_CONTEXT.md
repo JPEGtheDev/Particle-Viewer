@@ -1,3 +1,5 @@
+# Particle-Viewer Project Scope Gate
+
 ## Step 1: Understand the Request — Verify Project Scope First
 
 **CRITICAL: Verify Project Scope First**

@@ -1,3 +1,5 @@
+# INVEST Conversation Guide
+
 ## Key Principles
 
 ### Prioritize Conversation Over Generation
@@ -36,13 +38,8 @@ These are better than:
 - "Provide story type and size estimate."
 
 ### Make Stories INVEST-Compliant
-Every generated story MUST be:
-- **Independent** – no hard dependencies on unstarted work
-- **Negotiable** – focus on "what" not "how"
-- **Valuable** – clear benefit stated in "So that" clause
-- **Estimable** – team can size it (provide S/M/L estimate)
-- **Small** – doable in one sprint
-- **Testable** – acceptance criteria are verifiable
+
+The INVEST checklist is maintained inline in `SKILL.md`. See the INVEST Checklist section there.
 
 If a story violates INVEST, fix it or suggest breaking it down.
 

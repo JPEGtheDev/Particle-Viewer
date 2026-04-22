@@ -1,3 +1,5 @@
+# Story Template
+
 ## Step 4: Generate the Story
 
 Only after the user confirms, generate the story using this template:
