@@ -35,15 +35,11 @@ For completion claims → invoke **verification-before-completion** skill.
 
 ### Keep Commitments
 
-When you announce what you will do — in the session-start announcement, in a plan summary, or in a response — those statements are **commitments**, not intentions.
-
 **Rules:**
 - Every announced item must be delivered, OR explicitly acknowledged as undelivered before the response ends
 - The format for a missed commitment: `COMMITMENT NOT MET: I committed to [X]. I could not complete it because [specific reason]. Next step: [concrete action]`
 - Never let a commitment expire silently — do not end a response with an announced item quietly dropped
 - "I'll get to it next turn" is not a completion — only "I completed X, verified by [evidence]" is
-
-This behavior is the foundation of predictable trust. Consistent commitment-keeping means the user can plan around your output without second-guessing whether announced work was actually done.
 
 **Mid-session expectations drift:** If user feedback mid-session reveals your understanding of a requirement was wrong, stop and re-execute Step 0 (Clarify Expectations) before continuing. Do not silently absorb the correction and continue on the old plan.
 
@@ -65,22 +61,13 @@ For every planned item, before writing code:
 8. Advance to the next item
 ```
 
-**A task is not done until both reviewer stages pass.** Tests green is necessary but not sufficient.
-
-- Clean compilation
-- All tests green
-- Diff reviewed for side-effects
-- Stage 1 (spec compliance): PASS
-- Stage 2 (code quality): APPROVE or APPROVE WITH NITS resolved
-
 
 ### Communicating Progress
 
 - Summarize at the milestone level, not the keystroke level
 - State what changed, what was validated, and what comes next
-- When all items are complete, give a brief accounting of files touched, tests added, and notable decisions
-- **Temporal declaration:** When a plan requires more turns than the user likely expects, state this proactively at plan time: "This will take approximately N responses. Here is what each will deliver: [sequence]." Do not surface this mid-execution — declare it at plan time.
-- **Attention cost:** Before sending any response longer than 200 words or creating new work for the user, ask: is this the most respectful use of their attention? Compress or defer non-essential content.
+
+For temporal declaration and attention cost rules, see `references/EXECUTION_PATTERNS.md`.
 
 ### Commit Rhythm
 
@@ -133,30 +120,15 @@ After something works but before you commit: **"Is there a cleaner way to expres
 
 ### Trade-Off Discipline
 
-When two or more valid approaches exist, use this structure:
-```
-Approach A: [what it gives] / [what it costs]
-Approach B: [what it gives] / [what it costs]
-Choice: [A or B] because [specific reason]
-```
-
-Required when: rejecting a simpler approach, making a correctness/performance/maintainability tradeoff, or when the choice affects testability or coupling.
-
-**Pain as Signal:** Difficult-to-test code signals a design problem. Fix the design, not the test harness.
+For trade-off discipline structure and the Approach A/B/Choice template, see `references/EXECUTION_PATTERNS.md`.
 
 ---
 
 ## Make It Work, Make It Right, Make It Fast
 
-This three-phase progression, from Kent Beck, governs the order of quality concerns at the feature level:
-
 1. **Make it work** — pass the tests; behavior is correct
 2. **Make it right** — refactor: clean design, no duplication, clear names
 3. **Make it fast** — optimize: only after correctness and cleanliness are established
-
-**Relationship to the TDD cycle:**
-
-The TDD Red/Green/Refactor cycle enforces Make It Work → Make It Right at the *micro level* (each individual test). This macro rule enforces the same discipline at the *feature level*: do not optimize code that does not yet pass its tests; do not clean up code that does not yet work.
 
 **Gates:**
 
@@ -196,37 +168,17 @@ When a mistake is discovered:
 
 **Symmetric Right Wrongs:** If a user instruction will produce a defective result, say so before acting: "I'll proceed if you confirm, but this will cause [specific consequence]."
 
-**Listen First:** Read the user's feedback fully before drafting any response. A defense written before the criticism is understood is a collision, not a response.
-
 ---
 
 ## Continuous Refinement
 
-After any mistake or user correction:
-
-1. Name the failure mode
-2. Check existing skills — is it already documented?
-3. If new, update the relevant skill now — don't defer
-4. Write a concrete prevention rule
+After a mistake, apply the Continuous Refinement protocol — see `references/EXECUTION_PATTERNS.md`.
 
 ---
 
 ## Skill Dispatch Table
 
-| Domain | Skill |
-|--------|-------|
-| Planning a multi-step task | `writing-plans` |
-| Subagent dispatch or delegation | `subagent-driven-development` |
-| Bug or failure | `systematic-debugging` |
-| Completion claim | `verification-before-completion` |
-| Writing tests | `testing` |
-| Writing/editing C++ | `code-quality` |
-| Commits or PRs | `versioning` |
-| CI/CD work | `workflow` |
-| Flatpak packaging or GL runtime | `flatpak` |
-| Build or dependencies | `build` |
-| Code review | `code-review agent`, 1 per file |
-| Skill review | `general-purpose` + `skill-reviewer` skill |
+For the domain-to-skill dispatch lookup, see `references/EXECUTION_PATTERNS.md`.
 
 ---
 

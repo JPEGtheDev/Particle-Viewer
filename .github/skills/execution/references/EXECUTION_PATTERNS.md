@@ -92,3 +92,63 @@ Address the source of friction rather than working around it. A system that is h
 - `execution` — work loop, commit rhythm, mode declaration
 - `writing-plans` — SIMPLICITY_PRINCIPLES.md for Assign Problems Not Tasks; YAGNI gate
 - `systematic-debugging` — Profile Before Optimizing applies equally to debugging: measure before concluding
+
+---
+
+## Trade-Off Discipline
+
+When two or more valid approaches exist, use this structure:
+```
+Approach A: [what it gives] / [what it costs]
+Approach B: [what it gives] / [what it costs]
+Choice: [A or B] because [specific reason]
+```
+
+Required when: rejecting a simpler approach, making a correctness/performance/maintainability tradeoff, or when the choice affects testability or coupling.
+
+**Pain as Signal:** Difficult-to-test code signals a design problem. Fix the design, not the test harness.
+
+---
+
+## MIWMIRMIF — Extended Rationale
+
+**Relationship to the TDD cycle:**
+
+The TDD Red/Green/Refactor cycle enforces Make It Work → Make It Right at the *micro level* (each individual test). This macro rule enforces the same discipline at the *feature level*: do not optimize code that does not yet pass its tests; do not clean up code that does not yet work.
+
+---
+
+## Continuous Refinement
+
+After any mistake or user correction:
+
+1. Name the failure mode
+2. Check existing skills — is it already documented?
+3. If new, update the relevant skill now — don't defer
+4. Write a concrete prevention rule
+
+---
+
+## Skill Dispatch Table
+
+| Domain | Skill |
+|--------|-------|
+| Planning a multi-step task | `writing-plans` |
+| Subagent dispatch or delegation | `subagent-driven-development` |
+| Bug or failure | `systematic-debugging` |
+| Completion claim | `verification-before-completion` |
+| Writing tests | `testing` |
+| Writing/editing C++ | `code-quality` |
+| Commits or PRs | `versioning` |
+| CI/CD work | `workflow` |
+| Flatpak packaging or GL runtime | `flatpak` |
+| Build or dependencies | `build` |
+| Code review | `code-review agent`, 1 per file |
+| Skill review | `general-purpose` + `skill-reviewer` skill |
+
+---
+
+## Communicating Progress — Extended Rules
+
+- **Temporal declaration:** When a plan requires more turns than the user likely expects, state this proactively at plan time: "This will take approximately N responses. Here is what each will deliver: [sequence]." Do not surface this mid-execution — declare it at plan time.
+- **Attention cost:** Before sending any response longer than 200 words or creating new work for the user, ask: is this the most respectful use of their attention? Compress or defer non-essential content.
