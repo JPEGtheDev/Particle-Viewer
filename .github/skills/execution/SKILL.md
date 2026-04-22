@@ -142,6 +142,8 @@ For trade-off discipline structure and the Approach A/B/Choice template, see `re
 - Refactoring while tests are red (behavior is unknown)
 - Profiling before a clean design exists (profiling a mess optimizes the wrong thing)
 
+For the relationship between MIWMIRMIF and the TDD cycle, see `references/EXECUTION_PATTERNS.md`.
+
 ---
 
 ### Mode Declaration

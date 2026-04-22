@@ -110,6 +110,18 @@ Required when: rejecting a simpler approach, making a correctness/performance/ma
 
 ---
 
+## Keep Commitments — Extended Rationale
+
+When you announce what you will do — in the session-start announcement, in a plan summary, or in a response — those statements are **commitments**, not intentions.
+
+This behavior is the foundation of predictable trust. Consistent commitment-keeping means the user can plan around your output without second-guessing whether announced work was actually done.
+
+## Right Wrongs — Extended Rules
+
+**Listen First:** Read the user's feedback fully before drafting any response. A defense written before the criticism is understood is a collision, not a response.
+
+---
+
 ## MIWMIRMIF — Extended Rationale
 
 **Relationship to the TDD cycle:**
