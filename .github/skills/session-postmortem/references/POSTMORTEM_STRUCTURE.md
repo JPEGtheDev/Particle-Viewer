@@ -108,7 +108,9 @@ Derive the paths for the session being reviewed from your project's session mana
 
 ---
 
-## Full 5-Part Structure
+## The 5-Part Blameless Postmortem Structure
+
+Work through every part. Do not skip a section because the session "seemed fine."
 
 ### Part 1: Timeline
 

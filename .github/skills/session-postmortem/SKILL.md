@@ -20,6 +20,8 @@ YOU MUST examine the session for rationalization patterns. A clean outcome does 
 
 ## BEFORE PROCEEDING — Postmortem Gate
 
+Before starting the postmortem analysis:
+
 1. The session being analyzed has completed — no further work is planned for that session.
 2. The session's `events.jsonl` log is accessible at `[SESSION_ID]/events.jsonl`.
 3. You are running as an EXTERNAL reviewer — you have not been the agent in the session being analyzed.
