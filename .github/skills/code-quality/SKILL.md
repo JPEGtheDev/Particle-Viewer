@@ -12,189 +12,44 @@ NO UNFORMATTED OR UNTIDY CODE SHIPS
 
 YOU MUST run clang-format AND clang-tidy BEFORE every commit. CI will reject violations. No exceptions.
 
-Violating the letter of this rule is violating the spirit of this rule.
-
 **Announce at start:** "I am using the code-quality skill to [format/lint/review] [description]."
 
 ---
 
-# Instructions for Agent
+## Pre-Commit Gate (MANDATORY)
 
-## How This Skill is Invoked
-
-In VS Code, users will activate this skill by:
-- Typing `@workspace /code-quality [description]` in Copilot Chat
-- Or asking: "Format the code", "Fix clang-tidy warnings", "What naming convention?", "Pre-commit checklist"
-
-When activated, apply the formatting, naming, and pattern rules below.
-
----
-
-## Core Principle: Tools Enforce Style, Humans Write Logic
-
-Formatting and naming are automated via `.clang-format` and `.clang-tidy`. Never manually format code — run the tools.
-
----
-
-## Step 1: Pre-Commit Checklist (MANDATORY)
-
-Run these before **every** commit:
+Run before **every** commit:
 
 ```bash
-# 1. Format ALL changed C++ files
 find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i
-
-# 2. Check what changed
-git diff --name-only | head -20
-
-# 3. Spot-check any files you touched (don't trust silent tool output)
-# Look for: trailing semicolons after function }, exception handling, 
-# multi-declaration statements, bracing consistency
 git diff src/[touched_file].cpp | head -100
-
-# 4. Verify formatting passes (same check CI runs)
 find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format --dry-run -Werror
-
-# 5. Build and test
-cmake --build build
-./build/tests/ParticleViewerTests
-
-# 6. (Optional) Static analysis
-clang-tidy src/main.cpp -- -Isrc/glad/include
+cmake --build build && ./build/tests/ParticleViewerTests
+clang-tidy src/main.cpp -- -Isrc/glad/include  # optional
 ```
 
 **⚠️ Critical:** Do NOT trust that `clang-format --dry-run -Werror` with no output means success. Always visually inspect `git diff` of modified files. Silent tool output can mask formatting issues.
 
 ---
 
-## Step 2: Formatting Rules (clang-format)
+## Naming Conventions (clang-tidy enforced)
 
-For clang-format settings (indentation, line length, brace style, include order, pointer alignment) and `.clang-format` reference, see `references/CPP_TOOLCHAIN.md`.
-
----
-
-## Step 3: Human-Reviewable Formatting Patterns
-
-These require **manual inspection** after running clang-format — tools don't always catch them:
-
-| Issue | Fix | Example |
-|-------|-----|---------|
-| Semicolon after function closing brace | Remove trailing `;` | `void foo() { }` not `void foo() { };` |
-| Empty constructor syntax | Use `= default` | `Shader() = default;` not `Shader() {};` |
-| Exception catching by value | Catch by const reference | `catch (const std::ifstream::failure& e)` |
-| Multiple declarations in one line | Split to separate lines | `uint32_t w; uint32_t h;` not `uint32_t w, h;` |
-
-**Always check `git diff` for these patterns after formatting.**
-
----
-
-## Step 4: Naming Conventions (clang-tidy enforced)
-
-| Element | Convention | Example |
-|---------|-----------|---------|
-| Classes/Structs/Enums | `PascalCase` | `ParticleSystem`, `RenderSettings` |
-| Functions/Methods | `camelCase` (USE camelCase; not enforced by clang-tidy) | `initializeBuffers`, `getParticleCount` |
-| Variables/Parameters | `snake_case` | `particle_count`, `delta_time` |
-| Member variables | `snake_case` + trailing `_` for private | `window_width`, `camera_` |
-| Constants/Macros | `UPPER_CASE` | `MAX_PARTICLES`, `PI` |
-| File names | `snake_case` | `particle_system.hpp` |
-| Include guards | `<PROJECT>_<PATH>_<FILE>_H` | `PARTICLE_VIEWER_PARTICLE_SYSTEM_H` |
-| Namespaces | `snake_case` | `particle_viewer` |
-
----
-
-## Step 5: Static Analysis (clang-tidy)
-
-For clang-tidy commands, enabled checks, configuration details, and CI status, see `references/CPP_TOOLCHAIN.md`.
-
----
-
-## Step 6: Project-Specific C++ Patterns
-
-For runtime patterns (data organization, error handling, memory management, OpenGL/SDL3 usage, DRY, Broken Window Protocol, Deprecation, Docs-Same-Commit), load the `cpp-patterns` skill (`.github/skills/cpp-patterns/`).
-
----
-
-## Step 7: Adding a Feature / Fixing a Bug
-
-### New Feature Workflow
-1. **Scan the class interface** — before writing integration code that calls methods on an existing class, verify which members are public/private. Classes like `Camera` have a mix; don't assume public.
-2. Make code changes following naming conventions
-3. Add unit tests in `tests/core/` (see `testing` skill)
-4. Run `clang-format -i` on ALL changed files
-5. Build and verify tests pass
-6. Commit: `feat: description`
-
-### Removing Features / User-Requested Changes
-When removing a gamepad feature or call site from `viewer_app.cpp` at user request, **do not also delete the supporting `Camera` public method**. The Camera API is stable across sessions; call sites in `viewer_app` change frequently with user preferences. Removing `isRenderingSphere()` when L3/R3 was dropped meant restoring it when L3/R3 came back one session later. Only remove a Camera method if it is architecturally wrong, not merely unused at the current moment.
-
-### Bug Fix Workflow
-1. Write a failing test that reproduces the bug
-2. Fix the code
-3. Verify test passes, run full suite
-4. Run `clang-format -i` on changed files
-5. Commit: `fix: description`
+`PascalCase` classes/enums · `camelCase` methods · `snake_case` vars/params · `snake_case_` private members · `UPPER_CASE` constants · `snake_case` files/namespaces · `<PROJECT>_<PATH>_<FILE>_H` guards
 
 ---
 
 ## Code Smell Review Checklist
 
-Static analysis catches syntax violations. These structural smells require human review on every PR:
+- **DuplicatedCode** — Same logic block in 2+ places? Extract it.
+- **LongMethod** — Method longer than ~30 lines? Apply ExtractMethod.
+- **GodClass** — One class controlling too many subsystems? Split responsibilities.
+- **DataClumps** — Same 2+ variables always travelling together? Introduce a struct.
+- **PrimitiveObsession** — Domain concepts as raw `int`, `float`, or `GLenum`? Introduce typed wrappers.
 
-| Smell | What to Look For |
-|---|---|
-| **DuplicatedCode** | Same logic block in 2+ places? Extract it. |
-| **LongMethod** | Method longer than ~30 lines? Apply ExtractMethod. |
-| **GodClass** | One class controlling too many subsystems? Split responsibilities. |
-| **DataClumps** | Same 2+ variables always travelling together? Introduce a struct. |
-| **PrimitiveObsession** | Domain concepts as raw `int`, `float`, or `GLenum`? Introduce typed wrappers. |
-| **FeatureEnvy** | Method references another class's data more than its own? Apply MoveMethod. |
-| **MagicNumber** | Literals in GL calls or formulas? Name them as constants. |
-| **ArrowAntiPattern** | More than 3 levels of nesting? Introduce guard clauses or RAII. |
-| **SpeculativeGenerality** | Abstraction with exactly one implementation? Remove it until a second arrives. |
-| **CommentSubstitutingForCode** | Comment explains WHAT the code does (not WHY)? Rename or refactor instead. |
+See `references/CODE_SMELLS.md` for the full checklist.
 
 ✓ All checked → no structural smells found
 ✗ Any flagged → log `[BROKEN WINDOW NOTED]` or fix before commit (see `cpp-patterns` skill)
-
----
-
-## Code Duplication: Once And Only Once vs Don't Repeat Yourself
-
-These two principles are frequently conflated but target different problems:
-
-| Principle | Source | What it targets | How to fix |
-|-----------|--------|-----------------|------------|
-| **Once And Only Once** | Ward Cunningham / Extreme Programming | The same *code logic* appears in two or more places | Refactor: extract a method, function, or class |
-| **Don't Repeat Yourself** | Hunt & Thomas, *The Pragmatic Programmer* | The same *knowledge or fact* is encoded in two or more places, even if the code looks different | Introduce a single authoritative source of truth |
-
-**Key distinction:** Two code blocks can look identical yet not violate Don't Repeat Yourself if they represent two independent domain concepts that happen to look similar today. Merging them creates false coupling. Conversely, two code blocks can look completely different yet violate Don't Repeat Yourself if they both encode the same business rule.
-
-| Situation | Principle violated | Correct action |
-|-----------|-------------------|----------------|
-| Same validation logic repeated in three `if` blocks | Once And Only Once | Extract a `validate()` function |
-| Maximum buffer size duplicated as a constant and a comment | Don't Repeat Yourself | Remove the comment; the constant is the source of truth |
-| Two classes share a 3-line helper computing screen coordinates | Once And Only Once | Extract to a shared utility |
-| Database schema and response struct both define "a user has email and name" | Don't Repeat Yourself | Generate one from the other, or treat one as the source of truth |
-| Two unrelated features happen to iterate in the same way | Neither | Leave them separate; forced unification creates accidental coupling |
-
----
-
-## Review Checklist
-
-- [ ] `clang-format -i` run on all changed files
-- [ ] `clang-format --dry-run -Werror` passes
-- [ ] Build succeeds
-- [ ] All tests pass
-- [ ] Conventional commit message format used
-- [ ] No raw `new`/`delete` — use RAII or smart pointers
-- [ ] GL resources cleaned up in destructors
-- [ ] Headers are self-contained
-- [ ] If a public interface changed: documentation updated in same commit (see cpp-patterns skill)
-- [ ] If a symbol is deprecated: all call sites removed or annotated (see cpp-patterns skill)
-
-✓ All 10 met → proceed to commit
-✗ Any unmet → complete the failing step before committing
 
 ---
 
@@ -228,9 +83,12 @@ If you catch yourself thinking any of these, stop and follow the rule:
 ## Reference
 
 - Full coding standards: [`docs/CODING_STANDARDS.md`](../../../docs/CODING_STANDARDS.md)
-- clang-format config: `.clang-format`
-- clang-tidy config: `.clang-tidy`
-- Commit format: `versioning` skill (`.github/skills/versioning/`)
-- Testing patterns: `testing` skill (`.github/skills/testing/`)
-- Design principles: `references/DESIGN_PRINCIPLES.md` — Kent Beck's 4 rules, essential vs accidental complexity, actionable error messages
-- Code smells: `references/CODE_SMELLS.md` — Fowler's 18 canonical code smells, detection heuristics, refactoring map
+- Commit format: `versioning` skill
+- Testing patterns: `testing` skill
+- `references/CPP_TOOLCHAIN.md` — formatting settings, clang-tidy, PV workflow patterns
+- `references/FORMATTING_RULES.md` — human-reviewable formatting patterns
+- `cpp-patterns` skill — C++ runtime patterns
+- `references/DESIGN_PRINCIPLES.md` — design heuristics
+- `references/CODE_SMELLS.md` — smells, refactoring map
+- `references/NAMING_TABLES.md` — naming examples
+- `references/REVIEW_CHECKLIST.md` — pre-review checklist
