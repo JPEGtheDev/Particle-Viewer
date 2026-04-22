@@ -1,3 +1,5 @@
+# Agent Delegation Gate
+
 ## Agent Delegation Verification
 
 When a subagent reports that it completed work, **do not propagate its claim without verifying.**
@@ -19,7 +21,7 @@ Agent reports: "Done" / "Complete" / "Fixed" / "Committed"
    Read the diff — do the files changed match what was requested?
     ↓
 3. Run verification commands on the output
-   cmake --build build && ./build/tests/ParticleViewerTests
+   Run the project verification commands (see `references/PV_VERIFICATION_COMMANDS.md`)
     ↓
 4. ONLY THEN claim the subagent's work is complete
 ```

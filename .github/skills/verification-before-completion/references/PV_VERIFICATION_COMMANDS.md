@@ -1,3 +1,5 @@
+# Particle-Viewer Verification Commands
+
 ## The Verification Commands
 
 > **Note (Particle-Viewer specific):** The commands below use this project's build system and test runner. Adapt `cmake --build build`, `./build/tests/ParticleViewerTests`, and the `find src tests` glob for your own project.

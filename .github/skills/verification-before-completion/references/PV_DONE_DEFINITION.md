@@ -1,3 +1,5 @@
+# Particle-Viewer Done Definition
+
 For this project (a desktop application, not a deployed service), the equivalent stages are:
 - "Locally verified" — builds + tests pass after the change
 - "Gate passed" — full pre-commit gate (build + tests + format + diff review) completed

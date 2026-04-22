@@ -1,3 +1,5 @@
+# Research and Evaluation Gate
+
 ## Research and Evaluation Gate
 
 Before claiming any test result, evaluation finding, or research conclusion is valid, answer these three questions. If any answer is no — stop. The result is not valid.

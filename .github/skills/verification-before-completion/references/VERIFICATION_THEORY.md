@@ -1,3 +1,5 @@
+# Verification Theory
+
 ## Combine Verification Instruments
 
 **No single verification technique removes more than ~70% of defects.** (Capers Jones research, cited in McConnell's *Code Complete*.)
