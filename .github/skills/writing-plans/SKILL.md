@@ -150,6 +150,8 @@ If you genuinely find no gaps after thorough analysis, state that explicitly.
 | "We'll probably need this later" | YAGNI — not in criteria means not in this plan |
 | "The plan looks good — I'll just start" | A plan presented is not a plan approved. Wait for explicit instruction. |
 | "The user implied I should proceed" | Implied is not explicit. "Looks good", "go ahead", or "start" are approval. Silence is not. |
+| "The user said 'autopilot' / 'just go' — that overrides plan-first" | When a message says both "autopilot/just go" and "show me first / I want to know your flow," the show-first instruction wins. Explicit plan presentation is Iron Law 7. "Autopilot" is not an explicit override unless the user also says "skip the plan." |
+| "I listed all the main files — the audit scope is complete" | Listing top-level files from memory or a shallow glob misses references/ subdirectories, recently-added files, and nested content. For any audit task, run a file listing command (e.g. `find .github/skills -type f -name '*.md'`) before planning. Do not enumerate scope from memory. |
 | "I found the bug — fixing it now" | A request to debug or research is not a request to fix. Present findings first. Wait for instruction. |
 | "Plan states a numerical estimate (word count, file size, line count) without measuring" | Measure before writing. Run `wc -w` or `wc -l`. Unverified numerical claims in plans cause failed acceptance criteria. |
 | "It's just a quick test, I don't need todos" | Any multi-step task without SQL todos has no Skeptic dispatch gate. The Skeptic dispatch rule cannot fire if todos were never created. Create todos first, then execute. |

@@ -43,6 +43,7 @@ Run every item for each skill file under review:
 - [ ] Skill-specific commands present (not generic placeholder examples)?
 - [ ] Cross-references to at least 1 related skill?
 - [ ] No cross-skill file path references (other skills referenced by skill name, not by `../other-skill/references/FILE.md` paths)?
+- [ ] If any cross-skill path was fixed during this review: replacement text itself checked for embedded path fragments (`/references/`, `../`, `.md` filename referencing another skill's content)?
 - [ ] Domain language matches skill scope — language-specific skills use appropriate conventions; generic skills use language-agnostic terminology?
 - [ ] No absolute paths (no machine-specific prefixes — use `[REPO_ROOT]`, template variables, or relative references only)?
 
@@ -113,6 +114,8 @@ If you catch yourself thinking any of the following, STOP and re-examine before 
 | "The cross-skill path reference is just for convenience, it's fine" | Cross-skill file paths break when skills are reorganized. Name the owning skill in prose; let the agent navigate. See SIZE_AND_COMPRESSION.md Skill Composition Model. |
 | "The domain language seems fine, I won't check closely" | Wrong-language examples (e.g., npm/pip in a C++/CMake skill, or C++ specifics in a language-agnostic skill) are a FAIL. Check every command and example. |
 | "I can review inline — the file is small" | Inline review is biased. Dispatch task(agent_type="code-review"). Producing a review table inline = this violation. |
+| "I replaced the cross-skill path with prose — the fix is good" | The replacement text may still contain a path fragment. Re-read the edited line: does it contain `/references/`, `../`, or a `.md` filename from another skill? If yes, the fix is incomplete — replace with skill-name prose only. |
+| "Stage 1 FAIL is stale — my edits made it correct; I verified with bash" | A bash `ls` or self-inspection is not equivalent to an independent Stage 1 review. Re-dispatch the reviewer pointed at the current on-disk state. Self-verification does not satisfy the review gate. |
 
 ---
 

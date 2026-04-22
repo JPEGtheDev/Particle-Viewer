@@ -96,6 +96,7 @@ If unsure, read `code-quality` — it applies to every code task.
 - [ ] Skill load announcement made for each loaded skill
 - [ ] `git status` checked in main working tree — if uncommitted changes exist with no active work in progress, identify their source (prior agent? manual edit?), read the diff, then commit or revert explicitly before starting new work. Ghost commits from prior agents are a recurring risk.
 - [ ] If resuming a prior session: SQL pending todos checked; Skeptic dispatched before first implementation step
+- [ ] If context compaction has occurred since last skill load: all domain skills explicitly reloaded — a skill present before compaction is NOT in context after compaction. "I remember loading it" is not evidence of current context.
 - [ ] Stored memories checked for user-specified model preference overrides — applies to all agent dispatch decisions this session
 - [ ] If this task requires reading 3+ files for research or review: an explore or code-review agent is dispatched — NOT done inline
 - [ ] Session hooks checked: if sessionStart or userPromptSubmitted hook failed, all skills MUST be invoked manually this session — no auto-loading is available
