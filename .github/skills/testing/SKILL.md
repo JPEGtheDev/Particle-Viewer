@@ -107,6 +107,8 @@ If you catch yourself thinking any of these, STOP and start over with RED:
 
 **All of these mean: Delete any code written before the test. Start over with RED.**
 
+See `references/TESTING_EXAMPLES.md` for the Agile Alarm Bell warning on refactoring without tests.
+
 ---
 
 ## Rationalization Prevention

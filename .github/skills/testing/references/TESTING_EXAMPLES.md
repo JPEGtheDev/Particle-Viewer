@@ -423,3 +423,9 @@ Signal: if modifying the test file requires looking at the source file, the test
 - Use `EXPECT_*` (non-fatal) for most assertions; use `ASSERT_*` (fatal) only when a test cannot meaningfully continue after failure
 - If a test seems to test external library behavior, focus on the wrapper/integration instead
 - If Arrange and Act are identical, the test is a constructor test — put expected values in Arrange, constructor call in Act
+
+---
+
+## Agile Alarm Bell
+
+**Agile Alarm Bell:** "Let's refactor without writing tests first" is the most dangerous phrase pair in software. Refactoring without a test suite to hold behavior constant is not refactoring — it is reckless restructuring. Stop. Write characterization tests first. Then refactor.
