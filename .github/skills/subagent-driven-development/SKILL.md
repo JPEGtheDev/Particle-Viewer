@@ -230,7 +230,7 @@ See `references/MODEL_SELECTION.md` for model tier table and concurrency rules.
 ## Delegation Quality Rules
 
 - **One clear objective per subagent** — no multi-part briefs
-- **Assign Problems Not Tasks:** delegate the outcome, not the steps — See the `writing-plans` skill — 'Assign Problems Not Tasks' principle.
+- **Assign Problems Not Tasks:** delegate the outcome, not the steps — see the `writing-plans` skill — 'Assign Problems Not Tasks' principle.
 - **State the return format explicitly** — tell it exactly what to give back
 - **Provide complete context** — subagents are stateless
 - **Fresh context per task** — never share session history; it contaminates the subagent's search
