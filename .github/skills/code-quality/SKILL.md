@@ -12,7 +12,15 @@ NO UNFORMATTED OR UNTIDY CODE SHIPS
 
 YOU MUST run clang-format AND clang-tidy BEFORE every commit. CI will reject violations. No exceptions.
 
+Violating the letter of this rule is violating the spirit of this rule.
+
 **Announce at start:** "I am using the code-quality skill to [format/lint/review] [description]."
+
+---
+
+## Core Principle: Tools Enforce Style, Humans Write Logic
+
+Formatting and naming are automated via `.clang-format` and `.clang-tidy`. Never manually format code — run the tools.
 
 ---
 
@@ -22,6 +30,10 @@ Run before **every** commit:
 
 ```bash
 find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i
+
+# 2. Check what changed
+git diff --name-only | head -20
+
 git diff src/[touched_file].cpp | head -100
 find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format --dry-run -Werror
 cmake --build build && ./build/tests/ParticleViewerTests
