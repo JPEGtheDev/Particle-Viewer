@@ -29,18 +29,31 @@ Formatting and naming are automated via `.clang-format` and `.clang-tidy`. Never
 Run before **every** commit:
 
 ```bash
+# 1. Format ALL changed C++ files
 find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i
 
 # 2. Check what changed
 git diff --name-only | head -20
 
+# 3. Spot-check any files you touched (don't trust silent tool output)
+# Look for: trailing semicolons after function }, exception handling,
+# multi-declaration statements, bracing consistency
 git diff src/[touched_file].cpp | head -100
+
+# 4. Verify formatting passes (same check CI runs)
 find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format --dry-run -Werror
-cmake --build build && ./build/tests/ParticleViewerTests
-clang-tidy src/main.cpp -- -Isrc/glad/include  # optional
+
+# 5. Build and test
+cmake --build build
+./build/tests/ParticleViewerTests
+
+# 6. (Optional) Static analysis
+clang-tidy src/main.cpp -- -Isrc/glad/include
 ```
 
 **⚠️ Critical:** Do NOT trust that `clang-format --dry-run -Werror` with no output means success. Always visually inspect `git diff` of modified files. Silent tool output can mask formatting issues.
+
+See `references/FORMATTING_RULES.md` for formatting rule details.
 
 ---
 
@@ -50,7 +63,15 @@ clang-tidy src/main.cpp -- -Isrc/glad/include  # optional
 
 ---
 
+## Adding a Feature / Fixing a Bug
+
+See `references/CPP_TOOLCHAIN.md` for PV-specific toolchain commands.
+
+---
+
 ## Code Smell Review Checklist
+
+Static analysis catches syntax violations. These structural smells require human review on every PR:
 
 - **DuplicatedCode** — Same logic block in 2+ places? Extract it.
 - **LongMethod** — Method longer than ~30 lines? Apply ExtractMethod.
@@ -62,6 +83,17 @@ See `references/CODE_SMELLS.md` for the full checklist.
 
 ✓ All checked → no structural smells found
 ✗ Any flagged → log `[BROKEN WINDOW NOTED]` or fix before commit (see `cpp-patterns` skill)
+
+See `references/CODE_SMELLS.md` for the full code smells catalog.
+
+---
+
+## Review Checklist
+
+See `references/REVIEW_CHECKLIST.md` for the full numbered pre-commit checklist.
+
+✓ All 10 met → proceed to commit
+✗ Any unmet → complete the failing step before committing
 
 ---
 
