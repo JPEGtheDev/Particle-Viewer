@@ -102,6 +102,8 @@ Evidence must be **inline**, not referenced:
 ❌ `"I ran the tests and they passed."`  
 ✅ `"Ran <project-test-runner>: **247 passed, 0 failures.** [exit 0]"`
 
+See `references/HONESTY_PATTERNS.md` for why "should work" is banned, process language alternatives, and the 4-Cores final integrity check.
+
 ---
 
 For Particle-Viewer build and test commands, see `references/PV_VERIFICATION_COMMANDS.md`.
