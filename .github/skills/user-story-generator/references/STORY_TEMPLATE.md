@@ -76,4 +76,5 @@ Only after the user confirms, generate the story using this template:
 
 ## Estimating Effort and Model Selection
 
+<!-- Path (.github/skills/user-story-estimation/) stripped — cross-skill path violation per Skill Composition Model -->
 Load the `user-story-estimation` skill for S/M/L size breakdown, premium request ranges, model tier selection, and validated examples. Always include the Effort Estimate section in every generated story.
