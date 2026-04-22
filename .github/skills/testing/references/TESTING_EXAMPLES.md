@@ -368,3 +368,58 @@ tests/
 ├── stb_image_write_impl.cpp
 └── CMakeLists.txt
 ```
+
+---
+
+## AAA Pattern — Template (Three Phases)
+
+```cpp
+TEST(SuiteName, MethodName_Condition_ExpectedResult)
+{
+    // Arrange
+    // Set up test preconditions, create objects, define expected values
+
+    // Act
+    // Execute the single operation being tested
+
+    // Assert
+    // Verify the outcome
+}
+```
+
+---
+
+## PV Naming Examples
+
+Use format: `UnitName_StateUnderTest_ExpectedResult`
+
+- `Compare_IdenticalImages_ReturnsMatch`
+- `ParsePPM_InvalidFile_ReturnsEmptyData`
+
+---
+
+## The Depended-Upon Behavior Rule
+
+Any behavior that your code **relies upon** must have a test. This applies to:
+- Your own functions (don't assume they work; prove it)
+- Libraries you depend on (test the integration point, not the library internals)
+- Configuration assumptions (if the behavior would surprise you if it changed, test it)
+
+The inverse: if behavior changes and no test breaks, that behavior was untested. It is not safe to change — it is merely unverified to be safe. Add the test now.
+
+---
+
+## Coincidence Articulation
+
+Tests that mirror the implementation's structure detect nothing — they fail together or pass together regardless of correctness.
+
+**Rule:** The test must reason about the problem independently from the implementation.
+- Test input/output contracts, not internal data structures
+- Test what the function is supposed to do, not how it currently does it
+- If the test would pass for any implementation that uses the same algorithm, it is not testing a contract — it is testing an implementation coincidence
+
+Signal: if modifying the test file requires looking at the source file, the test is mirroring implementation structure. The test MUST be written from requirements, not from reading the implementation.
+
+- Use `EXPECT_*` (non-fatal) for most assertions; use `ASSERT_*` (fatal) only when a test cannot meaningfully continue after failure
+- If a test seems to test external library behavior, focus on the wrapper/integration instead
+- If Arrange and Act are identical, the test is a constructor test — put expected values in Arrange, constructor call in Act
