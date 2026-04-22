@@ -90,6 +90,45 @@ Every skill belongs to exactly one bounded context. Place new skills in the corr
 
 ---
 
+## Skill Composition Model
+
+Skills are composable units. Each concept has exactly one owner. Consumers reference, never duplicate.
+
+### Three Rules
+
+**1. Single ownership — content lives in exactly one place.**
+Every piece of guidance belongs to one skill or one reference file. If the same rule appears in two skills, that is duplication — extract it to the owning skill's `references/` directory and replace both copies with a one-line pointer.
+
+**2. Compose by skill name in prose — never by file path.**
+When Skill A needs to invoke content from Skill B:
+
+```
+CORRECT:   "See the `testing` skill."  /  "Load the `testing` skill."
+INCORRECT: "See `../testing/references/TEST_SMELLS.md`"
+```
+
+Cross-skill file paths break when skills are reorganized. Skill names are stable identifiers. The agent navigates from the name; it does not need the path.
+
+**3. Split on domain boundary — not on size alone.**
+
+> **Context:** Applies when a skill grows beyond its token limit or begins covering two distinct concerns.  
+> **Forces:** Splitting on size alone produces fragments without iron laws — they cannot enforce behavior independently. Splitting on domain produces cohesive, independently invocable skills.  
+> **Solution:** Split only when the new sub-skill has a distinct iron law and is invoked independently of the parent. A skill that is always loaded together with its parent is not a split — it is an extract into a reference file.  
+> **Consequences:** Fewer skills than a size-based approach would produce. Each skill is larger but self-contained.
+
+See `references/SIZE_AND_COMPRESSION.md` for token limits and the split decision table.
+
+### Composition Anti-Patterns
+
+| Anti-pattern | Correct form |
+|---|---|
+| Duplicating a rule from another skill | One-line pointer: "See the `[skill]` skill." |
+| Cross-skill file path (`../other/references/FILE.md`) | Skill name in prose |
+| Splitting a skill because it is long | Split only when there is a distinct iron law for the sub-domain |
+| Creating a skill for occasional content | Write a reference doc in the owning skill's `references/` |
+
+---
+
 ## Skill Anatomy — 5 Required Elements
 
 Every skill MUST contain all five elements:
