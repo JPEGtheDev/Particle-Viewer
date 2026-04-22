@@ -1,5 +1,6 @@
 ---
 name: session-postmortem
+license: MIT
 description: Use after a session completes.
 ---
 
@@ -62,21 +63,7 @@ A self-assessment cannot find what the agent rationalized away. **An external re
 
 ### Setup
 
-This skill is for the **Particle-Viewer** repository. All repo paths are relative to the git root of this project.
-
-Derive the paths for the session being reviewed:
-
-```
-REPO:             [git root of Particle-Viewer]
-SESSION_ID:       [session ID — shown in workspace.yaml or .copilot/session-state/ directory name]
-EVENTS_LOG:       [SESSION_ID]/events.jsonl
-WORKSPACE:        [SESSION_ID]/
-SCRATCH:          [REPO]/scratch/
-SELF_ASSESSMENT:  [SESSION_ID]/postmortem.md  (if self-eval already ran)
-OUTPUT:           [SESSION_ID]/postmortem-external.md
-```
-
-The `scratch/` directory contains session artifacts written during the session (intermediate analysis, theory-testing files, research dumps). It is `.gitignored` but may contain evidence of exploratory work not captured in the event log.
+Derive the paths for the session being reviewed from your project's session management conventions. For Particle-Viewer path conventions, see `references/PV_SESSION_PATHS.md`.
 
 ### Protocol
 
@@ -112,12 +99,12 @@ done
 
 Dispatch up to 4 reviewer subagents in parallel, each pointed at a different `events.jsonl`. Use `postmortem-reviewer.md` for each. Collect results as they complete.
 
-**Priority order for batch review:**
-1. Sessions where a self-assessment `postmortem.md` exists but no external review — highest value, direct comparison available
-2. Sessions with a `plan.md` but no postmortem at all — likely had structured work with no retrospective
-3. Sessions with only checkpoint files — lower priority, less context available
+**Priority:**
+1. Sessions with `postmortem.md` but no external review — direct comparison (highest value)
+2. Sessions with `plan.md` but no postmortem — structured work, no retrospective
+3. Sessions with only checkpoints — lower priority
 
-**What to do with batch findings:** If a pattern appears in 2 or more sessions (same gate skipped, same rationalization, same lucky path), that pattern becomes a STRONG action item in the next skill update. Single-session findings are noted but not acted on until confirmed.
+**Batch patterns:** 2+ sessions with the same failure = STRONG action item. Single-session = note only; confirm before acting.
 
 ---
 
@@ -275,50 +262,7 @@ Run every item before generating the report:
 
 ## Postmortem Report Format
 
-```markdown
-## Session Postmortem: [session-title]
-
-### Summary
-[1-2 sentence description of what the session accomplished]
-
-### Timeline
-[Chronological decision points]
-
-### Root Cause Analysis
-[5-Whys for each failure/near-miss]
-
-### Contributing Factors
-[Conditions that made failures more likely]
-
-### What Went Well
-[Gates that fired correctly, proactive behaviors]
-
-### Where We Got Lucky
-[Correct outcomes produced without reliable process — highest-priority action items]
-
-### External Reviewer Findings
-[Summary of external reviewer's findings — log-cited evidence only]
-[Discrepancies with self-assessment explicitly noted]
-[If external review not yet complete: "PENDING — external reviewer dispatched"]
-
-### Prompt Feedback
-[User prompt quality review — patterns found, quoted examples, effects, recommendations]
-[If no issues: state explicitly with supporting evidence]
-
-### Action Items
-| # | Root Cause / Factor | Action Item | Target File |
-|---|---------------------|-------------|-------------|
-
-### Iron Law Compliance
-[Table from above]
-
-### Verdict: HEALTHY / NEEDS IMPROVEMENT / SYSTEMIC ISSUE
-```
-
-Verdict definitions:
-- **HEALTHY** — iron laws followed, no repeated failure modes, skills loaded proactively
-- **NEEDS IMPROVEMENT** — one or two isolated lapses; skill updates would prevent recurrence
-- **SYSTEMIC ISSUE** — same failure mode appeared multiple times, or the agent bypassed an iron law and delivered a result anyway
+For the full report template (Summary, Timeline, Root Cause Analysis, Contributing Factors, What Went Well, Where We Got Lucky, External Reviewer Findings, Prompt Feedback, Action Items, Iron Law Compliance, Verdict) and verdict definitions (HEALTHY / NEEDS IMPROVEMENT / SYSTEMIC ISSUE), see `references/POSTMORTEM_STRUCTURE.md`.
 
 ---
 
@@ -352,6 +296,7 @@ Three or more of the above = SYSTEMIC ISSUE. Relevant skills need immediate rati
 | "Self-evaluation already covered this" | Self-eval is by the agent. Postmortem is external. Different perspective, different blind spots. Both are necessary. |
 | "The session was short, not worth analyzing" | Short sessions have failure modes too. A short session gets a proportionate postmortem — 10 minutes, not an hour. |
 | "I'll skip the external reviewer, it's just overhead" | The external reviewer reads events the agent rationalized away. Skipping it means the postmortem finds only what the agent was willing to find. |
+| "User asked a direct question while the external reviewer is still running — I can answer while it finishes" | NO. The only permissible action between dispatching the external reviewer and `read_agent` returning is polling (`read_agent`). Do NOT answer the question, summarize findings, or output any assessment. Tell the user you are waiting for the external reviewer to complete, then continue polling. Any assessment made before `read_agent` returns will be based on incomplete information and may directly contradict the reviewer's log-cited findings. |
 
 ---
 

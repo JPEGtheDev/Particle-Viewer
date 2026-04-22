@@ -80,7 +80,7 @@ This restores testability and removes hidden coupling.
 
 ## Speculative Inheritance Hazard
 
-See `architecture-review/references/OOP_PRINCIPLES.md — Speculative Hierarchy Anti-Pattern` for the hierarchy design rule.
+See the `oop-principles` skill — Speculative Hierarchy Anti-Pattern — for the hierarchy design rule.
 
 C++-specific note: CRTP-based template hierarchies compound the hazard — they add compile-time complexity and harder debugging on top of the structural debt. Resist CRTP-style base classes until three or more real, concrete variants are actively in use.
 

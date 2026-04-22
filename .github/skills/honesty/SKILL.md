@@ -1,5 +1,6 @@
 ---
 name: honesty
+license: MIT
 description: >
   Use when communication quality or trust is in question. Always active — applies
   to every session, every turn, every task.
@@ -74,7 +75,7 @@ State what you know, what you don't, and what action you're taking to resolve th
 Evidence must be **inline**, not referenced. Format:
 
 ```
-Ran `./build/tests/ParticleViewerTests`: 247 passed, 0 failures. [exit 0]
+Ran `<project-test-runner>`: 247 passed, 0 failures. [exit 0]
 ```
 
 Not: "I ran the tests and they passed." That sentence is unverifiable. The inline output is not.

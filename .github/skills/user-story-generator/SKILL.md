@@ -1,6 +1,7 @@
 ---
 name: user-story-generator
-description: Use when creating or refining user stories for Particle-Viewer.
+license: MIT
+description: Use when creating or refining INVEST-aligned user stories.
 ---
 
 ## Iron Law
@@ -341,12 +342,9 @@ If a story violates INVEST, fix it or suggest breaking it down.
 ❌ "UI should look good"  
 ✅ "Dashboard displays last 10 activities with <200ms load time"
 
-### Include Concrete Details for Particle-Viewer
-When generating stories for this project:
-- Reference specific files (use existing filenames when possible): e.g., `src/settingsIO.hpp`, `src/osFile.hpp`. For refactor target-state, propose snake_case files such as `src/graphics/framebuffer_capture.hpp`.
-- Use project naming: PascalCase for classes (e.g., `FramebufferCapture`); keep current filenames as-is for existing code, adopt snake_case for new/target-state files (e.g., `framebuffer_capture.hpp`)
-- Include CI requirements: "Pass on GitHub Actions with Xvfb + Mesa"
-- Specify test framework: GoogleTest in `tests/` directory
+### Include Concrete Details for Your Project
+
+When generating stories, reference project-specific files, naming conventions, CI requirements, and test framework conventions. For Particle-Viewer specifics, see `references/PARTICLE_VIEWER_CONTEXT.md`.
 
 ## Common Edge Cases
 

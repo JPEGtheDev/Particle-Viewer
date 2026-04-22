@@ -1,5 +1,6 @@
 ---
 name: skill-reviewer
+license: MIT
 description: Use when authoring or updating skill files.
 ---
 
@@ -41,7 +42,8 @@ Run every item for each skill file under review:
 - [ ] Red Flags→STOP section present with ≥5 trigger thoughts?
 - [ ] Skill-specific commands present (not generic placeholder examples)?
 - [ ] Cross-references to at least 1 related skill?
-- [ ] Domain language is correct (C++/CMake/Google Test specific — not Python/JS/generic)?
+- [ ] No cross-skill file path references (other skills referenced by skill name, not by `../other-skill/references/FILE.md` paths)?
+- [ ] Domain language matches skill scope — language-specific skills use appropriate conventions; generic skills use language-agnostic terminology?
 - [ ] No absolute paths (no machine-specific prefixes — use `[REPO_ROOT]`, template variables, or relative references only)?
 
 ✓ All pass → verdict: PASS
@@ -108,7 +110,8 @@ If you catch yourself thinking any of the following, STOP and re-examine before 
 | "This skill is simple, it doesn't need all elements" | All skills need all elements. Consistency is the point. |
 | "I'll add the missing table later" | Later never comes. A skill without all five elements is incomplete. Add it now. |
 | "The iron law is already stated in the announcement" | They are separate sections with separate functions. Both are required. |
-| "The domain language seems fine, I won't check closely" | Python/npm/pip examples in a C++/CMake skill are a FAIL. Check every command. |
+| "The cross-skill path reference is just for convenience, it's fine" | Cross-skill file paths break when skills are reorganized. Name the owning skill in prose; let the agent navigate. See SIZE_AND_COMPRESSION.md Skill Composition Model. |
+| "The domain language seems fine, I won't check closely" | Wrong-language examples (e.g., npm/pip in a C++/CMake skill, or C++ specifics in a language-agnostic skill) are a FAIL. Check every command and example. |
 | "I can review inline — the file is small" | Inline review is biased. Dispatch task(agent_type="code-review"). Producing a review table inline = this violation. |
 
 ---

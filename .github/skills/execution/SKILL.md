@@ -1,5 +1,6 @@
 ---
 name: execution
+license: MIT
 description: Use when executing any non-trivial implementation work.
 ---
 
@@ -107,10 +108,9 @@ If you catch yourself thinking any of these:
 **REQUIRED: Use the `verification-before-completion` skill.**
 
 Before claiming any task done:
-- Build: `cmake --build build`
-- Tests: `./build/tests/ParticleViewerTests`
-- Format: `find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i`
 - Diff: `git diff` — read every hunk for accidental changes
+
+For project-specific build, test, and format commands, see `references/PROJECT_COMMANDS.md`.
 
 ---
 
@@ -223,6 +223,7 @@ After any mistake or user correction:
 | Writing/editing C++ | `code-quality` |
 | Commits or PRs | `versioning` |
 | CI/CD work | `workflow` |
+| Flatpak packaging or GL runtime | `flatpak` |
 | Build or dependencies | `build` |
 | Code review | `code-review agent`, 1 per file |
 | Skill review | `general-purpose` + `skill-reviewer` skill |

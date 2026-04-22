@@ -1,5 +1,6 @@
 ---
 name: brainstorming
+license: MIT
 description: Use when a task needs design exploration before any implementation begins. Required for any task with unclear approach, significant architecture impact, or multiple valid solutions.
 ---
 
@@ -102,8 +103,8 @@ Answer all applicable questions before writing a single line of production code.
 7. **What existing code does this interact with?**
    Name the interfaces and concrete classes.
 
-8. **Can this be tested without a real OpenGL context?**
-   If no: state the test strategy (visual regression, mock context).
+8. **Can this be tested without the real external dependency?**
+   If no: state the isolation strategy (mock, stub, or integration test).
 
 ---
 

@@ -1,5 +1,6 @@
 ---
 name: subagent-driven-development
+license: MIT
 description: Use when delegating implementation tasks, confirming theories, running parallel research, or reviewing completed work.
 ---
 
@@ -315,6 +316,7 @@ If the user states a model preference in the current session, store it as a memo
 | "I'll include the rules in the prompt instead of using a template" | Injected rules drift between sessions. Pre-built templates in `.github/agents/` are the single source of truth. Use them. |
 | "I already know what to do — the researcher step is overhead" | YOU MUST dispatch the researcher.md template to confirm assumptions before acting. |
 | "The two stages of review are redundant — I wrote the code carefully" | YOU MUST dispatch spec-compliance-reviewer.md first, then code-quality-reviewer.md. Writing carefully is not a substitute for independent review. |
+| "I dispatched an audit subagent — that's a complete audit" | NO. Name every dimension the agent must check in the prompt. An unnamed dimension will not be checked. The audit prompt is the specification — an incomplete specification produces an incomplete audit. |
 
 ---
 

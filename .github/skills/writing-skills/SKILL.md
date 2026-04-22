@@ -1,5 +1,6 @@
 ---
 name: writing-skills
+license: MIT
 description: Use when creating, editing, or reviewing a skill file.
 ---
 
@@ -44,8 +45,14 @@ Before creating, editing, or shipping any skill or agent template:
    - Editing frontmatter only (no anatomy changes)? → reference files optional
    - Modifying or adding anatomy elements? → read `references/SKILL_ANATOMY_ELEMENTS.md` before any edits
 
+5. **Auditing existing skills (not creating or editing one)?** Before dispatching any agent:
+   - Run `wc -c .github/skills/*/SKILL.md | awk '{print int($1/4) " tokens — " $2}'` and compare results against `references/SIZE_AND_COMPRESSION.md` limits
+   - Enumerate every audit dimension explicitly in each agent's prompt
+   - The anatomy gate above applies to editing skills — audit use cases require their own dimension list; unnamed dimensions will not be checked
+
 ✓ All met → proceed
 ✗ Any unmet → resolve the unmet item before touching the skill file
+↳ Auditing (not creating/editing)? → The ✓/✗ above applies to creation/editing only. For auditing, run the step 5 sub-tasks; proceed once all dimensions are named in each agent's prompt.
 
 ---
 
@@ -119,13 +126,13 @@ Consequences: What does this approach sacrifice or trade off?
 ```
 
 **Example — bare rule (wrong):**
-> Never swallow GL errors silently.
+> Never swallow errors silently.
 
 **Example — Alexandrian form (correct):**
-> **Context:** Applies when writing any OpenGL call that can fail (shader compile, buffer allocation, framebuffer completeness). Does NOT apply to `glGetError()` polling loops where error accumulation is intentional.
-> **Forces:** Silent GL errors propagate broken state downstream, making root cause invisible at the point of symptom. Continuing in unknown state causes more damage than stopping.
-> **Solution:** Always check `glGetShaderiv(GL_COMPILE_STATUS)` after shader compile. Log and terminate for unrecoverable state; log and return false for recoverable failures.
-> **Consequences:** Terminates the application on unrecoverable errors — correct for developer builds; end-user releases may need a graceful degradation path instead.
+> **Context:** Applies when writing any call to an external system that can fail (file I/O, network requests, resource allocation). Does NOT apply to polling loops where error accumulation is intentional.
+> **Forces:** Silent failures propagate broken state downstream, making root cause invisible at the point of symptom. Continuing in an unknown state causes more damage than stopping.
+> **Solution:** Always check return status after fallible calls. Log and terminate for unrecoverable state; log and return a failure indicator for recoverable failures.
+> **Consequences:** Terminates or surfaces errors on unrecoverable failures — correct for developer builds; end-user releases may need a graceful degradation path instead.
 
 **Compliance gate:** New skills ship with Alexandrian form on every non-trivial rule. Existing skills add it incrementally when touched — the BigBatchRewrite anti-pattern applies here too.
 
@@ -137,7 +144,7 @@ See `references/VOICE_AUTHORITY_RULES.md` for the full voice quality rules (auth
 
 ---
 
-See `references/SIZE_AND_COMPRESSION.md` for word count targets, the GPT-4.1 mechanical execution rules, compression rules, and line limits.
+See `references/SIZE_AND_COMPRESSION.md` for token count targets, the GPT-4.1 mechanical execution rules, compression rules, and line limits.
 
 ---
 
@@ -185,6 +192,6 @@ Creating a new skill or modifying anatomy elements (iron law, gate, rationalizat
 ## References
 
 - `writing-skills/references/SKILL_ANATOMY_ELEMENTS.md` — full element schemas, bad/good examples, rationale for each of the 5 elements
-- `writing-skills/references/SIZE_AND_COMPRESSION.md` — word count targets, GPT-4.1 mechanical execution rules, compression rules, line limits
+- `writing-skills/references/SIZE_AND_COMPRESSION.md` — token count targets, GPT-4.1 mechanical execution rules, compression rules, line limits
 - `writing-skills/references/VOICE_AUTHORITY_RULES.md` — authority table, Absolute Path Rule, Acronym Rule; embed directly in reviewer agent prompts
 - `writing-skills/references/MODEL_COMPATIBILITY.md` — patterns most likely to be skipped by lower-end models and how to write skills that survive them

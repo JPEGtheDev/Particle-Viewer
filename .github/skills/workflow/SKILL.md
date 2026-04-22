@@ -1,5 +1,6 @@
 ---
 name: workflow
+license: MIT
 description: Use when creating GitHub Actions workflows, adding CI jobs, configuring artifact uploads, or reviewing pipeline configuration for Particle-Viewer.
 ---
 
@@ -188,4 +189,4 @@ If you catch yourself thinking any of these, stop and follow the rule:
 
 For concrete workflow examples and patterns, see [references/WORKFLOW_EXAMPLES.md](references/WORKFLOW_EXAMPLES.md).
 
-For Flatpak packaging, SDL3 display backend configuration, NVIDIA GL extension issues, and `setenv` behaviour inside the Flatpak sandbox, see [references/FLATPAK_GL_GOTCHAS.md](references/FLATPAK_GL_GOTCHAS.md).
+For Flatpak packaging, SDL3 display backend configuration, NVIDIA GL extension issues, and `setenv` behaviour inside the Flatpak sandbox, see the `flatpak` skill (`.github/skills/flatpak/`) or [references/FLATPAK_GL_GOTCHAS.md](references/FLATPAK_GL_GOTCHAS.md) for the detailed reference.

@@ -1,5 +1,6 @@
 ---
 name: testing
+license: MIT
 description: Use when writing or reviewing any test for Particle-Viewer.
 ---
 
@@ -132,43 +133,15 @@ Examples:
 
 ### Unit Tests (tests/core/)
 
-Test a single class method in isolation. Use MockOpenGL for OpenGL calls.
+Test a single class method in isolation. Use mock implementations for interface dependencies.
 
-```cpp
-TEST(CameraTest, MoveForward_DefaultSpeed_IncreasesPosition)
-{
-    // Arrange
-    Camera camera(800, 600);
-    camera.cameraPos = glm::vec3(0.0f, 0.0f, 0.0f);
-    camera.setSpeed(1.0f);
-
-    // Act
-    camera.moveForward();
-
-    // Assert
-    EXPECT_LT(camera.cameraPos.z, 0.0f);
-}
-```
+For Particle-Viewer unit and integration test examples (Camera, SettingsIO), see `references/PV_TEST_CONVENTIONS.md`.
 
 ### Integration Tests (tests/integration/)
 
 Test component interactions. May involve multiple classes.
 
-```cpp
-TEST(DataLoadingPipelineTest, LoadSettings_ValidFile_PopulatesParticles)
-{
-    // Arrange
-    SettingsIO settings;
-    std::string test_file = createTestSettingsFile();
-
-    // Act
-    bool result = settings.loadSettings(test_file);
-
-    // Assert
-    EXPECT_TRUE(result);
-    EXPECT_GT(settings.getParticleCount(), 0u);
-}
-```
+For Particle-Viewer integration test examples, see `references/PV_TEST_CONVENTIONS.md`.
 
 ### Visual Regression Tests → see `visual-regression-testing` skill
 
@@ -271,21 +244,13 @@ If you catch yourself thinking any of these, STOP and start over with RED:
 
 ## Key Design Principles (Learned from Review Feedback)
 
-1. **Use production classes in tests.** Visual regression tests MUST use `Particle` directly instead of re-implementing particle creation logic in a test helper class. This ensures tests stay in sync with production code.
+For Particle-Viewer specific test design principles (GL resource cleanup, binary I/O mode, output directory setup, visual resolution, camera positioning, regression test requirements), see `references/PV_TEST_CONVENTIONS.md`.
 
-2. **Group related data into POCOs/structs.** When a test or test helper has many flat member variables, group them into domain-specific structs (e.g., `RenderConfig`, `CameraSetup`). This mirrors the production code pattern.
+General principles that apply to any project:
 
-3. **Clean up GL resources.** Every test that creates GL objects (VAOs, VBOs, FBOs, textures) must clean them up. Check for leaks in `cleanup()` / destructors.
-
-4. **Binary file I/O.** Always open binary data files with `"rb"` mode (not `"r"`) for cross-platform correctness.
-
-5. **Ensure output directories exist.** In test `SetUp()`, create all output directories (artifacts/, baselines/, diffs/) before tests run. Check `save()` return values so failures are actionable, not silent.
-
-6. **Visual test resolution.** Use the viewer's default resolution (1280x720) for visual regression tests unless specifically testing other resolutions. Non-default resolutions can cause warping and scaling artifacts.
-
-7. **Camera positioning for visual tests.** Don't blindly copy debug camera coordinates — debug shows interactive state, not ideal test framing. Extract the viewing **direction** from debug output, then calculate **distance** based on desired viewport coverage: `distance = subject_size / (coverage_% * tan(FOV/2))`. See `docs/visual-regression/camera-positioning-lessons-learned.md`.
-
-8. **Every bug fix requires a regression test.** Write a test that reproduces the bug (fails before the fix). Fix the code. Confirm the test now passes. A bug fixed without a test is a bug scheduled for a return visit. See the Bug Fix Workflow in the `code-quality` skill.
+1. **Use production classes in tests.** Do not re-implement production logic in test helpers — tests will drift from production behavior.
+2. **Group related data into POCOs/structs.** When a test has many flat member variables, group them into domain-specific structs. This mirrors the production code pattern.
+3. **Every bug fix requires a regression test.** Write a test that reproduces the bug (fails before the fix). Fix the code. Confirm the test now passes. A bug fixed without a test is a bug scheduled for a return visit.
 
 ---
 
@@ -347,4 +312,4 @@ For CI workflow rules (artifact uploads, permissions, PR comments), see the `wor
 - `visual-regression-testing` — sub-domain skill; pixel-level output testing boundary; unit and contract tests do not replace visual regression
 - `code-quality` — clang-format and naming conventions apply to test code too
 
-**Testing principles (T2–T4):** `.github/skills/testing/references/CONTRACT_TESTING.md` — unit tests as constraints, acceptance vs unit boundary, simplicity check
+**Testing principles (T2–T4):** See the `contract-testing` skill — unit tests as constraints, acceptance vs unit boundary, simplicity check

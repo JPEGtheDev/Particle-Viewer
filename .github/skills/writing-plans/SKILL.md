@@ -1,5 +1,6 @@
 ---
 name: writing-plans
+license: MIT
 description: Use when starting any multi-step task, story, or feature work.
 ---
 
@@ -75,9 +76,9 @@ Each task MUST be one concrete action (2–5 minutes). For implementation tasks,
 ```
 Task N: [Feature or component name]
 Files:
-  - Create: exact/path/to/file.hpp
-  - Modify: exact/path/to/existing.cpp
-  - Test:   tests/path/to/test.cpp
+  - Create: exact/path/to/NewFile.<ext>
+  - Modify: exact/path/to/ExistingFile.<ext>
+  - Test:   tests/path/to/TestFile.<ext>
 
 RED   todo: Write the failing test for [behavior]
 RED   todo: Run test — verify it fails for the right reason
@@ -106,7 +107,7 @@ Answer before finalizing any plan. Dispatch a research subagent if you cannot an
 ✓ All 5 questions answered with no gaps → proceed to Skeptic Agent or implementation
 ✗ Any unanswered question or revealed gap → stop, revise the plan, then re-run the gate
 
-For plans with 3+ todos or an architectural decision, dispatch a **Skeptic Agent** before implementation:
+For any plan with 2+ todos or an architectural decision, dispatch a **Skeptic Agent** before implementation:
 
 ```
 You are a Skeptic Agent. Find what this plan is missing.
@@ -151,8 +152,9 @@ If you genuinely find no gaps after thorough analysis, state that explicitly.
 | "The user implied I should proceed" | Implied is not explicit. "Looks good", "go ahead", or "start" are approval. Silence is not. |
 | "I found the bug — fixing it now" | A request to debug or research is not a request to fix. Present findings first. Wait for instruction. |
 | "Plan states a numerical estimate (word count, file size, line count) without measuring" | Measure before writing. Run `wc -w` or `wc -l`. Unverified numerical claims in plans cause failed acceptance criteria. |
-| "It's just a quick test, I don't need todos" | Any multi-step task without SQL todos has no Skeptic dispatch gate. The 3-todo Skeptic rule cannot fire if todos were never created. Create todos first, then execute. |
+| "It's just a quick test, I don't need todos" | Any multi-step task without SQL todos has no Skeptic dispatch gate. The Skeptic dispatch rule cannot fire if todos were never created. Create todos first, then execute. |
 | "Implementation revealed a dependency on a second file — I'll modify it" | Scope expansion requires user authorization. STOP. State the dependency and ask before touching any file not in the original plan. |
+| "Skeptic approved with conditions, I addressed them — I can proceed" | NO. Skeptic findings change the plan — user approval of the original does not carry forward. Re-present the revised post-Skeptic plan to the user. Wait for explicit re-approval before creating branches or dispatching implementers. |
 
 ---
 
@@ -168,12 +170,12 @@ If you genuinely find no gaps after thorough analysis, state that explicitly.
 ## Red Flags — STOP
 
 - Code or file edits before Step 0 (restate requirements) is complete — **STOP. Do Step 0 now.**
-- **HARD-GATE:** Plan has ≥5 todos, Skeptic not dispatched — **STOP. Dispatch Skeptic before first implementation step. No first edit until Skeptic result is read.**
-- Plan has ≥3 todos, Skeptic not dispatched — **STOP. Dispatch Skeptic before first implementation step.**
+- **HARD-GATE:** Plan has ≥2 todos, Skeptic not dispatched — **STOP. Dispatch Skeptic before first implementation step. No first edit until Skeptic result is read.**
 - Any todo lacks a concrete description — **STOP. Fill every description before starting.**
 - Plan states a numerical estimate without a `wc` measurement — **STOP. Measure first. Run `wc -w` or `wc -l`.**
 - Next todo started without prior todo's 2-stage review passing — **STOP. Both stages required before advancing.**
 - Implementation started before user gives explicit plan approval — **STOP. Wait for "go ahead."**
+- About to dispatch audit or research agents without listing every dimension the agent must check — **STOP. Enumerate every file, section, rule, and reference in the prompt before dispatching. Label any dimension you cannot enumerate [UNCLEAR:] and resolve it first.**
 
 ---
 
@@ -186,7 +188,7 @@ Trivial (1 file, 1 step)? → Implement directly
     ↓ (multi-step)
 Step 0: Clarify Expectations — restate requirements, label [UNCLEAR:]
     ↓
-Smart Trust Gate — answer 5 questions; dispatch Skeptic Agent if 3+ todos
+Smart Trust Gate — answer 5 questions; dispatch Skeptic Agent if 2+ todos
     ↓
 Build todo list: YAGNI + PPP per item + No Placeholders
     ↓

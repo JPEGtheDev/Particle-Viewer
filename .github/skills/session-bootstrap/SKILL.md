@@ -1,5 +1,6 @@
 ---
 name: session-bootstrap
+license: MIT
 description: Use at the start of every session.
 ---
 
@@ -55,8 +56,8 @@ domains, read multiple skills in parallel (they are independent reads).
 | Any implementation work                      | `execution`                                        |
 | Planning a multi-step task                   | `writing-plans`                                    |
 | Unclear approach or design choices           | `brainstorming`                                    |
-| Writing or editing C++ code                  | `execution`, `code-quality`                        |
-| Writing C++ with GL/SDL3/runtime patterns    | `execution`, `code-quality`, `cpp-patterns`        |
+| Writing or editing code                      | `execution`, `code-quality`                        |
+| Writing code with rendering/runtime patterns | `execution`, `code-quality`, `cpp-patterns`        |
 | Writing or editing tests                     | `execution`, `code-quality`, `testing`             |
 | Writing visual regression tests              | `execution`, `code-quality`, `testing`, `visual-regression-testing` |
 | Creating a PR or commit                      | `versioning`, `verification-before-completion`     |
@@ -64,6 +65,7 @@ domains, read multiple skills in parallel (they are independent reads).
 | Requesting code review                       | `requesting-code-review`                           |
 | Receiving code review feedback               | `receiving-code-review`                            |
 | CI/CD or workflow changes                    | `workflow`                                         |
+| Flatpak packaging or GL runtime              | `flatpak`                                          |
 | Build system or dependency changes           | `build`                                            |
 | Writing or editing documentation             | `documentation`                                    |
 | Bug fixes or error resolution                | `execution`, `systematic-debugging`                |
@@ -75,6 +77,8 @@ domains, read multiple skills in parallel (they are independent reads).
 | Resuming from a prior session with pending SQL todos | `writing-plans`; dispatch Skeptic before first implementation step |
 | Schema design, new data structure, or plan with ≥5 implementation items | `brainstorming`, `writing-plans` |
 | Auditing communication quality or postmortem | `honesty`, `session-postmortem`                    |
+| Any new plan with 2+ todos | `writing-plans`; dispatch Skeptic before first implementation step |
+| Auditing or reorganizing a collection of files, tasks, or artifacts with multiple valid structural approaches | `brainstorming`, `writing-plans` |
 
 If unsure, read `code-quality` — it applies to every code task.
 
@@ -136,6 +140,8 @@ behavior is habitual, not conditional.
 - Finishing a session without running `self-evaluation` — **STOP. Read `.github/skills/self-evaluation/SKILL.md` now.**
 - Treating the "On Finish" steps as optional — **STOP. They are mandatory. Execute every step.**
 - Saying "I remember the skill content" — **STOP. Memory degrades. Skills update. Load fresh every session.**
+- Branch about to be created, but the plan the user approved was the pre-Skeptic version — **STOP. Re-present the post-Skeptic revised plan. Wait for explicit user approval before creating the branch.**
+- About to make an irreversible change (branch creation, push) without the `execution` skill loaded — **STOP. Load `execution` before the first irreversible action.**
 
 ---
 

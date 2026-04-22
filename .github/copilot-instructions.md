@@ -96,7 +96,8 @@ Skills are organized into **DDD bounded contexts**. Sub-domain skills (e.g., `vi
 |-------|------|--------|
 | `versioning` | `.github/skills/versioning/` | Conventional commits, PR titles, semantic versioning, releases |
 | `build` | `.github/skills/build/` | CMake build, dependencies, Flatpak packaging, troubleshooting |
-| `workflow` | `.github/skills/workflow/` | CI/CD pipelines, artifacts, permissions, Flatpak GL gotchas |
+| `workflow` | `.github/skills/workflow/` | CI/CD pipelines, artifacts, permissions |
+| `flatpak` | `.github/skills/flatpak/` | Flatpak packaging, OpenGL/SDL3 runtime, NVIDIA GL workarounds |
 | `finishing-a-development-branch` | `.github/skills/finishing-a-development-branch/` | Branch ceremony, squash strategy, PR creation, post-merge cleanup |
 
 ### REVIEW context
@@ -229,7 +230,7 @@ scratch/                  # Session workspace for exploratory/intermediate files
 | ImGui integration | `docs/IMGUI_INTEGRATION.md` |
 | Window management | `docs/WINDOW_MANAGEMENT.md` |
 | Camera positioning lessons | `docs/visual-regression/camera-positioning-lessons-learned.md` |
-| Flatpak GL/SDL3 gotchas | `.github/skills/workflow/references/FLATPAK_GL_GOTCHAS.md` |
+| Flatpak GL/SDL3 gotchas | `.github/skills/flatpak/SKILL.md` |
 | Microsoft C++ Core Guidelines | https://isocpp.github.io/CppCoreGuidelines/ |
 | Google Test docs | https://google.github.io/googletest/ |
 
