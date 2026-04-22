@@ -5,7 +5,7 @@
 | Rationalization                                    | Why it fails                                       | Correct action                              |
 |----------------------------------------------------|----------------------------------------------------|---------------------------------------------|
 | "'Always active' means I don't need to invoke honesty" | The declaration activates the rule reference, not the rule body. Without invocation, the confidence vocabulary and process language rules are absent. | Invoke `honesty` explicitly. Every session. |
-| "I ran the hook script and it exited 0 — hooks are working" | Script execution ≠ CLI mechanism. The CLI reads hooks.json once at session start. An in-session fix to hooks.json is NOT active until the next session. Do not claim hooks are working until a new session confirms hook.end success=true. | Wait for the next session start to confirm hook.end success=true. |
+| "I ran the hook script and it exited 0 — hooks are working" | Script execution ≠ CLI mechanism. The CLI reads hooks.json once at session start. An in-session fix to hooks.json is NOT active until the next session. Do not claim hooks are working until a new session confirms hook.end success=true. |
 | "I'm just gathering context, not reviewing"        | Research reading to inform a plan is still review. Inline review is biased by your assumptions. | Dispatch an explore or code-review agent for any 3+ file research task. |
 
 ## Additional Red Flags

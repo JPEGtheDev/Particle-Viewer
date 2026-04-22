@@ -3,7 +3,8 @@
 | If the task involves…                        | MUST read these skills BEFORE acting               |
 |----------------------------------------------|----------------------------------------------------|
 | Any implementation work                      | `execution`                                        |
-| Planning a multi-step task or any new plan with 2+ todos | `writing-plans`; dispatch Skeptic before first implementation step |
+| Planning a multi-step task                   | `writing-plans`                                    |
+| Any new plan with 2+ todos | `writing-plans`; dispatch Skeptic before first implementation step |
 | Unclear approach or design choices           | `brainstorming`                                    |
 | Writing or editing code                      | `execution`, `code-quality`                        |
 | Writing code with rendering/runtime patterns | `execution`, `code-quality`, `cpp-patterns`        |
