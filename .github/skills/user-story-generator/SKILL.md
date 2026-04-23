@@ -87,7 +87,7 @@ See `references/STORY_TEMPLATE.md` for the full story template with all sections
 # Instructions for Agent
 
 See `references/CONVERSATION_SCRIPTS.md` for story elicitation conversation scripts.
-See `references/PV_PROJECT_CONTEXT.md` for Particle-Viewer project context and persona definitions.
+See `references/PV_PROJECT_CONTEXT.md` for project scope verification and reference loading guide.
 
 **Always load `references/PV_PROJECT_CONTEXT.md` FIRST before generating any story.**
 

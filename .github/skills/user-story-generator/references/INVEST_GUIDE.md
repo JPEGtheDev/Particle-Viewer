@@ -67,7 +67,7 @@ Response:
 > "Got it! Testing what specifically—visual regression, unit tests for a component, or integration tests? Also, is this for existing code or new functionality?"
 
 **User wants to refactor globals**  
-This is a common Particle-Viewer task. Consult [references/PARTICLE_VIEWER_CONTEXT.md](references/PARTICLE_VIEWER_CONTEXT.md) for refactoring patterns.
+This is a common Particle-Viewer task. Consult `references/PARTICLE_VIEWER_CONTEXT.md` for refactoring patterns.
 
 **Story is too large (L or epic-sized)**  
 Suggest breaking it down:
