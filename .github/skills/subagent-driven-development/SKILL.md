@@ -205,81 +205,32 @@ Stage 2: Code Quality Review        ← ONLY after Stage 1 passes (code-quality-
 
 ### Stage 1: Spec Compliance Review
 
-**Question:** Does the implementation do what the spec/requirements asked?
-
-Use `.github/agents/spec-compliance-reviewer.md`. Provide:
-- Full requirements / acceptance criteria for the todo
-- Full diff or file contents of the implementation
-
-If Stage 1 returns GAPS: implementer fixes gaps. Re-run Stage 1 before proceeding.
+Use `spec-compliance-reviewer.md` with full requirements and the implementation diff; if GAPS are returned, implementer fixes and Stage 1 re-runs before proceeding.
 
 ### Stage 2: Code Quality Review
 
-**Question:** Is the implementation clean, maintainable, and correct?
+Use `code-quality-reviewer.md` — one agent per file changed; if REQUEST CHANGES, implementer fixes and Stage 2 re-runs before proceeding.
 
-Use `.github/agents/code-quality-reviewer.md` — 1 agent per file changed.
-
-If Stage 2 returns REQUEST CHANGES: implementer fixes. Re-run Stage 2 before proceeding.
+See `references/REVIEW_PROTOCOL.md` for full protocol.
 
 ---
 
 ## Git Worktrees for Parallel Work
 
-When a subagent needs to **modify files** (not just read), give it a worktree:
-
-```bash
-# Create worktree
-git worktree add .worktrees/agent-task-name -b feat/agent-task-name
-
-# Verify .worktrees is gitignored (BEFORE creating)
-git check-ignore -q .worktrees || echo "ADD .worktrees TO .gitignore FIRST"
-
-# Pass this path as working directory in the subagent prompt
-
-# After subagent completes — review its diff
-git -C .worktrees/agent-task-name diff main
-
-# Merge and clean up
-git worktree remove .worktrees/agent-task-name
-```
-
-**Directory selection priority:** `.worktrees/` → `worktrees/` → ask user
-**Safety gate:** Run `git check-ignore -q .worktrees` before creating. If not ignored, add to `.gitignore` immediately — do not skip.
+See the `using-git-worktrees` skill for full worktree lifecycle, commands, and safety gates.
 
 ---
 
 ## Model Selection
 
-Match model tier to task complexity. Instructions must be written for GPT-4.1 baseline regardless of selected tier.
-
-**Model preference priority — check in this order before every agent dispatch:**
-
-1. **Stored memory override (highest):** Check stored memories for a user-specified model preference. If found, apply that tier to ALL agents in this batch — it overrides the table below.
-2. **Tier table (default):** If no stored preference, use the task-type table below.
-3. **Session default (fallback):** If neither applies, use the current session default.
-
-If the user states a model preference in the current session, store it as a memory fact immediately so it persists.
-
-| Task type | Default tier |
-|-----------|-------------|
-| Mechanical: grep, rename, format, one-function change | Standard |
-| Research: read files, summarize patterns, compare approaches | Standard |
-| Implementation: multi-file, design judgment | Standard |
-| Review: spec compliance, code quality, architecture | Standard |
-| Architecture design, security, final review | Premium |
-
-**Using Premium for non-architecture tasks:** State the reasoning before dispatching. Example: "Dispatching Premium for this review because the change touches 3 layer boundaries." Do not dispatch Premium silently for mechanical work.
-
-**Concurrency:** Copilot Enterprise accounts have no practical agent concurrency limit. Dispatch as many parallel agents as the task warrants. Standard accounts: verify your limit before parallelizing.
-
-**For parallel read-only research:** Use `dispatching-parallel-agents` skill.
+See `references/MODEL_SELECTION.md` for model tier table and concurrency rules.
 
 ---
 
 ## Delegation Quality Rules
 
 - **One clear objective per subagent** — no multi-part briefs
-- **Assign Problems Not Tasks:** delegate the outcome, not the steps — see `writing-plans/references/SIMPLICITY_PRINCIPLES.md#assign-problems-not-tasks`
+- **Assign Problems Not Tasks:** delegate the outcome, not the steps — see the `writing-plans` skill — 'Assign Problems Not Tasks' principle.
 - **State the return format explicitly** — tell it exactly what to give back
 - **Provide complete context** — subagents are stateless
 - **Fresh context per task** — never share session history; it contaminates the subagent's search
