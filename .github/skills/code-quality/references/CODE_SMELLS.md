@@ -287,3 +287,33 @@ When you detect a smell:
 
 ---
 
+## Extended Code Smells Checklist
+
+| Smell | What to Look For |
+|---|---|
+| **FeatureEnvy** | Method references another class's data more than its own? Apply MoveMethod. |
+| **MagicNumber** | Literals in GL calls or formulas? Name them as constants. |
+| **ArrowAntiPattern** | More than 3 levels of nesting? Introduce guard clauses or RAII. |
+| **SpeculativeGenerality** | Abstraction with exactly one implementation? Remove it until a second arrives. |
+| **CommentSubstitutingForCode** | Comment explains WHAT the code does (not WHY)? Rename or refactor instead. |
+
+---
+
+## Code Duplication: Once And Only Once vs Don't Repeat Yourself
+
+These two principles are frequently conflated but target different problems:
+
+| Principle | Source | What it targets | How to fix |
+|-----------|--------|-----------------|------------|
+| **Once And Only Once** | Ward Cunningham / Extreme Programming | The same *code logic* appears in two or more places | Refactor: extract a method, function, or class |
+| **Don't Repeat Yourself** | Hunt & Thomas, *The Pragmatic Programmer* | The same *knowledge or fact* is encoded in two or more places, even if the code looks different | Introduce a single authoritative source of truth |
+
+**Key distinction:** Two code blocks can look identical yet not violate Don't Repeat Yourself if they represent two independent domain concepts that happen to look similar today. Merging them creates false coupling. Conversely, two code blocks can look completely different yet violate Don't Repeat Yourself if they both encode the same business rule.
+
+| Situation | Principle violated | Correct action |
+|-----------|-------------------|----------------|
+| Same validation logic repeated in three `if` blocks | Once And Only Once | Extract a `validate()` function |
+| Maximum buffer size duplicated as a constant and a comment | Don't Repeat Yourself | Remove the comment; the constant is the source of truth |
+| Two classes share a 3-line helper computing screen coordinates | Once And Only Once | Extract to a shared utility |
+| Database schema and response struct both define "a user has email and name" | Don't Repeat Yourself | Generate one from the other, or treat one as the source of truth |
+| Two unrelated features happen to iterate in the same way | Neither | Leave them separate; forced unification creates accidental coupling |
