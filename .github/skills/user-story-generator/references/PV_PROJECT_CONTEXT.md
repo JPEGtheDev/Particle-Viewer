@@ -4,7 +4,7 @@
 
 **CRITICAL: Verify Project Scope First**
 
-Before asking any other questions, **load and review** [references/PARTICLE_VIEWER_CONTEXT.md](references/PARTICLE_VIEWER_CONTEXT.md) to understand:
+Before asking any other questions, **load and review** `references/PARTICLE_VIEWER_CONTEXT.md` to understand:
 - **What this project actually does** (it's a VIEWER for pre-computed simulations, NOT a simulator)
 - What components exist vs don't exist
 - Current architecture and pain points
@@ -24,7 +24,7 @@ Before asking any other questions, **load and review** [references/PARTICLE_VIEW
 Throughout the conversation, Load project-specific references **when needed**:
 
 ### For Particle-Viewer stories:
-**Load [references/PARTICLE_VIEWER_CONTEXT.md](references/PARTICLE_VIEWER_CONTEXT.md) IMMEDIATELY when:**
+**Load `references/PARTICLE_VIEWER_CONTEXT.md` IMMEDIATELY when:**
 - User requests ANY story for this project
 - Before asking clarifying questions (so you ask the RIGHT questions)
 - Need to understand what actually exists vs assumptions
@@ -35,13 +35,13 @@ Throughout the conversation, Load project-specific references **when needed**:
 - Are we focusing on real value (rendering, I/O, visualization) or imagined features (physics simulation)?
 
 ### For INVEST validation:
-Load [references/INVEST_FRAMEWORK.md](references/INVEST_FRAMEWORK.md) when:
+Load `references/INVEST_FRAMEWORK.md` when:
 - User asks "what makes a good story?"
 - Story seems to violate INVEST principles
 - Need to explain why you're suggesting certain changes
 
 ### For story examples:
-Load [references/STORY_TEMPLATES.md](references/STORY_TEMPLATES.md) when:
+Load `references/STORY_TEMPLATES.md` when:
 - User is new to story writing
 - Need to show format variations (BDD vs bullets)
 - Asked for examples of features, refactors, spikes, or bugs
