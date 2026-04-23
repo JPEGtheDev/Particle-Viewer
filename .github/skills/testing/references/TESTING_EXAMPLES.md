@@ -7,6 +7,7 @@ This reference provides concrete examples of correct and incorrect test patterns
 ## AAA Pattern — Critical Rules
 
 1. **NEVER combine phases.** Do not write `// Arrange & Act` or `// Act & Assert`. Each phase gets its own comment and section.
+   - **Exception:** `// Act & Assert` is acceptable only for `EXPECT_NO_THROW`/`EXPECT_THROW` tests where the action IS the assertion.
 2. **If no Arrange is needed**, omit `// Arrange` entirely — start with `// Act`.
 3. **Move expected values to Arrange** as named variables, not inline in Assert.
 4. **One logical concept per test** — split if testing multiple behaviors.

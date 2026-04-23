@@ -41,7 +41,7 @@ For PV test runner commands, see `references/PV_TEST_CONVENTIONS.md`.
 - **Unit test** — single class/function in isolation → `tests/core/`
 - **Integration test** — component interactions → `tests/integration/`
 - **Visual regression test** — pixel comparison → load `visual-regression-testing` skill
-- **Test review** — check existing tests against standards → apply checklist in Step 5
+- **Test review** — check existing tests against standards → apply checklist in Step 3
 
 ---
 
@@ -51,13 +51,7 @@ Every test MUST have three distinct comment sections: `// Arrange`, `// Act`, `/
 
 See `references/TESTING_EXAMPLES.md` for code examples and advanced patterns.
 
-### Critical Rules
-
-1. **NEVER combine phases.** Do not write `// Arrange & Act` or `// Act & Assert`. Each phase gets its own comment and section.
-   - **Exception:** `// Act & Assert` is acceptable only for `EXPECT_NO_THROW`/`EXPECT_THROW` tests where the action IS the assertion.
-2. **If no Arrange is needed**, omit `// Arrange` entirely — start with `// Act`.
-3. **Move expected values to Arrange** as named variables, not inline in Assert.
-4. **One logical concept per test** — split if testing multiple behaviors.
+For the complete AAA rule set and examples, see `references/TESTING_EXAMPLES.md`.
 
 ### Naming Convention
 
@@ -148,6 +142,6 @@ For CI workflow rules (artifact uploads, permissions, PR comments), see the `wor
 
 ## Reference Files
 
-- `references/testing-anti-patterns.md` — common testing anti-patterns (mocking concrete types, testing mock behavior, test-only methods)
+- `references/testing-anti-patterns.md` — common testing anti-patterns (testing mock behavior, test-only methods in production classes, mocking without understanding, incomplete mock data, visual regression tests without Red-Green)
 - `references/TEST_SMELLS.md` — test smells catalog (Fowler/van Deursen): patterns that undermine reliability, readability, or correctness
 
