@@ -49,9 +49,7 @@ For PV test runner commands, see `references/PV_TEST_CONVENTIONS.md`.
 
 Every test MUST have three distinct comment sections: `// Arrange`, `// Act`, `// Assert`.
 
-See `references/TESTING_EXAMPLES.md` for code examples and advanced patterns.
-
-For the complete AAA rule set and examples, see `references/TESTING_EXAMPLES.md`.
+For the complete AAA rule set, code examples, and advanced patterns, see `references/TESTING_EXAMPLES.md`.
 
 ### Naming Convention
 
