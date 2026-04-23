@@ -99,17 +99,7 @@ Use the **least sophisticated double** that answers your question. Reaching for 
 
 ---
 
-### Directory Structure
-
-- `tests/core/` — Unit tests for `src/*.hpp` classes
-- `tests/integration/` — Multi-component tests
-- `tests/testing/` — Tests for test utilities (PixelComparator, Image)
-- `tests/visual-regression/` — Visual regression tests
-- `tests/mocks/` — Mock implementations
-
-### File Naming
-
-Each test file matches its source: `CameraTests.cpp` tests `camera.hpp`.
+For directory layout and file naming conventions, see **Test File Organization** above.
 
 ### Test Ordering
 

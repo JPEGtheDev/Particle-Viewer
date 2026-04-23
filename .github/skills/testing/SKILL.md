@@ -72,7 +72,7 @@ For PV-specific test patterns (Camera, SettingsIO examples), test double taxonom
 
 ---
 
-## Step 5: Self-Review Checklist
+## Step 3: Self-Review Checklist
 
 Before presenting tests, verify:
 
@@ -143,4 +143,11 @@ For CI workflow rules (artifact uploads, permissions, PR comments), see the `wor
 - `code-quality` — clang-format and naming conventions apply to test code too
 
 **Testing principles (T2–T4):** See the `contract-testing` skill — unit tests as constraints, acceptance vs unit boundary, simplicity check
+
+---
+
+## Reference Files
+
+- `references/testing-anti-patterns.md` — common testing anti-patterns (mocking concrete types, testing mock behavior, test-only methods)
+- `references/TEST_SMELLS.md` — test smells catalog (Fowler/van Deursen): patterns that undermine reliability, readability, or correctness
 
