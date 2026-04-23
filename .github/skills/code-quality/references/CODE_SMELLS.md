@@ -287,9 +287,6 @@ When you detect a smell:
 
 ---
 
-
----
-
 ## Extended Code Smells Checklist
 
 | Smell | What to Look For |
@@ -301,8 +298,6 @@ When you detect a smell:
 | **CommentSubstitutingForCode** | Comment explains WHAT the code does (not WHY)? Rename or refactor instead. |
 
 ---
-
-## OAOO / DRY Principle
 
 ## Code Duplication: Once And Only Once vs Don't Repeat Yourself
 

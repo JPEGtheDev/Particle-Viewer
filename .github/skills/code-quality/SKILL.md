@@ -61,6 +61,8 @@ See `references/FORMATTING_RULES.md` for formatting rule details.
 
 `PascalCase` classes/enums · `camelCase` methods · `snake_case` vars/params · `snake_case_` private members · `UPPER_CASE` constants · `snake_case` files/namespaces · `<PROJECT>_<PATH>_<FILE>_H` guards
 
+See `references/NAMING_TABLES.md` for full naming examples.
+
 ---
 
 ## Adding a Feature / Fixing a Bug
@@ -79,12 +81,10 @@ Static analysis catches syntax violations. These structural smells require human
 - **DataClumps** — Same 2+ variables always travelling together? Introduce a struct.
 - **PrimitiveObsession** — Domain concepts as raw `int`, `float`, or `GLenum`? Introduce typed wrappers.
 
-See `references/CODE_SMELLS.md` for the full checklist.
+See `references/CODE_SMELLS.md` for the full code smells catalog.
 
 ✓ All checked → no structural smells found
 ✗ Any flagged → log `[BROKEN WINDOW NOTED]` or fix before commit (see `cpp-patterns` skill)
-
-See `references/CODE_SMELLS.md` for the full code smells catalog.
 
 ---
 
@@ -136,3 +136,4 @@ If you catch yourself thinking any of these, stop and follow the rule:
 - `references/CODE_SMELLS.md` — smells, refactoring map
 - `references/NAMING_TABLES.md` — naming examples
 - `references/REVIEW_CHECKLIST.md` — pre-review checklist
+- `references/INVOCATION.md` — agent invocation instructions
