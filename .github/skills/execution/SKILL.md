@@ -209,7 +209,7 @@ For the domain-to-skill dispatch lookup, see `references/EXECUTION_PATTERNS.md`.
 
 ## Quick Reference
 
-**Execution patterns (Profile Before Optimizing, Assign Problems Not Tasks, Technical Debt Visibility):** `.github/skills/execution/references/EXECUTION_PATTERNS.md`
+**Execution patterns (Profile Before Optimizing, Assign Problems Not Tasks, Technical Debt Visibility):** `references/EXECUTION_PATTERNS.md`
 
 ```
 Task arrives
