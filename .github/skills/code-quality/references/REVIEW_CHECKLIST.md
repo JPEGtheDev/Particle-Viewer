@@ -1,7 +1,5 @@
 # Pre-Review Checklist
 
-## Review Checklist
-
 - [ ] `clang-format -i` run on all changed files
 - [ ] `clang-format --dry-run -Werror` passes
 - [ ] Build succeeds

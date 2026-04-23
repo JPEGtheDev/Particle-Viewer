@@ -47,7 +47,7 @@ Header filter excludes embedded libs: `glad`, `tinyFileDialogs`, `stb_*`.
 
 ---
 
-# PV Workflow Patterns
+## PV Workflow Patterns
 
 ## Step 7: Adding a Feature / Fixing a Bug
 
