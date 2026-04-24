@@ -89,11 +89,29 @@ auto calculateTotal(std::vector<Item> items) -> int {
 
 Before committing: grep every fenced code block for `std::`, `nullptr`, `#include`, `TEST(`, `ASSERT_`, `EXPECT_`, `glm::`. Any hit is a violation.
 
+## Skill Content Moves — Verbatim Gate
+
+When moving content FROM a source file TO a target file (e.g., SKILL.md → references/):
+
+1. **Write the content into the target file first.**
+2. **Verify the paste is character-for-character identical** — use `diff` or `grep` to confirm. Do not rely on visual inspection.
+3. **Only then remove the content from the source file.**
+
+Removing content from the source without a verified paste in the target is a spec violation. There is no exception for "obviously identical" content.
+
 ## Verification gate before marking done
 1. `cmake --build build` — must succeed
 2. `./build/tests/ParticleViewerTests` — all tests green
 3. `find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i` — format clean
 4. `git diff HEAD~1` — diff reviewed, no accidental changes
+
+## Fix Agent Rules
+
+When acting as a fix agent (correcting issues flagged by a Stage 1 or Stage 2 reviewer):
+
+**Surrounding context:** After applying the fix, read the 5 lines above and 5 lines below the changed region. If adjacent content was affected (broken numbering, orphaned pointer, new redundancy), fix that too before committing.
+
+**Reviewer verdicts are binding:** If a Stage 1 or Stage 2 reviewer flagged an issue, fix it. Do not evaluate whether the fix is "needed." The reviewer's verdict is binding. Only escalate — do not silently override — if the fix would violate a hard rule stated in the task prompt.
 
 ## Return format
 ```

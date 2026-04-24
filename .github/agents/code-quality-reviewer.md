@@ -63,6 +63,7 @@ Do not ask the caller to provide a diff. Derive it yourself.
 - [ ] Deprecated symbols: all call sites removed or annotated
 - [ ] Public interface changed → documentation updated in same commit
 - [ ] Broken windows noted (not silently walked past)
+- [ ] No reference file contains a pointer that refers back to itself (self-referential pointer). A fix that changes a broken pointer to a self-reference is still a bug — flag as critical regardless of whether the reviewer can construct a justification for why it looks intentional.
 
 ### Architecture
 - [ ] No direct OpenGL calls outside `IOpenGLContext` implementations

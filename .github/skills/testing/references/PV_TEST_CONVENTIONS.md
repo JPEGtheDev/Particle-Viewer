@@ -77,3 +77,62 @@ File naming: each test file matches its source — `CameraTests.cpp` tests `came
 ---
 
 For project test runner commands, see the `execution` skill.
+
+---
+
+## Test Double Taxonomy
+
+Use the **least sophisticated double** that answers your question. Reaching for `EXPECT_CALL` when a stub suffices is over-engineering.
+
+| Double | Behavior | Verifies Calls? | When to Use |
+|--------|----------|-----------------|-------------|
+| **Stub** | No-op methods; returns null/zero/false | No | You need `IOpenGLContext` to not crash; you don't care what it called |
+| **Fake** | Returns programmable values via setters | No | You need to control what `glGetError()` returns without interaction verification |
+| **Mock** | Returns values AND verifies call expectations | Yes — test fails if expected calls are not made | You must assert `glDrawArrays` was called exactly once with specific arguments |
+| **Shunt / SelfShunt** | The test fixture itself implements the interface | Inspected in teardown | Lowest setup overhead when the fixture plays both collaborator and verifier |
+
+**Google Mock mapping:** Stub → subclass returning constants. Fake → subclass with setters. Mock → `MOCK_METHOD` + `EXPECT_CALL` + `Times()`. Shunt → `TEST_F` fixture inherits from the interface.
+
+**Key principle:** Mock the *role* (interface), not the concrete object. `MockOpenGLContext` mocks `IOpenGLContext` — stable across implementation changes.
+
+**When NOT to use Google Mock:** If the question is "does this run without crashing?", a stub suffices. Only use `EXPECT_CALL` when the interaction itself is the behavior under test.
+
+---
+
+For directory layout and file naming conventions, see **Test File Organization** above.
+
+### Test Ordering
+
+Within a file, order tests: basic → complex, common → edge cases.
+
+---
+
+## Test Size Taxonomy (SE@G Model)
+
+Apply this taxonomy when classifying tests and deciding where they belong:
+
+| Size | Resource use | Scope | Directory |
+|------|-------------|-------|-----------|
+| **Small** | No I/O, no network, no filesystem, no external processes, no OpenGL context | Single unit in memory | `tests/` root or subdirectory |
+| **Medium** | Localhost I/O permitted (files, sockets), no external services, no real OpenGL | Component interactions, file I/O | `tests/integration/` |
+| **Large** | Real OpenGL context, real GPU, external processes, full system | End-to-end rendering, visual output | `tests/visual-regression/` |
+
+**Classification gate:** Before writing a test, classify it. If a "unit test" uses a real file, it is Medium. If it uses a real OpenGL context, it is Large. Misclassified tests in the wrong directory produce slow/unreliable CI runs.
+
+---
+
+## Additional Rationalization Prevention Rows
+
+These supplement the core rows kept in SKILL.md:
+
+| Excuse | Reality |
+|--------|---------|
+| "Tests after achieve the same goals" | Tests-after answer "what does this do?" Tests-first answer "what SHOULD this do?" |
+| "Deleting X hours of work is wasteful" | Sunk cost. Keeping untested code is technical debt. |
+| "The bug was a one-off, no regression test needed" | One-off bugs recur after the next refactoring. A regression test takes 5 minutes; a re-investigation takes hours. |
+
+Additional Red Flags — STOP:
+
+- "Tests after achieve the same goals"
+- "Just this once" or "This is different because..."
+- "I need to get the implementation right before I know what to test"
