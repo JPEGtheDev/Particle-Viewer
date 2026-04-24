@@ -204,6 +204,8 @@ For the domain-to-skill dispatch lookup, see `references/EXECUTION_PATTERNS.md`.
 | "I'll review the spec compliance myself, no need to dispatch" | You wrote the code — you will rationalize away the gaps. Dispatch spec-compliance-reviewer.md every time. |
 | "The previous todo had no issues, this one is probably fine too" | Each todo is independent. Prior clean reviews do not carry over. Dispatch reviewers after this todo. |
 | "I'm close to the end, I'll skip the Skeptic for this todo" | End-of-plan todos are the most likely to drift from the original scope. The Skeptic Agent is mandatory regardless of position in the plan. |
+| "Inline nit fix is trivial, no review needed" | Inline fixes are unverified by default. If the fix is a structural change (heading level, path format, sentence replacement), dispatch a re-review or apply only to content you can verify in the same view call. |
+| "After a rate limit, I can resume dispatching immediately — my last checkpoint shows what was in flight" | A rate limit severs the agent's awareness of what agents completed, errored, or were interrupted. Dispatch a validation-only batch first and wait for the result before dispatching any continuation agents. |
 
 ---
 
