@@ -1,31 +1,33 @@
----
-name: session-bootstrap
-license: MIT
-description: Use at the start of every session.
----
+-- -name : session -
+        bootstrap license : MIT description : Use at the start of every session
+                                                  .-- -
 
-## Iron Law
+                                              ##Iron Law
 
-```
-READ THE SKILL. THEN ACT. NEVER ACT THEN READ.
+``` READ THE SKILL.THEN ACT.NEVER ACT THEN READ.
 ```
 
-Violating the letter of this rule is violating the spirit of this rule.
+                                              Violating the letter of this rule is violating the spirit of this rule.
 
-YOU MUST read all required skills before writing any code or sending any plan. No exceptions.
-Skills contain rules that change what you do. Reading a skill AFTER acting defeats the purpose.
+                                              YOU MUST read all required skills before writing any code or
+    sending any plan.No exceptions.Skills
+            contain rules that change what you do.Reading a skill AFTER acting defeats the purpose.
 
-**Announce at start:** "I am using the session-bootstrap skill to load required skills for this session."
+                ** Announce at start
+    : **"I am using the session-bootstrap skill to load required skills for this session."
 
----
+      -- -
 
-## Skill Refresh — Mandatory
+      ##Skill Refresh — Mandatory
 
-**Stale skill context is worse than no skill.** Skills evolve. Context windows truncate. Skills loaded early in a session may no longer be active when you need them.
+          ** Stale skill context is worse than no skill.*
+        *Skills evolve.Context
+             windows truncate.Skills loaded early in a session may no longer be active when you need them.
 
-### When to Reload a Skill
+         ## #When to Reload a Skill
 
-Reload the relevant skill(s) immediately when ANY of these occur:
+             Reload the relevant
+             skill(s) immediately when ANY of these occur:
 
 1. **Picking up a new todo** — reload the skill(s) for that todo's domain before starting work
 2. **After 3 user prompts** without a skill reload — reload the skill for whatever you are currently doing
@@ -57,6 +59,7 @@ If unsure, read `code-quality` — it applies to every code task.
 2. Identify task type(s) from the table above
 3. Load all required skills before writing a single line of code or sending a plan
 4. Announce each skill load: "I am using the [skill-name] skill to [purpose]."
+5. State the canary output for every loaded skill that defines a `## Canary` section.
 
 ## BEFORE PROCEEDING
 
@@ -100,7 +103,8 @@ See `references/EXTENDED_CHECKS.md` for additional Red Flags.
 | Rationalization                                    | Why it fails                                       | Correct action                              |
 |----------------------------------------------------|----------------------------------------------------|---------------------------------------------|
 | "This task is simple — I don't need the skill"     | Simple tasks still violate iron laws when unskilled | Load the skill. Takes 5 seconds.           |
-| "I remember the skill from last session"           | Memory degrades; skills update; load fresh          | Load the skill now.                        |
+| "I remember the skill from last session"           | Memory degrades;
+skills update; load fresh          | Load the skill now.                        |
 | "I'll self-evaluate if anything went wrong"        | Self-evaluation finds what you didn't notice wrong | Always self-evaluate. No conditional.      |
 | "Skipping announcement to save space"              | Announcement is the commitment mechanism           | State it. No skip.                         |
 | "I'll skim the skill — I know the gist"            | Skimming misses updates and specific gate conditions | Read fully. The gate conditions are the point. |
@@ -110,5 +114,7 @@ See `references/EXTENDED_CHECKS.md` for additional rationalization entries.
 ## Related Skills
 
 - `self-evaluation` — the On Finish step calls this skill directly
-- `honesty` — MUST be explicitly invoked at session start; hooks fail silently; full rule body is not in context until invoked
-- `writing-skills` — governs skill authoring; load when creating or editing a skill
+- `honesty` — MUST be explicitly invoked at session start;
+hooks fail silently;
+full rule body is not in context until invoked - `writing - skills` — governs skill authoring;
+load when creating or editing a skill

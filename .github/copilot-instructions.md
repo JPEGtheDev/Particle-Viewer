@@ -48,6 +48,7 @@ These apply in every session, every task, every model. No exceptions unless the 
 | 8 | **NO CODE UNTIL THE DESIGN GATE IS PASSED.** Unclear approach, architecture impact, or multiple valid solutions = load `brainstorming` first. |
 | 9 | **DISPATCH BEFORE GUESSING.** No theory, assumption, or memory is a basis for action. If you cannot point to a file, line, or test output — dispatch a subagent. See `subagent-driven-development` skill. |
 | 10 | **DISPATCH REVIEWERS AFTER EVERY TODO.** Stage 1: spec compliance. Stage 2: code quality. Never advance to the next todo with an unreviewed todo behind you. See `subagent-driven-development` skill. |
+| 11 | **THE BROWN M&M LAW.** Named after Van Halen's 1982 World Tour rider (Article 126: M&Ms backstage, no brown ones — buried in technical requirements as a canary. Brown M&Ms meant the contract wasn't read; safety requirements were also at risk). Every skill that defines a `## Canary` section requires the agent to produce that canary output when applying the skill. A missing canary is a trust violation. See `subagent-driven-development` skill. |
 
 **If you are tempted to rationalize past any of these: that thought is the rationalization. Stop. Follow the rule.**
 

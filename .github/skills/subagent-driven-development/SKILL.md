@@ -44,6 +44,9 @@ Implementer returns status code
     +-- DONE
          |
          v
+Confirm canary: state "Canary confirmed: [Worktree: line from implementer output]"
+         |
+         v
 Stage 1: Dispatch spec-compliance-reviewer (spec-compliance-reviewer.md)
     |
     +-- GAPS --> Implementer fixes gaps. Re-dispatch Stage 1.
@@ -78,27 +81,32 @@ Before dispatching any subagent:
 3. A worktree exists for this agent. **All agents — read-only and write-side alike — run in a worktree.** Run these checks before dispatch:
 
    ```bash
-   # 1. Ensure .worktrees/ is gitignored before first use
+# 1. Ensure.worktrees / is gitignored before first use
    git check-ignore -q .worktrees || echo "ADD .worktrees TO .gitignore FIRST — stop here"
 
-   # 2. Create the worktree
+# 2. Create the worktree
    git worktree add .worktrees/agent-<name> -b agent/<name>
-   # If nonzero exit: log error, do NOT dispatch, surface to user. Common causes:
-   #   - stale lock file: git worktree prune; then retry
-   #   - path already exists: remove it or rename
-   #   - branch name already registered: choose a different branch name
+#If nonzero exit : log error, do NOT dispatch, surface to user.Common causes:
+#- stale lock file : git worktree prune; then retry
+#- path already exists : remove it or rename
+#- branch name already registered : choose a different branch name
 
-   # 3. Verify path is a worktree (not the main repo root)
+# 3. Verify path is a worktree(not the main repo root)
    git -C .worktrees/agent-<name> rev-parse --show-toplevel
-   # Output must be the absolute path of .worktrees/agent-<name> — NOT the main repo root
+#Output must be the absolute path of.worktrees / agent - < name> — NOT the main repo root
 
-   # 4. Write-side agents only — verify branch isolation
+# 4. Write - side agents only — verify branch isolation
    git -C .worktrees/agent-<name> branch --show-current
-   # Output must NOT equal the current development branch (e.g. docs/execution-skill-overhaul or main)
-   # Read-only agents (explorer, researcher, reviewers, skeptic, postmortem) skip step 4.
+#Output must NOT equal the current development branch(e.g.docs / execution - skill - overhaul or main)
+#Read - only agents(explorer, researcher, reviewers, skeptic, postmortem) skip step 4.
    ```
 
-   The worktree path confirmed above is the value to pass as `{{WORKTREE_PATH}}` in the agent prompt.
+   The worktree path confirmed above is the value to pass as `
+{
+    {
+        WORKTREE_PATH
+    }
+}` in the agent prompt.
 
    **Why read-only agents also need worktrees:** The main context continues making commits while agents run. Without a worktree, a read-only agent observes a dirty working tree or partially-committed state — producing findings against a snapshot that no longer matches any branch. A worktree gives every agent a stable, isolated view at dispatch time.
 4. If a pre-built template exists in `.github/agents/` for this task type: use it instead of injecting rules inline. Available templates: `implementer.md`, `skeptic.md`, `spec-compliance-reviewer.md`, `code-quality-reviewer.md`, `researcher.md`, `postmortem-reviewer.md`, `explorer.md`, `architecture-reviewer.md`, `infrastructure-reviewer.md`.
@@ -106,6 +114,18 @@ Before dispatching any subagent:
 
 ✓ All 5 met → dispatch the agent
 ✗ Any unmet → refine the todo, complete the prompt, create the worktree, or select the correct agent type before dispatching
+
+---
+
+## Canary
+
+When applying this skill, before dispatching any agent, state this line in your response:
+
+> `Worktree: [output of: git -C .worktrees/agent-<name> rev-parse --show-toplevel]`
+
+This is the observable signal that step 3 of BEFORE PROCEEDING was executed, not skipped. A less powerful model can produce it mechanically: run step 3, paste the output.
+
+**Note:** The canary raises the cost of skipping for compliant agents — it is not cryptographically bound to execution.
 
 ---
 
@@ -199,17 +219,24 @@ Stage 1: Spec Compliance Review     ← ALWAYS FIRST (spec-compliance-reviewer.m
 Stage 2: Code Quality Review        ← ONLY after Stage 1 passes (code-quality-reviewer.md)
 ```
 
+**Canary confirmation (before Stage 1):** Before proceeding to Stage 1 from any implementer result (DONE, DONE_WITH_CONCERNS, or PARTIAL), state: `Canary confirmed: [paste the Worktree: line from implementer output]`. If the canary line is absent from the implementer's output, the implementer did not follow BEFORE PROCEEDING — require skill reload and resubmit before dispatching Stage 1.
+
 **Never skip Stage 1.** Code that doesn't meet the spec doesn't benefit from quality review.
 
 **Worktree hygiene:** All implementer subagents MUST work in a worktree. Never dispatch an implementer to the main working tree. See Git Worktrees section below.
 
 ### Stage 1: Spec Compliance Review
 
-Use `spec-compliance-reviewer.md` with full requirements and the implementation diff; if GAPS are returned, implementer fixes and Stage 1 re-runs before proceeding.
+Use `spec-compliance-reviewer.md` with full requirements and the implementation diff;
+if GAPS
+    are returned, implementer fixes and Stage 1 re -
+                      runs before proceeding.
 
-### Stage 2: Code Quality Review
+                      ## #Stage 2 : Code Quality Review
 
-Use `code-quality-reviewer.md` — one agent per file changed; if REQUEST CHANGES, implementer fixes and Stage 2 re-runs before proceeding.
+                                        Use `code -
+                      quality - reviewer.md` — one agent per file changed;
+if REQUEST CHANGES, implementer fixes and Stage 2 re-runs before proceeding.
 
 See `references/REVIEW_PROTOCOL.md` for full protocol.
 
@@ -233,9 +260,9 @@ See `references/MODEL_SELECTION.md` for model tier table and concurrency rules.
 - **Assign Problems Not Tasks:** delegate the outcome, not the steps — see the `writing-plans` skill — 'Assign Problems Not Tasks' principle.
 - **State the return format explicitly** — tell it exactly what to give back
 - **Provide complete context** — subagents are stateless
-- **Fresh context per task** — never share session history; it contaminates the subagent's search
-- **Accept findings unless they conflict with evidence you verified yourself**
-- **If a subagent finds something unexpected:** treat it as a hypothesis; verify before acting
+- **Fresh context per task** — never share session history;
+it contaminates the subagent's search - **Accept findings unless they conflict with evidence you verified yourself* *
+                                            -**If a subagent finds something unexpected : **treat it as a hypothesis; verify before acting
 
 ---
 
@@ -244,12 +271,12 @@ See `references/MODEL_SELECTION.md` for model tier table and concurrency rules.
 | Anti-pattern | Why it fails |
 |---|---|
 | "I'll check this myself" (for 5+ files) | Fills context, biased by assumptions |
-| Skipping Stage 1 review because "it looks right" | Spec gaps ship; quality review doesn't catch them |
-| One agent reviewing multiple large files | Coverage is shallow; 1 per file is the rule |
-| Acting on subagent findings without verifying | Subagents can be wrong — findings are hypotheses |
-| Dispatching without a clear return format | Agent returns noise |
-| Sharing full session history as context | Contaminates search; subagent inherits your assumptions |
-| Reporting DONE before 2-stage review | Code exists; correctness unverified |
+| Skipping Stage 1 review because "it looks right" | Spec gaps ship;
+quality review doesn't catch them | | One agent reviewing multiple large files | Coverage is shallow;
+1 per file is the rule | | Acting on subagent findings without verifying |
+    Subagents can be wrong — findings are hypotheses | | Dispatching without a clear return format |
+    Agent returns noise | | Sharing full session history as context | Contaminates search;
+subagent inherits your assumptions | | Reporting DONE before 2 - stage review | Code exists; correctness unverified |
 
 ---
 
@@ -291,9 +318,12 @@ Task to delegate
          |
          +-- NEEDS_CONTEXT → provide info, re-dispatch
          +-- BLOCKED → assess, escalate
-         +-- PARTIAL → verify completed, create todos for remaining, proceed for completed
-         +-- DONE_WITH_CONCERNS → read concerns, proceed if no correctness risk
+         +-- PARTIAL → verify completed, create todos for remaining, proceed to canary + Stage 1
+         +-- DONE_WITH_CONCERNS → read concerns, proceed to canary + Stage 1 if no correctness risk
          +-- DONE
+              |
+              v
+    Confirm canary: state "Canary confirmed: [Worktree: line from implementer output]"
               |
               v
     Stage 1: spec-compliance-reviewer.md → GAPS? → implementer fixes → re-run Stage 1
