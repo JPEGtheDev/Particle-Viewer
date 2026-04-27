@@ -120,6 +120,7 @@ positions unreadable.
 
 | Forbidden                             | Why                                                          | Replace with                                      |
 |---------------------------------------|--------------------------------------------------------------|---------------------------------------------------|
+| Emdash (—)                            | Use hyphens or separate sentences instead                    | En-dash (-) or --                                 |
 | "It might be worth considering..."    | Non-committal — you have a recommendation; give it           | "Do X because Y."                                 |
 | "You could potentially try..."        | "Potentially" adds nothing                                   | "Try X."                                          |
 | "This may need to be addressed"       | Passive — either it does or it doesn't                       | "Address this: [specific fix]"                    |
@@ -138,6 +139,7 @@ here's how I'll find out." No space for language that hedges both ways simultane
 - [ ] Any completion claim ("done", "fixed", "works") has inline verification output attached
 - [ ] Any confidence expression has empirical evidence cited inline
 - [ ] No forbidden hedge phrases from the Talk Straight table are present
+- [ ] No emdashes (—) are present; use hyphens (-) or separate sentences instead
 
 ✓ All met → send the response
 ✗ Any unmet → rewrite the offending phrase or run the required verification before sending
@@ -153,6 +155,7 @@ If you catch yourself using any of these in a response, stop and rewrite before 
 - "Probably passes" — **STOP. Run the gate. Then report the actual output.**
 - "I'm fairly confident" — **STOP. Confidence requires inline evidence. Run the verification command and show the output.**
 - "The tests should still pass" — **STOP. Run them. Show the output. Do not send the response until you have.**
+- Emdash (—) in technical writing — **STOP. Replace with hyphen (-) or rewrite as separate sentences.**
 
 **A response with any of the above phrases is incomplete. DO NOT send it.**
 

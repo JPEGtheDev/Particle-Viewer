@@ -29,7 +29,7 @@ Formatting and naming are automated via `.clang-format` and `.clang-tidy`. Never
 Run before **every** commit:
 
 ```bash
-# 1. Format ALL changed C++ files
+# 1. Format ALL changed C++ files ONLY (never run clang-format on markdown/YAML/docs)
 find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i
 
 # 2. Check what changed
@@ -38,6 +38,9 @@ git diff --name-only | head -20
 # 3. Spot-check any files you touched (don't trust silent tool output)
 # Look for: trailing semicolons after function }, exception handling,
 # multi-declaration statements, bracing consistency
+```
+
+**CRITICAL:** clang-format is C++ only. Never run it on markdown, YAML, or documentation files - it will corrupt them.
 git diff src/[touched_file].cpp | head -100
 
 # 4. Verify formatting passes (same check CI runs)

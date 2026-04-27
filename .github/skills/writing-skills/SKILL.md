@@ -1,61 +1,52 @@
--- -name : writing - skills license : MIT description : Use when creating, editing,
-    or reviewing a skill file.-- -
+---
+name: writing-skills
+license: MIT
+description: Use when creating, editing, or reviewing a skill file.
+---
 
-            ##Iron Law
+## Iron Law
 
-``` NO SKILL SHIPS WITHOUT MEETING THE 5 -
-            ELEMENT ANATOMY CHECK
+```
+NO SKILL SHIPS WITHOUT MEETING THE 5-ELEMENT ANATOMY CHECK
 ```
 
-            Violating the letter of this rule is violating the spirit of this rule
-                .
+Violating the letter of this rule is violating the spirit of this rule.
 
-            YOU MUST verify all 5 elements are present before shipping any skill.No
-                exceptions.Missing any single element means the skill is incomplete — fix it before using it.
+YOU MUST verify all 5 elements are present before shipping any skill. No exceptions.
+Missing any single element means the skill is incomplete — fix it before using it.
 
-                    ** Announce at start
-    : ** "I am using the writing-skills skill to [create/edit/review] the [skill-name] skill."
+**Announce at start:** "I am using the writing-skills skill to [create/edit/review] the [skill-name] skill."
 
-      -- -
+---
 
-      ##BEFORE PROCEEDING
+## BEFORE PROCEEDING
 
-          Before creating,
-    editing, or shipping any skill or
-                     agent template :
+Before creating, editing, or shipping any skill or agent template:
 
-                     1. ** Creating a new skill
-                 ? ** Will it be invoked in ≥1 % of sessions ? -YES → proceed -
-                                                                   NO → write a reference doc in the relevant skill's `references/` instead; do not create a skill
+1. **Creating a new skill?** Will it be invoked in ≥1% of sessions?
+   - YES → proceed
+   - NO → write a reference doc in the relevant skill's `references/` instead; do not create a skill
 
-                                                                   2. ** 5 -
-                                                                   element anatomy check** — all 5 MUST be present
-                                                             : -[] FRONTMATTER
-                 : `name` + `description` starting with "Use when..." -
-                       [] IRON LAW : ALL CAPS rule + "Violating the letter..." line + "YOU MUST" + "No exceptions." -
-                                     [] ANNOUNCEMENT : `** Announce at start
-    : ** "I am using the [skill] to [purpose]."` -
-      [] GATE FUNCTION : `##BEFORE PROCEEDING` with numbered conditions + ✓/✗ branches -
-    [] RATIONALIZATION TABLE : `##Rationalization Prevention` with ≥5 rows
+2. **5-element anatomy check** — all 5 MUST be present:
+   - [ ] FRONTMATTER: `name` + `description` starting with "Use when..."
+   - [ ] IRON LAW: ALL CAPS rule + "Violating the letter..." line + "YOU MUST" + "No exceptions."
+   - [ ] ANNOUNCEMENT: `**Announce at start:** "I am using the [skill] to [purpose]."`
+   - [ ] GATE FUNCTION: `## BEFORE PROCEEDING` with numbered conditions + ✓/✗ branches
+   - [ ] RATIONALIZATION TABLE: `## Rationalization Prevention` with ≥5 rows
 
-    3. ** Alexandrian form check** — every non -
-    trivial rule MUST answer : -** Context : ** When does this rule apply
-                 ? When does it NOT apply ? -** Forces
-                   : ** What tension or constraint does this rule resolve
-                       ? -A rule without Context and Forces cannot be applied correctly in edge cases.- New skills
-                       : MUST include Context + Forces for every non - trivial rule.- Existing skills :
-    add Context + Forces incrementally when touched — no big -
-        bang retrofit.
+3. **Alexandrian form check** — every non-trivial rule MUST answer:
+   - **Context:** When does this rule apply? When does it NOT apply?
+   - **Forces:** What tension or constraint does this rule resolve?
+   - A rule without Context and Forces cannot be applied correctly in edge cases.
+   - New skills: MUST include Context + Forces for every non-trivial rule.
+   - Existing skills: add Context + Forces incrementally when touched — no big-bang retrofit.
 
-        4. ** Reference reading gate : **-Editing frontmatter only(no anatomy changes)
-    ? → reference files optional - Modifying or adding anatomy elements
-    ? → read `references /
-              SKILL_ANATOMY_ELEMENTS.md` before any edits
+4. **Reference reading gate:**
+   - Editing frontmatter only (no anatomy changes)? → reference files optional
+   - Modifying or adding anatomy elements? → read `references/SKILL_ANATOMY_ELEMENTS.md` before any edits
 
-              5. *
-              *Auditing existing skills(not creating or editing one)
-          ? **Before dispatching any agent
-          : -Run `wc - c.github / skills/*/SKILL.md | awk '{print int($1/4) " tokens — " $2}'` and compare results against `references/SIZE_AND_COMPRESSION.md` limits
+5. **Auditing existing skills (not creating or editing one)?** Before dispatching any agent:
+   - Run `wc -c .github/skills/*/SKILL.md | awk '{print int($1/4) " tokens — " $2}'` and compare results against `references/SIZE_AND_COMPRESSION.md` limits
    - Enumerate every audit dimension explicitly in each agent's prompt
    - The anatomy gate above applies to editing skills — audit use cases require their own dimension list; unnamed dimensions will not be checked
 
@@ -99,45 +90,6 @@ Every skill belongs to exactly one bounded context. Place new skills in the corr
 
 ---
 
-## Skill Composition Model
-
-Skills are composable units. Each concept has exactly one owner. Consumers reference, never duplicate.
-
-### Three Rules
-
-**1. Single ownership — content lives in exactly one place.**
-Every piece of guidance belongs to one skill or one reference file. If the same rule appears in two skills, that is duplication — extract it to the owning skill's `references/` directory and replace both copies with a one-line pointer.
-
-**2. Compose by skill name in prose — never by file path.**
-When Skill A needs to invoke content from Skill B:
-
-```
-CORRECT:   "See the `testing` skill."  /  "Load the `testing` skill."
-INCORRECT: "See `../testing/references/TEST_SMELLS.md`"
-```
-
-Cross-skill file paths break when skills are reorganized. Skill names are stable identifiers. The agent navigates from the name; it does not need the path.
-
-**3. Split on domain boundary — not on size alone.**
-
-> **Context:** Applies when a skill grows beyond its token limit or begins covering two distinct concerns.  
-> **Forces:** Splitting on size alone produces fragments without iron laws — they cannot enforce behavior independently. Splitting on domain produces cohesive, independently invocable skills.  
-> **Solution:** Split only when the new sub-skill has a distinct iron law and is invoked independently of the parent. A skill that is always loaded together with its parent is not a split — it is an extract into a reference file.  
-> **Consequences:** Fewer skills than a size-based approach would produce. Each skill is larger but self-contained.
-
-See `references/SIZE_AND_COMPRESSION.md` for token limits and the split decision table.
-
-### Composition Anti-Patterns
-
-| Anti-pattern | Correct form |
-|---|---|
-| Duplicating a rule from another skill | One-line pointer: "See the `[skill]` skill." |
-| Cross-skill file path (`../other/references/FILE.md`) | Skill name in prose |
-| Splitting a skill because it is long | Split only when there is a distinct iron law for the sub-domain |
-| Creating a skill for occasional content | Write a reference doc in the owning skill's `references/` |
-
----
-
 ## Skill Anatomy — 5 Required Elements
 
 Every skill MUST contain all five elements:
@@ -151,8 +103,6 @@ Every skill MUST contain all five elements:
 ```
 
 Any absent element = skill is incomplete. Fix before shipping.
-
-**Optional element — CANARY:** Add a `## Canary` section when the skill's most-missable rule can be expressed as a specific, behavioral output. Place it mid-document (never at the top or inside the Iron Law or BEFORE PROCEEDING sections). Do not add a Canary to every skill — sparse deployment is what gives it signal value. See `references/SKILL_ANATOMY_ELEMENTS.md` for schema and triggering conditions.
 
 **Frontmatter also applies to agent templates:** `.github/agents/*.md` prompt template files require the same `name` + `description` YAML frontmatter block as skill files. Missing frontmatter causes parse errors when the CLI loads the agent.
 
