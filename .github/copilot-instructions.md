@@ -124,6 +124,7 @@ Skills are organized into **DDD bounded contexts**. Sub-domain skills (e.g., `vi
 |-------|------|--------|
 | `documentation` | `.github/skills/documentation/` | Docs conventions, linking, formatting, skill authoring |
 | `writing-skills` | `.github/skills/writing-skills/` | Skill authoring standard, DDD map, anatomy gate |
+| `summarization` | `.github/skills/summarization/` | 5-agent knowledge-extraction pipeline: Abstractive + Extractive + SAAC -> Synthesizer -> Quality |
 
 ### PRODUCT context
 
@@ -154,6 +155,8 @@ Reusable agent prompts live in `.github/agents/`. Use these when dispatching sub
 | `explorer.md` | Read-only multi-file research across many independent targets |
 | `architecture-reviewer.md` | Per-file layer boundary and IOpenGLContext compliance review |
 | `infrastructure-reviewer.md` | Per-file CI/CMake/Flatpak compliance review |
+| `synthesizer.md` | Synthesize three method summaries (Abstractive, Extractive, SAAC) into a Markdown article |
+| `summarization-quality.md` | Evaluate a synthesized summary for faithfulness, completeness, and actionability |
 
 ### Instruction Priority Hierarchy
 

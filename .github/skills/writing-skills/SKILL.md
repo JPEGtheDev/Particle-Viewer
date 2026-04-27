@@ -82,7 +82,7 @@ Every skill belongs to exactly one bounded context. Place new skills in the corr
 | **DELIVERY** | How code ships | versioning, build, workflow, finishing-a-development-branch |
 | **REVIEW** | How work is validated | architecture-review, infrastructure-review, skill-reviewer, requesting-code-review, receiving-code-review |
 | **REFLECTION** | How the agent improves | self-evaluation, session-postmortem |
-| **KNOWLEDGE** | How knowledge is captured | documentation, writing-skills |
+| **KNOWLEDGE** | How knowledge is captured | documentation, writing-skills, summarization |
 | **PRODUCT** | How features are defined | user-story-generator, user-story-estimation |
 | **BEHAVIOR** | How the agent behaves honestly and bootstraps | honesty, session-bootstrap |
 
