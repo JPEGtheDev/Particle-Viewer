@@ -91,8 +91,16 @@ If `{{OUTPUT_PATH}}` is `ASK_USER`: do not attempt to write the final file. Repo
 
 ## Rules
 
-1. Every section must have substantive content -- no empty sections, no "N/A".
-2. Do not fabricate content not present in the source or the three summaries.
-3. Notable Passages must be verbatim from the extractive summary -- do not paraphrase them here.
-4. Actions and Lessons must be specific and verifiable -- not "think about this" or "consider applying."
-5. The Synthesis section is your analysis, not a fourth summary. It adds perspective, not repetition.
+1. **Length target (soft):** Calibrate total article length to source length. Quality completeness patches may push the final output above target -- that is correct behavior.
+
+   | Source length | Target article length |
+   |--------------|----------------------|
+   | Short (< 1,000 words) | 40-50% of source word count |
+   | Medium (1,000-3,000 words) | 30-35% of source word count |
+   | Long (> 3,000 words) | 20-25% of source word count |
+
+2. Every section must have substantive content -- no empty sections, no "N/A".
+3. Do not fabricate content not present in the source or the three summaries.
+4. Notable Passages must be verbatim from the extractive summary -- do not paraphrase them here.
+5. Actions and Lessons must be specific and verifiable -- not "think about this" or "consider applying."
+6. The Synthesis section is your analysis, not a fourth summary. It adds perspective, not repetition.

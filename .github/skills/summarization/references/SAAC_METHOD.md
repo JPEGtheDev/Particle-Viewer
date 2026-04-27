@@ -21,6 +21,16 @@ State/Assign/Action/Complete (SAAC) is a structured summarization method that ex
 4. **Do not invent actions.** Actions must be traceable to the source. If the source implies an action without stating it, note it as inferred: "[Action]: (inferred) ..."
 5. **SAAC is not a replacement for the other methods.** It operates in parallel and produces structured output that the synthesizer draws from for its "Actions and Lessons" section.
 
+## Length Guidance
+
+Action item count is a soft cap. Add an item beyond the cap only if it is independently verifiable and not implied by another action.
+
+| Source length | Target action count |
+|--------------|---------------------|
+| Short (< 1,000 words) | 3-5 actions |
+| Medium (1,000-3,000 words) | 5-7 actions |
+| Long (> 3,000 words) | 6-8 actions |
+
 ## Output Format
 
 Return a single Markdown section with this structure:

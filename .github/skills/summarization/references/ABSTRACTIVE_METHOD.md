@@ -12,6 +12,16 @@ Abstractive summarization generates **new prose** that captures the core meaning
 4. **No new claims.** Do not introduce facts, interpretations, or conclusions that are not supported by the source. Paraphrase only what is there.
 5. **Preserve nuance.** If the source is uncertain, hedged, or qualified, the abstractive summary must reflect that. Do not flatten complexity into false certainty.
 
+## Length Guidance
+
+Output length is a soft target. Slightly longer output is preferable to omitting a key concept.
+
+| Source length | Target output |
+|--------------|--------------|
+| Short (< 1,000 words) | 20-25% of source word count |
+| Medium (1,000-3,000 words) | 15-20% of source word count |
+| Long (> 3,000 words) | 10-15% of source word count |
+
 ## Output Format
 
 Return a single Markdown section with this structure:
