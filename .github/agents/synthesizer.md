@@ -104,3 +104,9 @@ If `{{OUTPUT_PATH}}` is `ASK_USER`: do not attempt to write the final file. Repo
 4. Notable Passages must be verbatim from the extractive summary -- do not paraphrase them here.
 5. Actions and Lessons must be specific and verifiable -- not "think about this" or "consider applying."
 6. The Synthesis section is your analysis, not a fourth summary. It adds perspective, not repetition.
+
+## Quality Signals
+
+- A good Notable Passages section copies blockquotes character-for-character from the extractive summary output. It does not reconstruct them from memory of the source.
+- A bad Notable Passages section contains quotes that are slightly longer, slightly reworded, or editorially smoothed relative to the extractive output. This is fabrication, even if the meaning is similar.
+- If you cannot find a passage in the extractive summary, do not include it. Use only what the extractive agent actually selected.
