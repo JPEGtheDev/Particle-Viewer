@@ -22,13 +22,14 @@ YOU MUST dispatch all three method agents and wait for all three results before 
 
 ## Pipeline
 
-5 agents run in fixed sequence:
+6 agents run in fixed sequence:
 
 | Step | Agent | Runs when |
 |------|-------|-----------|
 | 1-3 | Abstractive, Extractive, SAAC | Parallel -- after source is in context |
 | 4 | Synthesizer | After all 3 method agents return |
-| 5 | Quality Evaluator | After synthesizer writes temp file |
+| 5 | Claim Enrichment | After synthesizer writes temp file |
+| 6 | Quality Evaluator | After claim enrichment writes enriched temp file |
 
 Partial failure: 1 of 3 methods fails -> synthesizer notes the gap and proceeds. 2+ fail -> halt and report blocked.
 

@@ -1,6 +1,6 @@
 # Pipeline Reference -- Summarization Dispatch Instructions
 
-Detailed per-agent prompt structure for the 5-agent summarization pipeline.
+Detailed per-agent prompt structure for the 6-agent summarization pipeline.
 
 ---
 
@@ -39,11 +39,29 @@ Fill every `{{VARIABLE}}` slot:
 | `{{TEMP_PATH}}` | `scratch/summaries/temp-[kebab-source-title].md` |
 | `{{OUTPUT_PATH}}` | Resolved output path, or `ASK_USER` if not yet determined |
 
-The synthesizer writes the article to `{{TEMP_PATH}}` first and reports the temp path. The user can review the temp file while the quality agent runs.
+The synthesizer writes the article to `{{TEMP_PATH}}` first. Dispatch the claim enrichment agent immediately after.
 
 ---
 
-## Agent 5: Quality Evaluator
+## Agent 5: Claim Enrichment
+
+Dispatch using `.github/agents/claim-enrichment.md` after the synthesizer returns.
+
+Fill every `{{VARIABLE}}` slot:
+
+| Variable | Value |
+|----------|-------|
+| `{{SOURCE_CONTENT}}` | Full source text |
+| `{{SYNTHESIZED_ARTICLE}}` | Full content returned by the synthesizer |
+| `{{TEMP_PATH}}` | Same temp path used by synthesizer (agent overwrites it) |
+
+The claim enrichment agent identifies every analytical claim that goes beyond the source, evaluates whether each is noteworthy (connects source concepts, surfaces a unifying principle, aids comprehension), keeps noteworthy claims with explicit framing (`> **Synthesis:** ...`), and removes claims that are unsupported or add no value.
+
+After the enrichment agent reports, report the temp path to the user. They can review the enriched file while the quality agent runs in parallel.
+
+---
+
+## Agent 6: Quality Evaluator
 
 Dispatch using `.github/agents/summarization-quality.md`. Can be dispatched in parallel with notifying the user of the temp path -- they do not need to be sequential.
 
@@ -52,7 +70,7 @@ Fill every `{{VARIABLE}}` slot:
 | Variable | Value |
 |----------|-------|
 | `{{SOURCE_CONTENT}}` | Full source text |
-| `{{SYNTHESIZED_ARTICLE}}` | Full content of the temp file |
+| `{{SYNTHESIZED_ARTICLE}}` | Full content of the enriched temp file (after Agent 5) |
 | `{{OUTPUT_PATH}}` | Resolved output path (must be known before quality writes) |
 | `{{TEMP_PATH}}` | Same temp path used by synthesizer |
 

@@ -156,6 +156,7 @@ Reusable agent prompts live in `.github/agents/`. Use these when dispatching sub
 | `architecture-reviewer.md` | Per-file layer boundary and IOpenGLContext compliance review |
 | `infrastructure-reviewer.md` | Per-file CI/CMake/Flatpak compliance review |
 | `synthesizer.md` | Synthesize three method summaries (Abstractive, Extractive, SAAC) into a Markdown article |
+| `claim-enrichment.md` | Evaluate analytical claims in a synthesized article; keep noteworthy ones with framing, remove unsupported ones |
 | `summarization-quality.md` | Evaluate a synthesized summary for faithfulness, completeness, and actionability |
 
 ### Instruction Priority Hierarchy
