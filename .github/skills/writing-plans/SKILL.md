@@ -173,6 +173,7 @@ If you genuinely find no gaps after thorough analysis, state that explicitly.
 
 - Code or file edits before Step 0 (restate requirements) is complete — **STOP. Do Step 0 now.**
 - **HARD-GATE:** Plan has ≥2 todos, Skeptic not dispatched — **STOP. Dispatch Skeptic before first implementation step. No first edit until Skeptic result is read.**
+- **HARD-GATE:** About to send a message presenting a design or plan as final — Skeptic not yet dispatched? **STOP. Dispatch the Skeptic before sending the message.** A plan announced without Skeptic review invites user approval of an unreviewed design. The Skeptic must be in-flight or complete before the plan is presented as finished.
 - Any todo lacks a concrete description — **STOP. Fill every description before starting.**
 - Plan states a numerical estimate without a `wc` measurement — **STOP. Measure first. Run `wc -w` or `wc -l`.**
 - Next todo started without prior todo's 2-stage review passing — **STOP. Both stages required before advancing.**

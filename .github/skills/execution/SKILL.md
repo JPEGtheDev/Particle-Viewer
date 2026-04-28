@@ -85,6 +85,7 @@ If you catch yourself thinking any of these:
 - "Just one more small change before I verify"
 - "This is done enough to move on"
 - "Evidence contradicts the plan but I'll finish this step first" — **Stop. Confront reality immediately.** State what the plan assumed, what evidence shows, and what that means for remaining todos. Revise the plan before proceeding, even if it voids completed work. Continuing on a plan you know is wrong is not progress.
+- "I just inserted an item into a numbered list" — **Stop. Re-read the full list from top to bottom to verify sequential numbering. Duplicate or out-of-sequence numbers must be fixed before the next edit call or commit.**
 
 **All of these mean: Stop. Run the full verification gate before advancing. See `verification-before-completion` skill.**
 
@@ -95,7 +96,7 @@ If you catch yourself thinking any of these:
 **REQUIRED: Use the `verification-before-completion` skill.**
 
 Before claiming any task done:
-- Diff: `git diff` — read every hunk for accidental changes
+- Diff: `git --no-pager diff --staged` — read every hunk for accidental changes. **Applies to ALL file types including documentation. Documentation commits are not exempt.**
 
 For project-specific build, test, and format commands, see `references/PROJECT_COMMANDS.md`.
 
