@@ -37,6 +37,20 @@ This skill is required before writing code when ANY of the following are true:
 
 ## Phase 1: Clarification (REQUIRED — do not skip)
 
+### Discovery Gate (run first)
+
+**Context:** A feature enters brainstorming with new or unclear AC.
+
+**Forces:** Brainstorming explores *how* to build. Discovery defines *what* to build. Designing how before defining what produces rework.
+
+**Solution:** Before asking clarifying questions, check plan.md for `## Feature Specification`.
+- Present → Discovery ran. AC is defined. Proceed to clarifying questions.
+- Absent → AC is unclear. Invoke `three-amigos` Discovery ceremony NOW. Return here after Discovery closes.
+
+**Consequences:** Brainstorming Phase 1 operates on confirmed AC. No design work begins before behavioral scope is settled.
+
+---
+
 **Before answering any design questions:** ask clarifying questions. One question per response. Wait for the answer before asking the next.
 
 Label every ambiguity `[UNCLEAR: ...]`. Do NOT silently assume an answer to an unclear requirement.
