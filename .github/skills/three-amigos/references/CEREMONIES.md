@@ -10,8 +10,33 @@ Full ceremony definitions for all 6 ceremonies. Orchestrator reads this file to 
 ## Ceremony 1: Discovery
 
 **Trigger:** New feature with new or unclear acceptance criteria.  
-**Output:** Feature Specification written into `## Feature Specification` in plan.md. Contains: numbered AC + BDD-style behavioral scenarios (Given/When/Then, conceptual — no test framework) + surfaced unresolved questions for the user. Big-picture only: no implementation steps, no architecture decisions.  
+**Output:** Feature Specification written into `## Feature Specification` in plan.md.  
 **Required:** YES for any feature with 2+ todos and unclear AC.
+
+### Feature Specification grain — MANDATORY
+
+The Feature Specification is written at **user behavior and outcome** level only.
+
+**Include:**
+- What the user can DO (observable actions)
+- What the user receives or observes (outcomes)
+- Numbered acceptance criteria in behavioral terms (Given/When/Then or plain language)
+- What is explicitly OUT of scope
+- Unresolved questions for the user
+
+**Exclude — these NEVER appear in the Feature Specification:**
+- Class names, struct names, method names, file references
+- Implementation steps or architecture decisions
+- Todos, task lists, or code-level instructions
+
+**Developer amigo findings in Discovery** (API gaps, missing setters, class constraints) are implementation constraints that inform todo planning — they do NOT appear in the Feature Specification. The orchestrator records them separately (e.g., in a `## Implementation Notes` section or as initial todos) after the Feature Specification is written.
+
+### Synthesis step (orchestrator)
+
+After all three Discovery amigos return:
+1. Write `## Feature Specification` from the **Business and Tester findings only** — behavioral ACs, BDD scenarios, out-of-scope items, open questions.
+2. Record Developer implementation findings separately under `## Implementation Notes` — these become inputs to todo planning.
+3. Do NOT mix the two. Implementation details in the Feature Specification defeat the purpose of the ceremony.
 
 ### Read First
 
