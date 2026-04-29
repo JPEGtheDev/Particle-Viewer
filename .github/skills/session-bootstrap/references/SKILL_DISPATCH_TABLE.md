@@ -4,7 +4,7 @@
 |----------------------------------------------|----------------------------------------------------|
 | Any implementation work                      | `execution`                                        |
 | Planning a multi-step task                   | `writing-plans`                                    |
-| Any new plan with 2+ todos | `writing-plans`; dispatch Skeptic before first implementation step |
+| Any new plan with 2+ todos or an architectural decision | `writing-plans`; if `## Feature Specification` present in plan.md: dispatch `three-amigos` Refinement; otherwise dispatch Skeptic, before first implementation step |
 | Unclear approach or design choices           | `brainstorming`                                    |
 | Writing or editing code                      | `execution`, `code-quality`                        |
 | Writing code with rendering/runtime patterns | `execution`, `code-quality`, `cpp-patterns`        |
@@ -24,7 +24,7 @@
 | Parallel agent work / A/B testing            | `subagent-driven-development`, `using-git-worktrees` |
 | Creating user stories                        | `user-story-generator`, `user-story-estimation`    |
 | Creating or editing a skill file             | `writing-skills`, `skill-reviewer`                 |
-| Resuming from a prior session with pending SQL todos | `writing-plans`; dispatch Skeptic before first implementation step |
+| Resuming from a prior session with pending SQL todos | `writing-plans`; if `## Feature Specification` present in plan.md: dispatch `three-amigos` Refinement; otherwise dispatch Skeptic, before first implementation step |
 | Schema design, new data structure, or plan with ≥5 implementation items | `brainstorming`, `writing-plans` |
 | Auditing communication quality or postmortem | `honesty`, `session-postmortem`                    |
 | Auditing or reorganizing a collection of files, tasks, or artifacts with multiple valid structural approaches | `brainstorming`, `writing-plans` |
