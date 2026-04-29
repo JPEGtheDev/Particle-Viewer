@@ -2,6 +2,7 @@
 name: subagent-driven-development
 license: MIT
 description: Use when delegating implementation tasks, confirming theories, running parallel research, or reviewing completed work.
+token-budget: over-budget by design — this is a large Tier 1 reference skill; compression requires a dedicated pass
 ---
 
 ## Iron Laws
@@ -31,15 +32,17 @@ Implementer returns status code
     |
     +-- NEEDS_CONTEXT --> Provide the missing information. Re-dispatch.
     |
-    +-- BLOCKED --> Assess. Provide context if possible. Otherwise escalate to user.
+    +-- BLOCKED --> Invoke `three-amigos` Pivot Assessment (Ceremony 4). CONTINUE/REVISE AC/REVISE PLAN/ABANDON.
+                    If no Three Amigos available: Assess. Provide context if possible. Otherwise escalate to user.
     |
     +-- PARTIAL --> Read completed/remaining split.
     |                Verify what was completed (build + tests).
     |                Create new todo(s) for remaining work.
     |                Proceed to review for the completed portion only.
     |
-    +-- DONE_WITH_CONCERNS --> Read concerns before proceeding to review.
-    |                          Address concerns if correctness risk. Otherwise proceed.
+    +-- DONE_WITH_CONCERNS --> Read concerns. If concerns indicate a correctness or scope risk:
+    |                          Invoke `three-amigos` Pivot Assessment (Ceremony 4).
+    |                          Otherwise proceed to canary + Stage 1 review.
     |
     +-- DONE
          |
@@ -65,10 +68,17 @@ Mark todo done. Reload relevant skills (session-bootstrap refresh rule).
 Pick up next todo.
     |
     v
-(After all todos) → Dispatch final code reviewer → finishing-a-development-branch
+(After all todos) → Check plan.md for `## Feature Specification`.
+    If present (Discovery ran): Invoke `three-amigos` Signoff (Ceremony 5) BEFORE finishing-a-development-branch.
+    If absent: Dispatch final code reviewer → finishing-a-development-branch
 ```
 
 **Do not advance past any todo until both Stage 1 and Stage 2 are PASS/APPROVE.**
+
+**Why these three gates exist:**
+- **BLOCKED → Ceremony 4:** A blocker is a fork in the feature, not a delay. Assessing without Business and Tester perspectives risks silent scope changes.
+- **DONE_WITH_CONCERNS → Ceremony 4:** Correctness or scope risk means delivered work may not match accepted criteria. Independent review before rework compounds cost.
+- **After all todos → Ceremony 5:** Merging without Signoff means Business and Tester have not confirmed delivered behavior matches the Feature Specification.
 
 ---
 
@@ -203,10 +213,10 @@ Every subagent doing implementation work must report one of these five codes. Re
 | Code | Meaning | Your response |
 |------|---------|---------------|
 | `DONE` | Task complete, all verification passed, no concerns | Proceed to Stage 1 review |
-| `DONE_WITH_CONCERNS` | Complete but flagged issues for dispatcher review | Read concerns. Address if correctness risk. Otherwise proceed to Stage 1. |
+| `DONE_WITH_CONCERNS` | Complete but flagged issues for dispatcher review | Read concerns. If concerns indicate a correctness or scope risk: Invoke Three Amigos Pivot Assessment (Ceremony 4). Otherwise proceed to canary + Stage 1. |
 | `PARTIAL` | Partially complete — some items done and verified, rest not done | Verify completed portion. Create new todo(s) for remaining work. Proceed to Stage 1 for completed portion only. |
 | `NEEDS_CONTEXT` | Cannot proceed — specific missing information listed | Provide the missing information. Re-dispatch. |
-| `BLOCKED` | Cannot proceed — external dependency or environment issue described | Assess blocker. Provide context if possible. Otherwise escalate to user. |
+| `BLOCKED` | Cannot proceed — external dependency or environment issue described | Invoke Three Amigos Pivot Assessment (Ceremony 4). If unavailable: assess blocker, provide context if possible, otherwise escalate to user. |
 
 ---
 
@@ -295,6 +305,8 @@ subagent inherits your assumptions | | Reporting DONE before 2 - stage review | 
 | "I already know what to do — the researcher step is overhead" | YOU MUST dispatch the researcher.md template to confirm assumptions before acting. |
 | "The two stages of review are redundant — I wrote the code carefully" | YOU MUST dispatch spec-compliance-reviewer.md first, then code-quality-reviewer.md. Writing carefully is not a substitute for independent review. |
 | "I dispatched an audit subagent — that's a complete audit" | NO. Name every dimension the agent must check in the prompt. An unnamed dimension will not be checked. The audit prompt is the specification — an incomplete specification produces an incomplete audit. |
+| "The concerns are nits — not a correctness or scope risk, so I'll skip Ceremony 4" | "Correctness or scope risk" is objective: does it affect behavior, API surface, or stated requirements? If yes, dispatch Ceremony 4. "Feels minor" is not a valid exemption. |
+| "No `## Feature Specification` in plan.md — that means Ceremony 5 doesn't apply" | Absence of the section means Discovery never ran. That is a gap to surface, not a skip condition. Invoke Ceremony 5 before merge regardless. |
 
 ---
 
@@ -317,9 +329,9 @@ Task to delegate
     Status code: DONE / DONE_WITH_CONCERNS / PARTIAL / NEEDS_CONTEXT / BLOCKED
          |
          +-- NEEDS_CONTEXT → provide info, re-dispatch
-         +-- BLOCKED → assess, escalate
+         +-- BLOCKED → Pivot Assessment (Ceremony 4). If unavailable: assess, escalate
          +-- PARTIAL → verify completed, create todos for remaining, proceed to canary + Stage 1
-         +-- DONE_WITH_CONCERNS → read concerns, proceed to canary + Stage 1 if no correctness risk
+         +-- DONE_WITH_CONCERNS → read concerns; correctness/scope risk? → Pivot Assessment (Ceremony 4); else proceed to canary + Stage 1
          +-- DONE
               |
               v
@@ -336,5 +348,7 @@ Task to delegate
     Pick up next todo.
               |
               v
-    (After all todos) → final code review → finishing-a-development-branch
+    (After all todos) → check plan.md for `## Feature Specification`
+        If present: Signoff (Ceremony 5) → finishing-a-development-branch
+        If absent: final code review → finishing-a-development-branch
 ```
