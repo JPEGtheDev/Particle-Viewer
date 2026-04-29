@@ -104,10 +104,16 @@ Answer before finalizing any plan. Dispatch a research subagent if you cannot an
 | 4 | **Do I have the capability?** Any libraries or patterns requiring research before coding? | Wrong assumptions |
 | 5 | **What would a skeptic say?** Strongest argument against this approach | Comfort choices |
 
-✓ All 5 questions answered with no gaps → proceed to Skeptic Agent or implementation
+✓ All 5 questions answered with no gaps → proceed to review gate or implementation
 ✗ Any unanswered question or revealed gap → stop, revise the plan, then re-run the gate
 
-For any plan with 2+ todos or an architectural decision, dispatch a **Skeptic Agent** before implementation:
+For any plan with 2+ todos or an architectural decision, dispatch a review agent before implementation. The routing depends on whether Discovery ran:
+
+**If plan.md contains `## Feature Specification` (Discovery ran):**
+Invoke the `three-amigos` skill for a Refinement review. Three amigos review replaces the Skeptic for Discovery features.
+
+**Otherwise (no Discovery):**
+Dispatch a **Skeptic Agent**:
 
 ```
 You are a Skeptic Agent. Find what this plan is missing.
@@ -118,7 +124,7 @@ Plan: [FULL PLAN WITH TODOS]
 
 Answer only these four questions:
 1. What is the plan NOT addressing that the requirements ask for?
-2. What assumptions might be wrong? (name assumption + what must be true)
+2. What assumptions must be true for this plan to work? (name assumption + what must hold)
 3. Strongest argument against this approach?
 4. Most likely way this fails in practice?
 
@@ -150,13 +156,13 @@ If you genuinely find no gaps after thorough analysis, state that explicitly.
 | "We'll probably need this later" | YAGNI — not in criteria means not in this plan |
 | "The plan looks good — I'll just start" | A plan presented is not a plan approved. Wait for explicit instruction. |
 | "The user implied I should proceed" | Implied is not explicit. "Looks good", "go ahead", or "start" are approval. Silence is not. |
-| "The user said 'autopilot' / 'just go' — that overrides plan-first" | When a message says both "autopilot/just go" and "show me first / I want to know your flow," the show-first instruction wins. Explicit plan presentation is Iron Law 7. "Autopilot" is not an explicit override unless the user also says "skip the plan." |
+| "The user said 'autopilot' / 'just go' — that overrides plan-first" | When a message says both "autopilot/just go" and "show me first / I want to know your flow," the show-first instruction wins. Explicit plan presentation is the PLAN BEFORE CODE law. "Autopilot" is not an explicit override unless the user also says "skip the plan." |
 | "I listed all the main files — the audit scope is complete" | Listing top-level files from memory or a shallow glob misses references/ subdirectories, recently-added files, and nested content. For any audit task, run a file listing command (e.g. `find .github/skills -type f -name '*.md'`) before planning. Do not enumerate scope from memory. |
 | "I found the bug — fixing it now" | A request to debug or research is not a request to fix. Present findings first. Wait for instruction. |
 | "Plan states a numerical estimate (word count, file size, line count) without measuring" | Measure before writing. Run `wc -w` or `wc -l`. Unverified numerical claims in plans cause failed acceptance criteria. |
-| "It's just a quick test, I don't need todos" | Any multi-step task without SQL todos has no Skeptic dispatch gate. The Skeptic dispatch rule cannot fire if todos were never created. Create todos first, then execute. |
+| "It's just a quick test, I don't need todos" | Any multi-step task without SQL todos has no review gate. The Skeptic and Three Amigos dispatch rules cannot fire if todos were never created. Create todos first, then execute. |
 | "Implementation revealed a dependency on a second file — I'll modify it" | Scope expansion requires user authorization. STOP. State the dependency and ask before touching any file not in the original plan. |
-| "Skeptic approved with conditions, I addressed them — I can proceed" | NO. Skeptic findings change the plan — user approval of the original does not carry forward. Re-present the revised post-Skeptic plan to the user. Wait for explicit re-approval before creating branches or dispatching implementers. |
+| "Skeptic or Refinement approved with conditions, I addressed them — I can proceed" | NO. Review findings change the plan — user approval of the original does not carry forward. Re-present the revised post-review plan to the user. Wait for explicit re-approval before creating branches or dispatching implementers. |
 
 ---
 
@@ -172,8 +178,8 @@ If you genuinely find no gaps after thorough analysis, state that explicitly.
 ## Red Flags — STOP
 
 - Code or file edits before Step 0 (restate requirements) is complete — **STOP. Do Step 0 now.**
-- **HARD-GATE:** Plan has ≥2 todos, Skeptic not dispatched — **STOP. Dispatch Skeptic before first implementation step. No first edit until Skeptic result is read.**
-- **HARD-GATE:** About to send a message presenting a design or plan as final — Skeptic not yet dispatched? **STOP. Dispatch the Skeptic before sending the message.** A plan announced without Skeptic review invites user approval of an unreviewed design. The Skeptic must be in-flight or complete before the plan is presented as finished.
+- **HARD-GATE:** Plan has 2+ todos, review not dispatched — **STOP. Check plan.md for `## Feature Specification`. If present: invoke three-amigos Refinement. If absent: dispatch Skeptic. No first edit until review result is read.**
+- **HARD-GATE:** About to send a message presenting a design or plan as final — review not yet dispatched? **STOP. Check plan.md for `## Feature Specification`. If present: invoke three-amigos Refinement. If absent: dispatch Skeptic. The review must be in-flight or complete before the plan is presented as finished.**
 - Any todo lacks a concrete description — **STOP. Fill every description before starting.**
 - Plan states a numerical estimate without a `wc` measurement — **STOP. Measure first. Run `wc -w` or `wc -l`.**
 - Next todo started without prior todo's 2-stage review passing — **STOP. Both stages required before advancing.**
@@ -191,7 +197,7 @@ Trivial (1 file, 1 step)? → Implement directly
     ↓ (multi-step)
 Step 0: Clarify Expectations — restate requirements, label [UNCLEAR:]
     ↓
-Smart Trust Gate — answer 5 questions; dispatch Skeptic Agent if 2+ todos
+Smart Trust Gate — answer 5 questions; if 2+ todos: check for `## Feature Specification` → three-amigos Refinement OR Skeptic
     ↓
 Build todo list: YAGNI + PPP per item + No Placeholders
     ↓
