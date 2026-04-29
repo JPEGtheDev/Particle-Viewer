@@ -1,3 +1,13 @@
+---
+title: "Conventional Commits"
+description: "Commit message format rules and type/scope conventions for Particle-Viewer."
+domain: cross-cutting
+subdomain: ""
+tags: [cross-cutting, git, commits, conventional-commits]
+related:
+  - "RELEASE_PROCESS.md"
+---
+
 # Quick Reference: Conventional Commits
 
 This is a quick reference for writing conventional commits that work with our automated release system.
@@ -58,7 +68,7 @@ git commit -m "feat(renderer): add HDR support"
 git commit -m "fix(camera): correct rotation calculations"
 ```
 
-## Tips
+## Rules
 
 ✅ **DO:**
 - Keep description clear and concise
@@ -79,6 +89,6 @@ When you push to master:
 3. Creates git tag (e.g., v0.2.0)
 4. Publishes GitHub release with auto-generated changelog
 
-## More Information
+## Related
 
-See [RELEASE_PROCESS.md](RELEASE_PROCESS.md) for full documentation.
+- [RELEASE_PROCESS.md](RELEASE_PROCESS.md) — full automated release pipeline documentation
