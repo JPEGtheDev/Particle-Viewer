@@ -11,7 +11,7 @@ Before generating any output, ask yourself:
 3. **Encountered a bug or failure?** → Have I traced the root cause (not just guessed)? If not: load `systematic-debugging`.
 4. **Non-trivial task (3+ steps)?** → Have I loaded the required skills from the table below? If not: load them now.
 5. **Forming a theory or assumption?** → "I think" is not acceptable. Do I have empirical evidence (code, test output, documentation)? If not: dispatch a subagent to confirm before proceeding.
-6. **About to finalize a plan?** → Have I answered "What is this NOT addressing?" If no answer, or if the answer reveals a gap: stop. Revise the plan. Dispatch a Skeptic Agent for any 3+ todo plan. See `writing-plans` skill.
+6. **About to finalize a plan?** → Have I answered "What is this NOT addressing?" If no answer, or if the answer reveals a gap: stop. Revise the plan. Dispatch a Skeptic Agent for any 2+ todos or an architectural decision. See `writing-plans` skill.
 7. **About to start multi-step work?** → Have I stated requirements back in my own words and labeled ambiguities `[UNCLEAR: ...]`? If not: state them before planning. See `writing-plans` skill.
 8. **Unclear approach, multiple valid solutions, or architecture impact?** → HARD-GATE: load `brainstorming` and answer all design questions before writing any code.
 9. **About to dispatch a subagent?** → Load `subagent-driven-development`. One clear objective per agent. State the return format. Verify results before propagating claims.
@@ -73,6 +73,7 @@ Skills are organized into **DDD bounded contexts**. Sub-domain skills (e.g., `vi
 | `execution` | `.github/skills/execution/` | Work loop, commit rhythm, mode declaration, behavior preservation |
 | `writing-plans` | `.github/skills/writing-plans/` | Plan building, scope gates, Skeptic Agent, YAGNI/PPP/STTCPW |
 | `brainstorming` | `.github/skills/brainstorming/` | HARD-GATE design exploration before any implementation begins |
+| `three-amigos` | `.github/skills/three-amigos/` | BDD Discovery, Refinement, Progress Check, Pivot Assessment, Signoff, and Retrospective ceremonies |
 | `subagent-driven-development` | `.github/skills/subagent-driven-development/` | Subagent dispatch, 2-stage review, empirical evidence, worktrees |
 | `dispatching-parallel-agents` | `.github/skills/dispatching-parallel-agents/` | Parallel agent dispatch, isolation, result aggregation |
 | `using-git-worktrees` | `.github/skills/using-git-worktrees/` | Parallel agent isolation, A/B testing, branch safety for subagents |
@@ -148,6 +149,7 @@ Reusable agent prompts live in `.github/agents/`. Use these when dispatching sub
 |----------|----------|
 | `implementer.md` | Dispatching an agent to implement a feature in a worktree |
 | `skeptic.md` | Reviewing a plan for gaps before implementation begins |
+| `amigo.md` | Dispatching a Business, Developer, or Tester persona for a Three Amigos ceremony |
 | `spec-compliance-reviewer.md` | Stage 1 post-todo review: does implementation match spec? (always first) |
 | `code-quality-reviewer.md` | Stage 2 post-todo review: code quality, correctness, standards (only after Stage 1 passes) |
 | `researcher.md` | Empirically confirming or denying a hypothesis |
