@@ -1,16 +1,23 @@
-# Controller Mapping
+---
+title: "Controller Mapping"
+description: "Gamepad button layout and input mappings for Particle-Viewer, covering camera, playback, and file controls with keyboard equivalents."
+domain: architecture
+subdomain: sdl3
+tags: [architecture, sdl3, controller, input]
+related:
+  - "WINDOW_MANAGEMENT.md"
+---
 
-Particle-Viewer supports standard gamepads (Xbox 360, Xbox One, and compatible controllers) via the SDL3 gamepad API.  The mapping below uses Xbox button labels; equivalent PlayStation / generic buttons are identified by position.
+# Controller Mapping
 
 ## Requirements
 
-- A standard gamepad recognised by the OS as an xinput-compatible device.
-- No additional drivers or configuration are required.
-- Only one controller is supported at a time.  If multiple controllers are connected, the first one detected is used.
+- Standard xinput-compatible gamepad; no extra drivers needed.
+- Only one controller supported. If multiple are connected, the first detected is used.
 
 ## Button Layout (Xbox Controller)
 
-```
+```text
          ┌──────────────────────────────────────────┐
          │  LB                                    RB │
          │  LT ──► rewind ◄──             ──► forward ◄── RT │
@@ -76,8 +83,6 @@ Point lock states match the **P** key on the keyboard:
 
 ## Keyboard Equivalents
 
-All gamepad actions have keyboard equivalents.  See the in-app menu (**F1**) for the full keyboard reference.
-
 | Gamepad | Keyboard |
 |---------|----------|
 | A | Space |
@@ -93,10 +98,15 @@ All gamepad actions have keyboard equivalents.  See the in-app menu (**F1**) for
 
 ## Disconnection Handling
 
-If the controller is disconnected while the application is running, input falls back gracefully to keyboard/mouse.  Reconnecting the same controller (or plugging in a new one) resumes gamepad control automatically.
+If the controller disconnects, input falls back to keyboard/mouse. Reconnecting resumes gamepad control automatically.
 
 ## Limitations (v1)
 
 - Single controller only.
-- Button mapping is not user-configurable in this release.  Custom remapping will be addressed in a future story.
+- Button mapping is not user-configurable in this release.
 - No haptic/rumble feedback.
+
+## Related
+
+- [WINDOW_MANAGEMENT.md](WINDOW_MANAGEMENT.md) — SDL3 window and resolution management, fullscreen, and config persistence.
+- [IMGUI_INTEGRATION.md](IMGUI_INTEGRATION.md) — ImGui menu system and event handling order.

@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# Pre-message hook — fires on every UserPromptSubmit event.
+# Injects bootstrap check + full honesty skill + iron laws on every turn.
+# Honesty skill body is read from disk at runtime — no drift possible.
+
+escape_for_json() {
+  local s="$1"
+  s="${s//\\/\\\\}"
+  s="${s//\"/\\\"}"
+  s="${s//$'\n'/\\n}"
+  s="${s//$'\r'/\\r}"
+  s="${s//$'\t'/\\t}"
+  printf '%s' "$s"
+}
+
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
+
+# Load honesty skill body, stripping YAML front matter (--- ... ---)
+HONESTY_SKILL="$REPO_ROOT/.github/skills/honesty/SKILL.md"
+if [[ -f "$HONESTY_SKILL" ]]; then
+  HONESTY_BODY=$(awk 'BEGIN{fm=0} /^---$/{if(fm<2){fm++;next}} fm==2{print}' "$HONESTY_SKILL")
+else
+  HONESTY_BODY="[ERROR: honesty/SKILL.md not found at $HONESTY_SKILL]"
+fi
+
+read -r -d '' HEADER << 'ENDHEADER'
+<IMPORTANT>
+## Bootstrap Check
+
+If you have no memory of bootstrapping this session, load `session-bootstrap` now before responding.
+
+---
+
+## Honesty Skill — Active on Every Turn
+
+ENDHEADER
+
+read -r -d '' FOOTER << 'ENDFOOTER'
+
+---
+
+## Iron Laws — Active on Every Response
+
+| # | Law |
+|---|-----|
+| 1 | NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST. |
+| 2 | NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION. Run cmake in THIS session. Show output inline. |
+| 3 | NO FIXES WITHOUT ROOT CAUSE INVESTIGATION. |
+| 4 | EVERY COMMIT USES CONVENTIONAL FORMAT. `<type>[scope]: <description>` |
+| 5 | FORMAT BEFORE EVERY COMMIT. `find src tests -name "*.cpp" -o -name "*.hpp" \| xargs clang-format -i` |
+| 6 | FAILURE IS RECOVERABLE. FALSE CONFIDENCE IS NOT. "Should work" is banned. |
+| 7 | CLARIFY FIRST. PLAN BEFORE CODE. NO PLACEHOLDERS. |
+| 8 | NO CODE UNTIL THE DESIGN GATE IS PASSED. |
+| 9 | DISPATCH BEFORE GUESSING. |
+| 10 | DISPATCH REVIEWERS AFTER EVERY TODO. |
+
+If you are tempted to rationalize past any of these: that thought is the rationalization. Stop. Follow the rule.
+
+---
+
+## Skill Reload Triggers — STOP and Reload When:
+
+1. Picking up a new todo — reload the skill(s) for that todo's domain
+2. After 3 user prompts without a skill reload — reload the skill for whatever you are doing
+3. After a user correction or redirect — reload the misapplied skill immediately
+4. After context compaction — any compaction requires full skill reload for the active domain
+
+Do NOT say "I remember the skill content." Load fresh. Skill routing table is in `session-bootstrap`.
+</IMPORTANT>
+ENDFOOTER
+
+CONTENT="${HEADER}${HONESTY_BODY}${FOOTER}"
+context=$(escape_for_json "$CONTENT")
+
+if [[ -n "${CURSOR_PLUGIN_ROOT:-}" ]]; then
+  printf '{"context":"%s"}\n' "$context"
+elif [[ -n "${CLAUDE_PLUGIN_ROOT:-}" ]]; then
+  printf '{"context":"%s"}\n' "$context"
+else
+  printf '{"additionalContext":"%s"}\n' "$context"
+fi
