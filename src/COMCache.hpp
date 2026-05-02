@@ -22,6 +22,7 @@
 #include <condition_variable>
 #include <cstdio>
 #include <mutex>
+#include <numeric>
 #include <optional>
 #include <string>
 #include <thread>
@@ -71,7 +72,7 @@ inline glm::vec3 computeWeightedCOM(const std::vector<glm::vec4>& positions, con
     }
 
     // Check if any recognized type IDs are present
-    long n_recognized = n_type[0] + n_type[1] + n_type[2] + n_type[3];
+    long n_recognized = std::accumulate(std::begin(n_type), std::end(n_type), 0L);
     if (n_recognized == 0) {
         // Equal-weight fallback
         glm::dvec3 sum(0.0);
@@ -143,6 +144,9 @@ class COMCache
 {
   public:
     static constexpr long DEFAULT_LOOKAHEAD = 50;
+    // Idle polling interval: how long the worker waits when all frames in the
+    // current window are already cached before re-checking for new work.
+    static constexpr auto WORKER_POLL_INTERVAL = std::chrono::milliseconds(50);
 
     COMCache() = default;
     ~COMCache()
@@ -262,8 +266,10 @@ class COMCache
         if (!f) {
             return {};
         }
-        // Each frame has N positions (vec4) + N velocities (vec4)
-        long offset = frame * static_cast<long>(sizeof(glm::vec4)) * 2 * N_;
+        // Each frame stores N_ positions (vec4) followed by N_ velocities (vec4).
+        // VECS_PER_PARTICLE = 2 accounts for both records per particle.
+        static constexpr long VECS_PER_PARTICLE = 2;
+        long offset = frame * static_cast<long>(sizeof(glm::vec4)) * VECS_PER_PARTICLE * N_;
         if (fseek(f, offset, SEEK_SET) != 0) {
             fclose(f);
             return {};
@@ -308,7 +314,7 @@ class COMCache
 
             // All frames in window are cached; wait for current frame to advance
             std::unique_lock<std::mutex> lock(cv_mutex_);
-            cv_.wait_for(lock, std::chrono::milliseconds(50), [this] { return stop_.load(); });
+            cv_.wait_for(lock, WORKER_POLL_INTERVAL, [this] { return stop_.load(); });
         }
     }
 

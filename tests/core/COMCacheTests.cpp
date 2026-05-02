@@ -365,8 +365,8 @@ class COMCacheWorkerTest : public ::testing::Test
     // Positions are fixed so expected COM is predictable.
     void createTestPosFile()
     {
-        FILE* f = fopen(pos_path_, "wb");
-        ASSERT_NE(f, nullptr) << "Failed to create test position file";
+        FILE* pos_file = fopen(pos_path_, "wb");
+        ASSERT_NE(pos_file, nullptr) << "Failed to create test position file";
 
         for (int frame = 0; frame < num_frames_; ++frame) {
             // Positions: type 0 at (4,0,0), type 1 at (-4,0,0),
@@ -377,12 +377,12 @@ class COMCacheWorkerTest : public ::testing::Test
                 glm::vec4(0.0f, 4.0f, 0.0f, 2.0f),  // type 2
                 glm::vec4(0.0f, -4.0f, 0.0f, 3.0f), // type 3
             };
-            fwrite(pos, sizeof(glm::vec4), 4, f);
+            fwrite(pos, sizeof(glm::vec4), 4, pos_file);
             // Write dummy velocities
             glm::vec4 vel[4] = {};
-            fwrite(vel, sizeof(glm::vec4), 4, f);
+            fwrite(vel, sizeof(glm::vec4), 4, pos_file);
         }
-        fclose(f);
+        fclose(pos_file);
     }
 
     const char* pos_path_ = "/tmp/comcache_test_PosAndVel";

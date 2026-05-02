@@ -32,10 +32,10 @@ class FrameCacheTest : public ::testing::Test
     }
 
     // Helper: create a simple position vector for testing
-    static std::vector<glm::vec4> makePositions(int n, float x_start = 0.0f)
+    static std::vector<glm::vec4> makePositions(int particle_count, float x_start = 0.0f)
     {
-        std::vector<glm::vec4> positions(static_cast<size_t>(n));
-        for (int i = 0; i < n; ++i) {
+        std::vector<glm::vec4> positions(static_cast<size_t>(particle_count));
+        for (int i = 0; i < particle_count; ++i) {
             positions[static_cast<size_t>(i)] = glm::vec4(x_start + static_cast<float>(i), 0.0f, 0.0f, 0.0f);
         }
         return positions;

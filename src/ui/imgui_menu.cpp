@@ -161,10 +161,9 @@ MenuActions renderMainMenu(MenuState& state)
             ImGui::Separator();
             // Frame cache status
             long fc_total = state.frame_cache_stats.hits + state.frame_cache_stats.misses;
-            float hit_rate =
-                (fc_total > 0)
-                    ? (100.0f * static_cast<float>(state.frame_cache_stats.hits) / static_cast<float>(fc_total))
-                    : 0.0f;
+            float fc_hits_f = static_cast<float>(state.frame_cache_stats.hits);
+            float fc_total_f = static_cast<float>(fc_total);
+            float hit_rate = (fc_total > 0) ? (100.0f * fc_hits_f / fc_total_f) : 0.0f;
             ImGui::Text("Frame Cache: %ld / %ld frames", state.frame_cache_stats.cached_frames,
                         state.frame_cache_stats.max_frames);
             ImGui::Text("Hit rate: %.1f%%  (hits: %ld  misses: %ld)", hit_rate, state.frame_cache_stats.hits,

@@ -302,7 +302,8 @@ void ViewerApp::run()
             }
         }
 
-        // Advance COM prefetch target to current frame + lookahead.
+        // Notify the COM prefetch worker of the current frame so it can
+        // ensure COM values for [cur_frame_, cur_frame_ + lookahead] are cached.
         com_cache_.setCurrentFrame(cur_frame_);
 
         // Update cache stats for UI display.
