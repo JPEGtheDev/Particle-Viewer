@@ -289,8 +289,36 @@ void ViewerApp::run()
         context_->swapBuffers();
 
         if (set_->frames > 1) {
-            set_->readPosVelFile(cur_frame_, part_, false);
+            // Serve frame from cache when available, falling back to disk read.
+            auto cached_frame = frame_cache_.get(cur_frame_);
+            if (cached_frame.has_value()) {
+                part_->changeTranslations(set_->N, cached_frame->data());
+            } else {
+                set_->readPosVelFile(cur_frame_, part_, false);
+                // Prime the frame cache with the just-read positions.
+                if (!part_->translations.empty()) {
+                    frame_cache_.put(cur_frame_, part_->translations);
+                }
+            }
         }
+
+        // Advance COM prefetch target to current frame + lookahead.
+        com_cache_.setCurrentFrame(cur_frame_);
+
+        // Update cache stats for UI display.
+        if (imgui_initialized_) {
+            auto com_stats = com_cache_.getStats();
+            menu_state_.com_cache_stats.cached_frames = com_stats.cached_frames;
+            menu_state_.com_cache_stats.current_target = com_stats.current_target;
+            menu_state_.com_cache_stats.running = com_stats.running;
+
+            auto fc_stats = frame_cache_.getStats();
+            menu_state_.frame_cache_stats.cached_frames = fc_stats.cached_frames;
+            menu_state_.frame_cache_stats.max_frames = fc_stats.max_frames;
+            menu_state_.frame_cache_stats.hits = fc_stats.hits;
+            menu_state_.frame_cache_stats.misses = fc_stats.misses;
+        }
+
         if (set_->isPlaying) {
             cur_frame_++;
         }
@@ -404,7 +432,21 @@ void ViewerApp::beforeDraw()
 
 void ViewerApp::drawScene()
 {
-    set_->getCOM(cur_frame_, com_);
+    // Resolve COM for this frame.
+    // Priority: 1) COMFile (ground truth), 2) COM cache (async computed), 3) compute inline from current positions.
+    if (!set_->checkCOM()) {
+        auto cached_com = com_cache_.get(cur_frame_);
+        if (cached_com.has_value()) {
+            com_ = *cached_com;
+        } else if (menu_state_.auto_com_enabled && !part_->translations.empty()) {
+            // Inline fallback: compute from current positions and prime the cache
+            com_ = set_->computeCOM(part_->translations);
+            com_cache_.insert(cur_frame_, com_);
+        }
+    } else {
+        set_->getCOM(cur_frame_, com_);
+    }
+
     cam_->setSphereCenter(com_);
     render_.sphere_shader.Use();
     part_->pushVBO();
@@ -483,6 +525,16 @@ void ViewerApp::handleLoadFile()
         set_ = new_set;
     }
     cur_frame_ = 0;
+
+    // (Re)start the COM prefetch worker for the new simulation file.
+    // COMCache::start() stops and joins any existing worker before beginning.
+    if (set_->frames > 0 && set_->N > 0) {
+        com_cache_.start(set_->posName, set_->N, set_->frames, set_->buildMassModel());
+        com_cache_.setCurrentFrame(0);
+    }
+
+    // Clear the frame cache so stale positions from the old file are not served.
+    frame_cache_.clear();
 }
 
 // ============================================================================

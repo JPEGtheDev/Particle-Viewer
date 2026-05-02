@@ -25,12 +25,38 @@ struct MenuActions
 };
 
 /*
+ * COM cache status snapshot for UI display.
+ */
+struct COMCacheUIStats
+{
+    long cached_frames{0};
+    long current_target{0};
+    bool running{false};
+};
+
+/*
+ * Frame cache status snapshot for UI display.
+ */
+struct FrameCacheUIStats
+{
+    long cached_frames{0};
+    long max_frames{0};
+    long hits{0};
+    long misses{0};
+};
+
+/*
  * Persistent state for the menu system.
  */
 struct MenuState
 {
     bool visible = true;
     bool debug_mode = false;
+    bool auto_com_enabled = true; // auto-compute COM when COMFile is absent
+
+    // Cache status (updated by ViewerApp each frame)
+    COMCacheUIStats com_cache_stats;
+    FrameCacheUIStats frame_cache_stats;
 };
 
 /*

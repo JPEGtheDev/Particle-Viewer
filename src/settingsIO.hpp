@@ -10,7 +10,9 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <vector>
 
+#include "COMCache.hpp"
 #include "glm/glm.hpp"
 #include "particle.hpp"
 #include "tinyFileDialogs/tinyfiledialogs.h"
@@ -530,6 +532,32 @@ class SettingsIO
                 }
             }
         }
+    }
+
+    /*
+     * Build a MassModel from the RunSetup parameters loaded into this SettingsIO.
+     * Used by COMCache to compute mass-weighted COM when COMFile is absent.
+     */
+    MassModel buildMassModel() const
+    {
+        MassModel model;
+        model.mass_body1 = FractionEarthMassOfBody1 * MassOfEarth;
+        model.mass_body2 = FractionEarthMassOfBody2 * MassOfEarth;
+        model.frac_fe1 = FractionFeBody1;
+        model.frac_si1 = FractionSiBody1;
+        model.frac_fe2 = FractionFeBody2;
+        model.frac_si2 = FractionSiBody2;
+        return model;
+    }
+
+    /*
+     * Compute the center of mass from a particle position buffer using the RunSetup
+     * mass model. Falls back to equal-weight arithmetic mean for unrecognized type IDs.
+     * Does not call GL. Used when COMFile is absent.
+     */
+    glm::vec3 computeCOM(const std::vector<glm::vec4>& positions) const
+    {
+        return computeWeightedCOM(positions, buildMassModel());
     }
 
   private:

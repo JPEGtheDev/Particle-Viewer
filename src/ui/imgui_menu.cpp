@@ -151,6 +151,26 @@ MenuActions renderMainMenu(MenuState& state)
             ImGui::MenuItem("Show Menu", "F1", &state.visible);
             ImGui::EndMenu();
         }
+        if (ImGui::BeginMenu("Simulation")) {
+            ImGui::MenuItem("Auto-Compute COM", nullptr, &state.auto_com_enabled);
+            ImGui::Separator();
+            // COM cache status
+            ImGui::Text("COM Cache: %ld frames", state.com_cache_stats.cached_frames);
+            ImGui::Text("COM Prefetch target: %ld", state.com_cache_stats.current_target);
+            ImGui::Text("COM Worker: %s", state.com_cache_stats.running ? "running" : "idle");
+            ImGui::Separator();
+            // Frame cache status
+            long fc_total = state.frame_cache_stats.hits + state.frame_cache_stats.misses;
+            float hit_rate =
+                (fc_total > 0)
+                    ? (100.0f * static_cast<float>(state.frame_cache_stats.hits) / static_cast<float>(fc_total))
+                    : 0.0f;
+            ImGui::Text("Frame Cache: %ld / %ld frames", state.frame_cache_stats.cached_frames,
+                        state.frame_cache_stats.max_frames);
+            ImGui::Text("Hit rate: %.1f%%  (hits: %ld  misses: %ld)", hit_rate, state.frame_cache_stats.hits,
+                        state.frame_cache_stats.misses);
+            ImGui::EndMenu();
+        }
         ImGui::EndMainMenuBar();
     }
 

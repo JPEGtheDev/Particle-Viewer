@@ -21,6 +21,8 @@
 #include <glad/glad.h>       // NOLINT(llvm-include-order)
 // clang-format on
 
+#include "COMCache.hpp"
+#include "FrameCache.hpp"
 #include "camera.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -186,6 +188,12 @@ class ViewerApp
     SettingsIO* set_;
     glm::mat4 view_;
     glm::vec3 com_;
+
+    // ============================================
+    // COM Prefetch Cache + Frame Cache
+    // ============================================
+    COMCache com_cache_;
+    FrameCache frame_cache_;
 
     // ============================================
     // Frame Playback State
