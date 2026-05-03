@@ -10,6 +10,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <vector>
 
 #include "constants.hpp"
 #include "glm/glm.hpp"
@@ -284,6 +285,36 @@ class SettingsIO
         } else if (errorCount == 5) {
             std::cout << "Too many errors. stopping log here" << std::endl;
         }
+    }
+
+    /*
+     * Reads positions from the PosAndVel binary file at a specific frame.
+     * GL-free: safe to call from background threads.
+     * Does not mutate isPlaying, errorCount, or any shared state.
+     * Returns an empty vector on error.
+     */
+    std::vector<glm::vec4> readPosBuffer(long frame)
+    {
+        // clamp frame silently — do NOT mutate isPlaying
+        if (frame < 0)
+            frame = 0;
+        if (frame >= frames)
+            frame = frames - 1;
+        if (N <= 0 || frames <= 0)
+            return {};
+
+        FILE* f = fopen(posName.c_str(), "rb"); // "rb" — binary mode
+        if (!f)
+            return {};
+
+        fseek(f, frame * static_cast<long>(sizeof(glm::vec4)) * 2 * N, SEEK_SET);
+        std::vector<glm::vec4> positions(N);
+        size_t read = fread(positions.data(), sizeof(glm::vec4), static_cast<size_t>(N), f);
+        fclose(f);
+
+        if (static_cast<long>(read) != N)
+            return {};
+        return positions;
     }
 
     /*
