@@ -318,27 +318,27 @@ class SettingsIO
     {
         return InitialSpin2;
     }
-    double getFractionEarthMassOfBody1()
+    double getFractionEarthMassOfBody1() const
     {
         return FractionEarthMassOfBody1;
     }
-    double getFractionEarthMassOfBody2()
+    double getFractionEarthMassOfBody2() const
     {
         return FractionEarthMassOfBody2;
     }
-    double getFractionFeBody1()
+    double getFractionFeBody1() const
     {
         return FractionFeBody1;
     }
-    double getFractionSiBody1()
+    double getFractionSiBody1() const
     {
         return FractionSiBody1;
     }
-    double getFractionFeBody2()
+    double getFractionFeBody2() const
     {
         return FractionFeBody2;
     }
-    double getFractionSiBody2()
+    double getFractionSiBody2() const
     {
         return FractionSiBody2;
     }
@@ -442,7 +442,7 @@ class SettingsIO
     {
         return UniversalGravity;
     }
-    double getMassOfEarth()
+    double getMassOfEarth() const
     {
         return MassOfEarth;
     }
