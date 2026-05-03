@@ -7,7 +7,7 @@ uniform mat4 view;
 uniform vec3 lightDirection = vec3(0.1, 0.1, 0.85);
 uniform float radius = 100.0f;
 uniform float scale = 5.0;
-uniform float transScale = 0.25;
+uniform float transScale = 0.25; // matches kSimToDisplayScale in src/constants.hpp
 uniform float viewportHeight = 720.0;
 const float REFERENCE_HEIGHT = 720.0;
 

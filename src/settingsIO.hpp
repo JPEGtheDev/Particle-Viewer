@@ -11,6 +11,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "constants.hpp"
 #include "glm/glm.hpp"
 #include "particle.hpp"
 #include "tinyFileDialogs/tinyfiledialogs.h"
@@ -524,9 +525,9 @@ class SettingsIO
                 size_t items_read = fread(&read_val, sizeof(glm::vec4), 1, COMFile);
                 fclose(COMFile);
                 if (items_read == 1 && (long)read_val.w == frame) {
-                    value.x = read_val.x * .25;
-                    value.y = read_val.y * .25;
-                    value.z = read_val.z * .25;
+                    value.x = read_val.x * kSimToDisplayScale;
+                    value.y = read_val.y * kSimToDisplayScale;
+                    value.z = read_val.z * kSimToDisplayScale;
                 }
             }
         }
