@@ -413,6 +413,14 @@ class Camera
     }
 
     /*
+     * Returns true when the center-of-mass lock is active (camera orbits the COM).
+     */
+    bool isComLocked() const
+    {
+        return comLock;
+    }
+
+    /*
      * Returns true when the rotation sphere is being rendered.
      */
     bool isRenderingSphere() const

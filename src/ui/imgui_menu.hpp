@@ -11,6 +11,17 @@
 #ifndef PARTICLE_VIEWER_IMGUI_MENU_H
 #define PARTICLE_VIEWER_IMGUI_MENU_H
 
+#include <cstddef>
+
+/*
+ * Live status of the frame and COM caches, populated by ViewerApp each frame.
+ */
+struct CacheStatus
+{
+    int frames_cached = 0;
+    std::size_t bytes_used = 0;
+};
+
 /*
  * Actions triggered by menu interactions, communicated back to ViewerApp.
  */
@@ -22,6 +33,7 @@ struct MenuActions
     bool toggle_fullscreen = false;
     int target_width = 0;
     int target_height = 0;
+    bool toggle_auto_com = false; // toggled by the COM/Cache submenu checkbox
 };
 
 /*
@@ -31,6 +43,8 @@ struct MenuState
 {
     bool visible = true;
     bool debug_mode = false;
+    bool auto_com_compute = false; // reflects the current auto-COM toggle state
+    CacheStatus cache_status;      // populated by ViewerApp each frame
 };
 
 /*
