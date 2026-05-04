@@ -46,6 +46,7 @@ target_include_directories(ParticleViewerTests PRIVATE
 # Add glad source for OpenGL function pointers
 target_sources(ParticleViewerTests PRIVATE
     ${CMAKE_SOURCE_DIR}/src/glad/src/glad.c
+    ${CMAKE_SOURCE_DIR}/src/FrameCache.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/imgui_menu.cpp
     ${imgui_SOURCE_DIR}/imgui.cpp
     ${imgui_SOURCE_DIR}/imgui_draw.cpp
