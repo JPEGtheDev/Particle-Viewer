@@ -58,6 +58,23 @@ class Particle
     Particle& operator=(const Particle&) = delete;
 
     /*
+     * Stages position data for the next GPU upload without making any GL calls.
+     * May be called from a background thread provided the caller guarantees that
+     * stageTranslations() has returned before pushVBO() is called on the main
+     * thread. Concurrent access to translations or n is not safe.
+     *
+     * If data is nullptr or N <= 0, this method is a silent no-op.
+     */
+    void stageTranslations(const glm::vec4* data, long N)
+    {
+        if (data == nullptr || N <= 0) {
+            return;
+        }
+        translations.assign(data, data + N);
+        n = N;
+    }
+
+    /*
      * Changes the translations in the particle structure.
      * Copies data from the provided array.
      */
