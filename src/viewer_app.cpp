@@ -320,6 +320,15 @@ void ViewerApp::run()
         }
         // Update menu state for cache status display
         menu_state_.auto_com_compute = auto_com_compute_;
+        const std::size_t cached_frames = frame_cache_->cachedCount();
+        menu_state_.cache_status.frames_cached = static_cast<int>(cached_frames);
+        menu_state_.cache_status.bytes_used = cached_frames * static_cast<std::size_t>(set_->N) * sizeof(glm::vec4);
+
+        if (menu_state_.debug_mode) {
+            fprintf(stderr, "[Cache] frame=%ld frames_cached=%zu com_cached=%zu auto_com=%d locked=%d\n", cur_frame_,
+                    cached_frames, com_cache_->cachedCount(), static_cast<int>(auto_com_compute_),
+                    static_cast<int>(cam_->isComLocked()));
+        }
         if (set_->isPlaying) {
             cur_frame_++;
         }
@@ -440,12 +449,20 @@ void ViewerApp::drawScene()
         com_ = new_com;
     }
     // Fallback: computed COM from cache if enabled and no COMFile hit
+    bool com_from_cache = false;
     if (!com_set && auto_com_compute_ && cam_->isComLocked()) {
         auto maybe = com_cache_->getCOM(cur_frame_);
         if (maybe.has_value()) {
             com_ = *maybe;
+            com_from_cache = true;
         }
         // On miss: keep previous com_ — camera does not snap
+    }
+    if (menu_state_.debug_mode) {
+        fprintf(stderr, "[COM] frame=%ld file_hit=%d cache_hit=%d com=(%.3f,%.3f,%.3f) auto=%d locked=%d\n", cur_frame_,
+                static_cast<int>(com_set), static_cast<int>(com_from_cache), static_cast<double>(com_.x),
+                static_cast<double>(com_.y), static_cast<double>(com_.z), static_cast<int>(auto_com_compute_),
+                static_cast<int>(cam_->isComLocked()));
     }
     cam_->setSphereCenter(com_);
     render_.sphere_shader.Use();

@@ -57,6 +57,10 @@ class FrameCache : public IFrameCache
     /// Clears cache, LRU list, and pending set.
     void clear() override;
 
+    /// Returns the number of frames currently held in the cache.
+    /// Thread-safe.
+    std::size_t cachedCount() const;
+
   private:
     /// Inserts a frame into the cache and enforces LRU capacity.
     /// Must be called with mutex_ held.
@@ -70,5 +74,5 @@ class FrameCache : public IFrameCache
     std::unordered_map<long, std::pair<std::shared_ptr<std::vector<glm::vec4>>, std::list<long>::iterator>> cache_map_;
     std::list<long> lru_list_;
     std::unordered_set<long> pending_;
-    std::mutex mutex_;
+    mutable std::mutex mutex_;
 };

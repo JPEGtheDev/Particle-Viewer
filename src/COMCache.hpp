@@ -67,6 +67,10 @@ class COMCache
     /// (e.g. flush the executor before calling clear() on folder reload).
     void clear();
 
+    /// Returns the number of frames whose COM is currently cached.
+    /// Thread-safe.
+    std::size_t cachedCount() const;
+
   private:
     SettingsIO& sio_;
     MassParams mp_;
@@ -74,5 +78,5 @@ class COMCache
 
     std::unordered_map<long, glm::vec3> cache_;
     std::unordered_set<long> pending_;
-    std::mutex mutex_;
+    mutable std::mutex mutex_;
 };

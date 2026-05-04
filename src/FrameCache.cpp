@@ -99,6 +99,12 @@ void FrameCache::clear()
     pending_.clear();
 }
 
+std::size_t FrameCache::cachedCount() const
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    return cache_map_.size();
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // insertLocked (private) — must be called with mutex_ held
 // ──────────────────────────────────────────────────────────────────────────────

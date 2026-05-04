@@ -300,3 +300,24 @@ TEST_F(COMCacheTest, COMCache_EmptyPositions_ReturnsZeroVec)
     ASSERT_TRUE(second.has_value());
     expectNearVec3(*second, glm::vec3(0.f, 0.f, 0.f));
 }
+
+// ─── Test 10: CachedCount ────────────────────────────────────────────────────
+
+TEST_F(COMCacheTest, COMCache_CachedCount_AfterGetCOM_IsOne)
+{
+    // Arrange — 1 Fe1 particle; SynchronousExecutor runs compute inline
+    auto [sio, path] = makeOneFSio({{4.f, 0.f, 0.f, 0.f}});
+    COMCache cache(sio, kSimpleMassParams, executor_);
+
+    // Assert: starts at 0
+    EXPECT_EQ(cache.cachedCount(), std::size_t{0});
+
+    // Act: first getCOM enqueues + runs inline; second call is a cache hit
+    cache.getCOM(0);
+    cache.getCOM(0);
+
+    // Assert: exactly one frame in cache
+    EXPECT_EQ(cache.cachedCount(), std::size_t{1});
+
+    std::remove(path.c_str());
+}

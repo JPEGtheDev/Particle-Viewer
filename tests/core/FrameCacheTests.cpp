@@ -340,3 +340,36 @@ TEST_F(FrameCacheTest, FrameCache_ZeroCapacity_NeverCaches)
 
     std::remove(path.c_str());
 }
+
+// ──────────────────────────────────────────────────────────────────────────────
+// 10. cachedCount() reflects the number of frames currently in the cache
+// ──────────────────────────────────────────────────────────────────────────────
+
+TEST_F(FrameCacheTest, FrameCache_CachedCount_ReflectsInsertedFrames)
+{
+    // Arrange
+    constexpr long N = 2;
+    TestFrameBuilder builder(N);
+    builder.addFrame({{1.f, 2.f, 3.f, 0.f}, {4.f, 5.f, 6.f, 1.f}});
+    builder.addFrame({{7.f, 8.f, 9.f, 0.f}, {10.f, 11.f, 12.f, 1.f}});
+    builder.addFrame({{13.f, 14.f, 15.f, 0.f}, {16.f, 17.f, 18.f, 1.f}});
+    std::string path = builder.writeToTempFile("_fc_count.bin");
+
+    SettingsIO sio;
+    sio.posName = path;
+    sio.N = N;
+    sio.frames = 3;
+    constexpr std::size_t maxBytes = 10 * sizeof(glm::vec4);
+    FrameCache cache(sio, maxBytes, executor_);
+
+    // Assert: starts empty
+    EXPECT_EQ(cache.cachedCount(), std::size_t{0});
+
+    // Act — SynchronousExecutor runs tasks inline; frames 1 and 2 are inserted
+    cache.prefetch(0, 2, 3);
+
+    // Assert: two frames now in cache
+    EXPECT_EQ(cache.cachedCount(), std::size_t{2});
+
+    std::remove(path.c_str());
+}

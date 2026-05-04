@@ -72,3 +72,9 @@ void COMCache::clear()
     cache_.clear();
     pending_.clear();
 }
+
+std::size_t COMCache::cachedCount() const
+{
+    std::lock_guard<std::mutex> lock{mutex_};
+    return cache_.size();
+}
