@@ -9,6 +9,7 @@
 // → particle.hpp, so no special ordering is needed here.
 #include "COMCache.hpp"
 
+#include <algorithm>
 #include <span>
 
 #include <glm/glm.hpp>
@@ -52,6 +53,17 @@ std::optional<glm::vec3> COMCache::getCOM(long frame)
     });
 
     return std::nullopt;
+}
+
+void COMCache::prefetchAsync(long cur, long ahead, long total_frames)
+{
+    if (total_frames <= 0) {
+        return;
+    }
+    const long last = std::min(cur + ahead, total_frames - 1);
+    for (long f = cur + 1; f <= last; ++f) {
+        getCOM(f); // side-effect: enqueues compute on miss; no-op on hit/pending
+    }
 }
 
 void COMCache::clear()

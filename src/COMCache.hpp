@@ -54,6 +54,14 @@ class COMCache
     /// a compute task is pending. Callers should poll on subsequent frames.
     std::optional<glm::vec3> getCOM(long frame);
 
+    /// Enqueues background COM computation for frames [cur+1, min(cur+ahead, total_frames-1)].
+    /// Frames already cached or pending are silently skipped.
+    /// Guards:
+    ///   - If total_frames <= 0: returns immediately (no-op).
+    ///   - If cur+1 > total_frames-1: no frames to prefetch (no-op).
+    /// Caller (main loop) should pass ahead=64 (hard-coded default).
+    void prefetchAsync(long cur, long ahead, long total_frames);
+
     /// Clears the cache and the pending set.
     /// Callers must ensure no compute tasks are in-flight when this is called
     /// (e.g. flush the executor before calling clear() on folder reload).
