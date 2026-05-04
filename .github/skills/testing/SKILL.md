@@ -78,6 +78,7 @@ Before presenting tests, verify:
 - [ ] Group related configuration into structs/POCOs instead of flat variables
 - [ ] Resource cleanup: GL objects deleted in destructors/cleanup, check for leaks
 - [ ] Tests compile and pass
+- [ ] For any class whose state feeds the UI: each UI-displayed field has a unit test verifying the public accessor returns the correct value (not just that the field is set internally)
 - [ ] For visual regression tests: see visual-regression-testing skill checklist
 
 ✓ All met → proceed
