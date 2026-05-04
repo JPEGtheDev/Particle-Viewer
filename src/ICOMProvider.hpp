@@ -12,6 +12,9 @@ class ICOMProvider
 {
   public:
     virtual ~ICOMProvider() = default;
+    ICOMProvider() = default;
+    ICOMProvider(const ICOMProvider&) = delete;
+    ICOMProvider& operator=(const ICOMProvider&) = delete;
 
     /// Writes the COM for @p frame into @p out.
     /// @return true if COM is available, false if unavailable (file absent, not yet computed, etc.)
