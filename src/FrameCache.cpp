@@ -15,14 +15,14 @@
 // ──────────────────────────────────────────────────────────────────────────────
 
 FrameCache::FrameCache(SettingsIO& sio, std::size_t max_frame_bytes, IExecutor& executor)
-    : sio_(sio), max_frames_(0), executor_(executor)
+    : sio_(sio), max_frames_(0), frame_size_bytes_(0), executor_(executor)
 {
-    const std::size_t frame_size_bytes = (sio_.N > 0) ? static_cast<std::size_t>(sio_.N) * sizeof(glm::vec4) : 0;
+    frame_size_bytes_ = (sio_.N > 0) ? static_cast<std::size_t>(sio_.N) * sizeof(glm::vec4) : 0;
 
-    if (frame_size_bytes > 0) {
-        max_frames_ = max_frame_bytes / frame_size_bytes;
+    if (frame_size_bytes_ > 0) {
+        max_frames_ = max_frame_bytes / frame_size_bytes_;
     }
-    // If frame_size_bytes == 0: max_frames_ stays 0 → getFrame always returns nullptr
+    // If frame_size_bytes_ == 0: max_frames_ stays 0 → getFrame always returns nullptr
 }
 
 // ──────────────────────────────────────────────────────────────────────────────

@@ -34,6 +34,9 @@ class IFrameCache
     /// Clears all cached entries and pending-set. Call before folder reload.
     virtual void clear() = 0;
 
+    /// Returns the size in bytes of one cached frame (N particles × sizeof glm::vec4).
+    virtual std::size_t frameSizeBytes() const = 0;
+
   protected:
     IFrameCache() = default;
 };

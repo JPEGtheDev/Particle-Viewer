@@ -61,6 +61,9 @@ class FrameCache : public IFrameCache
     /// Thread-safe.
     std::size_t cachedCount() const;
 
+    /// Returns the per-frame memory footprint (N × sizeof(glm::vec4)).
+    std::size_t frameSizeBytes() const override { return frame_size_bytes_; }
+
   private:
     /// Inserts a frame into the cache and enforces LRU capacity.
     /// Must be called with mutex_ held.
@@ -68,6 +71,7 @@ class FrameCache : public IFrameCache
 
     SettingsIO& sio_;
     std::size_t max_frames_; ///< floor(max_frame_bytes / frame_size_bytes), 0 if uncalculable
+    std::size_t frame_size_bytes_; ///< bytes per frame; 0 if N is 0
     IExecutor& executor_;
 
     /// Value: {data, iterator into lru_list_}
