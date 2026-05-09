@@ -592,3 +592,33 @@ TEST_F(SettingsIOTest, GetFrames_MultipleCallsReturnSameValue)
     // Assert
     EXPECT_EQ(frames1, frames2);
 }
+
+// ─── checkCOM tests ───────────────────────────────────────────────────────────
+// checkCOM() is used in the COM prefetch guard: the run loop must suppress
+// async COM computation when a COMFile is already present on disk.
+
+TEST_F(SettingsIOTest, CheckCOM_WithExistingCOMFile_ReturnsTrue)
+{
+    // Arrange
+    SettingsIO settings;
+    settings.comName = validComPath;
+
+    // Act
+    bool result = settings.checkCOM();
+
+    // Assert
+    EXPECT_TRUE(result);
+}
+
+TEST_F(SettingsIOTest, CheckCOM_WithMissingCOMFile_ReturnsFalse)
+{
+    // Arrange
+    SettingsIO settings;
+    settings.comName = "/tmp/no_com_file_xyz_does_not_exist.bin";
+
+    // Act
+    bool result = settings.checkCOM();
+
+    // Assert
+    EXPECT_FALSE(result);
+}

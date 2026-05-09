@@ -314,8 +314,9 @@ void ViewerApp::run()
             }
             frame_cache_->prefetch(cur_frame_, PREFETCH_LOOKAHEAD_FRAMES, set_->frames);
         }
-        // COM prefetch — only when COM lock is active and auto-compute is enabled
-        if (cam_->isComLocked() && auto_com_compute_ && com_cache_) {
+        // COM prefetch — only when COM lock is active, auto-compute is enabled,
+        // and no COMFile is present (COMFile takes precedence over auto-compute).
+        if (cam_->isComLocked() && auto_com_compute_ && com_cache_ && !set_->checkCOM()) {
             com_cache_->prefetchAsync(cur_frame_, PREFETCH_LOOKAHEAD_FRAMES, set_->frames);
         }
         // Update menu state for cache status display
