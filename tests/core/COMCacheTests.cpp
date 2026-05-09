@@ -52,6 +52,14 @@ class DeferredExecutor : public IExecutor
         tasks_.push_back(std::move(task));
     }
 
+    void runAll()
+    {
+        for (auto& t : tasks_) {
+            t();
+        }
+        tasks_.clear();
+    }
+
     int enqueue_count{0};
 
   private:
@@ -279,29 +287,91 @@ TEST_F(COMCacheTest, COMCache_PrefetchAsync_NoDuplicateEnqueue)
     std::remove(path.c_str());
 }
 
-// ─── Test 9: EmptyPositions ──────────────────────────────────────────────────
+// ─── Test 9: IOFailure ───────────────────────────────────────────────────────
+// When readPosBuffer() returns empty (e.g. N=0 or disk error), getCOM() must:
+//   - Return nullopt on every call (never return a cached (0,0,0))
+//   - Not re-enqueue the compute task after the first failure (failed_ set)
 
-TEST_F(COMCacheTest, COMCache_EmptyPositions_ReturnsZeroVec)
+TEST_F(COMCacheTest, COMCache_IOFailure_ReturnsNulloptOnFirstCall)
 {
-    // Arrange — N=0 so readPosBuffer returns an empty vector;
-    // COMCalculator returns (0,0,0) for an empty span; result is stored.
+    // Arrange — N=0 so readPosBuffer always returns {}
     SettingsIO sio;
     sio.N = 0;
-    sio.frames = 0; // readPosBuffer returns {} when N<=0 || frames<=0
+    sio.frames = 0;
     COMCache cache(sio, kSimpleMassParams, executor_);
 
-    // Act — first call: miss, task runs inline → cache stores (0,0,0)
-    std::optional<glm::vec3> first = cache.getCOM(0);
-    // second call: hit → returns stored (0,0,0)
-    std::optional<glm::vec3> second = cache.getCOM(0);
+    // Act — first call: miss, task runs inline, positions empty → NOT cached
+    std::optional<glm::vec3> result = cache.getCOM(0);
 
-    // Assert
-    EXPECT_FALSE(first.has_value()); // first call always returns nullopt
-    ASSERT_TRUE(second.has_value());
-    expectNearVec3(*second, glm::vec3(0.f, 0.f, 0.f));
+    // Assert — nullopt: I/O failure must not be memoised as (0,0,0)
+    EXPECT_FALSE(result.has_value());
 }
 
-// ─── Test 10: CachedCount ────────────────────────────────────────────────────
+TEST_F(COMCacheTest, COMCache_IOFailure_ReturnsNulloptPersistently)
+{
+    // Arrange — N=0 so readPosBuffer always returns {}
+    SettingsIO sio;
+    sio.N = 0;
+    sio.frames = 0;
+    COMCache cache(sio, kSimpleMassParams, executor_);
+
+    // Act — first call runs inline task (empty → goes to failed_ set)
+    cache.getCOM(0);
+    // second call — frame is in failed_; must return nullopt without re-enqueuing
+    std::optional<glm::vec3> second = cache.getCOM(0);
+
+    // Assert — still nullopt; no COM=(0,0,0) stored
+    EXPECT_FALSE(second.has_value());
+}
+
+TEST_F(COMCacheTest, COMCache_IOFailure_DoesNotReenqueue)
+{
+    // Arrange — DeferredExecutor so we can count enqueue calls
+    SettingsIO sio;
+    sio.N = 0;
+    sio.frames = 0;
+    DeferredExecutor deferred;
+    COMCache cache(sio, kSimpleMassParams, deferred);
+
+    // Act — first call enqueues; run tasks manually so failed_ is populated
+    cache.getCOM(0);
+    deferred.runAll(); // executes the lambda → positions empty → inserts to failed_
+    // second call — frame already failed; must NOT enqueue again
+    cache.getCOM(0);
+
+    // Assert — only 1 enqueue total
+    EXPECT_EQ(deferred.enqueue_count, 1);
+}
+
+// ─── Test 11: ClearResetsFailedSet ──────────────────────────────────────────
+// clear() must clear failed_ so that failed frames can be retried after a
+// folder switch (i.e., after new cache infrastructure is built via clear()).
+
+TEST_F(COMCacheTest, COMCache_Clear_AllowsFailedFrameToBeReenqueued)
+{
+    // Arrange — N=0 so positions are empty; DeferredExecutor to control timing
+    SettingsIO sio;
+    sio.N = 0;
+    sio.frames = 0;
+    DeferredExecutor deferred;
+    COMCache cache(sio, kSimpleMassParams, deferred);
+
+    // Act — first call enqueues; run task so frame enters failed_
+    cache.getCOM(0);
+    deferred.runAll();
+    // Confirm: frame is now in failed_; second call should NOT re-enqueue
+    cache.getCOM(0);
+    const int enqueue_before_clear = deferred.enqueue_count;
+
+    // Act — clear() must also clear failed_
+    cache.clear();
+    cache.getCOM(0);
+    const int enqueue_after_clear = deferred.enqueue_count;
+
+    // Assert
+    EXPECT_EQ(enqueue_before_clear, 1); // failed_ blocked re-enqueue
+    EXPECT_EQ(enqueue_after_clear, 2);  // clear() allowed re-enqueue
+}
 
 TEST_F(COMCacheTest, COMCache_CachedCount_AfterGetCOM_IsOne)
 {

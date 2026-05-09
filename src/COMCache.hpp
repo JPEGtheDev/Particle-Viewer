@@ -78,5 +78,6 @@ class COMCache
 
     std::unordered_map<long, glm::vec3> cache_;
     std::unordered_set<long> pending_;
+    std::unordered_set<long> failed_; ///< Frames where readPosBuffer returned empty; prevents re-enqueue.
     mutable std::mutex mutex_;
 };

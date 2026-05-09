@@ -32,6 +32,11 @@ std::optional<glm::vec3> COMCache::getCOM(long frame)
             return it->second;
         }
 
+        // Permanent I/O failure for this frame: do not re-enqueue.
+        if (failed_.count(frame) > 0) {
+            return std::nullopt;
+        }
+
         // Already enqueued: don't double-enqueue.
         if (pending_.count(frame) > 0) {
             return std::nullopt;
@@ -45,10 +50,18 @@ std::optional<glm::vec3> COMCache::getCOM(long frame)
     // the task inline on the calling thread before returning from enqueue).
     executor_.enqueue([this, frame]() {
         std::vector<glm::vec4> positions = sio_.readPosBuffer(frame);
-        glm::vec3 com = COMCalculator::computeMassWeightedCOM(std::span<const glm::vec4>(positions), mp_);
 
         std::lock_guard<std::mutex> lock{mutex_};
         pending_.erase(frame);
+
+        if (positions.empty()) {
+            // I/O failure: record in failed_ to prevent infinite re-enqueue.
+            // Do NOT cache (0,0,0) — callers keep their previous COM on miss.
+            failed_.insert(frame);
+            return;
+        }
+
+        glm::vec3 com = COMCalculator::computeMassWeightedCOM(std::span<const glm::vec4>(positions), mp_);
         cache_[frame] = com;
     });
 
@@ -71,6 +84,7 @@ void COMCache::clear()
     std::lock_guard<std::mutex> lock{mutex_};
     cache_.clear();
     pending_.clear();
+    failed_.clear();
 }
 
 std::size_t COMCache::cachedCount() const
