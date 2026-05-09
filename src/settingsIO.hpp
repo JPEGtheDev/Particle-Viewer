@@ -40,6 +40,13 @@ class SettingsIO
         frames = 0;
         isPlaying = false;
         errorCount = 0;
+        FractionEarthMassOfBody1 = 0.0;
+        FractionEarthMassOfBody2 = 0.0;
+        FractionFeBody1 = 0.0;
+        FractionSiBody1 = 0.0;
+        FractionFeBody2 = 0.0;
+        FractionSiBody2 = 0.0;
+        MassOfEarth = 0.0;
     }
 
     /*

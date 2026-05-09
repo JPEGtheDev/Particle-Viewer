@@ -58,12 +58,12 @@ ViewerApp::ViewerApp(IOpenGLContext* context)
         keys_[i] = false;
     }
     set_ = new SettingsIO();
-    rebuildCacheInfrastructure();
 
     std::string folder = extractFolder(set_->posName);
     if (!folder.empty()) {
         loadViewerConfig(folder, auto_com_compute_);
         menu_state_.auto_com_compute = auto_com_compute_;
+        rebuildCacheInfrastructure();
     }
 }
 
@@ -305,7 +305,7 @@ void ViewerApp::run()
 
         context_->swapBuffers();
 
-        if (set_->frames > 1) {
+        if (set_->frames > 1 && frame_cache_) {
             auto frame_data = frame_cache_->getFrame(cur_frame_);
             if (frame_data) {
                 part_->stageTranslations(frame_data->data(), static_cast<long>(frame_data->size()));
@@ -315,18 +315,18 @@ void ViewerApp::run()
             frame_cache_->prefetch(cur_frame_, PREFETCH_LOOKAHEAD_FRAMES, set_->frames);
         }
         // COM prefetch — only when COM lock is active and auto-compute is enabled
-        if (cam_->isComLocked() && auto_com_compute_) {
+        if (cam_->isComLocked() && auto_com_compute_ && com_cache_) {
             com_cache_->prefetchAsync(cur_frame_, PREFETCH_LOOKAHEAD_FRAMES, set_->frames);
         }
         // Update menu state for cache status display
         menu_state_.auto_com_compute = auto_com_compute_;
-        const std::size_t cached_frames = frame_cache_->cachedCount();
+        const std::size_t cached_frames = frame_cache_ ? frame_cache_->cachedCount() : 0;
         menu_state_.cache_status.frames_cached = static_cast<int>(cached_frames);
         menu_state_.cache_status.bytes_used = cached_frames * static_cast<std::size_t>(set_->N) * sizeof(glm::vec4);
 
         if (menu_state_.debug_mode) {
             fprintf(stderr, "[Cache] frame=%ld frames_cached=%zu com_cached=%zu auto_com=%d locked=%d\n", cur_frame_,
-                    cached_frames, com_cache_->cachedCount(), static_cast<int>(auto_com_compute_),
+                    cached_frames, com_cache_ ? com_cache_->cachedCount() : 0, static_cast<int>(auto_com_compute_),
                     static_cast<int>(cam_->isComLocked()));
         }
         if (set_->isPlaying) {
@@ -444,13 +444,13 @@ void ViewerApp::drawScene()
 {
     // Try COMFile first (no regression when COMFile is present)
     glm::vec3 new_com{};
-    bool com_set = com_file_provider_->getCOM(cur_frame_, new_com);
+    bool com_set = com_file_provider_ && com_file_provider_->getCOM(cur_frame_, new_com);
     if (com_set) {
         com_ = new_com;
     }
     // Fallback: computed COM from cache if enabled and no COMFile hit
     bool com_from_cache = false;
-    if (!com_set && auto_com_compute_ && cam_->isComLocked()) {
+    if (!com_set && auto_com_compute_ && cam_->isComLocked() && com_cache_) {
         auto maybe = com_cache_->getCOM(cur_frame_);
         if (maybe.has_value()) {
             com_ = *maybe;
