@@ -263,6 +263,14 @@ void ViewerApp::run()
         cam_->RenderSphere();
         drawFBO();
 
+        // Update menu state with current cache status — must happen before
+        // renderMainMenu so the UI reflects values from the current frame.
+        menu_state_.auto_com_compute = auto_com_compute_;
+        const std::size_t cached_frames = frame_cache_ ? frame_cache_->cachedCount() : 0;
+        menu_state_.cache_status.frames_cached = static_cast<int>(cached_frames);
+        menu_state_.cache_status.bytes_used =
+            frame_cache_ ? cached_frames * frame_cache_->frameSizeBytes() : 0;
+
         if (imgui_initialized_) {
             if (menu_state_.debug_mode) {
                 float fps = (delta_time_ > 0.0f) ? 1.0f / delta_time_ : 0.0f;
@@ -305,29 +313,29 @@ void ViewerApp::run()
 
         context_->swapBuffers();
 
-        if (set_->frames > 1 && frame_cache_) {
-            auto frame_data = frame_cache_->getFrame(cur_frame_);
-            if (frame_data) {
-                part_->stageTranslations(frame_data->data(), static_cast<long>(frame_data->size()));
-            } else {
+        if (set_->frames > 1) {
+            bool loaded = false;
+            if (frame_cache_) {
+                auto frame_data = frame_cache_->getFrame(cur_frame_);
+                if (frame_data) {
+                    part_->stageTranslations(frame_data->data(), static_cast<long>(frame_data->size()));
+                    loaded = true;
+                }
+                frame_cache_->prefetch(cur_frame_, PREFETCH_LOOKAHEAD_FRAMES, set_->frames);
+            }
+            if (!loaded) {
                 set_->readPosVelFile(cur_frame_, part_, false);
             }
-            frame_cache_->prefetch(cur_frame_, PREFETCH_LOOKAHEAD_FRAMES, set_->frames);
         }
         // COM prefetch — only when COM lock is active, auto-compute is enabled,
         // and no COMFile is present (COMFile takes precedence over auto-compute).
         if (cam_->isComLocked() && auto_com_compute_ && com_cache_ && !set_->checkCOM()) {
             com_cache_->prefetchAsync(cur_frame_, PREFETCH_LOOKAHEAD_FRAMES, set_->frames);
         }
-        // Update menu state for cache status display
-        menu_state_.auto_com_compute = auto_com_compute_;
-        const std::size_t cached_frames = frame_cache_ ? frame_cache_->cachedCount() : 0;
-        menu_state_.cache_status.frames_cached = static_cast<int>(cached_frames);
-        menu_state_.cache_status.bytes_used = cached_frames * static_cast<std::size_t>(set_->N) * sizeof(glm::vec4);
-
         if (menu_state_.debug_mode) {
+            const std::size_t cached_frames_now = frame_cache_ ? frame_cache_->cachedCount() : 0;
             fprintf(stderr, "[Cache] frame=%ld frames_cached=%zu com_cached=%zu auto_com=%d locked=%d\n", cur_frame_,
-                    cached_frames, com_cache_ ? com_cache_->cachedCount() : 0, static_cast<int>(auto_com_compute_),
+                    cached_frames_now, com_cache_ ? com_cache_->cachedCount() : 0, static_cast<int>(auto_com_compute_),
                     static_cast<int>(cam_->isComLocked()));
         }
         if (set_->isPlaying) {
