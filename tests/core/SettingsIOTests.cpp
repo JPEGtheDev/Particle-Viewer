@@ -593,7 +593,127 @@ TEST_F(SettingsIOTest, GetFrames_MultipleCallsReturnSameValue)
     EXPECT_EQ(frames1, frames2);
 }
 
-// ─── checkCOM tests ───────────────────────────────────────────────────────────
+// ─── getCOM tests ─────────────────────────────────────────────────────────────
+// getCOM() reads a glm::vec4 record for the given frame using an absolute
+// file offset (SEEK_SET). The .w field must equal the frame index; .x/.y/.z
+// are scaled by kSimToDisplayScale before being written to the out-param.
+
+TEST_F(SettingsIOTest, GetCOM_MissingFile_ReturnsFalse)
+{
+    // Arrange
+    SettingsIO settings;
+    settings.comName = "/tmp/no_com_file_xyz_does_not_exist.bin";
+    glm::vec3 value(0.f);
+
+    // Act & Assert
+    EXPECT_FALSE(settings.getCOM(0, value));
+    EXPECT_EQ(value, glm::vec3(0.f));
+}
+
+TEST_F(SettingsIOTest, GetCOM_ValidFile_Frame0_ReturnsTrue)
+{
+    // Arrange: write a 2-frame COMFile; each record is vec4(x, y, z, frame_index)
+    const std::string comPath = "/tmp/test_getCOM_frame0.bin";
+    FILE* f = fopen(comPath.c_str(), "wb");
+    ASSERT_NE(f, nullptr);
+    const glm::vec4 frame0(1.0f, 2.0f, 3.0f, 0.0f);
+    const glm::vec4 frame1(4.0f, 5.0f, 6.0f, 1.0f);
+    fwrite(&frame0, sizeof(glm::vec4), 1, f);
+    fwrite(&frame1, sizeof(glm::vec4), 1, f);
+    fclose(f);
+
+    SettingsIO settings;
+    settings.comName = comPath;
+    glm::vec3 value(0.f);
+
+    // Act & Assert
+    EXPECT_TRUE(settings.getCOM(0, value));
+    std::remove(comPath.c_str());
+}
+
+TEST_F(SettingsIOTest, GetCOM_ValidFile_Frame0_ScalesOutput)
+{
+    // Arrange
+    const std::string comPath = "/tmp/test_getCOM_scale.bin";
+    FILE* f = fopen(comPath.c_str(), "wb");
+    ASSERT_NE(f, nullptr);
+    const glm::vec4 frame0(4.0f, 8.0f, 12.0f, 0.0f);
+    fwrite(&frame0, sizeof(glm::vec4), 1, f);
+    fclose(f);
+
+    SettingsIO settings;
+    settings.comName = comPath;
+    glm::vec3 value(0.f);
+    ASSERT_TRUE(settings.getCOM(0, value));
+
+    // kSimToDisplayScale = 0.25f
+    EXPECT_FLOAT_EQ(value.x, 4.0f * 0.25f);
+    EXPECT_FLOAT_EQ(value.y, 8.0f * 0.25f);
+    EXPECT_FLOAT_EQ(value.z, 12.0f * 0.25f);
+    std::remove(comPath.c_str());
+}
+
+TEST_F(SettingsIOTest, GetCOM_ValidFile_Frame1_SeekIsAbsolute)
+{
+    // Arrange: absolute seek to frame 1 must skip frame 0 record exactly
+    const std::string comPath = "/tmp/test_getCOM_frame1.bin";
+    FILE* f = fopen(comPath.c_str(), "wb");
+    ASSERT_NE(f, nullptr);
+    const glm::vec4 frame0(1.0f, 2.0f, 3.0f, 0.0f);
+    const glm::vec4 frame1(4.0f, 5.0f, 6.0f, 1.0f);
+    fwrite(&frame0, sizeof(glm::vec4), 1, f);
+    fwrite(&frame1, sizeof(glm::vec4), 1, f);
+    fclose(f);
+
+    SettingsIO settings;
+    settings.comName = comPath;
+    glm::vec3 value(0.f);
+
+    // Act & Assert
+    EXPECT_TRUE(settings.getCOM(1, value));
+    std::remove(comPath.c_str());
+}
+
+TEST_F(SettingsIOTest, GetCOM_TruncatedFile_Frame1_ReturnsFalse)
+{
+    // Arrange: file has only 1 record; requesting frame 1 seeks past EOF
+    const std::string comPath = "/tmp/test_getCOM_truncated.bin";
+    FILE* f = fopen(comPath.c_str(), "wb");
+    ASSERT_NE(f, nullptr);
+    const glm::vec4 frame0(1.0f, 2.0f, 3.0f, 0.0f);
+    fwrite(&frame0, sizeof(glm::vec4), 1, f);
+    fclose(f);
+
+    SettingsIO settings;
+    settings.comName = comPath;
+    glm::vec3 value(0.f);
+
+    // Act & Assert — fread returns 0 items → returns false; value must be unchanged
+    EXPECT_FALSE(settings.getCOM(1, value));
+    EXPECT_EQ(value, glm::vec3(0.f));
+    std::remove(comPath.c_str());
+}
+
+TEST_F(SettingsIOTest, GetCOM_WrongFrameIndex_ReturnsFalse)
+{
+    // Arrange: record at offset 0 has .w=99 (mismatch with requested frame 0)
+    const std::string comPath = "/tmp/test_getCOM_mismatch.bin";
+    FILE* f = fopen(comPath.c_str(), "wb");
+    ASSERT_NE(f, nullptr);
+    const glm::vec4 badRecord(1.0f, 2.0f, 3.0f, 99.0f); // .w != 0
+    fwrite(&badRecord, sizeof(glm::vec4), 1, f);
+    fclose(f);
+
+    SettingsIO settings;
+    settings.comName = comPath;
+    glm::vec3 value(0.f);
+
+    // Act & Assert — frame index mismatch → returns false; value must be unchanged
+    EXPECT_FALSE(settings.getCOM(0, value));
+    EXPECT_EQ(value, glm::vec3(0.f));
+    std::remove(comPath.c_str());
+}
+
 // checkCOM() is used in the COM prefetch guard: the run loop must suppress
 // async COM computation when a COMFile is already present on disk.
 

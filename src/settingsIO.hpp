@@ -565,7 +565,10 @@ class SettingsIO
         if (!COMFile) {
             return false;
         }
-        fseek(COMFile, frame * sizeof(glm::vec4), SEEK_CUR);
+        if (fseek(COMFile, frame * static_cast<long>(sizeof(glm::vec4)), SEEK_SET) != 0) {
+            fclose(COMFile);
+            return false;
+        }
         glm::vec4 read_val;
         size_t items_read = fread(&read_val, sizeof(glm::vec4), 1, COMFile);
         fclose(COMFile);
