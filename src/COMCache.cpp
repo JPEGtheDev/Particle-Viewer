@@ -51,17 +51,22 @@ std::optional<glm::vec3> COMCache::getCOM(long frame)
     executor_.enqueue([this, frame]() {
         std::vector<glm::vec4> positions = sio_.readPosBuffer(frame);
 
-        std::lock_guard<std::mutex> lock{mutex_};
-        pending_.erase(frame);
-
         if (positions.empty()) {
             // I/O failure: record in failed_ to prevent infinite re-enqueue.
             // Do NOT cache (0,0,0) — callers keep their previous COM on miss.
+            std::lock_guard<std::mutex> lock{mutex_};
+            pending_.erase(frame);
             failed_.insert(frame);
             return;
         }
 
+        // Compute COM outside the lock so getCOM() and cachedCount() callers
+        // on the render thread are not blocked during the (potentially slow)
+        // mass-weighted computation.
         glm::vec3 com = COMCalculator::computeMassWeightedCOM(std::span<const glm::vec4>(positions), mp_);
+
+        std::lock_guard<std::mutex> lock{mutex_};
+        pending_.erase(frame);
         cache_[frame] = com;
     });
 
