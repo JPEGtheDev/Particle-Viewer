@@ -97,8 +97,8 @@ TEST(TestFrameBuilderTests, TestFrameBuilder_MultipleFrames_FrameCountCorrect)
     ASSERT_EQ(builder.buffer().size(), expected);
 }
 
-TEST(TestFrameBuilderTests, TestFrameBuilder_AddFrame_WrongSize_Asserts)
+TEST(TestFrameBuilderTests, TestFrameBuilder_AddFrame_WrongSize_Throws)
 {
     TestFrameBuilder builder(3);
-    ASSERT_DEATH(builder.addFrame({glm::vec4(0.f)}), "");
+    EXPECT_THROW(builder.addFrame({glm::vec4(0.f)}), std::invalid_argument);
 }

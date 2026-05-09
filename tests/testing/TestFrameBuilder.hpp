@@ -1,5 +1,4 @@
 #pragma once
-#include <cassert>
 #include <fstream>
 #include <stdexcept>
 #include <string>
@@ -26,7 +25,9 @@ class TestFrameBuilder
     /// Velocities are written as zero.
     void addFrame(const std::vector<glm::vec4>& positions)
     {
-        assert(positions.size() == static_cast<std::size_t>(n_));
+        if (positions.size() != static_cast<std::size_t>(n_)) {
+            throw std::invalid_argument("TestFrameBuilder::addFrame: positions.size() != n_");
+        }
         for (const auto& p : positions) {
             append(p);
         }

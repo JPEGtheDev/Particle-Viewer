@@ -4,8 +4,7 @@
  * Unit tests for viewer configuration save/load functionality.
  */
 
-#include <cstdio>
-#include <cstdlib>
+#include <filesystem>
 #include <fstream>
 #include <string>
 
@@ -20,16 +19,13 @@ class ViewerConfigTest : public ::testing::Test
     void SetUp() override
     {
         test_folder = "/tmp/test_particle_viewer_config";
-        // Linux-only: project does not support Windows.
-        std::system(("mkdir -p " + test_folder).c_str());
-        // Clean up any existing viewer.cfg
-        std::remove((test_folder + "/viewer.cfg").c_str());
+        std::filesystem::create_directories(test_folder);
+        std::filesystem::remove(test_folder + "/viewer.cfg");
     }
 
     void TearDown() override
     {
-        // Remove the test directory and its contents
-        std::system(("rm -rf " + test_folder).c_str());
+        std::filesystem::remove_all(test_folder);
     }
 
     std::string test_folder;
