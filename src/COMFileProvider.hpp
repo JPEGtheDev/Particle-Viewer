@@ -10,7 +10,8 @@
 /// COMFileProvider: reads per-frame center-of-mass values from a pre-computed
 /// COMFile on disk via SettingsIO.
 ///
-/// getCOM() delegates to SettingsIO::checkCOM() and SettingsIO::getCOM().
+/// getCOM() delegates to SettingsIO::getCOM(), which opens the file directly
+/// and returns false for missing files, truncated reads, or frame-index mismatches.
 /// The scale factor (kSimToDisplayScale) is applied inside SettingsIO::getCOM()
 /// — this class must NOT apply it again.
 ///
@@ -28,14 +29,10 @@ class COMFileProvider : public ICOMProvider
 
     /// Returns true and writes the scaled COM into @p out if the COMFile is
     /// present and the record for @p frame is valid.
-    /// Returns false (leaving @p out unchanged) if checkCOM() reports no file.
+    /// Returns false (leaving @p out unchanged) otherwise.
     bool getCOM(long frame, glm::vec3& out) override
     {
-        if (!sio_.checkCOM()) {
-            return false;
-        }
-        sio_.getCOM(frame, out);
-        return true;
+        return sio_.getCOM(frame, out);
     }
 
   private:

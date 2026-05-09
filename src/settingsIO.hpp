@@ -551,24 +551,31 @@ class SettingsIO
     }
 
     /*
-     * Grabs the center of mass from the COMFile.
+     * Reads the center-of-mass record for the given frame from the COMFile.
+     * Returns true and writes the scaled {x,y,z} into value on success.
+     * Returns false (leaving value unchanged) when:
+     *   - the file cannot be opened (missing or permission denied)
+     *   - the read is truncated (fewer than one full vec4 record available)
+     *   - the record's w field does not match the requested frame index
+     * The scale factor kSimToDisplayScale is applied to x, y, z before writing.
      */
-    void getCOM(long frame, glm::vec3& value)
+    bool getCOM(long frame, glm::vec3& value)
     {
-        if (checkCOM()) {
-            FILE* COMFile = fopen(comName.c_str(), "rb");
-            if (COMFile) {
-                fseek(COMFile, frame * sizeof(glm::vec4), SEEK_CUR);
-                glm::vec4 read_val;
-                size_t items_read = fread(&read_val, sizeof(glm::vec4), 1, COMFile);
-                fclose(COMFile);
-                if (items_read == 1 && (long)read_val.w == frame) {
-                    value.x = read_val.x * kSimToDisplayScale;
-                    value.y = read_val.y * kSimToDisplayScale;
-                    value.z = read_val.z * kSimToDisplayScale;
-                }
-            }
+        FILE* COMFile = fopen(comName.c_str(), "rb");
+        if (!COMFile) {
+            return false;
         }
+        fseek(COMFile, frame * sizeof(glm::vec4), SEEK_CUR);
+        glm::vec4 read_val;
+        size_t items_read = fread(&read_val, sizeof(glm::vec4), 1, COMFile);
+        fclose(COMFile);
+        if (items_read == 1 && (long)read_val.w == frame) {
+            value.x = read_val.x * kSimToDisplayScale;
+            value.y = read_val.y * kSimToDisplayScale;
+            value.z = read_val.z * kSimToDisplayScale;
+            return true;
+        }
+        return false;
     }
 
   private:
