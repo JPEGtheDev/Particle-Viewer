@@ -543,17 +543,21 @@ void ViewerApp::handleLoadFile()
         teardownCacheInfrastructure();
         delete set_;
         set_ = new_set;
-
-        // Rebuild cache infrastructure with new SettingsIO
-        rebuildCacheInfrastructure();
         com_ = glm::vec3(0.0f);
 
-        // Load per-simulation viewer.cfg for the new folder
+        // Reset before loadViewerConfig so the flag does not leak from the
+        // previous simulation when the new folder has no viewer.cfg.
+        auto_com_compute_ = false;
         std::string folder = extractFolder(set_->posName);
         if (!folder.empty()) {
             loadViewerConfig(folder, auto_com_compute_);
             menu_state_.auto_com_compute = auto_com_compute_;
         }
+
+        // Rebuild AFTER loadViewerConfig so any config that affects
+        // construction (future use) is already applied — consistent with
+        // the constructor ordering fixed in the companion commit.
+        rebuildCacheInfrastructure();
     }
     cur_frame_ = 0;
 }

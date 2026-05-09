@@ -95,6 +95,34 @@ TEST_F(ViewerConfigTest, ViewerConfig_Load_MissingFile_ReturnsFalse)
     EXPECT_FALSE(result);
 }
 
+TEST_F(ViewerConfigTest, ViewerConfig_Load_MissingFile_DoesNotModifyOutParam)
+{
+    // Arrange — caller pre-initialises to false (required by the contract:
+    // loadViewerConfig returns false without touching the out-param when the
+    // file is absent; the caller is responsible for resetting to the default).
+    bool auto_com_compute = false;
+
+    // Act
+    loadViewerConfig(test_folder, auto_com_compute);
+
+    // Assert — out-param unchanged; file-absent = keep caller's default (false)
+    EXPECT_FALSE(auto_com_compute);
+}
+
+TEST_F(ViewerConfigTest, ViewerConfig_Load_MissingFile_PreviousTrueValueLeaksWithoutPreInit)
+{
+    // Arrange — out-param set to true (simulates stale value from previous sim)
+    bool auto_com_compute = true;
+
+    // Act — no pre-initialisation to false before the call (the bug)
+    loadViewerConfig(test_folder, auto_com_compute);
+
+    // Assert — stale value persists because the function left the out-param alone.
+    // This test documents the leak; the caller MUST reset to false before calling
+    // loadViewerConfig when switching simulations.
+    EXPECT_TRUE(auto_com_compute); // stale — correct only after caller resets first
+}
+
 TEST_F(ViewerConfigTest, ViewerConfig_Load_UnknownKeys_AreIgnored)
 {
     // Arrange: manually write a file with unknown keys plus the known key
