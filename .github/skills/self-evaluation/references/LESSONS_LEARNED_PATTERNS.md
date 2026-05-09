@@ -276,6 +276,36 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 **Added to:** `code-quality` skill → Step 7: Adding a Feature / Fixing a Bug
 
+### EXPECT_EQ Over EXPECT_LE for Deterministic Counts (PR #112)
+
+**Problem:** `FrameCache` pending-cap test used `EXPECT_LE(callCount, window)`. The count is deterministically equal to `window` — using LE hid the fact that a regression (under-enqueue) would still pass.
+
+**Lesson:** Use `EXPECT_EQ` when the value is deterministic. `EXPECT_LE`/`EXPECT_GE` are for inherently non-deterministic values (timing, OS scheduling). An overly lenient bound masks regressions.
+
+**Added to:** `testing` skill → `TESTING_EXAMPLES.md` → Incorrect Examples
+
+---
+
+### Binary File Tests: Record Count Must Cover Target Frame (PR #112)
+
+**Problem:** `COMFileProvider_FrameIndexMismatch_ReturnsFalse` was written with a single-record file and a request for frame 1. `fseek` to frame 1 went past EOF, so `fread` returned 0 (truncation), exercising the wrong branch.
+
+**Lesson:** When writing a binary file test that seeks to frame N, write at least N+1 records so `fseek` lands within the file and `fread` actually reads the target record. A single-record file will always produce a truncation result for any frame > 0.
+
+**Added to:** `testing` skill → `TESTING_EXAMPLES.md` → Incorrect Examples
+
+---
+
+### Full Docstring Rewrite Required When void→bool (PR #112)
+
+**Problem:** After changing `getCOM()` from void to bool, the docstring was patched to mention the return value, but the first sentence still said "caller must call checkCOM() first" while a later sentence said "no extra checkCOM round-trip". The two sentences contradicted each other.
+
+**Lesson:** When changing a function's calling contract (especially void→bool), rewrite the *entire* docstring — don't patch it. The new contract (all false-return cases, what the caller need not do) renders the old docstring structurally incorrect and patching a structurally wrong docstring still leaves it wrong.
+
+**Added to:** Self-evaluation skill (this file)
+
+---
+
 ## Quick Reference: Where to Add Lessons
 
 Use this for fast question-based lookup — "my lesson is about X, where does it go?" For formal classification with concrete examples, use the Category Classification Table below.
