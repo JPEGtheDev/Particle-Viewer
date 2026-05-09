@@ -373,3 +373,39 @@ TEST_F(FrameCacheTest, FrameCache_CachedCount_ReflectsInsertedFrames)
 
     std::remove(path.c_str());
 }
+
+// ──────────────────────────────────────────────────────────────────────────────
+// 11. pending_ set is capped at window size across repeated prefetch calls
+// ──────────────────────────────────────────────────────────────────────────────
+
+TEST_F(FrameCacheTest, FrameCache_PendingSetCappedAtWindowSize_DoesNotGrowBeyondWindow)
+{
+    // Arrange — use CountingExecutor so tasks are enqueued but never run,
+    // keeping all frames in pending_ indefinitely.
+    constexpr long N = 2;
+    TestFrameBuilder builder(N);
+    for (int i = 0; i < 10; ++i) {
+        builder.addFrame({{static_cast<float>(i), 0.f, 0.f, 0.f}, {static_cast<float>(i), 0.f, 0.f, 1.f}});
+    }
+    std::string path = builder.writeToTempFile("_fc_pending_cap.bin");
+
+    SettingsIO sio;
+    sio.posName = path;
+    sio.N = N;
+    sio.frames = 10;
+    constexpr std::size_t maxBytes = 100 * sizeof(glm::vec4);
+    constexpr long window = 3;
+
+    CountingExecutor counting;
+    FrameCache cache(sio, maxBytes, counting);
+
+    // Act — call prefetch twice with different current frames so new frames
+    // would be enqueued on the second call if the cap is absent.
+    cache.prefetch(0, window, 10); // enqueues frames 1,2,3 → pending_ size = 3
+    cache.prefetch(1, window, 10); // frame 4 is new; without cap, pending_ grows to 4
+
+    // Assert — pending_ must never exceed the window size.
+    EXPECT_EQ(counting.callCount, static_cast<int>(window));
+
+    std::remove(path.c_str());
+}

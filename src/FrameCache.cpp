@@ -61,6 +61,14 @@ void FrameCache::prefetch(long current, long window, long total_frames)
     for (long f = current + 1; f <= last; ++f) {
         std::unique_lock<std::mutex> lock(mutex_);
 
+        // Cap pending_ at window size to prevent unbounded growth across
+        // repeated prefetch calls when tasks haven't completed yet.
+        // window is the natural ceiling: we never look ahead more than
+        // window frames, so additional outstanding loads have no value.
+        if (pending_.size() >= static_cast<std::size_t>(window)) {
+            break;
+        }
+
         // Skip if already cached or already pending
         if (cache_map_.count(f) > 0 || pending_.count(f) > 0) {
             continue;
