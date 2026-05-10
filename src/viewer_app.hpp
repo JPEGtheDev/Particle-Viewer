@@ -21,6 +21,10 @@
 #include <glad/glad.h>       // NOLINT(llvm-include-order)
 // clang-format on
 
+#include "COMCache.hpp"
+#include "COMFileProvider.hpp"
+#include "FrameCache.hpp"
+#include "ThreadedExecutor.hpp"
 #include "camera.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -31,6 +35,7 @@
 #include "settingsIO.hpp"
 #include "shader.hpp"
 #include "ui/imgui_menu.hpp"
+#include "viewerConfig.hpp"
 
 /*
  * Window configuration.
@@ -188,6 +193,22 @@ class ViewerApp
     glm::vec3 com_;
 
     // ============================================
+    // COM / Frame Cache Infrastructure
+    // ============================================
+    ThreadedExecutor* com_executor_;
+    ThreadedExecutor* frame_executor_;
+    COMCache* com_cache_;
+    FrameCache* frame_cache_;
+    COMFileProvider* com_file_provider_;
+
+    // COM auto-compute toggle (persisted in viewer.cfg per simulation folder)
+    bool auto_com_compute_;
+
+    // Cached result of checkCOM(). Updated by rebuildCacheInfrastructure(),
+    // cleared by teardownCacheInfrastructure(). Avoids per-frame disk stat.
+    bool com_file_present_;
+
+    // ============================================
     // Frame Playback State
     // ============================================
     GLint cur_frame_;
@@ -245,6 +266,18 @@ class ViewerApp
     // ============================================
     void cleanup();
     void shutdownImGui();
+
+    // ============================================
+    // Helpers
+    // ============================================
+    static std::string extractFolder(const std::string& posName);
+    void rebuildCacheInfrastructure();
+    void teardownCacheInfrastructure();
+    void createCOMInfrastructure();
+    void teardownCOMInfrastructure();
+
+    static constexpr std::size_t FRAME_CACHE_CAPACITY_BYTES = 256ULL * 1024 * 1024;
+    static constexpr long PREFETCH_LOOKAHEAD_FRAMES = 64;
 };
 
 #endif // PARTICLE_VIEWER_VIEWER_APP_H

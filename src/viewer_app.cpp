@@ -8,6 +8,7 @@
 #include "viewer_app.hpp"
 
 #include <array>
+#include <cassert>
 #include <cstdlib>
 #include <iostream>
 #include <string>
@@ -16,6 +17,7 @@
 #include <SDL3/SDL.h>          // NOLINT(llvm-include-order)
 // clang-format on
 
+#include "MassParams.hpp"
 #include "debugOverlay.hpp"
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
@@ -50,12 +52,21 @@ static const std::array<QuadVertex, 6> QUAD_VERTICES = {{{-1.0f, 1.0f, 0.0f, 1.0
 
 ViewerApp::ViewerApp(IOpenGLContext* context)
     : context_(context), imgui_initialized_(false), delta_time_(0.0f), last_frame_(0.0f), cam_(nullptr), part_(nullptr),
-      set_(nullptr), view_(), com_(), cur_frame_(0), pixels_(nullptr)
+      set_(nullptr), view_(), com_(), cur_frame_(0), pixels_(nullptr), com_executor_(nullptr), frame_executor_(nullptr),
+      com_cache_(nullptr), frame_cache_(nullptr), com_file_provider_(nullptr), auto_com_compute_(false),
+      com_file_present_(false)
 {
     for (int i = 0; i < 1024; i++) {
         keys_[i] = false;
     }
     set_ = new SettingsIO();
+
+    std::string folder = extractFolder(set_->posName);
+    if (!folder.empty()) {
+        loadViewerConfig(folder, auto_com_compute_);
+        menu_state_.auto_com_compute = auto_com_compute_;
+        rebuildCacheInfrastructure();
+    }
 }
 
 ViewerApp::~ViewerApp()
@@ -254,6 +265,13 @@ void ViewerApp::run()
         cam_->RenderSphere();
         drawFBO();
 
+        // Update menu state with current cache status — must happen before
+        // renderMainMenu so the UI reflects values from the current frame.
+        menu_state_.auto_com_compute = auto_com_compute_;
+        const std::size_t cached_frames = frame_cache_ ? frame_cache_->cachedCount() : 0;
+        menu_state_.cache_status.frames_cached = static_cast<int>(cached_frames);
+        menu_state_.cache_status.bytes_used = frame_cache_ ? cached_frames * frame_cache_->frameSizeBytes() : 0;
+
         if (imgui_initialized_) {
             if (menu_state_.debug_mode) {
                 float fps = (delta_time_ > 0.0f) ? 1.0f / delta_time_ : 0.0f;
@@ -278,6 +296,19 @@ void ViewerApp::run()
             if (actions.toggle_fullscreen) {
                 toggleFullscreen();
             }
+            if (actions.toggle_auto_com) {
+                auto_com_compute_ = !auto_com_compute_;
+                menu_state_.auto_com_compute = auto_com_compute_;
+                std::string folder = extractFolder(set_->posName);
+                if (!folder.empty()) {
+                    saveViewerConfig(folder, auto_com_compute_);
+                }
+                if (auto_com_compute_) {
+                    createCOMInfrastructure();
+                } else {
+                    teardownCOMInfrastructure();
+                }
+            }
             if (actions.quit) {
                 context_->setShouldClose(true);
             }
@@ -289,7 +320,29 @@ void ViewerApp::run()
         context_->swapBuffers();
 
         if (set_->frames > 1) {
-            set_->readPosVelFile(cur_frame_, part_, false);
+            bool loaded = false;
+            if (frame_cache_) {
+                auto frame_data = frame_cache_->getFrame(cur_frame_);
+                if (frame_data) {
+                    part_->stageTranslations(frame_data->data(), static_cast<long>(frame_data->size()));
+                    loaded = true;
+                }
+                frame_cache_->prefetch(cur_frame_, PREFETCH_LOOKAHEAD_FRAMES, set_->frames);
+            }
+            if (!loaded) {
+                set_->readPosVelFile(cur_frame_, part_, false);
+            }
+        }
+        // COM prefetch — only when COM lock is active, auto-compute is enabled,
+        // and no COMFile is present (COMFile takes precedence over auto-compute).
+        if (cam_->isComLocked() && auto_com_compute_ && com_cache_ && !com_file_present_) {
+            com_cache_->prefetchAsync(cur_frame_, PREFETCH_LOOKAHEAD_FRAMES, set_->frames);
+        }
+        if (menu_state_.debug_mode) {
+            const std::size_t cached_frames_now = frame_cache_ ? frame_cache_->cachedCount() : 0;
+            fprintf(stderr, "[Cache] frame=%ld frames_cached=%zu com_cached=%zu auto_com=%d locked=%d\n", cur_frame_,
+                    cached_frames_now, com_cache_ ? com_cache_->cachedCount() : 0, static_cast<int>(auto_com_compute_),
+                    static_cast<int>(cam_->isComLocked()));
         }
         if (set_->isPlaying) {
             cur_frame_++;
@@ -404,7 +457,28 @@ void ViewerApp::beforeDraw()
 
 void ViewerApp::drawScene()
 {
-    set_->getCOM(cur_frame_, com_);
+    // Try COMFile first (no regression when COMFile is present)
+    glm::vec3 new_com{};
+    bool com_set = com_file_provider_ && com_file_provider_->getCOM(cur_frame_, new_com);
+    if (com_set) {
+        com_ = new_com;
+    }
+    // Fallback: computed COM from cache if enabled and no COMFile hit
+    bool com_from_cache = false;
+    if (!com_set && auto_com_compute_ && cam_->isComLocked() && com_cache_) {
+        auto maybe = com_cache_->getCOM(cur_frame_);
+        if (maybe.has_value()) {
+            com_ = *maybe;
+            com_from_cache = true;
+        }
+        // On miss: keep previous com_ — camera does not snap
+    }
+    if (menu_state_.debug_mode) {
+        fprintf(stderr, "[COM] frame=%ld file_hit=%d cache_hit=%d com=(%.3f,%.3f,%.3f) auto=%d locked=%d\n", cur_frame_,
+                static_cast<int>(com_set), static_cast<int>(com_from_cache), static_cast<double>(com_.x),
+                static_cast<double>(com_.y), static_cast<double>(com_.z), static_cast<int>(auto_com_compute_),
+                static_cast<int>(cam_->isComLocked()));
+    }
     cam_->setSphereCenter(com_);
     render_.sphere_shader.Use();
     part_->pushVBO();
@@ -479,8 +553,26 @@ void ViewerApp::handleLoadFile()
 {
     SettingsIO* new_set = set_->loadFile(part_, false);
     if (new_set && new_set != set_) {
+        // Safe teardown order: drain executors FIRST so no tasks reference
+        // the old SettingsIO after it is deleted.
+        teardownCacheInfrastructure();
         delete set_;
         set_ = new_set;
+        com_ = glm::vec3(0.0f);
+
+        // Reset before loadViewerConfig so the flag does not leak from the
+        // previous simulation when the new folder has no viewer.cfg.
+        auto_com_compute_ = false;
+        std::string folder = extractFolder(set_->posName);
+        if (!folder.empty()) {
+            loadViewerConfig(folder, auto_com_compute_);
+            menu_state_.auto_com_compute = auto_com_compute_;
+        }
+
+        // Rebuild AFTER loadViewerConfig so any config that affects
+        // construction (future use) is already applied — consistent with
+        // the constructor ordering fixed in the companion commit.
+        rebuildCacheInfrastructure();
     }
     cur_frame_ = 0;
 }
@@ -702,6 +794,10 @@ void ViewerApp::cleanup()
         render_.circle_vao = 0;
     }
 
+    // Cache teardown: drain executors FIRST so no in-flight tasks reference
+    // the caches or SettingsIO after they are deleted.
+    teardownCacheInfrastructure();
+
     delete set_;
     set_ = nullptr;
     delete cam_;
@@ -864,4 +960,68 @@ void ViewerApp::loadWindowSettings()
     } else {
         std::cout << "No window config found, using defaults" << std::endl;
     }
+}
+
+// ============================================================================
+// Helpers
+// ============================================================================
+
+/*
+ * Returns the directory portion of a file path (everything before the last '/').
+ * Returns an empty string when no '/' is found (no parent directory).
+ */
+std::string ViewerApp::extractFolder(const std::string& posName)
+{
+    auto slash = posName.rfind('/');
+    return (slash != std::string::npos) ? posName.substr(0, slash) : "";
+}
+
+void ViewerApp::createCOMInfrastructure()
+{
+    assert(com_executor_ == nullptr && com_cache_ == nullptr &&
+           "createCOMInfrastructure called with live COM objects; call teardownCOMInfrastructure first");
+    MassParams mp = MassParams::fromSettingsIO(*set_);
+    com_executor_ = new ThreadedExecutor();
+    try {
+        com_cache_ = new COMCache(*set_, mp, *com_executor_);
+    } catch (...) {
+        delete com_executor_;
+        com_executor_ = nullptr;
+        throw;
+    }
+}
+
+void ViewerApp::teardownCOMInfrastructure()
+{
+    // Drain the executor first: its worker thread holds lambdas that reference
+    // COMCache internals. Joining (via delete) before deleting the cache is safe.
+    delete com_executor_;
+    com_executor_ = nullptr;
+    delete com_cache_;
+    com_cache_ = nullptr;
+}
+
+void ViewerApp::rebuildCacheInfrastructure()
+{
+    frame_executor_ = new ThreadedExecutor();
+    frame_cache_ = new FrameCache(*set_, FRAME_CACHE_CAPACITY_BYTES, *frame_executor_);
+    com_file_provider_ = new COMFileProvider(*set_);
+    com_file_present_ = set_->checkCOM();
+    if (auto_com_compute_) {
+        createCOMInfrastructure();
+    }
+}
+
+void ViewerApp::teardownCacheInfrastructure()
+{
+    // Drain COM executor before deleting the COM cache.
+    teardownCOMInfrastructure();
+    // Drain frame executor before deleting the frame cache.
+    delete frame_executor_;
+    frame_executor_ = nullptr;
+    delete frame_cache_;
+    frame_cache_ = nullptr;
+    delete com_file_provider_;
+    com_file_provider_ = nullptr;
+    com_file_present_ = false;
 }

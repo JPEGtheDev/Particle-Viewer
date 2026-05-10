@@ -10,7 +10,9 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <vector>
 
+#include "constants.hpp"
 #include "glm/glm.hpp"
 #include "particle.hpp"
 #include "tinyFileDialogs/tinyfiledialogs.h"
@@ -38,6 +40,13 @@ class SettingsIO
         frames = 0;
         isPlaying = false;
         errorCount = 0;
+        FractionEarthMassOfBody1 = 0.0;
+        FractionEarthMassOfBody2 = 0.0;
+        FractionFeBody1 = 0.0;
+        FractionSiBody1 = 0.0;
+        FractionFeBody2 = 0.0;
+        FractionSiBody2 = 0.0;
+        MassOfEarth = 0.0;
     }
 
     /*
@@ -286,6 +295,36 @@ class SettingsIO
     }
 
     /*
+     * Reads positions from the PosAndVel binary file at a specific frame.
+     * GL-free: safe to call from background threads.
+     * Does not mutate isPlaying, errorCount, or any shared state.
+     * Returns an empty vector on error.
+     */
+    std::vector<glm::vec4> readPosBuffer(long frame)
+    {
+        // clamp frame silently — do NOT mutate isPlaying
+        if (frame < 0)
+            frame = 0;
+        if (frame >= frames)
+            frame = frames - 1;
+        if (N <= 0 || frames <= 0)
+            return {};
+
+        FILE* f = fopen(posName.c_str(), "rb"); // "rb" — binary mode
+        if (!f)
+            return {};
+
+        fseek(f, frame * static_cast<long>(sizeof(glm::vec4)) * 2 * N, SEEK_SET);
+        std::vector<glm::vec4> positions(N);
+        size_t read = fread(positions.data(), sizeof(glm::vec4), static_cast<size_t>(N), f);
+        fclose(f);
+
+        if (static_cast<long>(read) != N)
+            return {};
+        return positions;
+    }
+
+    /*
      * Toggles playback.
      */
     void togglePlay()
@@ -317,27 +356,27 @@ class SettingsIO
     {
         return InitialSpin2;
     }
-    double getFractionEarthMassOfBody1()
+    double getFractionEarthMassOfBody1() const
     {
         return FractionEarthMassOfBody1;
     }
-    double getFractionEarthMassOfBody2()
+    double getFractionEarthMassOfBody2() const
     {
         return FractionEarthMassOfBody2;
     }
-    double getFractionFeBody1()
+    double getFractionFeBody1() const
     {
         return FractionFeBody1;
     }
-    double getFractionSiBody1()
+    double getFractionSiBody1() const
     {
         return FractionSiBody1;
     }
-    double getFractionFeBody2()
+    double getFractionFeBody2() const
     {
         return FractionFeBody2;
     }
-    double getFractionSiBody2()
+    double getFractionSiBody2() const
     {
         return FractionSiBody2;
     }
@@ -441,7 +480,7 @@ class SettingsIO
     {
         return UniversalGravity;
     }
-    double getMassOfEarth()
+    double getMassOfEarth() const
     {
         return MassOfEarth;
     }
@@ -512,24 +551,34 @@ class SettingsIO
     }
 
     /*
-     * Grabs the center of mass from the COMFile.
+     * Reads the center-of-mass record for the given frame from the COMFile.
+     * Returns true and writes the scaled {x,y,z} into value on success.
+     * Returns false (leaving value unchanged) when:
+     *   - the file cannot be opened (missing or permission denied)
+     *   - the read is truncated (fewer than one full vec4 record available)
+     *   - the record's w field does not match the requested frame index
+     * The scale factor kSimToDisplayScale is applied to x, y, z before writing.
      */
-    void getCOM(long frame, glm::vec3& value)
+    bool getCOM(long frame, glm::vec3& value)
     {
-        if (checkCOM()) {
-            FILE* COMFile = fopen(comName.c_str(), "rb");
-            if (COMFile) {
-                fseek(COMFile, frame * sizeof(glm::vec4), SEEK_CUR);
-                glm::vec4 read_val;
-                size_t items_read = fread(&read_val, sizeof(glm::vec4), 1, COMFile);
-                fclose(COMFile);
-                if (items_read == 1 && (long)read_val.w == frame) {
-                    value.x = read_val.x * .25;
-                    value.y = read_val.y * .25;
-                    value.z = read_val.z * .25;
-                }
-            }
+        FILE* COMFile = fopen(comName.c_str(), "rb");
+        if (!COMFile) {
+            return false;
         }
+        if (fseek(COMFile, frame * static_cast<long>(sizeof(glm::vec4)), SEEK_SET) != 0) {
+            fclose(COMFile);
+            return false;
+        }
+        glm::vec4 read_val;
+        size_t items_read = fread(&read_val, sizeof(glm::vec4), 1, COMFile);
+        fclose(COMFile);
+        if (items_read == 1 && (long)read_val.w == frame) {
+            value.x = read_val.x * kSimToDisplayScale;
+            value.y = read_val.y * kSimToDisplayScale;
+            value.z = read_val.z * kSimToDisplayScale;
+            return true;
+        }
+        return false;
     }
 
   private:

@@ -151,6 +151,16 @@ MenuActions renderMainMenu(MenuState& state)
             ImGui::MenuItem("Show Menu", "F1", &state.visible);
             ImGui::EndMenu();
         }
+        if (ImGui::BeginMenu("COM / Cache")) {
+            bool auto_com = state.auto_com_compute;
+            if (ImGui::Checkbox("Auto COM compute", &auto_com)) {
+                actions.toggle_auto_com = true;
+            }
+            ImGui::Separator();
+            ImGui::Text("Frames cached: %d", state.cache_status.frames_cached);
+            ImGui::Text("Memory: %.1f MB", static_cast<float>(state.cache_status.bytes_used) / (1024.0f * 1024.0f));
+            ImGui::EndMenu();
+        }
         ImGui::EndMainMenuBar();
     }
 

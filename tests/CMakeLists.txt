@@ -18,6 +18,7 @@ add_executable(ParticleViewerTests
     ${TEST_TESTING_FILES}
     ${TEST_VISUAL_REGRESSION_FILES}
     ${TESTING_UTILITY_SOURCES}
+    ${CMAKE_SOURCE_DIR}/src/COMCache.cpp
     ${CMAKE_SOURCE_DIR}/src/Image.cpp
     ${CMAKE_SOURCE_DIR}/src/graphics/SDL3Context.cpp
     stb_image_write_impl.cpp
@@ -45,6 +46,7 @@ target_include_directories(ParticleViewerTests PRIVATE
 # Add glad source for OpenGL function pointers
 target_sources(ParticleViewerTests PRIVATE
     ${CMAKE_SOURCE_DIR}/src/glad/src/glad.c
+    ${CMAKE_SOURCE_DIR}/src/FrameCache.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/imgui_menu.cpp
     ${imgui_SOURCE_DIR}/imgui.cpp
     ${imgui_SOURCE_DIR}/imgui_draw.cpp
