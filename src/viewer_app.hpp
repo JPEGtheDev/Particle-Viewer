@@ -204,6 +204,10 @@ class ViewerApp
     // COM auto-compute toggle (persisted in viewer.cfg per simulation folder)
     bool auto_com_compute_;
 
+    // Cached result of checkCOM(). Updated by rebuildCacheInfrastructure(),
+    // cleared by teardownCacheInfrastructure(). Avoids per-frame disk stat.
+    bool com_file_present_;
+
     // ============================================
     // Frame Playback State
     // ============================================
@@ -269,6 +273,8 @@ class ViewerApp
     static std::string extractFolder(const std::string& posName);
     void rebuildCacheInfrastructure();
     void teardownCacheInfrastructure();
+    void createCOMInfrastructure();
+    void teardownCOMInfrastructure();
 
     static constexpr std::size_t FRAME_CACHE_CAPACITY_BYTES = 256ULL * 1024 * 1024;
     static constexpr long PREFETCH_LOOKAHEAD_FRAMES = 64;

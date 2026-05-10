@@ -52,7 +52,8 @@ static const std::array<QuadVertex, 6> QUAD_VERTICES = {{{-1.0f, 1.0f, 0.0f, 1.0
 ViewerApp::ViewerApp(IOpenGLContext* context)
     : context_(context), imgui_initialized_(false), delta_time_(0.0f), last_frame_(0.0f), cam_(nullptr), part_(nullptr),
       set_(nullptr), view_(), com_(), cur_frame_(0), pixels_(nullptr), com_executor_(nullptr), frame_executor_(nullptr),
-      com_cache_(nullptr), frame_cache_(nullptr), com_file_provider_(nullptr), auto_com_compute_(false)
+      com_cache_(nullptr), frame_cache_(nullptr), com_file_provider_(nullptr), auto_com_compute_(false),
+      com_file_present_(false)
 {
     for (int i = 0; i < 1024; i++) {
         keys_[i] = false;
@@ -302,6 +303,11 @@ void ViewerApp::run()
                 if (!folder.empty()) {
                     saveViewerConfig(folder, auto_com_compute_);
                 }
+                if (auto_com_compute_) {
+                    createCOMInfrastructure();
+                } else {
+                    teardownCOMInfrastructure();
+                }
             }
             if (actions.quit) {
                 context_->setShouldClose(true);
@@ -329,7 +335,7 @@ void ViewerApp::run()
         }
         // COM prefetch — only when COM lock is active, auto-compute is enabled,
         // and no COMFile is present (COMFile takes precedence over auto-compute).
-        if (cam_->isComLocked() && auto_com_compute_ && com_cache_ && !set_->checkCOM()) {
+        if (cam_->isComLocked() && auto_com_compute_ && com_cache_ && !com_file_present_) {
             com_cache_->prefetchAsync(cur_frame_, PREFETCH_LOOKAHEAD_FRAMES, set_->frames);
         }
         if (menu_state_.debug_mode) {
@@ -970,28 +976,44 @@ std::string ViewerApp::extractFolder(const std::string& posName)
     return (slash != std::string::npos) ? posName.substr(0, slash) : "";
 }
 
-void ViewerApp::rebuildCacheInfrastructure()
+void ViewerApp::createCOMInfrastructure()
 {
     MassParams mp = MassParams::fromSettingsIO(*set_);
     com_executor_ = new ThreadedExecutor();
-    frame_executor_ = new ThreadedExecutor();
     com_cache_ = new COMCache(*set_, mp, *com_executor_);
+}
+
+void ViewerApp::teardownCOMInfrastructure()
+{
+    // Drain the executor first: its worker thread holds lambdas that reference
+    // COMCache internals. Joining (via delete) before deleting the cache is safe.
+    delete com_executor_;
+    com_executor_ = nullptr;
+    delete com_cache_;
+    com_cache_ = nullptr;
+}
+
+void ViewerApp::rebuildCacheInfrastructure()
+{
+    frame_executor_ = new ThreadedExecutor();
     frame_cache_ = new FrameCache(*set_, FRAME_CACHE_CAPACITY_BYTES, *frame_executor_);
     com_file_provider_ = new COMFileProvider(*set_);
+    com_file_present_ = set_->checkCOM();
+    if (auto_com_compute_) {
+        createCOMInfrastructure();
+    }
 }
 
 void ViewerApp::teardownCacheInfrastructure()
 {
-    // Drain executors FIRST: their worker threads may hold lambdas that
-    // reference cache internals. Joining before deleting the caches is safe.
-    delete com_executor_;
-    com_executor_ = nullptr;
+    // Drain COM executor before deleting the COM cache.
+    teardownCOMInfrastructure();
+    // Drain frame executor before deleting the frame cache.
     delete frame_executor_;
     frame_executor_ = nullptr;
-    delete com_cache_;
-    com_cache_ = nullptr;
     delete frame_cache_;
     frame_cache_ = nullptr;
     delete com_file_provider_;
     com_file_provider_ = nullptr;
+    com_file_present_ = false;
 }
