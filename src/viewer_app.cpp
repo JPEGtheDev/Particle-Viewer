@@ -8,6 +8,7 @@
 #include "viewer_app.hpp"
 
 #include <array>
+#include <cassert>
 #include <cstdlib>
 #include <iostream>
 #include <string>
@@ -269,8 +270,7 @@ void ViewerApp::run()
         menu_state_.auto_com_compute = auto_com_compute_;
         const std::size_t cached_frames = frame_cache_ ? frame_cache_->cachedCount() : 0;
         menu_state_.cache_status.frames_cached = static_cast<int>(cached_frames);
-        menu_state_.cache_status.bytes_used =
-            frame_cache_ ? cached_frames * frame_cache_->frameSizeBytes() : 0;
+        menu_state_.cache_status.bytes_used = frame_cache_ ? cached_frames * frame_cache_->frameSizeBytes() : 0;
 
         if (imgui_initialized_) {
             if (menu_state_.debug_mode) {
@@ -978,9 +978,17 @@ std::string ViewerApp::extractFolder(const std::string& posName)
 
 void ViewerApp::createCOMInfrastructure()
 {
+    assert(com_executor_ == nullptr && com_cache_ == nullptr &&
+           "createCOMInfrastructure called with live COM objects; call teardownCOMInfrastructure first");
     MassParams mp = MassParams::fromSettingsIO(*set_);
     com_executor_ = new ThreadedExecutor();
-    com_cache_ = new COMCache(*set_, mp, *com_executor_);
+    try {
+        com_cache_ = new COMCache(*set_, mp, *com_executor_);
+    } catch (...) {
+        delete com_executor_;
+        com_executor_ = nullptr;
+        throw;
+    }
 }
 
 void ViewerApp::teardownCOMInfrastructure()
