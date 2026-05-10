@@ -18,7 +18,7 @@ class ViewerConfigTest : public ::testing::Test
   protected:
     void SetUp() override
     {
-        test_folder = "/tmp/test_particle_viewer_config";
+        test_folder = (std::filesystem::path(::testing::TempDir()) / "test_particle_viewer_config").string();
         std::filesystem::create_directories(test_folder);
         std::filesystem::remove(test_folder + "/viewer.cfg");
     }
