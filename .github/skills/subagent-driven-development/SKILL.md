@@ -25,6 +25,9 @@ Violating the letter of these rules is violating the spirit of these rules.
 Pick up todo
     |
     v
+Sizing check: touches 3+ files or estimated 30+ tool calls? → Split into narrower sub-todos first.
+    |
+    v
 Dispatch implementer subagent (implementer.md)
     |
     v
@@ -86,7 +89,7 @@ Pick up next todo.
 
 Before dispatching any subagent:
 
-1. The todo has a single, clear objective — no compound tasks bundled together.
+1. The todo has a single, clear objective — no compound tasks bundled together. If it touches 3+ files or is estimated to need 30+ tool calls, it is compound — split it before dispatching.
 2. The agent prompt includes all necessary context: file paths, constraints, and return format.
 3. A worktree exists for this agent. **All agents — read-only and write-side alike — run in a worktree.** Run these checks before dispatch:
 
@@ -185,6 +188,7 @@ These thoughts mean stop immediately:
 | "Dispatching a file-modifying agent without creating a worktree first" | STOP. Create the worktree and load `using-git-worktrees` before dispatch. |
 | "About to create a worktree without `using-git-worktrees` loaded" | STOP. Load `using-git-worktrees` first — every time, without exception. The session-bootstrap On Start table maps "Parallel agent work / A/B testing" to this skill. Creating worktrees without it is a retroactive-load violation. |
 | "A template exists but I'll build the prompt manually" | STOP. Use the pre-built template from `.github/agents/`. Do not reinvent it. |
+| "This todo touches multiple files — the implementer will manage it" | STOP. If it touches 3+ files or needs 30+ tool calls, split it into narrower sub-todos before creating any worktree or dispatching. |
 
 ---
 
@@ -238,16 +242,11 @@ Stage 2: Code Quality Review        ← ONLY after Stage 1 passes (code-quality-
 
 ### Stage 1: Spec Compliance Review
 
-Use `spec-compliance-reviewer.md` with full requirements and the implementation diff;
-if GAPS
-    are returned, implementer fixes and Stage 1 re -
-                      runs before proceeding.
+Before dispatching: run `git diff $(git merge-base HEAD main) -- <files>` and pass the output as `{{DIFF}}` in the reviewer prompt. Use `spec-compliance-reviewer.md` with full requirements and the pre-computed diff. If GAPS are returned, implementer fixes and Stage 1 re-runs before proceeding.
 
-                      ## #Stage 2 : Code Quality Review
+### Stage 2: Code Quality Review
 
-                                        Use `code -
-                      quality - reviewer.md` — one agent per file changed;
-if REQUEST CHANGES, implementer fixes and Stage 2 re-runs before proceeding.
+Before dispatching: pass the same `{{DIFF}}` populated in Stage 1. Use `code-quality-reviewer.md` — one agent per file changed. If REQUEST CHANGES, implementer fixes and Stage 2 re-runs before proceeding.
 
 See `references/REVIEW_PROTOCOL.md` for full protocol.
 
@@ -288,6 +287,7 @@ quality review doesn't catch them | | One agent reviewing multiple large files |
     Subagents can be wrong — findings are hypotheses | | Dispatching without a clear return format |
     Agent returns noise | | Sharing full session history as context | Contaminates search;
 subagent inherits your assumptions | | Reporting DONE before 2 - stage review | Code exists; correctness unverified |
+| Dispatching a todo that touches 3+ files as a single agent task | One implementer reading 3+ files compounds tool call depth — split before dispatch |
 
 ---
 
@@ -308,6 +308,7 @@ subagent inherits your assumptions | | Reporting DONE before 2 - stage review | 
 | "I dispatched an audit subagent — that's a complete audit" | NO. Name every dimension the agent must check in the prompt. An unnamed dimension will not be checked. The audit prompt is the specification — an incomplete specification produces an incomplete audit. |
 | "The concerns are nits — not a correctness or scope risk, so I'll skip Ceremony 4" | "Correctness or scope risk" is objective: does it affect behavior, API surface, or stated requirements? If yes, dispatch Ceremony 4. "Feels minor" is not a valid exemption. |
 | "No `## Feature Specification` in plan.md — that means Ceremony 5 doesn't apply" | Absence of the section means Discovery never ran. That is a gap to surface, not a skip condition. Invoke Ceremony 5 before merge regardless. |
+| "The todo is large but the implementer can handle it" | Context compounds with file count — a todo touching 3+ files or needing 30+ tool calls consumes as much context as 4 normal implementers combined. Split it unconditionally. |
 
 ---
 
@@ -319,6 +320,9 @@ Task to delegate
     +-- Read-only research? → dispatching-parallel-agents skill
     |
     +-- Needs file changes?
+         |
+         v
+    Sizing: 3+ files or 30+ tool calls? → Split into narrower sub-todos first
          |
          v
     Create worktree (ALWAYS — never dispatch to main working tree)
