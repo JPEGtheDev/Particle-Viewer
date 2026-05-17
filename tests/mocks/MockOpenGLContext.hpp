@@ -22,7 +22,7 @@ class MockOpenGLContext : public IOpenGLContext
   public:
     MockOpenGLContext(int width, int height)
         : width_(width), height_(height), should_close_(false), swap_count_(0), poll_count_(0), time_(0.0),
-          swap_interval_(0)
+          swap_interval_(0), content_scale_(1.0f)
     {
     }
 
@@ -75,6 +75,11 @@ class MockOpenGLContext : public IOpenGLContext
         return nullptr;
     }
 
+    float getContentScale() const override
+    {
+        return content_scale_;
+    }
+
     // ============================================
     // Test helpers
     // ============================================
@@ -112,6 +117,14 @@ class MockOpenGLContext : public IOpenGLContext
     }
 
     /*
+     * Set the mock content scale returned by getContentScale().
+     */
+    void setContentScale(float scale)
+    {
+        content_scale_ = scale;
+    }
+
+    /*
      * Reset all counters and state.
      */
     void reset()
@@ -121,6 +134,7 @@ class MockOpenGLContext : public IOpenGLContext
         poll_count_ = 0;
         time_ = 0.0;
         swap_interval_ = 0;
+        content_scale_ = 1.0f;
     }
 
   private:
@@ -131,6 +145,7 @@ class MockOpenGLContext : public IOpenGLContext
     int poll_count_;
     double time_;
     int swap_interval_;
+    float content_scale_;
 };
 
 #endif // MOCK_OPENGL_CONTEXT_HPP
