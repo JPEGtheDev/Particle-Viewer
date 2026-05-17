@@ -24,8 +24,13 @@
 /*
  * Load window configuration from file.
  * Returns true if successful, false if file doesn't exist or is invalid.
+ *
+ * ui_scale (optional): if non-null and the key is present and parseable,
+ * the pointed-to float is updated with the stored value. If the key is
+ * absent or unparseable, the caller-supplied default is preserved unchanged.
  */
-inline bool loadWindowConfig(const std::string& filepath, int& width, int& height, bool& fullscreen)
+inline bool loadWindowConfig(const std::string& filepath, int& width, int& height, bool& fullscreen,
+                             float* ui_scale = nullptr)
 {
     std::ifstream file(filepath);
     if (!file.is_open()) {
@@ -67,6 +72,13 @@ inline bool loadWindowConfig(const std::string& filepath, int& width, int& heigh
         } else if (key == "fullscreen") {
             fullscreen = (value == "1" || value == "true" || value == "True");
             found_fullscreen = true;
+        } else if (key == "ui_scale" && ui_scale != nullptr) {
+            try {
+                float parsed = std::stof(value);
+                *ui_scale = parsed;
+            } catch (...) {
+                // Unparseable: leave caller's default unchanged
+            }
         }
     }
 
@@ -77,8 +89,13 @@ inline bool loadWindowConfig(const std::string& filepath, int& width, int& heigh
 /*
  * Save window configuration to file.
  * Returns true if successful, false on error.
+ *
+ * ui_scale: pass the current UI scale to persist it. The default value of
+ * 0.0f is treated as a sentinel meaning "not set" — when 0.0f, the
+ * ui_scale key is omitted from the file entirely, preserving any value
+ * that a future loadWindowConfig call might have written there previously.
  */
-inline bool saveWindowConfig(const std::string& filepath, int width, int height, bool fullscreen)
+inline bool saveWindowConfig(const std::string& filepath, int width, int height, bool fullscreen, float ui_scale = 0.0f)
 {
     std::ofstream file(filepath);
     if (!file.is_open()) {
@@ -91,6 +108,9 @@ inline bool saveWindowConfig(const std::string& filepath, int width, int height,
     file << "width=" << width << "\n";
     file << "height=" << height << "\n";
     file << "fullscreen=" << (fullscreen ? "1" : "0") << "\n";
+    if (ui_scale != 0.0f) {
+        file << "ui_scale=" << ui_scale << "\n";
+    }
 
     file.close();
     return true;

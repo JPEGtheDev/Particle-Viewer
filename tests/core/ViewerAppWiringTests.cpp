@@ -61,6 +61,38 @@ TEST(ViewerAppWiring_MenuActions, ToggleAutoComDefaultsFalse)
 }
 
 // ============================================================================
+// MenuState — Settings panel fields default-initialise correctly
+// ============================================================================
+
+TEST(ViewerAppWiring_MenuState, UiScaleDefaultsZero)
+{
+    MenuState state;
+    EXPECT_FLOAT_EQ(state.ui_scale, 0.0f);
+}
+
+TEST(ViewerAppWiring_MenuState, SettingsOpenDefaultsFalse)
+{
+    MenuState state;
+    EXPECT_FALSE(state.settings_open);
+}
+
+// ============================================================================
+// MenuActions — Settings panel fields default-initialise correctly
+// ============================================================================
+
+TEST(ViewerAppWiring_MenuActions, ScaleChangedDefaultsFalse)
+{
+    MenuActions actions;
+    EXPECT_FALSE(actions.scale_changed);
+}
+
+TEST(ViewerAppWiring_MenuActions, NewScaleDefaultsOne)
+{
+    MenuActions actions;
+    EXPECT_FLOAT_EQ(actions.new_scale, 1.0f);
+}
+
+// ============================================================================
 // Camera — isComLocked() returns false on construction
 // ============================================================================
 

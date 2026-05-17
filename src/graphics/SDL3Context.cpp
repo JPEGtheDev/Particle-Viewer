@@ -337,3 +337,12 @@ void* SDL3Context::getNativeWindowHandle() const
 {
     return static_cast<void*>(window_);
 }
+
+float SDL3Context::getContentScale() const
+{
+    if (window_ == nullptr) {
+        return 1.0f;
+    }
+    const float scale = SDL_GetWindowDisplayScale(window_);
+    return (scale > 0.0f) ? scale : 1.0f;
+}

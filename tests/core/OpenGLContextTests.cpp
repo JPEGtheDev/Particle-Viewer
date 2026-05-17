@@ -198,3 +198,37 @@ TEST(IOpenGLContextTest, ShouldCloseLoop_SimulatesMainLoop_ExitsAfterClose)
     EXPECT_EQ(mock_context.getSwapCount(), max_frames);
     EXPECT_EQ(mock_context.getPollCount(), max_frames);
 }
+
+TEST(MockOpenGLContextTest, GetContentScale_Default_ReturnsOne)
+{
+    // Act
+    MockOpenGLContext context(800, 600);
+
+    // Assert
+    EXPECT_FLOAT_EQ(context.getContentScale(), 1.0f);
+}
+
+TEST(MockOpenGLContextTest, SetContentScale_Value_ReturnsSetValue)
+{
+    // Arrange
+    MockOpenGLContext context(800, 600);
+
+    // Act
+    context.setContentScale(2.0f);
+
+    // Assert
+    EXPECT_FLOAT_EQ(context.getContentScale(), 2.0f);
+}
+
+TEST(MockOpenGLContextTest, Reset_AfterSetContentScale_ResetsToOne)
+{
+    // Arrange
+    MockOpenGLContext context(800, 600);
+    context.setContentScale(2.0f);
+
+    // Act
+    context.reset();
+
+    // Assert
+    EXPECT_FLOAT_EQ(context.getContentScale(), 1.0f);
+}

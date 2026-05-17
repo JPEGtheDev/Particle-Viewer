@@ -51,6 +51,8 @@ struct WindowConfig
     GLint windowed_height = 0;
     GLint windowed_x = 0;
     GLint windowed_y = 0;
+    // UI scale factor (0.0f = sentinel meaning "no saved preference")
+    float ui_scale = 0.0f;
 };
 
 /*
@@ -101,6 +103,7 @@ struct ShaderPaths
     std::string sphere_fragment = "/Viewer-Assets/shaders/sphereFragment.frag";
     std::string screen_vertex = "/Viewer-Assets/shaders/screenshader.vs";
     std::string screen_fragment = "/Viewer-Assets/shaders/screenshader.frag";
+    std::string font;
 };
 
 /*
@@ -236,6 +239,12 @@ class ViewerApp
     void toggleFullscreen();
     void saveWindowSettings();
     void loadWindowSettings();
+
+    // ============================================
+    // UI Scale
+    // ============================================
+    bool scale_pending_ = false; // true when a font-atlas rebuild is scheduled
+    void applyUiScale();         // full atlas rebuild: Destroy→Clear→Add→Build→Create
 
     // ============================================
     // Rendering Pipeline

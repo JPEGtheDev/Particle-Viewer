@@ -50,6 +50,7 @@ class SDL3Context : public IOpenGLContext
     double getTime() const override;
     void setSwapInterval(int interval) override;
     void* getNativeWindowHandle() const override;
+    float getContentScale() const override;
 
   private:
     SDL_Window* window_;
