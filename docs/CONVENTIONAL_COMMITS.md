@@ -83,7 +83,7 @@ git commit -m "fix(camera): correct rotation calculations"
 
 ## What Happens Next
 
-When you push to master:
+When you push to main:
 1. GitHub Actions analyzes your commits
 2. Determines version bump (major/minor/patch)
 3. Creates git tag (e.g., v0.2.0)

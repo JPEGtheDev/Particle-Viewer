@@ -38,7 +38,7 @@ flatpak run org.particleviewer.ParticleViewer
 
 ### When to Test
 
-Runs on push to master when version changes are detected, or via manual workflow dispatch.
+Runs on push to main when version changes are detected, or via manual workflow dispatch.
 
 ### Expected Behavior
 

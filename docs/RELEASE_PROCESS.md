@@ -13,7 +13,7 @@ related:
 
 # Automated Release Process
 
-This project uses a **zero-manual release pipeline**. All version increments, changelog updates, tagging, and releases are handled automatically by GitHub Actions when commits are pushed to `master`.
+This project uses a **zero-manual release pipeline**. All version increments, changelog updates, tagging, and releases are handled automatically by GitHub Actions when commits are pushed to `main`.
 
 ## Contents
 
@@ -25,7 +25,7 @@ This project uses a **zero-manual release pipeline**. All version increments, ch
 
 ## How It Works
 
-1. Push commits to `master` using **conventional commit format**
+1. Push commits to `main` using **conventional commit format**
 2. GitHub Actions detects source file changes
 3. Analyzes commits to determine version bump (major/minor/patch)
 4. Creates git tag and publishes GitHub Release with generated changelog

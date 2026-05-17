@@ -14,7 +14,7 @@ on:
           - patch
   push:
     branches:
-      - master
+      - main
 
 # Prevent concurrent releases
 concurrency:
@@ -318,7 +318,7 @@ jobs:
           gh release create "$TAG" \
             --title "Release $TAG" \
             --notes "$CHANGELOG_ENTRY" \
-            --target master
+            --target main
           
           echo "Created GitHub release: $TAG"
       
