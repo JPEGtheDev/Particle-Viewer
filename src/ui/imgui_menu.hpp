@@ -34,6 +34,8 @@ struct MenuActions
     int target_width = 0;
     int target_height = 0;
     bool toggle_auto_com = false; // toggled by the COM/Cache submenu checkbox
+    bool scale_changed = false;   // user selected a new UI scale
+    float new_scale = 1.0f;       // the newly selected scale value (only valid when scale_changed == true)
 };
 
 /*
@@ -45,6 +47,8 @@ struct MenuState
     bool debug_mode = false;
     bool auto_com_compute = false; // reflects the current auto-COM toggle state
     CacheStatus cache_status;      // populated by ViewerApp each frame
+    float ui_scale = 0.0f;         // current active UI scale (0.0 = not yet set)
+    bool settings_open = false;    // Settings window visibility
 };
 
 /*

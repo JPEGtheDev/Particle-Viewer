@@ -13,6 +13,11 @@ You are doing Stage 1 review for a completed implementation task. Your ONLY job 
 ## Files under review
 {{FILES}}
 
+## Diff (pre-computed by dispatcher)
+```diff
+{{DIFF}}
+```
+
 ## Worktree Self-Check — Run BEFORE starting
 
 ```bash
@@ -30,13 +35,11 @@ The output MUST match `{{WORKTREE_PATH}}`.
 
 ## Review Protocol
 
-**Step 1 — Full file read:** Read every file listed above in full. Do not limit your review to changed lines.
+**Step 1 — Diff-first scope:** Use the pre-computed diff above as your primary scope. Read full file sections only where changed-line context is insufficient. Do not read unchanged sections in full.
 
 **Step 2 — Evaluate requirements coverage** against the complete file content.
 
-**Step 3 — Attribution:** Run `git diff $(git merge-base HEAD main) -- {{FILES}}` to confirm what was actually introduced by this change. Use this to distinguish between requirements that are NEWLY addressed vs requirements served by pre-existing code.
-
-Do not ask the caller to provide a diff. Derive it yourself.
+**Step 3 — Attribution:** Use the pre-computed diff above to confirm what was actually introduced by this change. Distinguish requirements NEWLY addressed from those served by pre-existing code.
 
 ## Your job — answer ONLY these four questions
 

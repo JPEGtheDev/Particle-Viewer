@@ -10,6 +10,11 @@ You are reviewing code in Particle-Viewer for quality, correctness, and standard
 ## Files under review
 {{FILES}}
 
+## Diff (pre-computed by dispatcher)
+```diff
+{{DIFF}}
+```
+
 ## Worktree Self-Check — Run BEFORE starting
 
 ```bash
@@ -27,15 +32,13 @@ The output MUST match `{{WORKTREE_PATH}}`.
 
 ## Review Protocol
 
-**Step 1 — Full file read:** Read every file listed above in full. Do not limit your review to changed lines.
+**Step 1 — Diff-first scope:** Use the pre-computed diff above as your primary scope. Read full file sections only where changed-line context is insufficient. Do not read unchanged sections in full.
 
 **Step 2 — Run the full checklist** against the complete content of each file.
 
-**Step 3 — Attribution:** Run `git diff $(git merge-base HEAD main) -- {{FILES}}` to get the diff. For each issue found, determine:
+**Step 3 — Attribution:** Use the pre-computed diff above. For each issue found, determine:
 - If the offending line appears in the diff → **INTRODUCED** (must fix before merge)
 - If it does not appear in the diff → **PRE-EXISTING** (note; do not block merge for this alone)
-
-Do not ask the caller to provide a diff. Derive it yourself.
 
 ## Review checklist (required — check every item)
 

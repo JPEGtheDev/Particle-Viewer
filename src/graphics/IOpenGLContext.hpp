@@ -67,6 +67,13 @@ class IOpenGLContext
      * For SDL3 contexts, this returns the SDL_Window*.
      */
     virtual void* getNativeWindowHandle() const = 0;
+
+    /*
+     * Get the display content scale factor for the window.
+     * Returns the per-window DPI scale (e.g. 2.0 on a 4K display at 200% scaling).
+     * Returns 1.0f if the display subsystem reports no scaling (including headless).
+     */
+    virtual float getContentScale() const = 0;
 };
 
 #endif // PARTICLE_VIEWER_IOPENGL_CONTEXT_H
