@@ -6,6 +6,7 @@
 
 #include "imgui_menu.hpp"
 
+#include <cmath>
 #include <string>
 
 #include <SDL3/SDL.h>
@@ -161,7 +162,54 @@ MenuActions renderMainMenu(MenuState& state)
             ImGui::Text("Memory: %.1f MB", static_cast<float>(state.cache_status.bytes_used) / (1024.0f * 1024.0f));
             ImGui::EndMenu();
         }
+        if (ImGui::BeginMenu("Settings")) {
+            if (ImGui::MenuItem("UI Scale...")) {
+                state.settings_open = true;
+            }
+            ImGui::EndMenu();
+        }
         ImGui::EndMainMenuBar();
+    }
+
+    if (state.settings_open) {
+        ImGui::SetNextWindowSize(ImVec2(300, 120), ImGuiCond_FirstUseEver);
+        if (ImGui::Begin("Settings", &state.settings_open)) {
+            // UI Scale combo
+            static const float kScaleSteps[] = {1.0f, 1.25f, 1.5f, 1.75f, 2.0f, 2.5f, 3.0f};
+            static const char* kScaleLabels[] = {"1x", "1.25x", "1.5x", "1.75x", "2x", "2.5x", "3x"};
+            static_assert(std::size(kScaleSteps) == std::size(kScaleLabels),
+                          "scale step/label arrays must be the same length");
+            constexpr int kNumSteps = static_cast<int>(std::size(kScaleSteps));
+
+            // Find the closest step to the current ui_scale
+            int current_idx = 0;
+            float min_dist = std::abs(state.ui_scale - kScaleSteps[0]);
+            for (int i = 1; i < kNumSteps; ++i) {
+                float dist = std::abs(state.ui_scale - kScaleSteps[i]);
+                if (dist < min_dist) {
+                    min_dist = dist;
+                    current_idx = i;
+                }
+            }
+
+            ImGui::Text("UI Scale:");
+            ImGui::SameLine();
+            ImGui::SetNextItemWidth(100.0f);
+            if (ImGui::BeginCombo("##ui_scale", kScaleLabels[current_idx])) {
+                for (int i = 0; i < kNumSteps; ++i) {
+                    bool is_selected = (i == current_idx);
+                    if (ImGui::Selectable(kScaleLabels[i], is_selected)) {
+                        actions.scale_changed = true;
+                        actions.new_scale = kScaleSteps[i];
+                    }
+                    if (is_selected) {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+                ImGui::EndCombo();
+            }
+        }
+        ImGui::End();
     }
 
     return actions;
