@@ -77,8 +77,9 @@ TEST(SelectUiScale, PersistedAboveMax_Clamped)
     EXPECT_FLOAT_EQ(selectUiScale(1.0f, 4.0f), 3.0f);
 }
 
-TEST(SelectUiScale, PersistedBelowOne_FallsBackToDetected)
+TEST(SelectUiScale, PersistedBelowOne_ClampsToMinimum)
 {
-    // 0.5 < 1.0, so OS-detected 2.5 is used
-    EXPECT_FLOAT_EQ(selectUiScale(2.5f, 0.5f), 2.5f);
+    // AC7: out-of-range saved values clamp to the nearest valid step.
+    // 0.5 is non-zero (a real persisted value, just out of range) → clamps to 1.0
+    EXPECT_FLOAT_EQ(selectUiScale(2.5f, 0.5f), 1.0f);
 }

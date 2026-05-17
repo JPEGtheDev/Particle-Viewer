@@ -112,12 +112,17 @@ bool ViewerApp::initialize()
     // Pre-load ui_scale before initImGui so the font can be sized correctly.
     // Only the scale value is captured here; the full window resize/fullscreen
     // restoration happens later in loadWindowSettings() after FBO setup.
+    // window_.ui_scale stays at 0.0f (the sentinel) until the user explicitly
+    // picks a value — this prevents auto-detected scale from being written back
+    // to disk as if it were a user preference (see effective_ui_scale_).
     {
         std::string pre_path = getConfigPath();
         int tmp_w = 0, tmp_h = 0;
         bool tmp_fs = false;
-        loadWindowConfig(pre_path, tmp_w, tmp_h, tmp_fs, &window_.ui_scale);
-        window_.ui_scale = selectUiScale(context_->getContentScale(), window_.ui_scale);
+        float raw_scale = 0.0f;
+        loadWindowConfig(pre_path, tmp_w, tmp_h, tmp_fs, &raw_scale);
+        window_.ui_scale = raw_scale; // keep the raw persisted preference (0.0f if none)
+        effective_ui_scale_ = selectUiScale(context_->getContentScale(), raw_scale);
     }
 
     initImGui();
@@ -210,7 +215,7 @@ void ViewerApp::initImGui()
     // Load Hack font sized for the current UI scale.
     // If the font file is missing, fall back to the built-in default.
     io.Fonts->Clear();
-    ImFont* font = io.Fonts->AddFontFromFileTTF(paths_.font.c_str(), 16.0f * window_.ui_scale);
+    ImFont* font = io.Fonts->AddFontFromFileTTF(paths_.font.c_str(), 16.0f * effective_ui_scale_);
     if (font == nullptr) {
         SDL_Log("Failed to load font from: %s — falling back to default", paths_.font.c_str());
         io.Fonts->AddFontDefault();
@@ -239,7 +244,7 @@ void ViewerApp::initImGui()
  * Sequence:
  *   1. DestroyFontsTexture  — frees the existing GL texture (prevents leak)
  *   2. Fonts->Clear()       — drops font data
- *   3. AddFontFromFileTTF   — loads Hack at 16 * ui_scale
+ *   3. AddFontFromFileTTF   — loads Hack at 16 * effective_ui_scale_
  *   4. Fonts->Build()       — rasterises the new atlas
  *   5. CreateFontsTexture   — uploads to GPU
  *   6. Reset ImGuiStyle and ScaleAllSizes — ScaleAllSizes is cumulative;
@@ -252,7 +257,7 @@ void ViewerApp::applyUiScale()
     ImGui_ImplOpenGL3_DestroyFontsTexture();
     io.Fonts->Clear();
 
-    ImFont* font = io.Fonts->AddFontFromFileTTF(paths_.font.c_str(), 16.0f * window_.ui_scale);
+    ImFont* font = io.Fonts->AddFontFromFileTTF(paths_.font.c_str(), 16.0f * effective_ui_scale_);
     if (font == nullptr) {
         SDL_Log("Failed to load font from: %s — falling back to default", paths_.font.c_str());
         io.Fonts->AddFontDefault();
@@ -264,7 +269,7 @@ void ViewerApp::applyUiScale()
     ImGuiStyle& style = ImGui::GetStyle();
     style = ImGuiStyle{};
     ImGui::StyleColorsDark(&style);
-    style.ScaleAllSizes(window_.ui_scale);
+    style.ScaleAllSizes(effective_ui_scale_);
 
     scale_pending_ = false;
 }
@@ -332,7 +337,7 @@ void ViewerApp::run()
         // Update menu state with current cache status — must happen before
         // renderMainMenu so the UI reflects values from the current frame.
         menu_state_.auto_com_compute = auto_com_compute_;
-        menu_state_.ui_scale = window_.ui_scale;
+        menu_state_.ui_scale = effective_ui_scale_;
         const std::size_t cached_frames = frame_cache_ ? frame_cache_->cachedCount() : 0;
         menu_state_.cache_status.frames_cached = static_cast<int>(cached_frames);
         menu_state_.cache_status.bytes_used = frame_cache_ ? cached_frames * frame_cache_->frameSizeBytes() : 0;
@@ -379,6 +384,7 @@ void ViewerApp::run()
             }
             if (actions.scale_changed) {
                 window_.ui_scale = actions.new_scale;
+                effective_ui_scale_ = clampUiScale(actions.new_scale);
                 scale_pending_ = true;
                 saveWindowSettings();
             }
@@ -1007,11 +1013,13 @@ void ViewerApp::loadWindowSettings()
     int height = 0;
     bool fullscreen = false;
 
-    if (loadWindowConfig(config_path, width, height, fullscreen, &window_.ui_scale)) {
-        // Merge the OS-detected content scale with the persisted preference.
-        // selectUiScale returns the persisted value if it is a real preference
-        // (>= 1.0), or falls back to the OS-detected scale (min 1.5).
-        window_.ui_scale = selectUiScale(context_->getContentScale(), window_.ui_scale);
+    float raw_scale = 0.0f;
+    if (loadWindowConfig(config_path, width, height, fullscreen, &raw_scale)) {
+        // Keep the raw persisted preference in window_.ui_scale so it is
+        // saved back correctly (0.0f if the user has never picked a value).
+        // effective_ui_scale_ is the resolved scale used for rendering.
+        window_.ui_scale = raw_scale;
+        effective_ui_scale_ = selectUiScale(context_->getContentScale(), raw_scale);
 
         std::cout << "Loaded window config: " << width << "x" << height << " fullscreen=" << fullscreen << std::endl;
 

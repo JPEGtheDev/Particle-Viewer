@@ -243,8 +243,10 @@ class ViewerApp
     // ============================================
     // UI Scale
     // ============================================
-    bool scale_pending_ = false; // true when a font-atlas rebuild is scheduled
-    void applyUiScale();         // full atlas rebuild: Destroy→Clear→Add→Build→Create
+    bool scale_pending_ = false;      // true when a font-atlas rebuild is scheduled
+    float effective_ui_scale_ = 1.0f; // resolved scale used for rendering; separate from
+                                      // window_.ui_scale (the raw persisted preference)
+    void applyUiScale();              // full atlas rebuild: Destroy→Clear→Add→Build→Create
 
     // ============================================
     // Rendering Pipeline
