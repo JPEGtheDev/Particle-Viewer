@@ -395,3 +395,16 @@ TEST_F(WindowConfigTest, LoadWindowConfig_UnparseableUiScale_LeavesDefaultUnchan
     // Assert
     EXPECT_FLOAT_EQ(ui_scale, 1.5f); // unchanged — bad parse leaves default
 }
+
+TEST_F(WindowConfigTest, SaveWindowConfig_DefaultUiScale_KeyAbsentInFile)
+{
+    // Arrange — save using the 4-arg call (ui_scale defaults to 0.0f sentinel)
+    saveWindowConfig(test_config_path, 1920, 1080, false);
+
+    // Act — read the raw file content
+    std::ifstream file(test_config_path);
+    std::string contents((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+    // Assert — sentinel 0.0f must NOT produce a ui_scale key in the file
+    EXPECT_EQ(contents.find("ui_scale="), std::string::npos);
+}
