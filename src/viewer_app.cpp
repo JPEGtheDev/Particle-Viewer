@@ -24,6 +24,7 @@
 #include "imgui_impl_sdl3.h"
 #include "osFile.hpp"
 #include "tinyFileDialogs/tinyfiledialogs.h"
+#include "uiScale.hpp"
 #include "windowConfig.hpp"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -107,6 +108,18 @@ bool ViewerApp::initialize()
 
     initPaths();
     initScreen();
+
+    // Pre-load ui_scale before initImGui so the font can be sized correctly.
+    // Only the scale value is captured here; the full window resize/fullscreen
+    // restoration happens later in loadWindowSettings() after FBO setup.
+    {
+        std::string pre_path = getConfigPath();
+        int tmp_w = 0, tmp_h = 0;
+        bool tmp_fs = false;
+        loadWindowConfig(pre_path, tmp_w, tmp_h, tmp_fs, &window_.ui_scale);
+        window_.ui_scale = selectUiScale(context_->getContentScale(), window_.ui_scale);
+    }
+
     initImGui();
     cam_->initGL();
     part_ = new Particle();
@@ -129,6 +142,7 @@ void ViewerApp::initPaths()
     paths_.sphere_fragment = paths_.exe + paths_.sphere_fragment;
     paths_.screen_vertex = paths_.exe + paths_.screen_vertex;
     paths_.screen_fragment = paths_.exe + paths_.screen_fragment;
+    paths_.font = paths_.exe + "/Viewer-Assets/fonts/Hack-Regular.ttf";
 }
 
 void ViewerApp::initScreen()
@@ -193,6 +207,18 @@ void ViewerApp::initImGui()
 
     ImGui::StyleColorsDark();
 
+    // Load Hack font sized for the current UI scale.
+    // If the font file is missing, fall back to the built-in default.
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        io.Fonts->Clear();
+        ImFont* font = io.Fonts->AddFontFromFileTTF(paths_.font.c_str(), 16.0f * window_.ui_scale);
+        if (font == nullptr) {
+            SDL_Log("Failed to load font from: %s — falling back to default", paths_.font.c_str());
+            io.Fonts->AddFontDefault();
+        }
+    }
+
     SDL_GLContext gl_ctx = SDL_GL_GetCurrentContext();
     bool sdl3_init_ok = ImGui_ImplSDL3_InitForOpenGL(native_window, gl_ctx);
     bool gl3_init_ok = ImGui_ImplOpenGL3_Init("#version 410 core");
@@ -207,6 +233,43 @@ void ViewerApp::initImGui()
         return;
     }
     imgui_initialized_ = true;
+}
+
+/*
+ * applyUiScale — rebuild the font atlas and rescale the ImGui style.
+ *
+ * Must be called at the start of a frame (before ImGui::NewFrame).
+ * Sequence:
+ *   1. DestroyFontsTexture  — frees the existing GL texture (prevents leak)
+ *   2. Fonts->Clear()       — drops font data
+ *   3. AddFontFromFileTTF   — loads Hack at 16 * ui_scale
+ *   4. Fonts->Build()       — rasterises the new atlas
+ *   5. CreateFontsTexture   — uploads to GPU
+ *   6. Reset ImGuiStyle and ScaleAllSizes — ScaleAllSizes is cumulative;
+ *      resetting to default first prevents multiplied-scale artefacts
+ */
+void ViewerApp::applyUiScale()
+{
+    ImGuiIO& io = ImGui::GetIO();
+
+    ImGui_ImplOpenGL3_DestroyFontsTexture();
+    io.Fonts->Clear();
+
+    ImFont* font = io.Fonts->AddFontFromFileTTF(paths_.font.c_str(), 16.0f * window_.ui_scale);
+    if (font == nullptr) {
+        SDL_Log("Failed to load font from: %s — falling back to default", paths_.font.c_str());
+        io.Fonts->AddFontDefault();
+    }
+
+    io.Fonts->Build();
+    ImGui_ImplOpenGL3_CreateFontsTexture();
+
+    ImGuiStyle& style = ImGui::GetStyle();
+    style = ImGuiStyle{};
+    ImGui::StyleColorsDark(&style);
+    style.ScaleAllSizes(window_.ui_scale);
+
+    scale_pending_ = false;
 }
 
 void ViewerApp::setResolution(const std::string& resolution)
@@ -252,6 +315,10 @@ void ViewerApp::run()
 
         // Start ImGui frame (only if ImGui was initialized)
         if (imgui_initialized_) {
+            // Apply any pending font-atlas rebuild before starting the new frame.
+            if (scale_pending_) {
+                applyUiScale();
+            }
             ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplSDL3_NewFrame();
             ImGui::NewFrame();
@@ -268,6 +335,7 @@ void ViewerApp::run()
         // Update menu state with current cache status — must happen before
         // renderMainMenu so the UI reflects values from the current frame.
         menu_state_.auto_com_compute = auto_com_compute_;
+        menu_state_.ui_scale = window_.ui_scale;
         const std::size_t cached_frames = frame_cache_ ? frame_cache_->cachedCount() : 0;
         menu_state_.cache_status.frames_cached = static_cast<int>(cached_frames);
         menu_state_.cache_status.bytes_used = frame_cache_ ? cached_frames * frame_cache_->frameSizeBytes() : 0;
@@ -311,6 +379,11 @@ void ViewerApp::run()
             }
             if (actions.quit) {
                 context_->setShouldClose(true);
+            }
+            if (actions.scale_changed) {
+                window_.ui_scale = actions.new_scale;
+                scale_pending_ = true;
+                saveWindowSettings();
             }
 
             ImGui::Render();
@@ -922,7 +995,8 @@ void ViewerApp::saveWindowSettings()
 
     // Save windowed size (not fullscreen size)
     bool fullscreen = (window_.fullscreen != 0);
-    bool success = saveWindowConfig(config_path, window_.windowed_width, window_.windowed_height, fullscreen);
+    bool success =
+        saveWindowConfig(config_path, window_.windowed_width, window_.windowed_height, fullscreen, window_.ui_scale);
 
     if (!success) {
         std::cerr << "Warning: Failed to save window configuration" << std::endl;
@@ -936,7 +1010,12 @@ void ViewerApp::loadWindowSettings()
     int height = 0;
     bool fullscreen = false;
 
-    if (loadWindowConfig(config_path, width, height, fullscreen)) {
+    if (loadWindowConfig(config_path, width, height, fullscreen, &window_.ui_scale)) {
+        // Merge the OS-detected content scale with the persisted preference.
+        // selectUiScale returns the persisted value if it is a real preference
+        // (>= 1.0), or falls back to the OS-detected scale (min 1.5).
+        window_.ui_scale = selectUiScale(context_->getContentScale(), window_.ui_scale);
+
         std::cout << "Loaded window config: " << width << "x" << height << " fullscreen=" << fullscreen << std::endl;
 
         // Apply loaded settings
