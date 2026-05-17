@@ -15,7 +15,7 @@ related:
 
 ### Automatic (Push to Master)
 
-Triggered automatically when commits are pushed to `master`.
+Triggered automatically when commits are pushed to `main`.
 
 **Source files that trigger releases:**
 - `src/` — C++ source, headers, shaders
@@ -49,7 +49,7 @@ Triggered automatically when commits are pushed to `master`.
 ```bash
 git commit -m "feat: add particle size control"
 git commit -m "fix: correct camera rotation bug"
-git push origin master
+git push origin main
 
 # Workflow:
 # 1. Detects src/main.cpp changed → proceeds

@@ -15,7 +15,7 @@ related:
 
 **MUST DO:**
 - Use conventional commit messages for all commits
-- Push to master to trigger automatic releases
+- Push to main to trigger automatic releases
 - Let the workflow determine version bumps automatically
 - Review releases in GitHub Releases after automation
 
@@ -36,7 +36,7 @@ The release workflow is defined in `.github/workflows/release.yml`:
 
 ### Release did not trigger automatically
 
-- Verify commits are pushed to `master`
+- Verify commits are pushed to `main`
 - Check if only non-source files changed (tests, docs, CI) — release is skipped by design
 - Review GitHub Actions logs for skip or error messages
 
@@ -59,7 +59,7 @@ The release workflow is defined in `.github/workflows/release.yml`:
 
 1. Write meaningful commit messages — they become release notes
 2. Use conventional commits consistently
-3. Test before merging to master — releases trigger automatically
+3. Test before merging to main — releases trigger automatically
 4. Use scopes for better organization: `feat(renderer): add feature`
 
 ## Release History
