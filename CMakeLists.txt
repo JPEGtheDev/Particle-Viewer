@@ -172,6 +172,14 @@ file(COPY src/shaders/ DESTINATION Viewer-Assets/shaders)
 install (TARGETS Viewer DESTINATION bin)
 install (DIRECTORY src/shaders/ DESTINATION bin/Viewer-Assets/shaders)
 
+if(WIN32)
+  file(COPY src/fonts/ DESTINATION Debug/Viewer-Assets/fonts)
+  file(COPY src/fonts/ DESTINATION Release/Viewer-Assets/fonts)
+endif()
+
+file(COPY src/fonts/ DESTINATION Viewer-Assets/fonts)
+install (DIRECTORY src/fonts/ DESTINATION bin/Viewer-Assets/fonts)
+
 # Install desktop and metainfo files for Flatpak
 if(EXISTS "${CMAKE_SOURCE_DIR}/flatpak/org.particleviewer.ParticleViewer.desktop")
     install(FILES flatpak/org.particleviewer.ParticleViewer.desktop 
