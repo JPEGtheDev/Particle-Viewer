@@ -325,3 +325,73 @@ TEST_F(WindowConfigTest, SaveAndLoad_4K_PreservesValues)
     EXPECT_EQ(load_height, save_height);
     EXPECT_EQ(load_fullscreen, save_fullscreen);
 }
+
+// ============================================
+// UI Scale Configuration Tests
+// ============================================
+
+TEST_F(WindowConfigTest, SaveAndLoad_UiScale_PreservesValue)
+{
+    // Arrange
+    float save_scale = 1.75f;
+    saveWindowConfig(test_config_path, 1920, 1080, false, save_scale);
+
+    // Act
+    int width = 0;
+    int height = 0;
+    bool fullscreen = false;
+    float load_scale = 0.0f;
+    loadWindowConfig(test_config_path, width, height, fullscreen, &load_scale);
+
+    // Assert
+    EXPECT_FLOAT_EQ(load_scale, save_scale);
+}
+
+TEST_F(WindowConfigTest, LoadWindowConfig_NoUiScaleKey_LeavesDefaultUnchanged)
+{
+    // Arrange — file has no ui_scale key
+    std::ofstream file(test_config_path);
+    file << "width=1920\nheight=1080\nfullscreen=0\n";
+    file.close();
+    float ui_scale = 1.5f; // caller pre-initialized default
+
+    // Act
+    int width = 0;
+    int height = 0;
+    bool fullscreen = false;
+    loadWindowConfig(test_config_path, width, height, fullscreen, &ui_scale);
+
+    // Assert
+    EXPECT_FLOAT_EQ(ui_scale, 1.5f); // unchanged
+}
+
+TEST_F(WindowConfigTest, LoadWindowConfig_NullUiScalePtr_DoesNotCrash)
+{
+    // Arrange
+    saveWindowConfig(test_config_path, 1920, 1080, false, 2.0f);
+
+    // Act & Assert — passing nullptr for ui_scale should not crash
+    int width = 0;
+    int height = 0;
+    bool fullscreen = false;
+    bool result = loadWindowConfig(test_config_path, width, height, fullscreen, nullptr);
+    EXPECT_TRUE(result);
+}
+
+TEST_F(WindowConfigTest, LoadWindowConfig_UnparseableUiScale_LeavesDefaultUnchanged)
+{
+    // Arrange — file has unparseable ui_scale
+    std::ofstream file(test_config_path);
+    file << "width=1920\nheight=1080\nfullscreen=0\nui_scale=notanumber\n";
+    file.close();
+    float ui_scale = 1.5f; // caller pre-initialized default
+
+    // Act
+    int width = 0;
+    int height = 0;
+    bool fullscreen = false;
+    loadWindowConfig(test_config_path, width, height, fullscreen, &ui_scale);
+
+    // Assert
+    EXPECT_FLOAT_EQ(ui_scale, 1.5f); // unchanged — bad parse leaves default
+}
