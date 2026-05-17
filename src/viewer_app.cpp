@@ -209,14 +209,11 @@ void ViewerApp::initImGui()
 
     // Load Hack font sized for the current UI scale.
     // If the font file is missing, fall back to the built-in default.
-    {
-        ImGuiIO& io = ImGui::GetIO();
-        io.Fonts->Clear();
-        ImFont* font = io.Fonts->AddFontFromFileTTF(paths_.font.c_str(), 16.0f * window_.ui_scale);
-        if (font == nullptr) {
-            SDL_Log("Failed to load font from: %s — falling back to default", paths_.font.c_str());
-            io.Fonts->AddFontDefault();
-        }
+    io.Fonts->Clear();
+    ImFont* font = io.Fonts->AddFontFromFileTTF(paths_.font.c_str(), 16.0f * window_.ui_scale);
+    if (font == nullptr) {
+        SDL_Log("Failed to load font from: %s — falling back to default", paths_.font.c_str());
+        io.Fonts->AddFontDefault();
     }
 
     SDL_GLContext gl_ctx = SDL_GL_GetCurrentContext();

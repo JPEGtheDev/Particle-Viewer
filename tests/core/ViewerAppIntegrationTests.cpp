@@ -48,7 +48,7 @@ TEST(ViewerAppIntegration, LoadWindowSettings_NoSavedScale_SelectsFromDetected)
     float result = selectUiScale(detected, loaded_scale);
 
     // Expected: detected >= 1.5, and no saved preference → detected used
-    EXPECT_FLOAT_EQ(result, selectUiScale(2.0f, 0.0f));
+    EXPECT_FLOAT_EQ(result, 2.0f);               // detected 2.0f >= 1.5 minimum; no saved preference
     EXPECT_FLOAT_EQ(result, clampUiScale(2.0f)); // 2.0 >= 1.5, so min not applied
 }
 
@@ -85,6 +85,10 @@ TEST(ViewerAppIntegration, LoadWindowSettings_SavedScale_UsesSavedPreference)
 
 TEST(ViewerAppIntegration, ScaleChanged_MenuActionsCarryNewScale)
 {
+    // NOTE: The full run() wiring (scale_pending_ = true, saveWindowSettings())
+    // cannot be exercised without a live GL context. This test verifies the
+    // MenuActions struct fields are correctly initialised; the integration
+    // wiring is covered by manual smoke testing (AC5/AC9/AC10).
     MenuActions actions;
     actions.scale_changed = true;
     actions.new_scale = 2.0f;
