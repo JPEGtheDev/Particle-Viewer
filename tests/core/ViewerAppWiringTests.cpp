@@ -86,10 +86,10 @@ TEST(ViewerAppWiring_MenuActions, ScaleChangedDefaultsFalse)
     EXPECT_FALSE(actions.scale_changed);
 }
 
-TEST(ViewerAppWiring_MenuActions, NewScaleDefaultsOnePointFive)
+TEST(ViewerAppWiring_MenuActions, NewScaleDefaultsOne)
 {
     MenuActions actions;
-    EXPECT_FLOAT_EQ(actions.new_scale, 1.5f);
+    EXPECT_FLOAT_EQ(actions.new_scale, 1.0f);
 }
 
 // ============================================================================

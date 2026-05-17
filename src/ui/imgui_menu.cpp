@@ -177,7 +177,9 @@ MenuActions renderMainMenu(MenuState& state)
             // UI Scale combo
             static const float kScaleSteps[] = {1.0f, 1.25f, 1.5f, 1.75f, 2.0f, 2.5f, 3.0f};
             static const char* kScaleLabels[] = {"1x", "1.25x", "1.5x", "1.75x", "2x", "2.5x", "3x"};
-            constexpr int kNumSteps = 7;
+            static_assert(std::size(kScaleSteps) == std::size(kScaleLabels),
+                          "scale step/label arrays must be the same length");
+            constexpr int kNumSteps = static_cast<int>(std::size(kScaleSteps));
 
             // Find the closest step to the current ui_scale
             int current_idx = 0;

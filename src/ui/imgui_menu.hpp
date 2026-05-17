@@ -35,7 +35,7 @@ struct MenuActions
     int target_height = 0;
     bool toggle_auto_com = false; // toggled by the COM/Cache submenu checkbox
     bool scale_changed = false;   // user selected a new UI scale
-    float new_scale = 1.5f;       // the newly selected scale value
+    float new_scale = 1.0f;       // the newly selected scale value (only valid when scale_changed == true)
 };
 
 /*
