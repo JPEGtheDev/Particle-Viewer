@@ -58,8 +58,9 @@ class ImGuiFolderBrowser : public IFileDialog
     std::filesystem::path m_selectedEntry;       // highlighted entry in the list
     std::filesystem::path m_lastConfirmedFolder; // from setLastConfirmedFolder()
 
-    char m_inputBuf[4096] = {}; // for ImGui::InputText manual path entry
-    std::string m_errorMsg;     // shown inline when validation fails
+    char m_inputBuf[4096] = {};    // for ImGui::InputText manual path entry
+    char m_newFolderBuf[256] = {}; // for the "New Folder" popup InputText
+    std::string m_errorMsg;        // shown inline when validation fails
 
     // Enumerated directories (non-dot) and files in m_currentDir.
     std::vector<std::filesystem::directory_entry> m_entries;
@@ -217,6 +218,44 @@ inline std::string ImGuiFolderBrowser::selectFolder(const std::string& title)
         }
     }
     ImGui::SameLine();
+
+    // --- "New Folder" button ---
+    if (ImGui::Button("New Folder")) {
+        m_newFolderBuf[0] = '\0';
+        ImGui::OpenPopup("New Folder##popup");
+    }
+    ImGui::SameLine();
+
+    // --- New Folder modal popup ---
+    if (ImGui::BeginPopupModal("New Folder##popup", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::TextUnformatted("Folder name:");
+        ImGui::SetNextItemWidth(300.0f);
+        if (ImGui::IsWindowAppearing()) {
+            ImGui::SetKeyboardFocusHere();
+        }
+        const bool confirmed =
+            ImGui::InputText("##newname", m_newFolderBuf, sizeof(m_newFolderBuf), ImGuiInputTextFlags_EnterReturnsTrue);
+        if ((ImGui::Button("Create") || confirmed) && m_newFolderBuf[0] != '\0') {
+            std::error_code ec;
+            const std::filesystem::path newPath = m_currentDir / m_newFolderBuf;
+            if (std::filesystem::create_directories(newPath, ec)) {
+                m_selectedEntry = newPath;
+                refreshEntries();
+                const std::string sel = newPath.string();
+                const std::size_t slen = std::min(sel.size(), sizeof(m_inputBuf) - 1);
+                sel.copy(m_inputBuf, slen);
+                m_inputBuf[slen] = '\0';
+            } else {
+                m_errorMsg = "Could not create folder: " + ec.message();
+            }
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel")) {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
 
     // --- Manual path InputText ---
     ImGui::SetNextItemWidth(-1.0f);
