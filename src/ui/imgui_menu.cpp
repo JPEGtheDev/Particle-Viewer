@@ -89,6 +89,9 @@ MenuActions renderMainMenu(MenuState& state)
             if (ImGui::MenuItem("Load File...", "T")) {
                 actions.load_file = true;
             }
+            if (ImGui::MenuItem("Select Recording Folder...", "R")) {
+                actions.select_recording_folder = true;
+            }
             ImGui::Separator();
             if (ImGui::MenuItem("Quit", "Esc")) {
                 actions.quit = true;

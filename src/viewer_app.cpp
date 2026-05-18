@@ -362,6 +362,9 @@ void ViewerApp::run()
                 pauseIfPlaying();
                 file_dialog_open_ = true;
             }
+            if (actions.select_recording_folder) {
+                openRecordingFolderDialog();
+            }
             if (actions.change_resolution) {
                 SDL_Window* native_window = static_cast<SDL_Window*>(context_->getNativeWindowHandle());
                 if (native_window) {

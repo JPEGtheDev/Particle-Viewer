@@ -64,6 +64,15 @@ TEST(ViewerAppWiring_MenuActions, ToggleAutoComDefaultsFalse)
     EXPECT_FALSE(actions.toggle_auto_com);
 }
 
+TEST(ViewerAppWiring_MenuActions, SelectRecordingFolderDefaultsFalse)
+{
+    // Arrange & Act
+    MenuActions actions;
+
+    // Assert
+    EXPECT_FALSE(actions.select_recording_folder);
+}
+
 // ============================================================================
 // MenuState — Settings panel fields default-initialise correctly
 // ============================================================================

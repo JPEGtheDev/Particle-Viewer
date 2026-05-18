@@ -322,7 +322,9 @@ inline std::string ImGuiFolderBrowser::selectFolder(const std::string& title)
     }
 
     // --- OK / Cancel buttons ---
-    if (ImGui::Button("OK") || (!m_selectedEntry.empty() && ImGui::IsKeyPressed(ImGuiKey_Enter, false))) {
+    const bool anyPopupOpen = ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId);
+    if (ImGui::Button("OK") ||
+        (!m_selectedEntry.empty() && !anyPopupOpen && ImGui::IsKeyPressed(ImGuiKey_Enter, false))) {
         std::string result = tryConfirm();
         if (!result.empty()) {
             m_isOpen = false;
