@@ -28,9 +28,13 @@
  * ui_scale (optional): if non-null and the key is present and parseable,
  * the pointed-to float is updated with the stored value. If the key is
  * absent or unparseable, the caller-supplied default is preserved unchanged.
+ *
+ * last_confirmed_folder (optional): if non-null and the key is present,
+ * the pointed-to string is updated with the stored value. If the key is
+ * absent, the caller-supplied default is preserved unchanged.
  */
 inline bool loadWindowConfig(const std::string& filepath, int& width, int& height, bool& fullscreen,
-                             float* ui_scale = nullptr)
+                             float* ui_scale = nullptr, std::string* last_confirmed_folder = nullptr)
 {
     std::ifstream file(filepath);
     if (!file.is_open()) {
@@ -79,6 +83,8 @@ inline bool loadWindowConfig(const std::string& filepath, int& width, int& heigh
             } catch (...) {
                 // Unparseable: leave caller's default unchanged
             }
+        } else if (key == "last_confirmed_folder" && last_confirmed_folder != nullptr) {
+            *last_confirmed_folder = value;
         }
     }
 
@@ -94,8 +100,13 @@ inline bool loadWindowConfig(const std::string& filepath, int& width, int& heigh
  * 0.0f is treated as a sentinel meaning "not set" — when 0.0f, the
  * ui_scale key is omitted from the file entirely, preserving any value
  * that a future loadWindowConfig call might have written there previously.
+ *
+ * last_confirmed_folder (optional): if non-null and non-empty, written to
+ * the file under the key last_confirmed_folder. If null or empty, the key
+ * is omitted entirely.
  */
-inline bool saveWindowConfig(const std::string& filepath, int width, int height, bool fullscreen, float ui_scale = 0.0f)
+inline bool saveWindowConfig(const std::string& filepath, int width, int height, bool fullscreen, float ui_scale = 0.0f,
+                             const std::string* last_confirmed_folder = nullptr)
 {
     std::ofstream file(filepath);
     if (!file.is_open()) {
@@ -110,6 +121,9 @@ inline bool saveWindowConfig(const std::string& filepath, int width, int height,
     file << "fullscreen=" << (fullscreen ? "1" : "0") << "\n";
     if (ui_scale != 0.0f) {
         file << "ui_scale=" << ui_scale << "\n";
+    }
+    if (last_confirmed_folder != nullptr && !last_confirmed_folder->empty()) {
+        file << "last_confirmed_folder=" << *last_confirmed_folder << "\n";
     }
 
     file.close();
