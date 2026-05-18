@@ -774,7 +774,7 @@ TEST_F(SettingsIOTest, LoadFromFolder_EmptyFolder_DoesNotMutateState)
     EXPECT_EQ(settings.statsName, original_stats);
 }
 
-TEST(SettingsIO, LoadFromFolder_NonEmptyFolder_ReturnsNewObject)
+TEST_F(SettingsIOTest, LoadFromFolder_NonEmptyFolder_ReturnsNewObject)
 {
     // Arrange
     SettingsIO settings("", "", "");

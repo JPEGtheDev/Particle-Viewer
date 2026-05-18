@@ -224,8 +224,11 @@ inline std::string ImGuiFolderBrowser::selectFolder(const std::string& title)
         std::filesystem::path typed(m_inputBuf);
         std::error_code ec;
         if (std::filesystem::is_directory(typed, ec)) {
-            m_currentDir = typed;
-            m_selectedEntry = std::filesystem::path{};
+            // Navigate to the parent of the typed path and select the typed
+            // directory itself, so the user can immediately click OK to confirm.
+            const std::filesystem::path parent = typed.parent_path();
+            m_currentDir = (parent != typed) ? parent : typed;
+            m_selectedEntry = typed;
             refreshEntries();
         }
     }

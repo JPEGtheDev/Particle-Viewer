@@ -127,11 +127,17 @@ bool ViewerApp::initialize()
     setupGLStuff();
     setupScreenFBO();
 
-    // Create in-app folder browsers (after ImGui is initialized)
+    // Create in-app folder browsers (after ImGui is initialized).
+    // Only assign file_dialog_ / recording_dialog_ if no mock was injected
+    // before initialize() via setFileDialog() / setRecordingDialog().
     file_browser_ = std::make_unique<ImGuiFolderBrowser>();
     recording_browser_ = std::make_unique<ImGuiFolderBrowser>(ImGuiFolderBrowser::ValidationMode::kAnyDirectory);
-    file_dialog_ = file_browser_.get();
-    recording_dialog_ = recording_browser_.get();
+    if (file_dialog_ == nullptr) {
+        file_dialog_ = file_browser_.get();
+    }
+    if (recording_dialog_ == nullptr) {
+        recording_dialog_ = recording_browser_.get();
+    }
 
     // Load window settings AFTER FBO is set up (prevents crash during resize callback)
     loadWindowSettings();
@@ -675,13 +681,15 @@ void ViewerApp::handleLoadFromFolder(const std::string& folder)
     }
     cur_frame_ = 0;
 
-    // Always persist last_confirmed_folder_ regardless of whether the load
-    // changed the active simulation — the folder is the user's stated intent.
-    last_confirmed_folder_ = folder;
-    if (file_browser_) {
-        file_browser_->setLastConfirmedFolder(folder);
+    // Persist the confirmed folder so the browser reopens there next time.
+    // Guard against empty: an empty folder means no selection was made.
+    if (!folder.empty()) {
+        last_confirmed_folder_ = folder;
+        if (file_browser_) {
+            file_browser_->setLastConfirmedFolder(folder);
+        }
+        saveWindowSettings();
     }
-    saveWindowSettings();
 }
 
 void ViewerApp::handleRecordingFolder()

@@ -29,6 +29,5 @@ TEST(RecordingStateTest, ErrorCount_DefaultValue_IsZero)
 
 TEST(RecordingStateTest, ErrorMax_DefaultValue_IsFive)
 {
-    RecordingState state;
-    EXPECT_EQ(state.error_max, 5);
+    EXPECT_EQ(RecordingState::error_max, 5);
 }
