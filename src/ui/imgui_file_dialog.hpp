@@ -10,8 +10,8 @@
  *   - a non-empty validated path string when the user confirms a selection
  * isOpen() returns false once the dialog closes (cancelled or confirmed).
  *
- * Validation: the selected folder must contain sub-directories PosAndVel,
- * RunSetup, and COMFile to be accepted as a valid simulation folder.
+ * Validation: the selected folder must contain PosAndVel and RunSetup
+ * to be accepted as a valid simulation folder (COMFile is optional).
  */
 
 #ifndef PARTICLE_VIEWER_IMGUI_FILE_DIALOG_H
@@ -139,11 +139,10 @@ inline std::string ImGuiFolderBrowser::tryConfirm()
     try {
         const std::filesystem::path path = std::filesystem::weakly_canonical(m_selectedEntry);
 
-        const bool valid = std::filesystem::exists(path / "PosAndVel") && std::filesystem::exists(path / "RunSetup") &&
-                           std::filesystem::exists(path / "COMFile");
+        const bool valid = std::filesystem::exists(path / "PosAndVel") && std::filesystem::exists(path / "RunSetup");
 
         if (!valid) {
-            m_errorMsg = "Not a valid simulation folder (PosAndVel/RunSetup/COMFile not found)";
+            m_errorMsg = "Not a valid simulation folder (PosAndVel/RunSetup not found)";
             return {};
         }
 
@@ -163,8 +162,11 @@ inline std::string ImGuiFolderBrowser::selectFolder(const std::string& title)
         m_needsInit = false;
     }
 
-    constexpr ImGuiWindowFlags kWindowFlags = ImGuiWindowFlags_NoCollapse;
+    constexpr ImGuiWindowFlags kWindowFlags =
+        ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings;
 
+    const ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
     ImGui::SetNextWindowSize(ImVec2(600.0f, 450.0f), ImGuiCond_FirstUseEver);
     bool windowOpen = true;
     if (!ImGui::Begin(title.c_str(), &windowOpen, kWindowFlags)) {
