@@ -126,7 +126,6 @@ jobs:
               --filter '${{ github.workspace }}/src/' \
               --exclude '${{ github.workspace }}/src/glad/' \
               --exclude '${{ github.workspace }}/src/stb_*' \
-              --exclude '${{ github.workspace }}/src/tinyFileDialogs/' \
               --exclude '${{ github.workspace }}/src/main\.cpp' \
               --exclude '${{ github.workspace }}/src/viewer_app\.cpp' \
               --print-summary \
@@ -223,7 +222,7 @@ jobs:
           
           ${coverageInt >= thresholdInt ? '✅ Coverage meets threshold!' : '❌ Coverage is below threshold!'}
           
-          > Third-party code excluded: glad, stb_*, tinyFileDialogs
+          > Third-party code excluded: glad, stb_*
           `;
           
           // Find existing comment

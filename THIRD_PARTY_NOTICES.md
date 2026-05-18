@@ -71,39 +71,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---
 
-### Tiny File Dialogs
-
-**tinyfiledialogs.c, tinyfiledialogs.h**
-
-- **Author:** Guillaume Vareille
-- **Copyright:** Copyright (c) 2014 - 2023 Guillaume Vareille
-- **License:** ZLIB License (SPDX-License-Identifier: ZLIB)
-- **Website:** http://ysengrin.com
-- **Source:** http://sourceforge.net/projects/tinyfiledialogs/
-- **Version:** v3.16 [Nov 23, 2023]
-
-```
-This software is provided 'as-is', without any express or implied
-warranty. In no event will the authors be held liable for any damages
-arising from the use of this software.
-
-Permission is granted to anyone to use this software for any purpose,
-including commercial applications, and to alter it and redistribute it
-freely, subject to the following restrictions:
-
-1. The origin of this software must not be misrepresented; you must not
-   claim that you wrote the original software. If you use this software
-   in a product, an acknowledgment in the product documentation would be
-   appreciated but is not required.
-
-2. Altered source versions must be plainly marked as such, and must not be
-   misrepresented as being the original software.
-
-3. This notice may not be removed or altered from any source distribution.
-```
-
----
-
 ### GLAD
 
 **glad.c, glad.h** (OpenGL loader)
@@ -309,7 +276,6 @@ This project gratefully uses the following third-party components:
 
 **Embedded in source:**
 - STB Libraries (Sean Barrett) - MIT/Public Domain
-- Tiny File Dialogs (Guillaume Vareille) - ZLIB License
 - GLAD (OpenGL Loader Generator) - Public Domain/MIT
 - KHR Platform Headers (Khronos Group) - MIT-style
 - Hack Font (Source Foundry Authors) - MIT License + Bitstream Vera Fonts License

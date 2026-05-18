@@ -58,7 +58,7 @@ These apply in every session, every task, every model. No exceptions unless the 
 
 Particle-Viewer is a C++ OpenGL-based viewer for N-Body simulations — viewing 3D particle data, taking screenshots, and rendering videos.
 
-**Tech stack:** C++20, OpenGL, CMake, Google Test, SDL3, GLM, Dear ImGui, stb, Tiny File Dialogs, GLAD.
+**Tech stack:** C++20, OpenGL, CMake, Google Test, SDL3, GLM, Dear ImGui, stb, GLAD.
 
 ## Skills Directory
 
@@ -192,7 +192,6 @@ src/
 ├── testing/              # PixelComparator (test utility, shipped in src/)
 ├── shaders/              # GLSL shaders (auto-copied to Viewer-Assets/shaders/ at build)
 ├── glad/                 # GLAD OpenGL loader (embedded)
-└── tinyFileDialogs/      # File dialog library (embedded)
 
 tests/
 ├── core/                 # Unit tests for src/ classes

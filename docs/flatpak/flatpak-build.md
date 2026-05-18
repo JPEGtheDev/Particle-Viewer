@@ -83,7 +83,6 @@ The manifest (`flatpak/org.particleviewer.ParticleViewer.yaml`) defines:
 | GLM | 1.0.1 | Header-only math library |
 | SDL3 | release-3.2.6 | Built as standalone module; pkg-config paths and X11/Wayland detection depend on build order |
 | OpenGL | runtime | Mesa `GL.default`; hardware acceleration requires a matching NVIDIA extension |
-| tinyFileDialogs | embedded | — |
 | GLAD | embedded | — |
 | stb | embedded | — |
 | Dear ImGui | fetched | Downloaded via CMake FetchContent at build time |
