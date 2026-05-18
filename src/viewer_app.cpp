@@ -672,6 +672,7 @@ void ViewerApp::handleLoadFromFolder(const std::string& folder)
         set_ = new_set;
         com_ = glm::vec3(0.0f);
         auto_com_compute_ = false;
+        cur_frame_ = 0;
         std::string sim_folder = extractFolder(set_->posName);
         if (!sim_folder.empty()) {
             loadViewerConfig(sim_folder, auto_com_compute_);
@@ -679,7 +680,6 @@ void ViewerApp::handleLoadFromFolder(const std::string& folder)
         }
         rebuildCacheInfrastructure();
     }
-    cur_frame_ = 0;
 
     // Persist the confirmed folder so the browser reopens there next time.
     // Guard against empty: an empty folder means no selection was made.
