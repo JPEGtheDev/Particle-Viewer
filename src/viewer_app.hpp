@@ -287,7 +287,7 @@ class ViewerApp
     void pauseIfPlaying();
     void processMinorKeys();
     void handleLoadFromFolder(const std::string& folder);
-    void handleRecordingFolder();
+    void openRecordingFolderDialog();
 
     // ============================================
     // Input Handling

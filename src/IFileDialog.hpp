@@ -28,6 +28,9 @@ class IFileDialog
     [[nodiscard]] virtual std::string selectFolder(const std::string& title) = 0;
 
     // Returns true while dialog is visible. Becomes false on cancel or confirm.
+    // Initial state (before the first selectFolder() call in a cycle) is
+    // implementation-defined; callers must not rely on isOpen() until after
+    // the first selectFolder() call of that cycle.
     [[nodiscard]] virtual bool isOpen() const noexcept = 0;
 };
 

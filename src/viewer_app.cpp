@@ -692,7 +692,7 @@ void ViewerApp::handleLoadFromFolder(const std::string& folder)
     }
 }
 
-void ViewerApp::handleRecordingFolder()
+void ViewerApp::openRecordingFolderDialog()
 {
     pauseIfPlaying();
     recording_dialog_open_ = true;
@@ -756,7 +756,7 @@ void ViewerApp::handleKeyEvent(unsigned int scancode, bool is_pressed, unsigned 
     if (scancode == SDL_SCANCODE_R && is_pressed) {
         if (!recording_.is_active) {
             recording_.error_count = 0;
-            handleRecordingFolder();
+            openRecordingFolderDialog();
             return;
         } else {
             recording_.folder = "";
