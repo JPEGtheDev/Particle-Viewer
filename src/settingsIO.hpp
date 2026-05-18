@@ -7,6 +7,7 @@
 
 #ifndef SETTINGSIO_H
 #define SETTINGSIO_H
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -501,9 +502,9 @@ class SettingsIO
             std::cout << "Folder not selected" << std::endl;
             return this;
         }
-        std::string posVel = folder + posFile;
-        std::string settings = folder + statsFile;
-        std::string comPath = folder + comFile;
+        std::string posVel = (std::filesystem::path(folder) / "PosAndVel").string();
+        std::string settings = (std::filesystem::path(folder) / "RunSetup").string();
+        std::string comPath = (std::filesystem::path(folder) / "COMFile").string();
         SettingsIO* set = new SettingsIO(posVel, settings, comPath);
         set->readPosVelFile(0, part, readVelocity);
         return set;

@@ -129,7 +129,7 @@ bool ViewerApp::initialize()
 
     // Create in-app folder browsers (after ImGui is initialized)
     file_browser_ = std::make_unique<ImGuiFolderBrowser>();
-    recording_browser_ = std::make_unique<ImGuiFolderBrowser>();
+    recording_browser_ = std::make_unique<ImGuiFolderBrowser>(ImGuiFolderBrowser::ValidationMode::kAnyDirectory);
     file_dialog_ = file_browser_.get();
     recording_dialog_ = recording_browser_.get();
 

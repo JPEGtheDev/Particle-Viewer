@@ -14,6 +14,14 @@
 
 static_assert(std::is_base_of_v<IFileDialog, MockFileDialog>, "MockFileDialog must derive from IFileDialog");
 
+// ---- Initial state ----
+
+TEST(FileDialogContractTest, AfterConstruction_IsOpenTrue)
+{
+    MockFileDialog mock("/some/path");
+    EXPECT_TRUE(mock.isOpen());
+}
+
 // ---- Confirm path ----
 
 TEST(FileDialogContractTest, SelectFolder_WithPresetPath_ReturnsPresetPath)

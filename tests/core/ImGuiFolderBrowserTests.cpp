@@ -32,3 +32,15 @@ TEST(ImGuiFolderBrowser, SetLastConfirmedFolder_EmptyString_DoesNotCrash)
     ImGuiFolderBrowser browser;
     EXPECT_NO_THROW(browser.setLastConfirmedFolder(""));
 }
+
+TEST(ImGuiFolderBrowser, ValidationMode_AnyDirectory_ConstructsWithoutCrash)
+{
+    ImGuiFolderBrowser browser(ImGuiFolderBrowser::ValidationMode::kAnyDirectory);
+    EXPECT_FALSE(browser.isOpen());
+}
+
+TEST(ImGuiFolderBrowser, ValidationMode_SimulationFolder_ExplicitConstructionStartsClosed)
+{
+    ImGuiFolderBrowser browser(ImGuiFolderBrowser::ValidationMode::kSimulationFolder);
+    EXPECT_FALSE(browser.isOpen());
+}

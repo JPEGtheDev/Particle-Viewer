@@ -10,8 +10,9 @@
  *   - a non-empty validated path string when the user confirms a selection
  * isOpen() returns false once the dialog closes (cancelled or confirmed).
  *
- * Validation: the selected folder must contain PosAndVel and RunSetup
- * to be accepted as a valid simulation folder (COMFile is optional).
+ * Validation is controlled by the ValidationMode constructor parameter:
+ *   - kSimulationFolder (default): folder must contain PosAndVel and RunSetup
+ *   - kAnyDirectory: any existing directory is accepted (used for recording output)
  */
 
 #ifndef PARTICLE_VIEWER_IMGUI_FILE_DIALOG_H
@@ -28,7 +29,13 @@
 class ImGuiFolderBrowser : public IFileDialog
 {
   public:
-    ImGuiFolderBrowser();
+    enum class ValidationMode
+    {
+        kSimulationFolder, // requires PosAndVel and RunSetup (default)
+        kAnyDirectory      // accepts any existing directory (recording output)
+    };
+
+    explicit ImGuiFolderBrowser(ValidationMode mode = ValidationMode::kSimulationFolder);
 
     // Called each frame while the dialog is open.
     // Returns "" while browsing, non-empty validated path on confirm.
@@ -45,6 +52,7 @@ class ImGuiFolderBrowser : public IFileDialog
   private:
     bool m_isOpen = false;
     bool m_needsInit = true; // true on first call after construction/reset
+    ValidationMode m_validationMode;
 
     std::filesystem::path m_currentDir;          // directory currently being listed
     std::filesystem::path m_selectedEntry;       // highlighted entry in the list
@@ -72,7 +80,9 @@ class ImGuiFolderBrowser : public IFileDialog
 // Inline implementation
 // ---------------------------------------------------------------------------
 
-inline ImGuiFolderBrowser::ImGuiFolderBrowser() = default;
+inline ImGuiFolderBrowser::ImGuiFolderBrowser(ValidationMode mode) : m_validationMode(mode)
+{
+}
 
 inline bool ImGuiFolderBrowser::isOpen() const noexcept
 {
@@ -110,11 +120,11 @@ inline void ImGuiFolderBrowser::refreshEntries()
 
     try {
         for (const auto& entry : std::filesystem::directory_iterator(m_currentDir)) {
-            // Only include non-dot directories and regular files
-            if (entry.is_directory() && !entry.path().filename().string().empty() &&
-                entry.path().filename().string()[0] != '.') {
-                m_entries.push_back(entry);
-            } else if (entry.is_regular_file()) {
+            const std::string fname = entry.path().filename().string();
+            if (fname.empty() || fname[0] == '.') {
+                continue; // hide dot-dirs and dot-files
+            }
+            if (entry.is_directory() || entry.is_regular_file()) {
                 m_entries.push_back(entry);
             }
         }
@@ -139,11 +149,18 @@ inline std::string ImGuiFolderBrowser::tryConfirm()
     try {
         const std::filesystem::path path = std::filesystem::weakly_canonical(m_selectedEntry);
 
-        const bool valid = std::filesystem::exists(path / "PosAndVel") && std::filesystem::exists(path / "RunSetup");
-
-        if (!valid) {
-            m_errorMsg = "Not a valid simulation folder (PosAndVel/RunSetup not found)";
-            return {};
+        if (m_validationMode == ValidationMode::kSimulationFolder) {
+            const bool valid =
+                std::filesystem::exists(path / "PosAndVel") && std::filesystem::exists(path / "RunSetup");
+            if (!valid) {
+                m_errorMsg = "Not a valid simulation folder (PosAndVel/RunSetup not found)";
+                return {};
+            }
+        } else {
+            if (!std::filesystem::is_directory(path)) {
+                m_errorMsg = "Please select an existing directory";
+                return {};
+            }
         }
 
         m_errorMsg.clear();

@@ -15,7 +15,7 @@ class MockFileDialog : public IFileDialog
 {
   public:
     explicit MockFileDialog(std::string preset_result = "")
-        : m_preset_result_(std::move(preset_result)), m_is_open_(false)
+        : m_preset_result_(std::move(preset_result)), m_is_open_(true)
     {
     }
 
