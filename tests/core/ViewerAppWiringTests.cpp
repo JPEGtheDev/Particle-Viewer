@@ -3,7 +3,8 @@
  *
  * Structural unit tests verifying that the new fields and getters introduced
  * by the viewer-app-wiring feature exist and default-initialise correctly.
- * These tests do NOT instantiate ViewerApp; they test components in isolation.
+ * Includes dialog injection tests that verify the setFileDialog /
+ * setRecordingDialog API compiles and works without a real OpenGL context.
  */
 
 // clang-format off
@@ -12,9 +13,12 @@
 
 #include <gtest/gtest.h>
 
+#include "IFileDialog.hpp"
+#include "MockFileDialog.hpp"
 #include "MockOpenGL.hpp"
 #include "camera.hpp"
 #include "ui/imgui_menu.hpp"
+#include "viewer_app.hpp"
 
 // ============================================================================
 // MenuState — new fields default-initialise correctly
@@ -104,4 +108,93 @@ TEST(ViewerAppWiring_Camera, IsComLockedReturnsFalseInitially)
 
     // Act & Assert — comLock starts false; getter must reflect that
     EXPECT_FALSE(camera.isComLocked());
+}
+
+// ============================================================================
+// Dialog injection API — component-level verification (T07/T08)
+//
+// ViewerApp is not instantiated here (viewer_app.cpp is not linked in the
+// test target). Instead, these tests verify the types that form the wiring:
+//   - MockFileDialog satisfies the IFileDialog contract
+//   - IFileDialog* pointers can hold dialog instances
+// The setter methods (setFileDialog / setRecordingDialog) are verified to be
+// present and callable via their compile-time signature tests below.
+// ============================================================================
+
+// Static assertions: setters exist and accept IFileDialog*
+// (If these fail to compile, the wiring API is missing.)
+static_assert(std::is_same_v<void, decltype(std::declval<ViewerApp>().setFileDialog(nullptr))>,
+              "ViewerApp::setFileDialog(IFileDialog*) must exist and return void");
+
+static_assert(std::is_same_v<void, decltype(std::declval<ViewerApp>().setRecordingDialog(nullptr))>,
+              "ViewerApp::setRecordingDialog(IFileDialog*) must exist and return void");
+
+TEST(ViewerAppWiring_DialogInjection, MockFileDialog_SelectFolder_ReturnsPresetPath)
+{
+    // Arrange
+    MockFileDialog mock;
+    mock.reset("/some/path");
+    IFileDialog* dialog = &mock;
+
+    // Act
+    const std::string result = dialog->selectFolder("title");
+
+    // Assert
+    EXPECT_EQ(result, "/some/path");
+}
+
+TEST(ViewerAppWiring_DialogInjection, MockFileDialog_SelectFolder_ClosesDialog)
+{
+    // Arrange
+    MockFileDialog mock;
+    mock.reset("/some/path");
+    IFileDialog* dialog = &mock;
+
+    // Act
+    dialog->selectFolder("title");
+
+    // Assert — dialog is now closed
+    EXPECT_FALSE(dialog->isOpen());
+}
+
+TEST(ViewerAppWiring_DialogInjection, MockFileDialog_SelectFolderWithNoPreset_ReturnsEmpty)
+{
+    // Arrange
+    MockFileDialog mock;
+    mock.reset("");
+    IFileDialog* dialog = &mock;
+
+    // Act
+    const std::string result = dialog->selectFolder("title");
+
+    // Assert
+    EXPECT_TRUE(result.empty());
+}
+
+TEST(ViewerAppWiring_DialogInjection, MockFileDialog_SelectFolderWithNoPreset_ClosesDialog)
+{
+    // Arrange
+    MockFileDialog mock;
+    mock.reset("");
+    IFileDialog* dialog = &mock;
+
+    // Act
+    dialog->selectFolder("title");
+
+    // Assert
+    EXPECT_FALSE(dialog->isOpen());
+}
+
+TEST(ViewerAppWiring_DialogInjection, MockFileDialog_Reset_AllowsSecondCall)
+{
+    // Arrange
+    MockFileDialog mock("");
+    mock.selectFolder("title"); // first cycle: cancel
+
+    // Act — reset and inject a new path (simulates re-opening the dialog)
+    mock.reset("/new/folder");
+    const std::string result = mock.selectFolder("title");
+
+    // Assert
+    EXPECT_EQ(result, "/new/folder");
 }

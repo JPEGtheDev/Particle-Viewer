@@ -11,6 +11,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <iostream>
+#include <memory>
 #include <string>
 
 // clang-format off
@@ -19,11 +20,11 @@
 
 #include "MassParams.hpp"
 #include "debugOverlay.hpp"
+#include "file_dialog_helpers.hpp"
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_sdl3.h"
 #include "osFile.hpp"
-#include "tinyFileDialogs/tinyfiledialogs.h"
 #include "uiScale.hpp"
 #include "windowConfig.hpp"
 
@@ -125,6 +126,12 @@ bool ViewerApp::initialize()
     part_ = new Particle();
     setupGLStuff();
     setupScreenFBO();
+
+    // Create in-app folder browsers (after ImGui is initialized)
+    file_browser_ = std::make_unique<ImGuiFolderBrowser>();
+    recording_browser_ = std::make_unique<ImGuiFolderBrowser>();
+    file_dialog_ = file_browser_.get();
+    recording_dialog_ = recording_browser_.get();
 
     // Load window settings AFTER FBO is set up (prevents crash during resize callback)
     loadWindowSettings();
@@ -346,7 +353,8 @@ void ViewerApp::run()
             // Render ImGui menu and process actions
             MenuActions actions = renderMainMenu(menu_state_);
             if (actions.load_file) {
-                handleLoadFile();
+                pauseIfPlaying();
+                file_dialog_open_ = true;
             }
             if (actions.change_resolution) {
                 SDL_Window* native_window = static_cast<SDL_Window*>(context_->getNativeWindowHandle());
@@ -381,6 +389,29 @@ void ViewerApp::run()
                 window_.ui_scale = actions.new_scale;
                 scale_pending_ = true;
                 saveWindowSettings();
+            }
+
+            // File load dialog (per-frame; renders inside ImGui frame)
+            if (file_dialog_open_ && file_dialog_ != nullptr) {
+                const std::string result = file_dialog_->selectFolder("Select Simulation Folder");
+                if (!result.empty()) {
+                    handleLoadFromFolder(result);
+                    file_dialog_open_ = false;
+                } else if (!file_dialog_->isOpen()) {
+                    file_dialog_open_ = false;
+                }
+            }
+
+            // Recording folder dialog (per-frame; no particle validation needed)
+            if (recording_dialog_open_ && recording_dialog_ != nullptr) {
+                const std::string result = recording_dialog_->selectFolder("Select Recording Folder");
+                if (!result.empty()) {
+                    [[maybe_unused]] bool applied = applyRecordingFolderResult(result, recording_);
+                    // result is non-empty here; the false (cancel) return cannot fire.
+                    recording_dialog_open_ = false;
+                } else if (!recording_dialog_->isOpen()) {
+                    recording_dialog_open_ = false;
+                }
             }
 
             ImGui::Render();
@@ -609,6 +640,13 @@ void ViewerApp::seekFrame(int frames, bool forward)
     }
 }
 
+void ViewerApp::pauseIfPlaying()
+{
+    if (set_->isPlaying) {
+        set_->togglePlay();
+    }
+}
+
 void ViewerApp::processMinorKeys()
 {
     if (keys_[SDL_SCANCODE_Q]) {
@@ -619,32 +657,37 @@ void ViewerApp::processMinorKeys()
     }
 }
 
-void ViewerApp::handleLoadFile()
+void ViewerApp::handleLoadFromFolder(const std::string& folder)
 {
-    SettingsIO* new_set = set_->loadFile(part_, false);
-    if (new_set && new_set != set_) {
-        // Safe teardown order: drain executors FIRST so no tasks reference
-        // the old SettingsIO after it is deleted.
+    SettingsIO* new_set = set_->loadFromFolder(folder, part_, false);
+    if (isNewFileSelected(new_set, set_)) {
         teardownCacheInfrastructure();
         delete set_;
         set_ = new_set;
         com_ = glm::vec3(0.0f);
-
-        // Reset before loadViewerConfig so the flag does not leak from the
-        // previous simulation when the new folder has no viewer.cfg.
         auto_com_compute_ = false;
-        std::string folder = extractFolder(set_->posName);
-        if (!folder.empty()) {
-            loadViewerConfig(folder, auto_com_compute_);
+        std::string sim_folder = extractFolder(set_->posName);
+        if (!sim_folder.empty()) {
+            loadViewerConfig(sim_folder, auto_com_compute_);
             menu_state_.auto_com_compute = auto_com_compute_;
         }
-
-        // Rebuild AFTER loadViewerConfig so any config that affects
-        // construction (future use) is already applied — consistent with
-        // the constructor ordering fixed in the companion commit.
         rebuildCacheInfrastructure();
     }
     cur_frame_ = 0;
+
+    // Always persist last_confirmed_folder_ regardless of whether the load
+    // changed the active simulation — the folder is the user's stated intent.
+    last_confirmed_folder_ = folder;
+    if (file_browser_) {
+        file_browser_->setLastConfirmedFolder(folder);
+    }
+    saveWindowSettings();
+}
+
+void ViewerApp::handleRecordingFolder()
+{
+    pauseIfPlaying();
+    recording_dialog_open_ = true;
 }
 
 // ============================================================================
@@ -687,7 +730,8 @@ void ViewerApp::handleKeyEvent(unsigned int scancode, bool is_pressed, unsigned 
         set_->togglePlay();
     }
     if (scancode == SDL_SCANCODE_T && is_pressed) {
-        handleLoadFile();
+        pauseIfPlaying();
+        file_dialog_open_ = true;
     }
     if (scancode == SDL_SCANCODE_RIGHT && is_pressed) {
         seekFrame(1, true);
@@ -704,23 +748,8 @@ void ViewerApp::handleKeyEvent(unsigned int scancode, bool is_pressed, unsigned 
     if (scancode == SDL_SCANCODE_R && is_pressed) {
         if (!recording_.is_active) {
             recording_.error_count = 0;
-            std::string dialog = "Select Folder";
-            const char* fol = tinyfd_selectFolderDialog(dialog.c_str(), "");
-
-            std::string folder;
-            if (fol != NULL) {
-                folder = std::string(fol);
-            } else {
-                folder = "";
-            }
-
-            if (folder != "") {
-                recording_.folder = folder;
-                recording_.is_active = true;
-                return;
-            }
-            std::cout << "Folder not selected" << std::endl;
-            recording_.is_active = false;
+            handleRecordingFolder();
+            return;
         } else {
             recording_.folder = "";
             recording_.is_active = false;
@@ -807,7 +836,8 @@ void ViewerApp::processGamepadInput()
 
     // Back/Select — open file load dialog
     if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_BACK)) {
-        handleLoadFile();
+        pauseIfPlaying();
+        file_dialog_open_ = true;
     }
 
     // B (East) — cycle point lock state (mirrors P key)
@@ -992,8 +1022,8 @@ void ViewerApp::saveWindowSettings()
 
     // Save windowed size (not fullscreen size)
     bool fullscreen = (window_.fullscreen != 0);
-    bool success =
-        saveWindowConfig(config_path, window_.windowed_width, window_.windowed_height, fullscreen, window_.ui_scale);
+    bool success = saveWindowConfig(config_path, window_.windowed_width, window_.windowed_height, fullscreen,
+                                    window_.ui_scale, &last_confirmed_folder_);
 
     if (!success) {
         std::cerr << "Warning: Failed to save window configuration" << std::endl;
@@ -1007,11 +1037,16 @@ void ViewerApp::loadWindowSettings()
     int height = 0;
     bool fullscreen = false;
 
-    if (loadWindowConfig(config_path, width, height, fullscreen, &window_.ui_scale)) {
+    if (loadWindowConfig(config_path, width, height, fullscreen, &window_.ui_scale, &last_confirmed_folder_)) {
         // Merge the OS-detected content scale with the persisted preference.
         // selectUiScale returns the persisted value if it is a real preference
         // (>= 1.0), or falls back to the OS-detected scale (min 1.5).
         window_.ui_scale = selectUiScale(context_->getContentScale(), window_.ui_scale);
+
+        // Restore last confirmed folder into the browser so it opens there.
+        if (file_browser_ && !last_confirmed_folder_.empty()) {
+            file_browser_->setLastConfirmedFolder(last_confirmed_folder_);
+        }
 
         std::cout << "Loaded window config: " << width << "x" << height << " fullscreen=" << fullscreen << std::endl;
 
