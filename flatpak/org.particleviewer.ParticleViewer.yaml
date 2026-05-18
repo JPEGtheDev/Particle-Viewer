@@ -18,12 +18,11 @@ finish-args:
   - --share=ipc
   
   # File system access for loading particle files
+  # home: read-write access to ~ for writing window.cfg
+  # host:ro: imgui file dialog browses the filesystem directly; the FileChooser
+  #   portal is not used. host:ro subsumes xdg-documents and xdg-download.
   - --filesystem=home
-  - --filesystem=xdg-documents
-  - --filesystem=xdg-download
-  
-  # File picker portal access
-  - --talk-name=org.freedesktop.portal.FileChooser
+  - --filesystem=host:ro
 
 modules:
   # GLM (header-only library)
