@@ -6,6 +6,8 @@
  * selectFolder() requires an active ImGui context; AC9 (keyboard nav) is verified manually.
  */
 
+#include <type_traits>
+
 #include <gtest/gtest.h>
 // glad.h before project includes (project convention)
 #include <glad/glad.h>

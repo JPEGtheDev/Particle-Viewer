@@ -19,6 +19,7 @@
 #define PARTICLE_VIEWER_IMGUI_FILE_DIALOG_H
 
 #include <algorithm>
+#include <cstdlib>
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -123,8 +124,8 @@ inline void ImGuiFolderBrowser::refreshEntries()
         for (const auto& entry : std::filesystem::directory_iterator(
                  m_currentDir, std::filesystem::directory_options::skip_permission_denied)) {
             const std::string fname = entry.path().filename().string();
-            if (fname.empty() || fname[0] == '.') {
-                continue; // hide dot-dirs and dot-files
+            if (fname.empty() || (fname[0] == '.' && entry.is_directory())) {
+                continue; // hide dot-directories; dot-files shown greyed (non-selectable)
             }
             if (entry.is_directory() || entry.is_regular_file()) {
                 m_entries.push_back(entry);

@@ -11,6 +11,9 @@
 #include <glad/glad.h>  // NOLINT(llvm-include-order) — must precede GL headers
 // clang-format on
 
+#include <type_traits>
+#include <utility>
+
 #include <gtest/gtest.h>
 
 #include "IFileDialog.hpp"

@@ -5,6 +5,8 @@
  * Verifies behavioural contracts that all IFileDialog implementations must satisfy.
  */
 
+#include <type_traits>
+
 #include <gtest/gtest.h>
 
 #include "IFileDialog.hpp"

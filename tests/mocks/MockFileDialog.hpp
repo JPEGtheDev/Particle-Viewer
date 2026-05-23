@@ -8,6 +8,7 @@
 #define PARTICLE_VIEWER_MOCK_FILE_DIALOG_H
 
 #include <string>
+#include <utility>
 
 #include "IFileDialog.hpp"
 
