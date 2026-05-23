@@ -23,8 +23,7 @@ class IFileDialog
   public:
     virtual ~IFileDialog() = default;
 
-    // Renders one frame (ImGui) or blocks until done (mocks).
-    // Returns selected path on confirm, empty string otherwise.
+    // Returns selected path on confirm, empty string while in progress or on cancel.
     [[nodiscard]] virtual std::string selectFolder(const std::string& title) = 0;
 
     // Returns true while dialog is visible. Becomes false on cancel or confirm.

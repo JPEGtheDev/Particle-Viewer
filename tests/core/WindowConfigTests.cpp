@@ -474,3 +474,22 @@ TEST_F(WindowConfigTest, SaveWindowConfig_EmptyLastConfirmedFolder_DoesNotWriteK
     // Assert
     EXPECT_EQ(contents.find("last_confirmed_folder="), std::string::npos);
 }
+
+TEST_F(WindowConfigTest, SaveWindowConfig_FolderWithNewline_NewlineStripped)
+{
+    // Arrange — a path containing a newline could corrupt the INI format by
+    // injecting additional keys into the file as separate lines.
+    const std::string folder = "/some/path\nmalicious_key=injected";
+    saveWindowConfig(test_config_path, 1920, 1080, false, 0.0f, &folder);
+
+    // Act
+    std::ifstream file(test_config_path);
+    std::string contents((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+    // Assert — the injected text must not appear as a standalone line/key.
+    // After sanitization the newline is stripped, so "malicious_key" stays
+    // embedded in the value and never starts a new line.
+    EXPECT_EQ(contents.find("\nmalicious_key"), std::string::npos);
+    // The folder key itself must still be written (non-empty sanitized path)
+    EXPECT_NE(contents.find("last_confirmed_folder="), std::string::npos);
+}

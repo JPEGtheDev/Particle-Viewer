@@ -8,6 +8,7 @@
 #ifndef PARTICLE_VIEWER_WINDOW_CONFIG_H
 #define PARTICLE_VIEWER_WINDOW_CONFIG_H
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -123,7 +124,13 @@ inline bool saveWindowConfig(const std::string& filepath, int width, int height,
         file << "ui_scale=" << ui_scale << "\n";
     }
     if (last_confirmed_folder != nullptr && !last_confirmed_folder->empty()) {
-        file << "last_confirmed_folder=" << *last_confirmed_folder << "\n";
+        std::string sanitized = *last_confirmed_folder;
+        sanitized.erase(
+            std::remove_if(sanitized.begin(), sanitized.end(), [](char c) { return c == '\n' || c == '\r'; }),
+            sanitized.end());
+        if (!sanitized.empty()) {
+            file << "last_confirmed_folder=" << sanitized << "\n";
+        }
     }
 
     file.close();

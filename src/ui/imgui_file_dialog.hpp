@@ -243,17 +243,22 @@ inline std::string ImGuiFolderBrowser::selectFolder(const std::string& title)
         const bool confirmed =
             ImGui::InputText("##newname", m_newFolderBuf, sizeof(m_newFolderBuf), ImGuiInputTextFlags_EnterReturnsTrue);
         if ((ImGui::Button("Create") || confirmed) && m_newFolderBuf[0] != '\0') {
-            std::error_code ec;
-            const std::filesystem::path newPath = m_currentDir / m_newFolderBuf;
-            if (std::filesystem::create_directories(newPath, ec)) {
-                m_selectedEntry = newPath;
-                refreshEntries();
-                const std::string sel = newPath.string();
-                const std::size_t slen = std::min(sel.size(), sizeof(m_inputBuf) - 1);
-                sel.copy(m_inputBuf, slen);
-                m_inputBuf[slen] = '\0';
+            const std::filesystem::path folderName(m_newFolderBuf);
+            if (folderName.is_absolute() || folderName.has_parent_path()) {
+                m_errorMsg = "Folder name must not contain path separators";
             } else {
-                m_errorMsg = "Could not create folder: " + ec.message();
+                std::error_code ec;
+                const std::filesystem::path newPath = m_currentDir / folderName;
+                if (std::filesystem::create_directories(newPath, ec)) {
+                    m_selectedEntry = newPath;
+                    refreshEntries();
+                    const std::string sel = newPath.string();
+                    const std::size_t slen = std::min(sel.size(), sizeof(m_inputBuf) - 1);
+                    sel.copy(m_inputBuf, slen);
+                    m_inputBuf[slen] = '\0';
+                } else {
+                    m_errorMsg = "Could not create folder: " + ec.message();
+                }
             }
             ImGui::CloseCurrentPopup();
         }
