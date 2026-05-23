@@ -123,7 +123,6 @@ if(${alloutput})
 endif()
 message("CXX Flags:" ${CMAKE_CXX_FLAGS})
 
-file(GLOB DIALOG src/tinyFileDialogs/*.c)
 file(GLOB srcCPP src/*.cpp)
 file(GLOB srcHPP src/*.hpp)
 file(GLOB graphicsCPP src/graphics/*.cpp)
@@ -132,7 +131,6 @@ file(GLOB uiCPP src/ui/*.cpp)
 file(GLOB uiHPP src/ui/*.hpp)
 file(GLOB inputHPP src/input/*.hpp)
 add_executable(Viewer
-	${DIALOG}
 	${srcCPP}
 	${srcHPP}
 	${graphicsCPP}
@@ -154,6 +152,7 @@ add_executable(Viewer
 target_link_libraries(Viewer ${CMAKE_DL_LIBS} ${SDL3_LINK_TARGET} OpenGL::GL)
 
 target_include_directories(Viewer PUBLIC
+	src
 	src/glad/include
 	${imgui_SOURCE_DIR}
 	${imgui_SOURCE_DIR}/backends

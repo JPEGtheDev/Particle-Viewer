@@ -7,6 +7,7 @@
 
 #ifndef SETTINGSIO_H
 #define SETTINGSIO_H
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -15,7 +16,6 @@
 #include "constants.hpp"
 #include "glm/glm.hpp"
 #include "particle.hpp"
-#include "tinyFileDialogs/tinyfiledialogs.h"
 
 class SettingsIO
 {
@@ -490,30 +490,24 @@ class SettingsIO
     }
 
     /*
-     * Opens up a file dialog and loads particle data.
+     * Loads particle data from a pre-selected folder path.
+     * Separates folder-path logic from dialog invocation for testability.
+     * If folder is empty, prints a message and returns this.
+     * Otherwise constructs a new SettingsIO for the folder's data files,
+     * calls readPosVelFile(), and returns the new object.
      */
-    SettingsIO* loadFile(Particle* part, bool readVelocity)
+    [[nodiscard]] SettingsIO* loadFromFolder(const std::string& folder, Particle* part, bool readVelocity)
     {
-        std::string dialog = "Select Folder";
-        const char* fol = tinyfd_selectFolderDialog(dialog.c_str(), "");
-
-        std::string folder;
-        if (fol != NULL) {
-            folder = std::string(fol);
-        } else {
-            folder = "";
+        if (folder.empty()) {
+            std::cout << "Folder not selected" << std::endl;
+            return this;
         }
-        if (folder != "") {
-            std::string posVel = folder; // strcat(folder,posFile.c_str());
-            posVel = posVel + posFile;
-            std::string settings = folder + statsFile; // strcat(folder, settingsFile.c_str());
-            std::string comName = folder + comFile;
-            SettingsIO* set = new SettingsIO(posVel.c_str(), settings.c_str(), comName.c_str());
-            set->readPosVelFile(0, part, readVelocity);
-            return set;
-        }
-        std::cout << "Folder not selected" << std::endl;
-        return this;
+        std::string posVel = (std::filesystem::path(folder) / "PosAndVel").string();
+        std::string settings = (std::filesystem::path(folder) / "RunSetup").string();
+        std::string comPath = (std::filesystem::path(folder) / "COMFile").string();
+        SettingsIO* set = new SettingsIO(posVel, settings, comPath);
+        set->readPosVelFile(0, part, readVelocity);
+        return set;
     }
 
     /*

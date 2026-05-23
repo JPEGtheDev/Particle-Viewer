@@ -14,6 +14,7 @@
 #ifndef PARTICLE_VIEWER_VIEWER_APP_H
 #define PARTICLE_VIEWER_VIEWER_APP_H
 
+#include <memory>
 #include <string>
 
 // clang-format off
@@ -24,6 +25,7 @@
 #include "COMCache.hpp"
 #include "COMFileProvider.hpp"
 #include "FrameCache.hpp"
+#include "IFileDialog.hpp"
 #include "ThreadedExecutor.hpp"
 #include "camera.hpp"
 #include "glm/glm.hpp"
@@ -32,8 +34,10 @@
 #include "graphics/IOpenGLContext.hpp"
 #include "input/gamepad_input.hpp"
 #include "particle.hpp"
+#include "recording_state.hpp"
 #include "settingsIO.hpp"
 #include "shader.hpp"
+#include "ui/imgui_file_dialog.hpp"
 #include "ui/imgui_menu.hpp"
 #include "viewerConfig.hpp"
 
@@ -80,17 +84,6 @@ struct SphereParams
     GLfloat scale = 0.0f;
     GLfloat base_radius = 250.0f;
     GLfloat radius = 0.0f;
-};
-
-/*
- * State for recording frames to disk.
- */
-struct RecordingState
-{
-    bool is_active = false;
-    std::string folder;
-    int error_count = 0;
-    int error_max = 5;
 };
 
 /*
@@ -161,6 +154,19 @@ class ViewerApp
      */
     void run();
 
+    // ============================================
+    // Test Injection
+    // ============================================
+    // Replace production dialog with a mock. Non-owning; caller retains the mock.
+    void setFileDialog(IFileDialog* d)
+    {
+        file_dialog_ = d;
+    }
+    void setRecordingDialog(IFileDialog* d)
+    {
+        recording_dialog_ = d;
+    }
+
   private:
     // ============================================
     // Grouped State
@@ -222,6 +228,23 @@ class ViewerApp
     unsigned char* pixels_;
 
     // ============================================
+    // Dialog State
+    // ============================================
+    // Owned production dialog instances (null until initialize())
+    std::unique_ptr<ImGuiFolderBrowser> file_browser_;
+    std::unique_ptr<ImGuiFolderBrowser> recording_browser_;
+
+    // Active dialog pointers (non-owning; point to owned instances OR test mocks)
+    IFileDialog* file_dialog_ = nullptr;
+    IFileDialog* recording_dialog_ = nullptr;
+
+    bool file_dialog_open_ = false;
+    bool recording_dialog_open_ = false;
+
+    // Last-confirmed simulation folder (persisted in window.cfg)
+    std::string last_confirmed_folder_;
+
+    // ============================================
     // Initialization Methods
     // ============================================
     void initScreen();
@@ -261,8 +284,10 @@ class ViewerApp
     // Frame Control
     // ============================================
     void seekFrame(int frames, bool forward);
+    void pauseIfPlaying();
     void processMinorKeys();
-    void handleLoadFile();
+    void handleLoadFromFolder(const std::string& folder);
+    void openRecordingFolderDialog();
 
     // ============================================
     // Input Handling

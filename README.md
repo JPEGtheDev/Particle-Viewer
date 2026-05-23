@@ -65,7 +65,6 @@ This is a project created by Jonathan Petz for Tarleton State University's Parti
 
 ### Embedded
 * [stb](https://github.com/nothings/stb) 
-* [Tiny File Dialogs](http://sourceforge.net/projects/tinyfiledialogs/)
 * [GLAD](https://github.com/Dav1dde/glad)
 
 ### Downloaded at Build Time (via CMake FetchContent)

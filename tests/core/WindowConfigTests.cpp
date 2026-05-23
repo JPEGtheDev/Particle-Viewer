@@ -408,3 +408,88 @@ TEST_F(WindowConfigTest, SaveWindowConfig_DefaultUiScale_KeyAbsentInFile)
     // Assert — sentinel 0.0f must NOT produce a ui_scale key in the file
     EXPECT_EQ(contents.find("ui_scale="), std::string::npos);
 }
+
+// ============================================
+// Last Confirmed Folder Tests
+// ============================================
+
+TEST_F(WindowConfigTest, SaveThenLoad_LastConfirmedFolder_RoundTrips)
+{
+    // Arrange
+    const std::string save_folder = "/home/user/simulations/run42";
+    saveWindowConfig(test_config_path, 1920, 1080, false, 0.0f, &save_folder);
+
+    // Act
+    int width = 0;
+    int height = 0;
+    bool fullscreen = false;
+    std::string load_folder = "default_value";
+    loadWindowConfig(test_config_path, width, height, fullscreen, nullptr, &load_folder);
+
+    // Assert
+    EXPECT_EQ(load_folder, save_folder);
+}
+
+TEST_F(WindowConfigTest, Load_WithoutLastConfirmedFolderKey_LeavesOutParamUnchanged)
+{
+    // Arrange — file has no last_confirmed_folder key
+    std::ofstream file(test_config_path);
+    file << "width=1920\nheight=1080\nfullscreen=0\n";
+    file.close();
+    std::string folder = "/my/default/path"; // caller pre-initialized default
+
+    // Act
+    int width = 0;
+    int height = 0;
+    bool fullscreen = false;
+    loadWindowConfig(test_config_path, width, height, fullscreen, nullptr, &folder);
+
+    // Assert — key absent, default must be preserved unchanged
+    EXPECT_EQ(folder, "/my/default/path");
+}
+
+TEST_F(WindowConfigTest, SaveWindowConfig_NullLastConfirmedFolder_DoesNotWriteKey)
+{
+    // Arrange — save with nullptr (key must be absent)
+    saveWindowConfig(test_config_path, 1920, 1080, false, 0.0f, nullptr);
+
+    // Act — read raw file content
+    std::ifstream file(test_config_path);
+    std::string contents((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+    // Assert — key must not appear in the file
+    EXPECT_EQ(contents.find("last_confirmed_folder="), std::string::npos);
+}
+
+TEST_F(WindowConfigTest, SaveWindowConfig_EmptyLastConfirmedFolder_DoesNotWriteKey)
+{
+    // Arrange
+    const std::string empty_folder;
+    saveWindowConfig(test_config_path, 1920, 1080, false, 0.0f, &empty_folder);
+
+    // Act
+    std::ifstream file(test_config_path);
+    std::string contents((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+    // Assert
+    EXPECT_EQ(contents.find("last_confirmed_folder="), std::string::npos);
+}
+
+TEST_F(WindowConfigTest, SaveWindowConfig_FolderWithNewline_NewlineStripped)
+{
+    // Arrange — a path containing a newline could corrupt the INI format by
+    // injecting additional keys into the file as separate lines.
+    const std::string folder = "/some/path\nmalicious_key=injected";
+    saveWindowConfig(test_config_path, 1920, 1080, false, 0.0f, &folder);
+
+    // Act
+    std::ifstream file(test_config_path);
+    std::string contents((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+    // Assert — the injected text must not appear as a standalone line/key.
+    // After sanitization the newline is stripped, so "malicious_key" stays
+    // embedded in the value and never starts a new line.
+    EXPECT_EQ(contents.find("\nmalicious_key"), std::string::npos);
+    // The folder key itself must still be written (non-empty sanitized path)
+    EXPECT_NE(contents.find("last_confirmed_folder="), std::string::npos);
+}

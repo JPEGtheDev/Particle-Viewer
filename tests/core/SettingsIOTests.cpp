@@ -742,3 +742,52 @@ TEST_F(SettingsIOTest, CheckCOM_WithMissingCOMFile_ReturnsFalse)
     // Assert
     EXPECT_FALSE(result);
 }
+
+// ---- loadFromFolder() tests ----
+
+TEST_F(SettingsIOTest, LoadFromFolder_EmptyFolder_ReturnsThis)
+{
+    // Arrange
+    SettingsIO settings;
+    Particle part;
+
+    // Act
+    SettingsIO* result = settings.loadFromFolder("", &part, false);
+
+    // Assert — empty folder is a no-op; must return this
+    EXPECT_EQ(result, &settings);
+}
+
+TEST_F(SettingsIOTest, LoadFromFolder_EmptyFolder_DoesNotMutateState)
+{
+    // Arrange
+    SettingsIO settings;
+    Particle part;
+    const std::string original_pos = settings.posName;
+    const std::string original_stats = settings.statsName;
+
+    // Act
+    (void)settings.loadFromFolder("", &part, false);
+
+    // Assert — state unchanged after cancelled (empty) folder
+    EXPECT_EQ(settings.posName, original_pos);
+    EXPECT_EQ(settings.statsName, original_stats);
+}
+
+TEST_F(SettingsIOTest, LoadFromFolder_NonEmptyFolder_ReturnsNewObject)
+{
+    // Arrange
+    SettingsIO settings("", "", "");
+    Particle part;
+
+    // Act — non-existent folder; readPosVelFile fails gracefully
+    SettingsIO* result = settings.loadFromFolder("/nonexistent_pv_test_folder", &part, false);
+
+    // Assert — a new object must be allocated (not this)
+    EXPECT_NE(result, &settings);
+
+    // Cleanup
+    if (result != &settings) {
+        delete result;
+    }
+}

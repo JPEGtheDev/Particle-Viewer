@@ -28,6 +28,7 @@ struct CacheStatus
 struct MenuActions
 {
     bool load_file = false;
+    bool select_recording_folder = false;
     bool quit = false;
     bool change_resolution = false;
     bool toggle_fullscreen = false;
