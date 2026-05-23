@@ -72,6 +72,18 @@ TEST(MenuActions, ToggleDebugMode_DefaultsFalse)
     EXPECT_FALSE(a.toggle_debug_mode);
 }
 
+TEST(MenuState, IsRecording_DefaultsFalse)
+{
+    MenuState s;
+    EXPECT_FALSE(s.is_recording);
+}
+
+TEST(MenuActions, StopRecording_DefaultsFalse)
+{
+    MenuActions a;
+    EXPECT_FALSE(a.stop_recording);
+}
+
 // --- ViewerApp nav timer constants (Todo 3) ---
 // These require: NAV_INITIAL_DELAY_MS and NAV_REPEAT_DELAY_MS to be public static constexpr on ViewerApp
 

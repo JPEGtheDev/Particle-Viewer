@@ -171,6 +171,16 @@ MenuActions renderMainMenu(MenuState& state)
             }
             ImGui::EndMenu();
         }
+        if (state.is_recording) {
+            // Right-align the REC indicator in the remaining menu bar space
+            const float text_w = ImGui::CalcTextSize("  \xe2\x97\x8f REC  ").x;
+            const float avail_x = ImGui::GetContentRegionAvail().x;
+            const float offset = avail_x - text_w - ImGui::GetStyle().ItemSpacing.x;
+            if (offset > 0.0f) {
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
+            }
+            ImGui::TextColored(ImVec4(1.0f, 0.25f, 0.25f, 1.0f), "  \xe2\x97\x8f REC  ");
+        }
         ImGui::EndMainMenuBar();
     }
 
@@ -266,9 +276,16 @@ MenuActions renderControllerPanel(MenuState& state)
         actions.load_file = true;
         actions.close_panel = true;
     });
-    item("Recording Folder", state.file_loading_enabled, [&] {
-        actions.select_recording_folder = true;
-        actions.close_panel = true;
+    const char* rec_label = state.is_recording ? "Stop Recording" : "Recording Folder";
+    const bool rec_enabled = state.is_recording || state.file_loading_enabled;
+    item(rec_label, rec_enabled, [&] {
+        if (state.is_recording) {
+            actions.stop_recording = true;
+            actions.close_panel = true;
+        } else {
+            actions.select_recording_folder = true;
+            actions.close_panel = true;
+        }
     });
 
     // Close button — always enabled, always last item
@@ -309,7 +326,10 @@ MenuActions renderControllerPanel(MenuState& state)
                 }
                 break;
             case 5:
-                if (state.file_loading_enabled) {
+                if (state.is_recording) {
+                    actions.stop_recording = true;
+                    actions.close_panel = true;
+                } else if (state.file_loading_enabled) {
                     actions.select_recording_folder = true;
                     actions.close_panel = true;
                 }

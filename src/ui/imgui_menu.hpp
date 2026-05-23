@@ -39,6 +39,7 @@ struct MenuActions
     float new_scale = 1.0f;         // the newly selected scale value (only valid when scale_changed == true)
     bool toggle_debug_mode = false; // toggles debug_mode in MenuState
     bool close_panel = false;       // close the controller panel and exit MenuMode
+    bool stop_recording = false;    // stop an active recording
 };
 
 /*
@@ -58,6 +59,7 @@ struct MenuState
     int selected_panel_item = -1;       // currently highlighted item index; -1 = none
     int panel_item_count = 0;           // total selectable items in panel this frame
     bool confirm_panel_item = false;    // A-button confirm pending; read+reset by panel
+    bool is_recording = false;          // mirrors recording_.is_active; set by ViewerApp each frame
 };
 
 /*

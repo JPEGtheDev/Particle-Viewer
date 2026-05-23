@@ -346,6 +346,7 @@ void ViewerApp::run()
         // renderMainMenu so the UI reflects values from the current frame.
         menu_state_.auto_com_compute = auto_com_compute_;
         menu_state_.ui_scale = window_.ui_scale;
+        menu_state_.is_recording = recording_.is_active;
         const std::size_t cached_frames = frame_cache_ ? frame_cache_->cachedCount() : 0;
         menu_state_.cache_status.frames_cached = static_cast<int>(cached_frames);
         menu_state_.cache_status.bytes_used = frame_cache_ ? cached_frames * frame_cache_->frameSizeBytes() : 0;
@@ -370,6 +371,10 @@ void ViewerApp::run()
                 }
                 if (panel_actions.close_panel && current_mode_ == InputMode::MenuMode) {
                     toggleControllerPanel();
+                }
+                if (panel_actions.stop_recording) {
+                    recording_.is_active = false;
+                    recording_.folder = "";
                 }
             }
             if (actions.load_file) {
