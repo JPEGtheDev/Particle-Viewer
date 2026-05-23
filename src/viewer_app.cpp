@@ -743,6 +743,23 @@ void ViewerApp::handleKeyEvent(unsigned int scancode, bool is_pressed, unsigned 
         return;
     }
 
+    // In MenuMode: only handle panel navigation and panel toggle
+    if (current_mode_ == InputMode::MenuMode) {
+        if (is_pressed) {
+            const int count = menu_state_.panel_item_count;
+            if (scancode == SDL_SCANCODE_DOWN) {
+                menu_state_.selected_panel_item = applyNavMove(menu_state_.selected_panel_item, count, 1);
+            } else if (scancode == SDL_SCANCODE_UP) {
+                menu_state_.selected_panel_item = applyNavMove(menu_state_.selected_panel_item, count, -1);
+            } else if (scancode == SDL_SCANCODE_RETURN || scancode == SDL_SCANCODE_KP_ENTER) {
+                menu_state_.confirm_panel_item = true;
+            } else if (scancode == SDL_SCANCODE_ESCAPE) {
+                toggleControllerPanel();
+            }
+        }
+        return;
+    }
+
     // Forward to camera if key is in valid range
     if (scancode < 1024) {
         cam_->KeyReader(static_cast<SDL_Scancode>(scancode), is_pressed);
@@ -901,12 +918,20 @@ void ViewerApp::toggleControllerPanel()
         menu_state_.settings_open = false;
         file_dialog_open_ = false;
         recording_dialog_open_ = false;
+        // Disable ImGui keyboard nav so arrow keys drive selected_panel_item,
+        // not ImGui's own nav cursor
+        if (imgui_initialized_) {
+            ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard;
+        }
         if (set_->isPlaying) {
             set_->togglePlay();
         }
     } else {
         current_mode_ = InputMode::ViewMode;
         menu_state_.controller_panel_open = false;
+        if (imgui_initialized_) {
+            ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+        }
     }
 }
 
@@ -917,8 +942,9 @@ void ViewerApp::processMenuNavigation()
     if (count <= 0)
         return;
 
-    const bool down = gamepad_.isButtonHeld(SDL_GAMEPAD_BUTTON_DPAD_DOWN);
-    const bool up = gamepad_.isButtonHeld(SDL_GAMEPAD_BUTTON_DPAD_UP);
+    const float stick_y = gamepad_.getLeftStickY();
+    const bool down = gamepad_.isButtonHeld(SDL_GAMEPAD_BUTTON_DPAD_DOWN) || (stick_y > NAV_STICK_THRESHOLD);
+    const bool up = gamepad_.isButtonHeld(SDL_GAMEPAD_BUTTON_DPAD_UP) || (stick_y < -NAV_STICK_THRESHOLD);
 
     if (down || up) {
         const bool first_press = (nav_last_nav_time_ms_ == 0);

@@ -173,6 +173,9 @@ class ViewerApp
     static constexpr Uint64 NAV_INITIAL_DELAY_MS = 300; // delay before first D-pad repeat
     static constexpr Uint64 NAV_REPEAT_DELAY_MS = 150;  // interval between subsequent repeats
     static_assert(NAV_REPEAT_DELAY_MS < NAV_INITIAL_DELAY_MS, "Repeat delay must be shorter than initial delay");
+    // Left-stick Y threshold for panel navigation (normalized 0..1)
+    static constexpr float NAV_STICK_THRESHOLD = 0.5f;
+    static_assert(NAV_STICK_THRESHOLD > 0.0f && NAV_STICK_THRESHOLD < 1.0f, "Stick threshold must be in (0, 1)");
 
     // visible for testing — pure clamping helper used by processMenuNavigation()
     static int applyNavMove(int selected, int count, int delta)

@@ -92,6 +92,14 @@ TEST(ViewerApp, NavRepeatDelayMs_LessThanInitialDelay)
 // ViewerApp requires an OpenGL context, so direct unit-testing of this private
 // method is deferred to the integration test.
 
+// --- Nav constants ---
+
+TEST(NavConstants, StickNavThreshold_IsInValidNormalizedRange)
+{
+    EXPECT_GT(ViewerApp::NAV_STICK_THRESHOLD, 0.0f);
+    EXPECT_LT(ViewerApp::NAV_STICK_THRESHOLD, 1.0f);
+}
+
 // --- D-pad navigation (Todo 7) ---
 
 TEST(DpadNav, FirstDownPress_MovesFromMinusOneToZero)
