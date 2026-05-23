@@ -227,7 +227,8 @@ MenuActions renderControllerPanel(MenuState& state)
 
     state.button_hints_visible = true;
 
-    ImGui::SetNextWindowPos(ImGui::GetMainViewport()->Pos, ImGuiCond_Always, {0.0f, 0.0f});
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
     ImGui::Begin("Controller Panel", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize);
 
     ImGui::Text("D-pad: Navigate | A: Select | B: Close");

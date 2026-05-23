@@ -897,6 +897,10 @@ void ViewerApp::toggleControllerPanel()
         current_mode_ = InputMode::MenuMode;
         menu_state_.controller_panel_open = true;
         menu_state_.selected_panel_item = -1;
+        // Close any open dialogs/windows that must not coexist with the panel
+        menu_state_.settings_open = false;
+        file_dialog_open_ = false;
+        recording_dialog_open_ = false;
         if (set_->isPlaying) {
             set_->togglePlay();
         }
