@@ -47,7 +47,7 @@ struct MenuActions
  */
 struct MenuState
 {
-    bool visible = true;
+    bool visible = false;
     bool debug_mode = false;
     bool auto_com_compute = false;      // reflects the current auto-COM toggle state
     CacheStatus cache_status;           // populated by ViewerApp each frame

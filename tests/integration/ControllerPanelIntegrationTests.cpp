@@ -32,7 +32,7 @@ TEST(ControllerPanelIntegration, MenuState_ControllerPanelFields_DefaultsCorrect
 TEST(ControllerPanelIntegration, MenuState_BaseFields_DefaultsCorrect)
 {
     MenuState state;
-    EXPECT_TRUE(state.visible);
+    EXPECT_FALSE(state.visible);
     EXPECT_FALSE(state.debug_mode);
     EXPECT_FALSE(state.auto_com_compute);
     EXPECT_FALSE(state.settings_open);
