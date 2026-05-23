@@ -22,6 +22,12 @@ TEST(InputMode, TwoModes_AreDistinct)
 
 // --- MenuState new fields (Todo 2) ---
 
+TEST(MenuActions, ClosePanelDefaultsFalse)
+{
+    MenuActions a;
+    EXPECT_FALSE(a.close_panel);
+}
+
 TEST(MenuState, ControllerPanelOpen_DefaultsFalse)
 {
     MenuState s;

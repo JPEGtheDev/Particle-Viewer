@@ -262,8 +262,14 @@ MenuActions renderControllerPanel(MenuState& state)
     item("Auto-COM", true, [&] { actions.toggle_auto_com = true; });
     item("Debug Mode", true, [&] { actions.toggle_debug_mode = true; });
     item("Quit", true, [&] { actions.quit = true; });
-    item("Load File", state.file_loading_enabled, [&] { actions.load_file = true; });
-    item("Recording Folder", state.file_loading_enabled, [&] { actions.select_recording_folder = true; });
+    item("Load File", state.file_loading_enabled, [&] {
+        actions.load_file = true;
+        actions.close_panel = true;
+    });
+    item("Recording Folder", state.file_loading_enabled, [&] {
+        actions.select_recording_folder = true;
+        actions.close_panel = true;
+    });
 
     // Close button — always enabled, always last item
     bool close_highlighted = (state.selected_panel_item == item_count);
@@ -271,7 +277,7 @@ MenuActions renderControllerPanel(MenuState& state)
         ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered]);
     }
     if (ImGui::Button("Close")) {
-        state.controller_panel_open = false;
+        actions.close_panel = true;
     }
     if (close_highlighted) {
         ImGui::PopStyleColor();
@@ -299,15 +305,17 @@ MenuActions renderControllerPanel(MenuState& state)
             case 4:
                 if (state.file_loading_enabled) {
                     actions.load_file = true;
+                    actions.close_panel = true;
                 }
                 break;
             case 5:
                 if (state.file_loading_enabled) {
                     actions.select_recording_folder = true;
+                    actions.close_panel = true;
                 }
                 break;
             case 6:
-                state.controller_panel_open = false;
+                actions.close_panel = true;
                 break;
             default:
                 break;

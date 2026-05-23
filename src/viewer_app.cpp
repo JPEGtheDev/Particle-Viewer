@@ -368,6 +368,9 @@ void ViewerApp::run()
                 if (panel_actions.toggle_debug_mode) {
                     menu_state_.debug_mode = !menu_state_.debug_mode;
                 }
+                if (panel_actions.close_panel && current_mode_ == InputMode::MenuMode) {
+                    toggleControllerPanel();
+                }
             }
             if (actions.load_file) {
                 pauseIfPlaying();
@@ -803,6 +806,10 @@ void ViewerApp::handleKeyEvent(unsigned int scancode, bool is_pressed, unsigned 
 void ViewerApp::processGamepadInput()
 {
     if (!gamepad_.isConnected()) {
+        return;
+    }
+    // Block all gamepad input while a file dialog is open
+    if (file_dialog_open_ || recording_dialog_open_) {
         return;
     }
 

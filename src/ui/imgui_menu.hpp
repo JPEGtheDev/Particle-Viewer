@@ -38,6 +38,7 @@ struct MenuActions
     bool scale_changed = false;     // user selected a new UI scale
     float new_scale = 1.0f;         // the newly selected scale value (only valid when scale_changed == true)
     bool toggle_debug_mode = false; // toggles debug_mode in MenuState
+    bool close_panel = false;       // close the controller panel and exit MenuMode
 };
 
 /*
