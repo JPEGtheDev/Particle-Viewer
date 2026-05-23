@@ -73,7 +73,8 @@ MenuActions renderMainMenu(MenuState& state);
  * Renders the controller panel overlay when state.controller_panel_open is true.
  * Resets state.button_hints_visible to false when the panel is closed.
  * When open, also updates state.panel_item_count and sets button_hints_visible = true.
- * May set state.controller_panel_open to false when the Close item is activated.
+ * Never mutates state.controller_panel_open directly — close actions are signalled
+ * via MenuActions::close_panel and handled by the caller.
  * Returns actions triggered by panel item selection.
  * Call after renderMainMenu() each frame.
  */

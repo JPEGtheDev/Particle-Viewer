@@ -751,7 +751,35 @@ void ViewerApp::handleKeyEvent(unsigned int scancode, bool is_pressed, unsigned 
         keys_[scancode] = is_pressed;
     }
 
-    // If ImGui wants keyboard input, only process menu toggle keys (F1/F3)
+    // In MenuMode: panel nav keys consume the event and return. Non-nav keys
+    // (Space, F1, F3, etc.) fall through so global shortcuts remain active —
+    // the panel is non-modal for keyboard. WantCaptureKeyboard is checked
+    // AFTER this block so ImGui focus on the panel window cannot block nav.
+    if (current_mode_ == InputMode::MenuMode) {
+        if (is_pressed) {
+            const int count = menu_state_.panel_item_count;
+            if (scancode == SDL_SCANCODE_DOWN) {
+                menu_state_.selected_panel_item = applyNavMove(menu_state_.selected_panel_item, count, 1);
+                return;
+            }
+            if (scancode == SDL_SCANCODE_UP) {
+                menu_state_.selected_panel_item = applyNavMove(menu_state_.selected_panel_item, count, -1);
+                return;
+            }
+            if (scancode == SDL_SCANCODE_RETURN || scancode == SDL_SCANCODE_KP_ENTER) {
+                menu_state_.confirm_panel_item = true;
+                return;
+            }
+            if (scancode == SDL_SCANCODE_ESCAPE) {
+                toggleControllerPanel();
+                return;
+            }
+        }
+        // Non-nav keys fall through to global shortcuts below
+    }
+
+    // If ImGui wants keyboard input (and we are not in MenuMode nav),
+    // only process global toggle keys (F1/F3) and swallow everything else.
     if (imgui_initialized_ && ImGui::GetIO().WantCaptureKeyboard) {
         if (scancode == SDL_SCANCODE_F1 && is_pressed) {
             menu_state_.visible = !menu_state_.visible;
@@ -762,42 +790,26 @@ void ViewerApp::handleKeyEvent(unsigned int scancode, bool is_pressed, unsigned 
         return;
     }
 
-    // In MenuMode: only handle panel navigation and panel toggle
-    if (current_mode_ == InputMode::MenuMode) {
-        if (is_pressed) {
-            const int count = menu_state_.panel_item_count;
-            if (scancode == SDL_SCANCODE_DOWN) {
-                menu_state_.selected_panel_item = applyNavMove(menu_state_.selected_panel_item, count, 1);
-            } else if (scancode == SDL_SCANCODE_UP) {
-                menu_state_.selected_panel_item = applyNavMove(menu_state_.selected_panel_item, count, -1);
-            } else if (scancode == SDL_SCANCODE_RETURN || scancode == SDL_SCANCODE_KP_ENTER) {
-                menu_state_.confirm_panel_item = true;
-            } else if (scancode == SDL_SCANCODE_ESCAPE) {
-                toggleControllerPanel();
-            }
-        }
-        return;
-    }
-
-    // Forward to camera if key is in valid range
-    if (scancode < 1024) {
+    // Camera movement — ViewMode only; panel is non-modal for global shortcuts
+    // but camera input while the panel is open is disorienting.
+    if (current_mode_ == InputMode::ViewMode && scancode < 1024) {
         cam_->KeyReader(static_cast<SDL_Scancode>(scancode), is_pressed);
     }
 
-    if (scancode == SDL_SCANCODE_ESCAPE && is_pressed) {
+    if (scancode == SDL_SCANCODE_ESCAPE && is_pressed && current_mode_ == InputMode::ViewMode) {
         toggleControllerPanel();
     }
     if (scancode == SDL_SCANCODE_SPACE && is_pressed) {
         set_->togglePlay();
     }
-    if (scancode == SDL_SCANCODE_T && is_pressed) {
+    if (scancode == SDL_SCANCODE_T && is_pressed && current_mode_ == InputMode::ViewMode) {
         pauseIfPlaying();
         file_dialog_open_ = true;
     }
-    if (scancode == SDL_SCANCODE_RIGHT && is_pressed) {
+    if (scancode == SDL_SCANCODE_RIGHT && is_pressed && current_mode_ == InputMode::ViewMode) {
         seekFrame(1, true);
     }
-    if (scancode == SDL_SCANCODE_LEFT && is_pressed) {
+    if (scancode == SDL_SCANCODE_LEFT && is_pressed && current_mode_ == InputMode::ViewMode) {
         seekFrame(1, false);
     }
     if (scancode == SDL_SCANCODE_F1 && is_pressed) {
@@ -806,7 +818,7 @@ void ViewerApp::handleKeyEvent(unsigned int scancode, bool is_pressed, unsigned 
     if (scancode == SDL_SCANCODE_F3 && is_pressed) {
         menu_state_.debug_mode = !menu_state_.debug_mode;
     }
-    if (scancode == SDL_SCANCODE_R && is_pressed) {
+    if (scancode == SDL_SCANCODE_R && is_pressed && current_mode_ == InputMode::ViewMode) {
         openRecordingFolderDialog();
         if (recording_.is_active) {
             recording_.folder = "";
@@ -824,7 +836,10 @@ void ViewerApp::processGamepadInput()
     if (!gamepad_.isConnected()) {
         return;
     }
-    // Block all gamepad input while a file dialog is open
+    // Block all gamepad input while a file dialog is open. The panel emits
+    // close_panel before opening any dialog, so we are always in ViewMode here;
+    // suspending Start/B during a dialog is intentional — the user must
+    // dismiss the dialog before returning to controller navigation.
     if (file_dialog_open_ || recording_dialog_open_) {
         return;
     }

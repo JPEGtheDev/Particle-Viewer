@@ -5,7 +5,7 @@
  *
  * Verifies that MenuState and MenuActions types from imgui_menu.hpp compose
  * correctly with the InputMode enum from input/input_mode.hpp in a single
- * translation unit (AC10: renderMainMenu() is independent of InputMode).
+ * translation unit, and that all struct fields default-initialize correctly.
  *
  * Tests that require an active ImGui/OpenGL context (renderMainMenu(),
  * renderControllerPanel(), ViewerApp) are covered by visual regression tests.
