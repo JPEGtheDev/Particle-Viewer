@@ -376,6 +376,17 @@ void ViewerApp::run()
                     recording_.is_active = false;
                     recording_.folder = "";
                 }
+                // Defensive sync: if panel was closed via a path that bypassed
+                // toggleControllerPanel() (e.g. direct ImGui close), exit MenuMode.
+                if (!menu_state_.controller_panel_open && current_mode_ == InputMode::MenuMode) {
+                    current_mode_ = InputMode::ViewMode;
+                    if (imgui_initialized_) {
+                        ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+                    }
+                    nav_last_nav_time_ms_ = 0;
+                    nav_had_initial_repeat_ = false;
+                    menu_state_.confirm_panel_item = false;
+                }
             }
             if (actions.load_file) {
                 pauseIfPlaying();
@@ -926,6 +937,9 @@ void ViewerApp::toggleControllerPanel()
         current_mode_ = InputMode::MenuMode;
         menu_state_.controller_panel_open = true;
         menu_state_.selected_panel_item = -1;
+        menu_state_.confirm_panel_item = false;
+        nav_last_nav_time_ms_ = 0;
+        nav_had_initial_repeat_ = false;
         // Close any open dialogs/windows that must not coexist with the panel
         menu_state_.settings_open = false;
         file_dialog_open_ = false;
@@ -941,6 +955,9 @@ void ViewerApp::toggleControllerPanel()
     } else {
         current_mode_ = InputMode::ViewMode;
         menu_state_.controller_panel_open = false;
+        nav_last_nav_time_ms_ = 0;
+        nav_had_initial_repeat_ = false;
+        menu_state_.confirm_panel_item = false;
         if (imgui_initialized_) {
             ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         }

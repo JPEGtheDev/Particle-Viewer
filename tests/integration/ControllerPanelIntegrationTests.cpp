@@ -1,7 +1,7 @@
 /*
  * ControllerPanelIntegrationTests.cpp
  *
- * Integration tests for the controller panel feature (Issue #113).
+ * Compile-probe tests for the controller panel feature (Issue #113).
  *
  * Verifies that MenuState and MenuActions types from imgui_menu.hpp compose
  * correctly with the InputMode enum from input/input_mode.hpp in a single
@@ -9,6 +9,7 @@
  *
  * Tests that require an active ImGui/OpenGL context (renderMainMenu(),
  * renderControllerPanel(), ViewerApp) are covered by visual regression tests.
+ * These tests cover struct defaults and header coexistence only.
  */
 
 #include <gtest/gtest.h>
@@ -18,7 +19,7 @@
 
 // --- MenuState default values ---
 
-TEST(ControllerPanelIntegration, MenuState_ControllerPanelFields_DefaultsCorrect)
+TEST(ControllerPanelCompileProbe, MenuState_ControllerPanelFields_DefaultsCorrect)
 {
     MenuState state;
     EXPECT_FALSE(state.controller_panel_open);
@@ -29,7 +30,7 @@ TEST(ControllerPanelIntegration, MenuState_ControllerPanelFields_DefaultsCorrect
     EXPECT_TRUE(state.file_loading_enabled);
 }
 
-TEST(ControllerPanelIntegration, MenuState_BaseFields_DefaultsCorrect)
+TEST(ControllerPanelCompileProbe, MenuState_BaseFields_DefaultsCorrect)
 {
     MenuState state;
     EXPECT_FALSE(state.visible);
@@ -41,7 +42,7 @@ TEST(ControllerPanelIntegration, MenuState_BaseFields_DefaultsCorrect)
 
 // --- MenuActions default values ---
 
-TEST(ControllerPanelIntegration, MenuActions_AllBoolFlags_DefaultFalse)
+TEST(ControllerPanelCompileProbe, MenuActions_AllBoolFlags_DefaultFalse)
 {
     MenuActions actions;
     EXPECT_FALSE(actions.quit);
@@ -56,7 +57,7 @@ TEST(ControllerPanelIntegration, MenuActions_AllBoolFlags_DefaultFalse)
 
 // --- Compilation probe ---
 
-TEST(ControllerPanelIntegration, TypesCoexist_InSameTranslationUnit)
+TEST(ControllerPanelCompileProbe, TypesCoexist_InSameTranslationUnit)
 {
     // If this file compiles, InputMode and MenuState headers do not conflict.
     MenuState state;
