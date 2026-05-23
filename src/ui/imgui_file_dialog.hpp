@@ -120,7 +120,8 @@ inline void ImGuiFolderBrowser::refreshEntries()
     m_entries.clear();
 
     try {
-        for (const auto& entry : std::filesystem::directory_iterator(m_currentDir)) {
+        for (const auto& entry : std::filesystem::directory_iterator(
+                 m_currentDir, std::filesystem::directory_options::skip_permission_denied)) {
             const std::string fname = entry.path().filename().string();
             if (fname.empty() || fname[0] == '.') {
                 continue; // hide dot-dirs and dot-files
@@ -147,6 +148,11 @@ inline void ImGuiFolderBrowser::refreshEntries()
 
 inline std::string ImGuiFolderBrowser::tryConfirm()
 {
+    if (m_selectedEntry.empty()) {
+        m_errorMsg = "No folder selected";
+        return {};
+    }
+
     try {
         const std::filesystem::path path = std::filesystem::weakly_canonical(m_selectedEntry);
 

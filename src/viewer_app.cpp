@@ -757,7 +757,7 @@ void ViewerApp::handleKeyEvent(unsigned int scancode, bool is_pressed, unsigned 
         menu_state_.debug_mode = !menu_state_.debug_mode;
     }
     if (scancode == SDL_SCANCODE_R && is_pressed) {
-        if (!recording_.is_active) {
+        if (!recording_.is_active && !recording_dialog_open_) {
             recording_.error_count = 0;
             openRecordingFolderDialog();
             return;
