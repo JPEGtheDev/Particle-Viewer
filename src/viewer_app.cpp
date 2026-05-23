@@ -358,6 +358,17 @@ void ViewerApp::run()
 
             // Render ImGui menu and process actions
             MenuActions actions = renderMainMenu(menu_state_);
+            {
+                MenuActions panel_actions = renderControllerPanel(menu_state_);
+                actions.load_file |= panel_actions.load_file;
+                actions.select_recording_folder |= panel_actions.select_recording_folder;
+                actions.quit |= panel_actions.quit;
+                actions.toggle_fullscreen |= panel_actions.toggle_fullscreen;
+                actions.toggle_auto_com |= panel_actions.toggle_auto_com;
+                if (panel_actions.toggle_debug_mode) {
+                    menu_state_.debug_mode = !menu_state_.debug_mode;
+                }
+            }
             if (actions.load_file) {
                 pauseIfPlaying();
                 file_dialog_open_ = true;
@@ -738,7 +749,7 @@ void ViewerApp::handleKeyEvent(unsigned int scancode, bool is_pressed, unsigned 
     }
 
     if (scancode == SDL_SCANCODE_ESCAPE && is_pressed) {
-        context_->setShouldClose(true);
+        toggleControllerPanel();
     }
     if (scancode == SDL_SCANCODE_SPACE && is_pressed) {
         set_->togglePlay();
@@ -778,87 +789,152 @@ void ViewerApp::processGamepadInput()
         return;
     }
 
-    // Look sensitivity (degrees per frame at full deflection)
-    constexpr float LOOK_SPEED = 3.0f;
-    // Zoom increment per frame at full stick deflection
-    constexpr float ZOOM_SPEED = 0.5f;
-    // Trigger threshold before frame seeking activates (0..1)
-    constexpr float TRIGGER_THRESHOLD = 0.3f;
+    if (current_mode_ == InputMode::ViewMode) {
+        // Look sensitivity (degrees per frame at full deflection)
+        constexpr float LOOK_SPEED = 3.0f;
+        // Zoom increment per frame at full stick deflection
+        constexpr float ZOOM_SPEED = 0.5f;
+        // Trigger threshold before frame seeking activates (0..1)
+        constexpr float TRIGGER_THRESHOLD = 0.3f;
 
-    const float left_x = gamepad_.getLeftStickX();
-    const float left_y = gamepad_.getLeftStickY();
-    const float right_x = gamepad_.getRightStickX();
-    const float right_y = gamepad_.getRightStickY();
-    const float left_trigger = gamepad_.getLeftTrigger();
-    const float right_trigger = gamepad_.getRightTrigger();
+        const float left_x = gamepad_.getLeftStickX();
+        const float left_y = gamepad_.getLeftStickY();
+        const float right_x = gamepad_.getRightStickX();
+        const float right_y = gamepad_.getRightStickY();
+        const float left_trigger = gamepad_.getLeftTrigger();
+        const float right_trigger = gamepad_.getRightTrigger();
 
-    // X (West) — speed boost while held (mirrors Shift key)
-    cam_->setSpeedBoost(gamepad_.isButtonHeld(SDL_GAMEPAD_BUTTON_WEST));
+        // X (West) — speed boost while held (mirrors Shift key)
+        cam_->setSpeedBoost(gamepad_.isButtonHeld(SDL_GAMEPAD_BUTTON_WEST));
 
-    // ---- Movement / Orbit ----
-    // When rotation is locked (orbit mode) the left stick orbits the sphere;
-    // otherwise it provides free-camera movement.
-    if (cam_->isRotLocked()) {
-        // Orbit: replicate W/A/S/D rotLock behaviour with analog input
-        cam_->applyGamepadOrbit(left_y, left_x);
-        // Right stick Y zooms (adjusts sphere distance) when locked
-        if (right_y != 0.0f) {
-            cam_->adjustSphereDistance(right_y * ZOOM_SPEED);
+        // ---- Movement / Orbit ----
+        // When rotation is locked (orbit mode) the left stick orbits the sphere;
+        // otherwise it provides free-camera movement.
+        if (cam_->isRotLocked()) {
+            // Orbit: replicate W/A/S/D rotLock behaviour with analog input
+            cam_->applyGamepadOrbit(left_y, left_x);
+            // Right stick Y zooms (adjusts sphere distance) when locked
+            if (right_y != 0.0f) {
+                cam_->adjustSphereDistance(right_y * ZOOM_SPEED);
+            }
+        } else {
+            // Free camera movement
+            cam_->applyGamepadMovement(left_y, left_x);
+            // Right stick look
+            cam_->applyGamepadLook(right_x * LOOK_SPEED, right_y * LOOK_SPEED);
+        }
+
+        // L3 / R3 adjust sphere distance when the sphere is visible
+        if (cam_->isRenderingSphere()) {
+            if (gamepad_.isButtonHeld(SDL_GAMEPAD_BUTTON_LEFT_STICK)) {
+                cam_->adjustSphereDistance(-ZOOM_SPEED);
+            }
+            if (gamepad_.isButtonHeld(SDL_GAMEPAD_BUTTON_RIGHT_STICK)) {
+                cam_->adjustSphereDistance(ZOOM_SPEED);
+            }
+        }
+
+        // ---- Frame Playback ----
+        // Triggers: fast-forward / rewind (continuous, mirrors Q/E keys)
+        if (right_trigger > TRIGGER_THRESHOLD) {
+            seekFrame(3, true);
+        }
+        if (left_trigger > TRIGGER_THRESHOLD) {
+            seekFrame(3, false);
+        }
+
+        // Bumpers: single-frame advance / rewind (mirrors arrow keys)
+        if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER)) {
+            seekFrame(1, true);
+        }
+        if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_LEFT_SHOULDER)) {
+            seekFrame(1, false);
+        }
+
+        // ---- Action Buttons ----
+        // A (South) — toggle play/pause
+        if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_SOUTH)) {
+            set_->togglePlay();
+        }
+
+        // Back/Select — open file load dialog
+        if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_BACK)) {
+            pauseIfPlaying();
+            file_dialog_open_ = true;
+        }
+
+        // B (East) — cycle point lock state (mirrors P key)
+        if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_EAST)) {
+            cam_->cycleRotateState();
+        }
+
+        // Y (North) — toggle COM lock (mirrors O key, only active when rotation is locked)
+        if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_NORTH)) {
+            cam_->toggleComLock();
+        }
+    }
+
+    // Start — toggle controller panel (any mode)
+    if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_START)) {
+        toggleControllerPanel();
+    }
+    // B (East) in MenuMode — close controller panel
+    if (current_mode_ == InputMode::MenuMode && gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_EAST)) {
+        toggleControllerPanel();
+    }
+    // MenuMode navigation — D-pad repeat + A-confirm
+    if (current_mode_ == InputMode::MenuMode) {
+        processMenuNavigation();
+        if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_SOUTH) && menu_state_.selected_panel_item >= 0) {
+            menu_state_.confirm_panel_item = true;
+        }
+    }
+}
+
+void ViewerApp::toggleControllerPanel()
+{
+    if (current_mode_ == InputMode::ViewMode) {
+        current_mode_ = InputMode::MenuMode;
+        menu_state_.controller_panel_open = true;
+        menu_state_.selected_panel_item = -1;
+        if (set_->isPlaying) {
+            set_->togglePlay();
         }
     } else {
-        // Free camera movement
-        cam_->applyGamepadMovement(left_y, left_x);
-        // Right stick look
-        cam_->applyGamepadLook(right_x * LOOK_SPEED, right_y * LOOK_SPEED);
+        current_mode_ = InputMode::ViewMode;
+        menu_state_.controller_panel_open = false;
     }
+}
 
-    // L3 / R3 adjust sphere distance when the sphere is visible
-    if (cam_->isRenderingSphere()) {
-        if (gamepad_.isButtonHeld(SDL_GAMEPAD_BUTTON_LEFT_STICK)) {
-            cam_->adjustSphereDistance(-ZOOM_SPEED);
+void ViewerApp::processMenuNavigation()
+{
+    const Uint64 now = SDL_GetTicks();
+    const int count = menu_state_.panel_item_count;
+    if (count <= 0)
+        return;
+
+    const bool down = gamepad_.isButtonHeld(SDL_GAMEPAD_BUTTON_DPAD_DOWN);
+    const bool up = gamepad_.isButtonHeld(SDL_GAMEPAD_BUTTON_DPAD_UP);
+
+    if (down || up) {
+        const bool first_press = (nav_last_nav_time_ms_ == 0);
+        if (first_press) {
+            nav_last_nav_time_ms_ = now;
+            nav_had_initial_repeat_ = false;
+            const int delta = down ? 1 : -1;
+            menu_state_.selected_panel_item = applyNavMove(menu_state_.selected_panel_item, count, delta);
+        } else {
+            const Uint64 threshold = nav_had_initial_repeat_ ? NAV_REPEAT_DELAY_MS : NAV_INITIAL_DELAY_MS;
+            if ((now - nav_last_nav_time_ms_) >= threshold) {
+                nav_last_nav_time_ms_ = now;
+                nav_had_initial_repeat_ = true;
+                const int delta = down ? 1 : -1;
+                menu_state_.selected_panel_item = applyNavMove(menu_state_.selected_panel_item, count, delta);
+            }
         }
-        if (gamepad_.isButtonHeld(SDL_GAMEPAD_BUTTON_RIGHT_STICK)) {
-            cam_->adjustSphereDistance(ZOOM_SPEED);
-        }
-    }
-
-    // ---- Frame Playback ----
-    // Triggers: fast-forward / rewind (continuous, mirrors Q/E keys)
-    if (right_trigger > TRIGGER_THRESHOLD) {
-        seekFrame(3, true);
-    }
-    if (left_trigger > TRIGGER_THRESHOLD) {
-        seekFrame(3, false);
-    }
-
-    // Bumpers: single-frame advance / rewind (mirrors arrow keys)
-    if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER)) {
-        seekFrame(1, true);
-    }
-    if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_LEFT_SHOULDER)) {
-        seekFrame(1, false);
-    }
-
-    // ---- Action Buttons ----
-    // A (South) — toggle play/pause
-    if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_SOUTH)) {
-        set_->togglePlay();
-    }
-
-    // Back/Select — open file load dialog
-    if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_BACK)) {
-        pauseIfPlaying();
-        file_dialog_open_ = true;
-    }
-
-    // B (East) — cycle point lock state (mirrors P key)
-    if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_EAST)) {
-        cam_->cycleRotateState();
-    }
-
-    // Y (North) — toggle COM lock (mirrors O key, only active when rotation is locked)
-    if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_NORTH)) {
-        cam_->toggleComLock();
+    } else {
+        nav_last_nav_time_ms_ = 0;
+        nav_had_initial_repeat_ = false;
     }
 }
 

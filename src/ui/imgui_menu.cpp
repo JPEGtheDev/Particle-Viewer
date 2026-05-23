@@ -93,7 +93,7 @@ MenuActions renderMainMenu(MenuState& state)
                 actions.select_recording_folder = true;
             }
             ImGui::Separator();
-            if (ImGui::MenuItem("Quit", "Esc")) {
+            if (ImGui::MenuItem("Quit", nullptr)) {
                 actions.quit = true;
             }
             ImGui::EndMenu();
@@ -215,5 +215,103 @@ MenuActions renderMainMenu(MenuState& state)
         ImGui::End();
     }
 
+    return actions;
+}
+
+MenuActions renderControllerPanel(MenuState& state)
+{
+    if (!state.controller_panel_open) {
+        state.button_hints_visible = false;
+        return MenuActions{};
+    }
+
+    state.button_hints_visible = true;
+
+    ImGui::SetNextWindowPos(ImGui::GetMainViewport()->Pos, ImGuiCond_Always, {0.0f, 0.0f});
+    ImGui::Begin("Controller Panel", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize);
+
+    ImGui::Text("D-pad: Navigate | A: Select | B: Close");
+    ImGui::Separator();
+
+    int item_count = 0;
+    MenuActions actions;
+
+    auto item = [&](const char* label, bool enabled, auto action) {
+        bool highlighted = (state.selected_panel_item == item_count);
+        if (!enabled) {
+            ImGui::BeginDisabled();
+        }
+        if (highlighted) {
+            ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered]);
+        }
+        bool clicked = ImGui::Button(label);
+        if (highlighted) {
+            ImGui::PopStyleColor();
+        }
+        if (!enabled) {
+            ImGui::EndDisabled();
+        }
+        if (clicked) {
+            action();
+        }
+        ++item_count;
+    };
+
+    item("Fullscreen", true, [&] { actions.toggle_fullscreen = true; });
+    item("Auto-COM", true, [&] { actions.toggle_auto_com = true; });
+    item("Debug Mode", true, [&] { actions.toggle_debug_mode = true; });
+    item("Quit", true, [&] { actions.quit = true; });
+    item("Load File", state.file_loading_enabled, [&] { actions.load_file = true; });
+    item("Recording Folder", state.file_loading_enabled, [&] { actions.select_recording_folder = true; });
+
+    // Close button — always enabled, always last item
+    bool close_highlighted = (state.selected_panel_item == item_count);
+    if (close_highlighted) {
+        ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered]);
+    }
+    if (ImGui::Button("Close")) {
+        state.controller_panel_open = false;
+    }
+    if (close_highlighted) {
+        ImGui::PopStyleColor();
+    }
+    ++item_count;
+
+    state.panel_item_count = item_count;
+    if (state.confirm_panel_item) {
+        state.confirm_panel_item = false;
+        // Cases must match the item() registration order above:
+        // 0=Fullscreen, 1=Auto-COM, 2=Debug Mode, 3=Quit, 4=Load File, 5=Recording Folder, 6=Close
+        switch (state.selected_panel_item) {
+            case 0:
+                actions.toggle_fullscreen = true;
+                break;
+            case 1:
+                actions.toggle_auto_com = true;
+                break;
+            case 2:
+                actions.toggle_debug_mode = true;
+                break;
+            case 3:
+                actions.quit = true;
+                break;
+            case 4:
+                if (state.file_loading_enabled) {
+                    actions.load_file = true;
+                }
+                break;
+            case 5:
+                if (state.file_loading_enabled) {
+                    actions.select_recording_folder = true;
+                }
+                break;
+            case 6:
+                state.controller_panel_open = false;
+                break;
+            default:
+                break;
+        }
+    }
+    ImGui::End();
     return actions;
 }

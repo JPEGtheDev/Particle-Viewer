@@ -20,6 +20,7 @@
 // clang-format off
 // GLAD must come before other OpenGL-related headers
 #include <glad/glad.h>       // NOLINT(llvm-include-order)
+#include <SDL3/SDL.h>        // NOLINT(llvm-include-order) — for Uint64
 // clang-format on
 
 #include "COMCache.hpp"
@@ -33,6 +34,7 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "graphics/IOpenGLContext.hpp"
 #include "input/gamepad_input.hpp"
+#include "input/input_mode.hpp"
 #include "particle.hpp"
 #include "recording_state.hpp"
 #include "settingsIO.hpp"
@@ -167,6 +169,26 @@ class ViewerApp
         recording_dialog_ = d;
     }
 
+    // Nav timer delays (milliseconds) — public so tests can assert on them
+    static constexpr Uint64 NAV_INITIAL_DELAY_MS = 300; // delay before first D-pad repeat
+    static constexpr Uint64 NAV_REPEAT_DELAY_MS = 150;  // interval between subsequent repeats
+    static_assert(NAV_REPEAT_DELAY_MS < NAV_INITIAL_DELAY_MS, "Repeat delay must be shorter than initial delay");
+
+    // visible for testing — pure clamping helper used by processMenuNavigation()
+    static int applyNavMove(int selected, int count, int delta)
+    {
+        if (count <= 0)
+            return selected;
+        if (selected < 0)
+            return (delta != 0) ? 0 : selected;
+        const int next = selected + delta;
+        if (next < 0)
+            return 0;
+        if (next >= count)
+            return count - 1;
+        return next;
+    }
+
   private:
     // ============================================
     // Grouped State
@@ -191,6 +213,9 @@ class ViewerApp
     // ============================================
     GLboolean keys_[1024];
     GamepadInput gamepad_;
+    InputMode current_mode_ = InputMode::ViewMode; // ViewMode or MenuMode
+    Uint64 nav_last_nav_time_ms_ = 0;              // SDL tick timestamp of last D-pad navigation event
+    bool nav_had_initial_repeat_ = false; // true after the first auto-repeat fires (switches to NAV_REPEAT_DELAY_MS)
 
     // ============================================
     // Scene Objects
@@ -294,6 +319,8 @@ class ViewerApp
     // ============================================
     void handleKeyEvent(unsigned int scancode, bool is_pressed, unsigned int mods);
     void processGamepadInput();
+    void toggleControllerPanel(); // toggle MenuMode ↔ ViewMode and panel visibility
+    void processMenuNavigation(); // D-pad repeat timer and A-confirm for panel navigation
 
     // ============================================
     // Resource Cleanup
@@ -305,6 +332,7 @@ class ViewerApp
     // Helpers
     // ============================================
     static std::string extractFolder(const std::string& posName);
+
     void rebuildCacheInfrastructure();
     void teardownCacheInfrastructure();
     void createCOMInfrastructure();

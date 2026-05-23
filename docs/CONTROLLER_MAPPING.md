@@ -34,6 +34,8 @@ related:
 
 ## Input Mappings
 
+> **Input modes:** All mappings below apply in **View Mode** (the default). Opening the controller panel (Start or Esc) switches to **Menu Mode**, where **gamepad** camera, playback, and file inputs are suspended. See [Controller Panel / Menu Navigation](#controller-panel--menu-navigation) for Menu Mode bindings.
+
 ### Camera Movement
 
 | Input | Action |
@@ -79,7 +81,24 @@ Point lock states match the **P** key on the keyboard:
 
 | Input | Action |
 |-------|--------|
-| **Select / Back** | Open file load dialog |
+| **Select / Back** | Open file load dialog *(View Mode only; suspended in Menu Mode)* |
+| **Start** | Open / close controller panel |
+
+### Controller Panel / Menu Navigation
+
+Opening the controller panel switches to **Menu Mode**. All **gamepad** camera, playback, and file inputs are suspended until the panel is closed.
+
+| Input | Action |
+|-------|--------|
+| **Start** | Open / close controller panel *(any mode)* |
+| **Esc** *(keyboard)* | Open / close controller panel *(any mode)* |
+| **B button** | Close panel, return to View Mode *(Menu Mode only)* |
+| **D-pad ↑ / ↓** | Navigate panel items |
+| **A button** | Select / activate highlighted item |
+
+The controller panel exposes: Fullscreen, Auto-COM, Debug Mode, Quit, Load File, Recording Folder, and Close.
+
+> **Quit** is available only via the controller panel or the File menu. Esc no longer quits the application — it opens the controller panel.
 
 ## Keyboard Equivalents
 
@@ -90,6 +109,7 @@ Point lock states match the **P** key on the keyboard:
 | X (hold) | Shift (speed boost) |
 | Y | O |
 | Select/Back | T |
+| Start | Esc (open / close controller panel) |
 | RB / LB | → / ← |
 | RT / LT | E / Q |
 | L3 / R3 | `[` / `]` |

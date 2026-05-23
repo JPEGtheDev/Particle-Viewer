@@ -34,9 +34,10 @@ struct MenuActions
     bool toggle_fullscreen = false;
     int target_width = 0;
     int target_height = 0;
-    bool toggle_auto_com = false; // toggled by the COM/Cache submenu checkbox
-    bool scale_changed = false;   // user selected a new UI scale
-    float new_scale = 1.0f;       // the newly selected scale value (only valid when scale_changed == true)
+    bool toggle_auto_com = false;   // toggled by the COM/Cache submenu checkbox
+    bool scale_changed = false;     // user selected a new UI scale
+    float new_scale = 1.0f;         // the newly selected scale value (only valid when scale_changed == true)
+    bool toggle_debug_mode = false; // toggles debug_mode in MenuState
 };
 
 /*
@@ -46,10 +47,16 @@ struct MenuState
 {
     bool visible = true;
     bool debug_mode = false;
-    bool auto_com_compute = false; // reflects the current auto-COM toggle state
-    CacheStatus cache_status;      // populated by ViewerApp each frame
-    float ui_scale = 0.0f;         // current active UI scale (0.0 = not yet set)
-    bool settings_open = false;    // Settings window visibility
+    bool auto_com_compute = false;      // reflects the current auto-COM toggle state
+    CacheStatus cache_status;           // populated by ViewerApp each frame
+    float ui_scale = 0.0f;              // current active UI scale (0.0 = not yet set)
+    bool settings_open = false;         // Settings window visibility
+    bool controller_panel_open = false; // is the controller panel overlay visible?
+    bool button_hints_visible = false;  // show button hint row in panel
+    bool file_loading_enabled = true;   // enables file-load items in the controller panel
+    int selected_panel_item = -1;       // currently highlighted item index; -1 = none
+    int panel_item_count = 0;           // total selectable items in panel this frame
+    bool confirm_panel_item = false;    // A-button confirm pending; read+reset by panel
 };
 
 /*
@@ -58,5 +65,15 @@ struct MenuState
  * Call after ImGui::NewFrame() each frame.
  */
 MenuActions renderMainMenu(MenuState& state);
+
+/*
+ * Renders the controller panel overlay when state.controller_panel_open is true.
+ * Resets state.button_hints_visible to false when the panel is closed.
+ * When open, also updates state.panel_item_count and sets button_hints_visible = true.
+ * May set state.controller_panel_open to false when the Close item is activated.
+ * Returns actions triggered by panel item selection.
+ * Call after renderMainMenu() each frame.
+ */
+MenuActions renderControllerPanel(MenuState& state);
 
 #endif // PARTICLE_VIEWER_IMGUI_MENU_H
