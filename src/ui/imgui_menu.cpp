@@ -6,12 +6,29 @@
 
 #include "imgui_menu.hpp"
 
+#include <cassert>
 #include <cmath>
 #include <string>
 
 #include <SDL3/SDL.h>
 
 #include "imgui.h"
+
+/*
+ * Named indices for selectable items in the controller panel, in registration order.
+ * Each enumerator's integer value must equal the zero-based index of its corresponding
+ * item() call in renderControllerPanel(). Must stay in sync with those item() calls.
+ */
+enum class PanelItem : int
+{
+    FULLSCREEN = 0,
+    AUTO_COM,
+    DEBUG_MODE,
+    QUIT,
+    LOAD_FILE,
+    RECORDING_FOLDER,
+    CLOSE
+};
 
 /*
  * Helper to get the maximum window size that fits on the primary display.
@@ -93,7 +110,7 @@ MenuActions renderMainMenu(MenuState& state)
                 actions.select_recording_folder = true;
             }
             ImGui::Separator();
-            if (ImGui::MenuItem("Quit", "Esc")) {
+            if (ImGui::MenuItem("Quit", nullptr)) {
                 actions.quit = true;
             }
             ImGui::EndMenu();
@@ -171,6 +188,16 @@ MenuActions renderMainMenu(MenuState& state)
             }
             ImGui::EndMenu();
         }
+        if (state.is_recording) {
+            // Right-align the REC indicator in the remaining menu bar space
+            const float text_w = ImGui::CalcTextSize("  \xe2\x97\x8f REC  ").x;
+            const float avail_x = ImGui::GetContentRegionAvail().x;
+            const float offset = avail_x - text_w - ImGui::GetStyle().ItemSpacing.x;
+            if (offset > 0.0f) {
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
+            }
+            ImGui::TextColored(ImVec4(1.0f, 0.25f, 0.25f, 1.0f), "  \xe2\x97\x8f REC  ");
+        }
         ImGui::EndMainMenuBar();
     }
 
@@ -215,5 +242,112 @@ MenuActions renderMainMenu(MenuState& state)
         ImGui::End();
     }
 
+    return actions;
+}
+
+MenuActions renderControllerPanel(MenuState& state)
+{
+    if (!state.controller_panel_open) {
+        state.button_hints_visible = false;
+        return MenuActions{};
+    }
+
+    state.button_hints_visible = true;
+
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+    ImGui::Begin("Controller Panel", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize);
+
+    ImGui::Text("D-pad: Navigate | A: Select | B: Close");
+    ImGui::Separator();
+
+    int item_count = 0;
+    MenuActions actions;
+
+    auto item = [&](const char* label, bool enabled, auto action) {
+        bool highlighted = (state.selected_panel_item == item_count);
+        if (!enabled) {
+            ImGui::BeginDisabled();
+        }
+        if (highlighted) {
+            ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered]);
+        }
+        bool clicked = ImGui::Button(label);
+        if (highlighted) {
+            ImGui::PopStyleColor();
+        }
+        if (!enabled) {
+            ImGui::EndDisabled();
+        }
+        if (clicked) {
+            action();
+        }
+        ++item_count;
+    };
+
+    item("Fullscreen", true, [&] { actions.toggle_fullscreen = true; });
+    item("Auto-COM", true, [&] { actions.toggle_auto_com = true; });
+    item("Debug Mode", true, [&] { actions.toggle_debug_mode = true; });
+    item("Quit", true, [&] { actions.quit = true; });
+    item("Load File", state.file_loading_enabled, [&] {
+        actions.load_file = true;
+        actions.close_panel = true;
+    });
+    const char* rec_label = state.is_recording ? "Stop Recording" : "Recording Folder";
+    const bool rec_enabled = state.is_recording || state.file_loading_enabled;
+    item(rec_label, rec_enabled, [&] {
+        if (state.is_recording) {
+            actions.stop_recording = true;
+            actions.close_panel = true;
+        } else {
+            actions.select_recording_folder = true;
+            actions.close_panel = true;
+        }
+    });
+
+    item("Close", true, [&] { actions.close_panel = true; });
+
+    state.panel_item_count = item_count;
+    if (state.confirm_panel_item) {
+        state.confirm_panel_item = false;
+        if (state.selected_panel_item >= 0 && state.selected_panel_item < state.panel_item_count) {
+            switch (static_cast<PanelItem>(state.selected_panel_item)) {
+                case PanelItem::FULLSCREEN:
+                    actions.toggle_fullscreen = true;
+                    break;
+                case PanelItem::AUTO_COM:
+                    actions.toggle_auto_com = true;
+                    break;
+                case PanelItem::DEBUG_MODE:
+                    actions.toggle_debug_mode = true;
+                    break;
+                case PanelItem::QUIT:
+                    actions.quit = true;
+                    break;
+                case PanelItem::LOAD_FILE:
+                    if (state.file_loading_enabled) {
+                        actions.load_file = true;
+                        actions.close_panel = true;
+                    }
+                    break;
+                case PanelItem::RECORDING_FOLDER:
+                    if (state.is_recording) {
+                        actions.stop_recording = true;
+                        actions.close_panel = true;
+                    } else if (state.file_loading_enabled) {
+                        actions.select_recording_folder = true;
+                        actions.close_panel = true;
+                    }
+                    break;
+                case PanelItem::CLOSE:
+                    actions.close_panel = true;
+                    break;
+                default:
+                    assert(false && "selected_panel_item in-range but no PanelItem case — enum out of sync");
+                    break;
+            }
+        }
+    }
+    ImGui::End();
     return actions;
 }

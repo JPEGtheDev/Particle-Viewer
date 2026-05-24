@@ -346,6 +346,7 @@ void ViewerApp::run()
         // renderMainMenu so the UI reflects values from the current frame.
         menu_state_.auto_com_compute = auto_com_compute_;
         menu_state_.ui_scale = window_.ui_scale;
+        menu_state_.is_recording = recording_.is_active;
         const std::size_t cached_frames = frame_cache_ ? frame_cache_->cachedCount() : 0;
         menu_state_.cache_status.frames_cached = static_cast<int>(cached_frames);
         menu_state_.cache_status.bytes_used = frame_cache_ ? cached_frames * frame_cache_->frameSizeBytes() : 0;
@@ -358,6 +359,35 @@ void ViewerApp::run()
 
             // Render ImGui menu and process actions
             MenuActions actions = renderMainMenu(menu_state_);
+            {
+                MenuActions panel_actions = renderControllerPanel(menu_state_);
+                actions.load_file |= panel_actions.load_file;
+                actions.select_recording_folder |= panel_actions.select_recording_folder;
+                actions.quit |= panel_actions.quit;
+                actions.toggle_fullscreen |= panel_actions.toggle_fullscreen;
+                actions.toggle_auto_com |= panel_actions.toggle_auto_com;
+                if (panel_actions.toggle_debug_mode) {
+                    menu_state_.debug_mode = !menu_state_.debug_mode;
+                }
+                if (panel_actions.close_panel && current_mode_ == InputMode::MenuMode) {
+                    toggleControllerPanel();
+                }
+                if (panel_actions.stop_recording) {
+                    recording_.is_active = false;
+                    recording_.folder = "";
+                }
+                // Defensive sync: if panel was closed via a path that bypassed
+                // toggleControllerPanel() (e.g. direct ImGui close), exit MenuMode.
+                if (!menu_state_.controller_panel_open && current_mode_ == InputMode::MenuMode) {
+                    current_mode_ = InputMode::ViewMode;
+                    if (imgui_initialized_) {
+                        ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+                    }
+                    nav_last_nav_time_ms_ = 0;
+                    nav_had_initial_repeat_ = false;
+                    menu_state_.confirm_panel_item = false;
+                }
+            }
             if (actions.load_file) {
                 pauseIfPlaying();
                 file_dialog_open_ = true;
@@ -721,7 +751,35 @@ void ViewerApp::handleKeyEvent(unsigned int scancode, bool is_pressed, unsigned 
         keys_[scancode] = is_pressed;
     }
 
-    // If ImGui wants keyboard input, only process menu toggle keys (F1/F3)
+    // In MenuMode: panel nav keys consume the event and return. Non-nav keys
+    // (Space, F1, F3, etc.) fall through so global shortcuts remain active —
+    // the panel is non-modal for keyboard. WantCaptureKeyboard is checked
+    // AFTER this block so ImGui focus on the panel window cannot block nav.
+    if (current_mode_ == InputMode::MenuMode) {
+        if (is_pressed) {
+            const int count = menu_state_.panel_item_count;
+            if (scancode == SDL_SCANCODE_DOWN) {
+                menu_state_.selected_panel_item = applyNavMove(menu_state_.selected_panel_item, count, 1);
+                return;
+            }
+            if (scancode == SDL_SCANCODE_UP) {
+                menu_state_.selected_panel_item = applyNavMove(menu_state_.selected_panel_item, count, -1);
+                return;
+            }
+            if (scancode == SDL_SCANCODE_RETURN || scancode == SDL_SCANCODE_KP_ENTER) {
+                menu_state_.confirm_panel_item = true;
+                return;
+            }
+            if (scancode == SDL_SCANCODE_ESCAPE) {
+                toggleControllerPanel();
+                return;
+            }
+        }
+        // Non-nav keys fall through to global shortcuts below
+    }
+
+    // If ImGui wants keyboard input (and we are not in MenuMode nav),
+    // only process global toggle keys (F1/F3) and swallow everything else.
     if (imgui_initialized_ && ImGui::GetIO().WantCaptureKeyboard) {
         if (scancode == SDL_SCANCODE_F1 && is_pressed) {
             menu_state_.visible = !menu_state_.visible;
@@ -732,25 +790,26 @@ void ViewerApp::handleKeyEvent(unsigned int scancode, bool is_pressed, unsigned 
         return;
     }
 
-    // Forward to camera if key is in valid range
-    if (scancode < 1024) {
+    // Camera movement — ViewMode only; panel is non-modal for global shortcuts
+    // but camera input while the panel is open is disorienting.
+    if (current_mode_ == InputMode::ViewMode && scancode < 1024) {
         cam_->KeyReader(static_cast<SDL_Scancode>(scancode), is_pressed);
     }
 
-    if (scancode == SDL_SCANCODE_ESCAPE && is_pressed) {
-        context_->setShouldClose(true);
+    if (scancode == SDL_SCANCODE_ESCAPE && is_pressed && current_mode_ == InputMode::ViewMode) {
+        toggleControllerPanel();
     }
     if (scancode == SDL_SCANCODE_SPACE && is_pressed) {
         set_->togglePlay();
     }
-    if (scancode == SDL_SCANCODE_T && is_pressed) {
+    if (scancode == SDL_SCANCODE_T && is_pressed && current_mode_ == InputMode::ViewMode) {
         pauseIfPlaying();
         file_dialog_open_ = true;
     }
-    if (scancode == SDL_SCANCODE_RIGHT && is_pressed) {
+    if (scancode == SDL_SCANCODE_RIGHT && is_pressed && current_mode_ == InputMode::ViewMode) {
         seekFrame(1, true);
     }
-    if (scancode == SDL_SCANCODE_LEFT && is_pressed) {
+    if (scancode == SDL_SCANCODE_LEFT && is_pressed && current_mode_ == InputMode::ViewMode) {
         seekFrame(1, false);
     }
     if (scancode == SDL_SCANCODE_F1 && is_pressed) {
@@ -759,7 +818,7 @@ void ViewerApp::handleKeyEvent(unsigned int scancode, bool is_pressed, unsigned 
     if (scancode == SDL_SCANCODE_F3 && is_pressed) {
         menu_state_.debug_mode = !menu_state_.debug_mode;
     }
-    if (scancode == SDL_SCANCODE_R && is_pressed) {
+    if (scancode == SDL_SCANCODE_R && is_pressed && current_mode_ == InputMode::ViewMode) {
         openRecordingFolderDialog();
         if (recording_.is_active) {
             recording_.folder = "";
@@ -777,88 +836,179 @@ void ViewerApp::processGamepadInput()
     if (!gamepad_.isConnected()) {
         return;
     }
+    // Block all gamepad input while a file dialog is open. The panel emits
+    // close_panel before opening any dialog, so we are always in ViewMode here;
+    // suspending Start/B during a dialog is intentional — the user must
+    // dismiss the dialog before returning to controller navigation.
+    if (file_dialog_open_ || recording_dialog_open_) {
+        return;
+    }
 
-    // Look sensitivity (degrees per frame at full deflection)
-    constexpr float LOOK_SPEED = 3.0f;
-    // Zoom increment per frame at full stick deflection
-    constexpr float ZOOM_SPEED = 0.5f;
-    // Trigger threshold before frame seeking activates (0..1)
-    constexpr float TRIGGER_THRESHOLD = 0.3f;
+    if (current_mode_ == InputMode::ViewMode) {
+        // Look sensitivity (degrees per frame at full deflection)
+        constexpr float LOOK_SPEED = 3.0f;
+        // Zoom increment per frame at full stick deflection
+        constexpr float ZOOM_SPEED = 0.5f;
+        // Trigger threshold before frame seeking activates (0..1)
+        constexpr float TRIGGER_THRESHOLD = 0.3f;
 
-    const float left_x = gamepad_.getLeftStickX();
-    const float left_y = gamepad_.getLeftStickY();
-    const float right_x = gamepad_.getRightStickX();
-    const float right_y = gamepad_.getRightStickY();
-    const float left_trigger = gamepad_.getLeftTrigger();
-    const float right_trigger = gamepad_.getRightTrigger();
+        const float left_x = gamepad_.getLeftStickX();
+        const float left_y = gamepad_.getLeftStickY();
+        const float right_x = gamepad_.getRightStickX();
+        const float right_y = gamepad_.getRightStickY();
+        const float left_trigger = gamepad_.getLeftTrigger();
+        const float right_trigger = gamepad_.getRightTrigger();
 
-    // X (West) — speed boost while held (mirrors Shift key)
-    cam_->setSpeedBoost(gamepad_.isButtonHeld(SDL_GAMEPAD_BUTTON_WEST));
+        // X (West) — speed boost while held (mirrors Shift key)
+        cam_->setSpeedBoost(gamepad_.isButtonHeld(SDL_GAMEPAD_BUTTON_WEST));
 
-    // ---- Movement / Orbit ----
-    // When rotation is locked (orbit mode) the left stick orbits the sphere;
-    // otherwise it provides free-camera movement.
-    if (cam_->isRotLocked()) {
-        // Orbit: replicate W/A/S/D rotLock behaviour with analog input
-        cam_->applyGamepadOrbit(left_y, left_x);
-        // Right stick Y zooms (adjusts sphere distance) when locked
-        if (right_y != 0.0f) {
-            cam_->adjustSphereDistance(right_y * ZOOM_SPEED);
+        // ---- Movement / Orbit ----
+        // When rotation is locked (orbit mode) the left stick orbits the sphere;
+        // otherwise it provides free-camera movement.
+        if (cam_->isRotLocked()) {
+            // Orbit: replicate W/A/S/D rotLock behaviour with analog input
+            cam_->applyGamepadOrbit(left_y, left_x);
+            // Right stick Y zooms (adjusts sphere distance) when locked
+            if (right_y != 0.0f) {
+                cam_->adjustSphereDistance(right_y * ZOOM_SPEED);
+            }
+        } else {
+            // Free camera movement
+            cam_->applyGamepadMovement(left_y, left_x);
+            // Right stick look
+            cam_->applyGamepadLook(right_x * LOOK_SPEED, right_y * LOOK_SPEED);
+        }
+
+        // L3 / R3 adjust sphere distance when the sphere is visible
+        if (cam_->isRenderingSphere()) {
+            if (gamepad_.isButtonHeld(SDL_GAMEPAD_BUTTON_LEFT_STICK)) {
+                cam_->adjustSphereDistance(-ZOOM_SPEED);
+            }
+            if (gamepad_.isButtonHeld(SDL_GAMEPAD_BUTTON_RIGHT_STICK)) {
+                cam_->adjustSphereDistance(ZOOM_SPEED);
+            }
+        }
+
+        // ---- Frame Playback ----
+        // Triggers: fast-forward / rewind (continuous, mirrors Q/E keys)
+        if (right_trigger > TRIGGER_THRESHOLD) {
+            seekFrame(3, true);
+        }
+        if (left_trigger > TRIGGER_THRESHOLD) {
+            seekFrame(3, false);
+        }
+
+        // Bumpers: single-frame advance / rewind (mirrors arrow keys)
+        if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER)) {
+            seekFrame(1, true);
+        }
+        if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_LEFT_SHOULDER)) {
+            seekFrame(1, false);
+        }
+
+        // ---- Action Buttons ----
+        // A (South) — toggle play/pause
+        if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_SOUTH)) {
+            set_->togglePlay();
+        }
+
+        // Back/Select — open file load dialog
+        if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_BACK)) {
+            pauseIfPlaying();
+            file_dialog_open_ = true;
+        }
+
+        // B (East) — cycle point lock state (mirrors P key)
+        if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_EAST)) {
+            cam_->cycleRotateState();
+        }
+
+        // Y (North) — toggle COM lock (mirrors O key, only active when rotation is locked)
+        if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_NORTH)) {
+            cam_->toggleComLock();
+        }
+    }
+
+    // Start — toggle controller panel (any mode)
+    if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_START)) {
+        toggleControllerPanel();
+    }
+    // B (East) in MenuMode — close controller panel
+    if (current_mode_ == InputMode::MenuMode && gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_EAST)) {
+        toggleControllerPanel();
+    }
+    // MenuMode navigation — D-pad repeat + A-confirm
+    if (current_mode_ == InputMode::MenuMode) {
+        processMenuNavigation();
+        if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_SOUTH) && menu_state_.selected_panel_item >= 0) {
+            menu_state_.confirm_panel_item = true;
+        }
+    }
+}
+
+void ViewerApp::toggleControllerPanel()
+{
+    if (current_mode_ == InputMode::ViewMode) {
+        current_mode_ = InputMode::MenuMode;
+        menu_state_.controller_panel_open = true;
+        menu_state_.selected_panel_item = -1;
+        menu_state_.confirm_panel_item = false;
+        nav_last_nav_time_ms_ = 0;
+        nav_had_initial_repeat_ = false;
+        // Close any open dialogs/windows that must not coexist with the panel
+        menu_state_.settings_open = false;
+        file_dialog_open_ = false;
+        recording_dialog_open_ = false;
+        // Disable ImGui keyboard nav so arrow keys drive selected_panel_item,
+        // not ImGui's own nav cursor
+        if (imgui_initialized_) {
+            ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard;
+        }
+        if (set_->isPlaying) {
+            set_->togglePlay();
         }
     } else {
-        // Free camera movement
-        cam_->applyGamepadMovement(left_y, left_x);
-        // Right stick look
-        cam_->applyGamepadLook(right_x * LOOK_SPEED, right_y * LOOK_SPEED);
-    }
-
-    // L3 / R3 adjust sphere distance when the sphere is visible
-    if (cam_->isRenderingSphere()) {
-        if (gamepad_.isButtonHeld(SDL_GAMEPAD_BUTTON_LEFT_STICK)) {
-            cam_->adjustSphereDistance(-ZOOM_SPEED);
-        }
-        if (gamepad_.isButtonHeld(SDL_GAMEPAD_BUTTON_RIGHT_STICK)) {
-            cam_->adjustSphereDistance(ZOOM_SPEED);
+        current_mode_ = InputMode::ViewMode;
+        menu_state_.controller_panel_open = false;
+        nav_last_nav_time_ms_ = 0;
+        nav_had_initial_repeat_ = false;
+        menu_state_.confirm_panel_item = false;
+        if (imgui_initialized_) {
+            ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         }
     }
+}
 
-    // ---- Frame Playback ----
-    // Triggers: fast-forward / rewind (continuous, mirrors Q/E keys)
-    if (right_trigger > TRIGGER_THRESHOLD) {
-        seekFrame(3, true);
-    }
-    if (left_trigger > TRIGGER_THRESHOLD) {
-        seekFrame(3, false);
-    }
+void ViewerApp::processMenuNavigation()
+{
+    const Uint64 now = SDL_GetTicks();
+    const int count = menu_state_.panel_item_count;
+    if (count <= 0)
+        return;
 
-    // Bumpers: single-frame advance / rewind (mirrors arrow keys)
-    if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER)) {
-        seekFrame(1, true);
-    }
-    if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_LEFT_SHOULDER)) {
-        seekFrame(1, false);
-    }
+    const float stick_y = gamepad_.getLeftStickY();
+    const bool down = gamepad_.isButtonHeld(SDL_GAMEPAD_BUTTON_DPAD_DOWN) || (stick_y > NAV_STICK_THRESHOLD);
+    const bool up = gamepad_.isButtonHeld(SDL_GAMEPAD_BUTTON_DPAD_UP) || (stick_y < -NAV_STICK_THRESHOLD);
 
-    // ---- Action Buttons ----
-    // A (South) — toggle play/pause
-    if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_SOUTH)) {
-        set_->togglePlay();
-    }
-
-    // Back/Select — open file load dialog
-    if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_BACK)) {
-        pauseIfPlaying();
-        file_dialog_open_ = true;
-    }
-
-    // B (East) — cycle point lock state (mirrors P key)
-    if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_EAST)) {
-        cam_->cycleRotateState();
-    }
-
-    // Y (North) — toggle COM lock (mirrors O key, only active when rotation is locked)
-    if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_NORTH)) {
-        cam_->toggleComLock();
+    if (down || up) {
+        const bool first_press = (nav_last_nav_time_ms_ == 0);
+        if (first_press) {
+            nav_last_nav_time_ms_ = now;
+            nav_had_initial_repeat_ = false;
+            const int delta = down ? 1 : -1;
+            menu_state_.selected_panel_item = applyNavMove(menu_state_.selected_panel_item, count, delta);
+        } else {
+            const Uint64 threshold = nav_had_initial_repeat_ ? NAV_REPEAT_DELAY_MS : NAV_INITIAL_DELAY_MS;
+            if ((now - nav_last_nav_time_ms_) >= threshold) {
+                nav_last_nav_time_ms_ = now;
+                nav_had_initial_repeat_ = true;
+                const int delta = down ? 1 : -1;
+                menu_state_.selected_panel_item = applyNavMove(menu_state_.selected_panel_item, count, delta);
+            }
+        }
+    } else {
+        nav_last_nav_time_ms_ = 0;
+        nav_had_initial_repeat_ = false;
     }
 }
 
