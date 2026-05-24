@@ -6,12 +6,29 @@
 
 #include "imgui_menu.hpp"
 
+#include <cassert>
 #include <cmath>
 #include <string>
 
 #include <SDL3/SDL.h>
 
 #include "imgui.h"
+
+/*
+ * Named indices for selectable items in the controller panel, in registration order.
+ * Each enumerator's integer value must equal the zero-based index of its corresponding
+ * item() call in renderControllerPanel(). Must stay in sync with those item() calls.
+ */
+enum class PanelItem : int
+{
+    FULLSCREEN = 0,
+    AUTO_COM,
+    DEBUG_MODE,
+    QUIT,
+    LOAD_FILE,
+    RECORDING_FOLDER,
+    CLOSE
+};
 
 /*
  * Helper to get the maximum window size that fits on the primary display.
@@ -288,57 +305,47 @@ MenuActions renderControllerPanel(MenuState& state)
         }
     });
 
-    // Close button — always enabled, always last item
-    bool close_highlighted = (state.selected_panel_item == item_count);
-    if (close_highlighted) {
-        ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered]);
-    }
-    if (ImGui::Button("Close")) {
-        actions.close_panel = true;
-    }
-    if (close_highlighted) {
-        ImGui::PopStyleColor();
-    }
-    ++item_count;
+    item("Close", true, [&] { actions.close_panel = true; });
 
     state.panel_item_count = item_count;
     if (state.confirm_panel_item) {
         state.confirm_panel_item = false;
-        // Cases must match the item() registration order above:
-        // 0=Fullscreen, 1=Auto-COM, 2=Debug Mode, 3=Quit, 4=Load File, 5=Recording Folder, 6=Close
-        switch (state.selected_panel_item) {
-            case 0:
-                actions.toggle_fullscreen = true;
-                break;
-            case 1:
-                actions.toggle_auto_com = true;
-                break;
-            case 2:
-                actions.toggle_debug_mode = true;
-                break;
-            case 3:
-                actions.quit = true;
-                break;
-            case 4:
-                if (state.file_loading_enabled) {
-                    actions.load_file = true;
+        if (state.selected_panel_item >= 0 && state.selected_panel_item < state.panel_item_count) {
+            switch (static_cast<PanelItem>(state.selected_panel_item)) {
+                case PanelItem::FULLSCREEN:
+                    actions.toggle_fullscreen = true;
+                    break;
+                case PanelItem::AUTO_COM:
+                    actions.toggle_auto_com = true;
+                    break;
+                case PanelItem::DEBUG_MODE:
+                    actions.toggle_debug_mode = true;
+                    break;
+                case PanelItem::QUIT:
+                    actions.quit = true;
+                    break;
+                case PanelItem::LOAD_FILE:
+                    if (state.file_loading_enabled) {
+                        actions.load_file = true;
+                        actions.close_panel = true;
+                    }
+                    break;
+                case PanelItem::RECORDING_FOLDER:
+                    if (state.is_recording) {
+                        actions.stop_recording = true;
+                        actions.close_panel = true;
+                    } else if (state.file_loading_enabled) {
+                        actions.select_recording_folder = true;
+                        actions.close_panel = true;
+                    }
+                    break;
+                case PanelItem::CLOSE:
                     actions.close_panel = true;
-                }
-                break;
-            case 5:
-                if (state.is_recording) {
-                    actions.stop_recording = true;
-                    actions.close_panel = true;
-                } else if (state.file_loading_enabled) {
-                    actions.select_recording_folder = true;
-                    actions.close_panel = true;
-                }
-                break;
-            case 6:
-                actions.close_panel = true;
-                break;
-            default:
-                break;
+                    break;
+                default:
+                    assert(false && "selected_panel_item in-range but no PanelItem case — enum out of sync");
+                    break;
+            }
         }
     }
     ImGui::End();
