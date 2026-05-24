@@ -66,6 +66,10 @@ See `references/FORMATTING_RULES.md` for formatting rule details.
 
 See `references/NAMING_TABLES.md` for full naming examples.
 
+## Naming Pre-Flight
+
+Before naming a new `enum`, struct field, or constant: open `docs/CODING_STANDARDS.md` and verify the naming convention. Enumerators: `UPPER_CASE`.
+
 ---
 
 ## Adding a Feature / Fixing a Bug
