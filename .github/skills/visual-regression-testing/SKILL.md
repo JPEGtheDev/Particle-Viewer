@@ -4,7 +4,6 @@ license: MIT
 description: Use when writing or maintaining visual regression tests, approving visual baselines, or deciding whether something belongs in a VR test vs a MockOpenGL unit test.
 ---
 
-<!-- Tier 2 — Domain/Project. Project-specific references permitted. -->
 
 ## Iron Law
 

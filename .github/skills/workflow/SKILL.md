@@ -4,7 +4,6 @@ license: MIT
 description: Use when creating GitHub Actions workflows, adding CI jobs, configuring artifact uploads, or reviewing pipeline configuration for Particle-Viewer.
 ---
 
-<!-- Tier 2 — Domain/Project. GitHub Actions, Particle-Viewer CI pipeline, and artifact publishing. -->
 
 ## Iron Law
 

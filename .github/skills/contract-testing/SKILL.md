@@ -4,7 +4,6 @@ license: MIT
 description: Use when writing tests for any interface, abstract base class, or type with multiple implementations.
 ---
 
-<!-- Tier 1 — Methodology. No project-specific references in this file. -->
 
 ## Iron Law
 

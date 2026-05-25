@@ -4,7 +4,6 @@ license: MIT
 description: Use when packaging, running, or debugging a Flatpak application with OpenGL and SDL3.
 ---
 
-<!-- Tier 2 — Domain/Project. Flatpak packaging, OpenGL, and SDL3 runtime specifics. -->
 
 ## Iron Law
 

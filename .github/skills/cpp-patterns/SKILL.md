@@ -4,7 +4,6 @@ license: MIT
 description: Use when implementing C++ code for Particle-Viewer, handling GL resources, working with SDL3, or applying DRY/deprecation/docs-commit patterns.
 ---
 
-<!-- Tier 2 — Domain/Project. Project-specific references permitted. -->
 
 ## Iron Law
 

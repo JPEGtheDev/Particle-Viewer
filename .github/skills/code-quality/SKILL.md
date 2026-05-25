@@ -4,7 +4,6 @@ license: MIT
 description: Use when writing or reviewing C++ code, running pre-commit checks, or addressing formatting, naming, or static analysis violations.
 ---
 
-<!-- Tier 2 — Domain/Project. Project-specific references permitted. -->
 
 ## Iron Law
 

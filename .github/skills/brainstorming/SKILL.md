@@ -4,7 +4,6 @@ license: MIT
 description: Use when a task needs design exploration before any implementation begins. Required for any task with unclear approach, significant architecture impact, or multiple valid solutions.
 ---
 
-<!-- Tier 1 — Methodology. No project-specific references in this file. -->
 
 ## Iron Law
 

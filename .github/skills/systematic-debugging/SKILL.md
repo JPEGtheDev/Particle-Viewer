@@ -4,7 +4,6 @@ license: MIT
 description: Use when encountering any bug, test failure, build error, or unexpected behavior.
 ---
 
-<!-- Tier 2 — Domain/Project. Project-specific references permitted. -->
 
 # Instructions for Agent
 

@@ -4,7 +4,6 @@ license: MIT
 description: Use when building, adding dependencies, configuring CMake options, troubleshooting build failures, or managing Flatpak packaging for Particle-Viewer.
 ---
 
-<!-- Tier 2 — Domain/Project. Project-specific references permitted. -->
 
 ## Iron Law
 

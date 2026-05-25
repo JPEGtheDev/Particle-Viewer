@@ -4,7 +4,6 @@ license: MIT
 description: Use when writing or reviewing any C++ class that owns resources, has a destructor, or acquires in a constructor.
 ---
 
-<!-- Tier 2 — Domain/Project. Project-specific references permitted. -->
 
 ## Iron Law
 

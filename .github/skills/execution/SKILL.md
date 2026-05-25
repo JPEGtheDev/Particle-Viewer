@@ -4,7 +4,6 @@ license: MIT
 description: Use when executing any non-trivial implementation work.
 ---
 
-<!-- Tier 1 — Methodology. No project-specific references in this file. -->
 
 ## Iron Law
 

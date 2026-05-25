@@ -4,7 +4,6 @@ license: MIT
 description: Use when adding workflows, modifying CMakeLists.txt, or updating Flatpak manifests for Particle-Viewer.
 ---
 
-<!-- Tier 2 — Domain/Project. Project-specific references permitted. -->
 
 ## Iron Law
 

@@ -4,7 +4,6 @@ license: MIT
 description: Use when estimating effort, premium request counts, or model tier selection for user stories or agent dispatches.
 ---
 
-<!-- Tier 2 — Domain/Project. Project-specific references permitted. -->
 
 ## Iron Law
 

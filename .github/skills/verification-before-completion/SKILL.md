@@ -4,7 +4,6 @@ license: MIT
 description: Use when about to claim work is complete, fixed, or passing, before any completion claim, commit, or PR.
 ---
 
-<!-- Tier 2 — Domain/Project. Project-specific references permitted. -->
 
 # Instructions for Agent
 

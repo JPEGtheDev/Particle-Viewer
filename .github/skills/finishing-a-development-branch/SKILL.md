@@ -4,7 +4,6 @@ license: MIT
 description: Use when a development branch is complete and ready to merge.
 ---
 
-<!-- Tier 2 — Domain/Project. Project-specific references permitted. -->
 
 ## Iron Law
 

@@ -4,7 +4,6 @@ license: MIT
 description: Use when creating PRs, writing commit messages, understanding version bumps, or troubleshooting release issues for Particle-Viewer.
 ---
 
-<!-- Tier 2 — Domain/Project. Particle-Viewer release pipeline, conventional commits, and version automation. -->
 
 ## Iron Law
 

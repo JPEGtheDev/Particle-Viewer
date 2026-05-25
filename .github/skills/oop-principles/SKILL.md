@@ -4,7 +4,6 @@ license: MIT
 description: Use when adding inheritance, designing interfaces, or reviewing any class hierarchy for Particle-Viewer.
 ---
 
-<!-- Tier 1 — Methodology. No project-specific references in this file. -->
 
 ## Iron Law
 

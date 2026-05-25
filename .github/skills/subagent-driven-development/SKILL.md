@@ -2,10 +2,8 @@
 name: subagent-driven-development
 license: MIT
 description: Use when delegating implementation tasks, confirming theories, running parallel research, or reviewing completed work.
-token-budget: over-budget by design — this is a large Tier 1 reference skill; compression requires a dedicated pass
 ---
 
-<!-- Tier 1 — Methodology. No project-specific references in this file. -->
 
 ## Iron Laws
 

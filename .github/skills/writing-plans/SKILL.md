@@ -4,7 +4,6 @@ license: MIT
 description: Use when starting any multi-step task, story, or feature work.
 ---
 
-<!-- Tier 1 — Methodology. No project-specific references in this file. -->
 
 ## Iron Law
 

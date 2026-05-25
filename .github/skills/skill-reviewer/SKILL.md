@@ -4,7 +4,6 @@ license: MIT
 description: Use when authoring or updating skill files.
 ---
 
-<!-- Tier 1 — Methodology. No project-specific references in this file. -->
 
 ## Iron Law
 

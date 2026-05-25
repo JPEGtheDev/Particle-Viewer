@@ -4,7 +4,6 @@ license: MIT
 description: Use when receiving code review feedback on a PR or code change.
 ---
 
-<!-- Tier 1 — Methodology. No project-specific references in this file. -->
 
 ## Iron Law
 

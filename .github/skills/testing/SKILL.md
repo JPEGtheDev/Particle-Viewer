@@ -4,7 +4,6 @@ license: MIT
 description: Use when writing or reviewing any test for Particle-Viewer.
 ---
 
-<!-- Tier 2 — Domain/Project. Project-specific references permitted. -->
 
 ## Iron Law
 

@@ -6,7 +6,6 @@ description: >
   to every session, every turn, every task.
 ---
 
-<!-- Tier 1 — Methodology. No project-specific references in this file. -->
 
 ## Iron Law
 

@@ -4,7 +4,6 @@ license: MIT
 description: Use after a session completes.
 ---
 
-<!-- Tier 1 — Methodology. No project-specific references in this file. -->
 
 ## Iron Law
 
