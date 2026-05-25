@@ -21,17 +21,18 @@ YOU MUST validate every story against all six INVEST criteria (Independent, Nego
 ## BEFORE PROCEEDING
 
 After you've had the conversation and before generating, mentally verify you have:
-1. **Verified this aligns with actual project purpose** (loaded project context)
+1. **Loaded `references/PV_PROJECT_CONTEXT.md`** and verified this aligns with actual project purpose
 2. **Confirmed the functionality/component actually exists** (didn't assume based on naming)
-- [ ] Clear understanding of what they want to accomplish
-- [ ] Context about why it matters (the value)
-- [ ] Rough scope and size estimate (S/M/L)
-- [ ] Premium request estimate based on complexity
-- [ ] Model recommendation with reasoning
-- [ ] Format preference (if they expressed one)
-- [ ] Any specific constraints or requirements
+3. Clear understanding of what they want to accomplish
+4. Context about why it matters (the value)
+5. Rough scope and size estimate (S/M/L)
+6. Premium request estimate based on complexity
+7. Model recommendation with reasoning
+8. Format preference (if they expressed one)
+9. Any specific constraints or requirements
 
-**If any of these are unclear, ask one more clarifying question before generating.**
+✓ All 9 met → proceed to generate the story
+✗ Any unclear → ask one clarifying question before generating
 
 **RED FLAGS - Stop and ask for clarification:**
 - Story mentions functionality not in project context
@@ -90,8 +91,6 @@ See `references/STORY_TEMPLATE.md` for the full story template with all sections
 
 See `references/CONVERSATION_SCRIPTS.md` for story elicitation conversation scripts.
 See `references/PV_PROJECT_CONTEXT.md` for project scope verification and reference loading guide.
-
-**Always load `references/PV_PROJECT_CONTEXT.md` FIRST before generating any story.**
 
 **Always include the Effort Estimate section** with:
 - Total premium requests (range)

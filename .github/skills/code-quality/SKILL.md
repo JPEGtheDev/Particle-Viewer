@@ -28,40 +28,21 @@ Formatting and naming are automated via `.clang-format` and `.clang-tidy`. Never
 
 ## BEFORE PROCEEDING
 
-Run before **every** commit:
+Before every commit, verify:
 
-```bash
-# 1. Format ALL changed C++ files ONLY (never run clang-format on markdown/YAML/docs)
-find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i
+1. All changed C++ files formatted: `find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i`
+2. Formatting passes CI check: `find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format --dry-run -Werror`
+3. `git diff` of every modified C++ file visually inspected -- do not trust silent tool output
+4. Build passes: `cmake --build build`
+5. All tests pass: `./build/tests/ParticleViewerTests`
 
-# 2. Check what changed
-git diff --name-only | head -20
+✓ All 5 met → proceed to commit
+✗ Any unmet → fix the failing step; do not commit
 
-# 3. Spot-check any files you touched (don't trust silent tool output)
-# Look for: trailing semicolons after function }, exception handling,
-# multi-declaration statements, bracing consistency
-```
+**Note:** clang-format is C++ only. Never run it on Markdown, YAML, or documentation files -- it will corrupt them.
 
-**CRITICAL:** clang-format is C++ only. Never run it on markdown, YAML, or documentation files - it will corrupt them.
-git diff src/[touched_file].cpp | head -100
-
-# 4. Verify formatting passes (same check CI runs)
-find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format --dry-run -Werror
-
-# 5. Build and test
-cmake --build build
-./build/tests/ParticleViewerTests
-
-# 6. (Optional) Static analysis
-clang-tidy src/main.cpp -- -Isrc/glad/include
-```
-
-**⚠️ Critical:** Do NOT trust that `clang-format --dry-run -Werror` with no output means success. Always visually inspect `git diff` of modified files. Silent tool output can mask formatting issues.
-
+See `references/CPP_TOOLCHAIN.md` for full command reference and optional clang-tidy invocation.
 See `references/FORMATTING_RULES.md` for formatting rule details.
-
-✓ All steps complete and build/tests green → proceed to commit
-✗ Any step failed or formatting violations found → fix before committing
 
 ---
 

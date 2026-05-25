@@ -49,11 +49,22 @@ A failing contract test means the hierarchy is wrong — fix the hierarchy, not 
 | "There is only one implementation" | Write the fixture now. A second implementation arrives later. |
 | "The interface is simple, nothing to test" | Simple interfaces still have invariants (no-throw, non-null return). |
 | "The mock already tests the behavior" | Mocks verify interactions, not behavioral contracts. Both are needed. |
+| "The contract test is redundant -- the implementations are clearly equivalent" | Equivalence is an assumption, not evidence. Contract tests document and enforce invariants across all current and future implementations. |
+
+---
+
+## Red Flags -- STOP
+
+- Adding a second implementation without verifying it against the existing contract fixture -- **STOP. Run the full contract suite against the new implementation before merging.**
+- About to write an interface test using `TEST_F` instead of `TYPED_TEST_P` -- **STOP. `TEST_F` instantiates the concrete fixture directly; it does not test behavioral invariants across implementations.**
+- Contract test failing, about to modify the test to make it pass -- **STOP. A failing contract test means the implementation violates the LSP. Fix the implementation, not the test.**
+- "The interface has only one implementation now, contract tests can wait" -- **STOP. Write the fixture now. A second implementation arrives later -- often from a mock. The fixture documents invariants the mock must satisfy.**
+- Deleting a contract test because "the implementation was simplified" -- **STOP. Simplified implementations still have invariants. Removing a contract test removes the guarantee.**
 
 ---
 
 ## Related Skills
 
-- [`testing`](.github/skills/testing/) — parent skill; Test Doubles taxonomy, saw-the-test-fail gate, AAA naming
-- [`oop-principles`](.github/skills/oop-principles/) — sibling; contract tests enforce Liskov Substitution
-- [`architecture-review`](.github/skills/architecture-review/) — sibling; interfaces also need layer boundary review
+- `testing` -- parent skill; Test Doubles taxonomy, saw-the-test-fail gate, AAA naming
+- `oop-principles` -- sibling; contract tests enforce Liskov Substitution
+- `architecture-review` -- sibling; interfaces also need layer boundary review
