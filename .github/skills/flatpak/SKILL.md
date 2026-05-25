@@ -11,11 +11,10 @@ description: Use when packaging, running, or debugging a Flatpak application wit
 ```
 GATE ALL FLATPAK WORKAROUNDS ON /.flatpak-info — NEVER APPLY SANDBOX WORKAROUNDS
 ON NATIVE SYSTEMS
+YOU MUST gate every sandbox workaround on `/.flatpak-info`. No exceptions.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.
-
-YOU MUST gate every sandbox workaround on `/.flatpak-info`. No exceptions.
 
 A workaround that fires outside the Flatpak sandbox forces software rendering on native hardware, silently degrades quality, and masks real bugs.
 

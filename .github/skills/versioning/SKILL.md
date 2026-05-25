@@ -10,11 +10,11 @@ description: Use when creating PRs, writing commit messages, understanding versi
 
 ```
 EVERY COMMIT AND PR TITLE MUST USE CONVENTIONAL FORMAT
+YOU MUST use conventional format for every commit message and PR title.
+No exceptions. Wrong format breaks release automation.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.
-
-YOU MUST use conventional format for every commit message and PR title. No exceptions. Wrong format breaks release automation.
 
 `<type>[scope]: <description>`
 

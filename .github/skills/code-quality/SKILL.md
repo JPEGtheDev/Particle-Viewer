@@ -10,9 +10,9 @@ description: Use when writing or reviewing C++ code, running pre-commit checks, 
 
 ```
 NO UNFORMATTED OR UNTIDY CODE SHIPS
+YOU MUST run clang-format AND clang-tidy BEFORE every commit. CI will reject violations.
+No exceptions.
 ```
-
-YOU MUST run clang-format AND clang-tidy BEFORE every commit. CI will reject violations. No exceptions.
 
 Violating the letter of this rule is violating the spirit of this rule.
 
@@ -30,7 +30,7 @@ Formatting and naming are automated via `.clang-format` and `.clang-tidy`. Never
 
 Before every commit, verify:
 
-1. All changed C++ files formatted: `find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i`
+1. All C++ files formatted: `find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i`
 2. Formatting passes CI check: `find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format --dry-run -Werror`
 3. `git diff` of every modified C++ file visually inspected -- do not trust silent tool output
 4. Build passes: `cmake --build build`

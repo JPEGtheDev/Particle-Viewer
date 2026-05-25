@@ -10,11 +10,11 @@ description: Use when writing or reviewing any test for Particle-Viewer.
 
 ```
 NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
+YOU MUST write a failing test before writing any production code.
+No exceptions.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.
-
-YOU MUST write a failing test before writing any production code. No exceptions.
 
 Write the test. Watch it fail. THEN write code.
 

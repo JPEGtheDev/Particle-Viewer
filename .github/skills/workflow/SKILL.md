@@ -10,11 +10,11 @@ description: Use when creating GitHub Actions workflows, adding CI jobs, configu
 
 ```
 PIPELINES ARE READ-ONLY — NEVER COMMIT FROM CI
+YOU MUST ensure every workflow step is read-only — no commits, no pushes, no write-backs.
+No exceptions.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.
-
-YOU MUST ensure every workflow step is read-only — no commits, no pushes, no write-backs. No exceptions.
 
 CI workflows read code, run tests, and publish artifacts. They never write code.
 
@@ -22,11 +22,11 @@ CI workflows read code, run tests, and publish artifacts. They never write code.
 
 ```
 BROKEN PIPELINE = HIGHEST PRIORITY — STOP ALL MERGES UNTIL GREEN
+YOU MUST stop all merges and fix a broken main pipeline before any other work.
+No exceptions.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.
-
-YOU MUST stop all merges and fix a broken main pipeline before any other work. No exceptions.
 
 A broken main branch pipeline is not a background task. It is the highest-priority item for anyone working on the project. No PR merges while the pipeline is red. The broken build is the only work that matters until it is fixed.
 
@@ -195,4 +195,4 @@ If you catch yourself thinking any of these, stop and follow the rule:
 
 For concrete workflow examples and patterns, see [references/WORKFLOW_EXAMPLES.md](references/WORKFLOW_EXAMPLES.md).
 
-For Flatpak packaging, SDL3 display backend configuration, NVIDIA GL extension issues, and `setenv` behaviour inside the Flatpak sandbox, see the `flatpak` skill or [references/FLATPAK_GL_GOTCHAS.md](references/FLATPAK_GL_GOTCHAS.md) for the detailed reference.
+For Flatpak packaging, SDL3 display backend configuration, NVIDIA GL extension issues, and `setenv` behavior inside the Flatpak sandbox, see the `flatpak` skill or [references/FLATPAK_GL_GOTCHAS.md](references/FLATPAK_GL_GOTCHAS.md) for the detailed reference.
