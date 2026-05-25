@@ -4,6 +4,8 @@ license: MIT
 description: Use when running parallel agent work, testing an approach in isolation, or keeping the main branch clean while a subagent operates on a separate branch.
 ---
 
+<!-- Tier 1 — Methodology. No project-specific references in this file. -->
+
 ## Iron Law
 
 ```
@@ -75,7 +77,7 @@ git branch -d agent/<name>   # only after merging or discarding
 
 ---
 
-## BEFORE Creating a Worktree Gate
+## BEFORE PROCEEDING
 
 ```
 BEFORE creating a worktree, verify:

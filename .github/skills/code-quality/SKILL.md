@@ -4,6 +4,8 @@ license: MIT
 description: Use when writing or reviewing C++ code, running pre-commit checks, or addressing formatting, naming, or static analysis violations.
 ---
 
+<!-- Tier 2 — Domain/Project. Project-specific references permitted. -->
+
 ## Iron Law
 
 ```
@@ -24,7 +26,7 @@ Formatting and naming are automated via `.clang-format` and `.clang-tidy`. Never
 
 ---
 
-## Pre-Commit Gate (MANDATORY)
+## BEFORE PROCEEDING
 
 Run before **every** commit:
 
@@ -57,6 +59,9 @@ clang-tidy src/main.cpp -- -Isrc/glad/include
 **⚠️ Critical:** Do NOT trust that `clang-format --dry-run -Werror` with no output means success. Always visually inspect `git diff` of modified files. Silent tool output can mask formatting issues.
 
 See `references/FORMATTING_RULES.md` for formatting rule details.
+
+✓ All steps complete and build/tests green → proceed to commit
+✗ Any step failed or formatting violations found → fix before committing
 
 ---
 

@@ -4,6 +4,8 @@ license: MIT
 description: Use when summarizing external resources (articles, web pages, local files) to extract knowledge and lessons.
 ---
 
+<!-- Tier 1 — Methodology. No project-specific references in this file. -->
+
 ## Iron Law
 
 ```

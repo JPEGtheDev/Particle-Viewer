@@ -4,6 +4,8 @@ license: MIT
 description: Use when adding inheritance, designing interfaces, or reviewing any class hierarchy for Particle-Viewer.
 ---
 
+<!-- Tier 1 — Methodology. No project-specific references in this file. -->
+
 ## Iron Law
 
 ```
@@ -20,9 +22,9 @@ YOU MUST run the Is-A / Has-A gate and verify all five SOLID principles before a
 
 ## BEFORE PROCEEDING
 
-- [ ] Is this a new inheritance relationship (B extends A)?
-- [ ] Does B pass a substitution test — can any code accepting A accept B without behavioral change?
-- [ ] Does the proposed hierarchy satisfy all five SOLID principles?
+1. Is this a new inheritance relationship (B extends A)?
+2. Does B pass a substitution test — can any code accepting A accept B without behavioral change?
+3. Does the proposed hierarchy satisfy all five SOLID principles?
 ✓ All met → proceed  ✗ Any unmet → use composition or redesign
 
 ---

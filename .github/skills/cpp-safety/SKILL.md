@@ -4,6 +4,8 @@ license: MIT
 description: Use when writing or reviewing any C++ class that owns resources, has a destructor, or acquires in a constructor.
 ---
 
+<!-- Tier 2 — Domain/Project. Project-specific references permitted. -->
+
 ## Iron Law
 
 ```
@@ -20,9 +22,9 @@ YOU MUST wrap every destructor body in try/catch and ensure every resource acqui
 
 ## BEFORE PROCEEDING
 
-- [ ] Does this class own heap memory, handles, or OS resources?
-- [ ] Can its destructor fail or throw?
-- [ ] Does its constructor acquire multiple resources?
+1. Does this class own heap memory, handles, or OS resources?
+2. Can its destructor fail or throw?
+3. Does its constructor acquire multiple resources?
 
 ✓ No owned resources → skip this skill  ✗ Any owned resource → apply the rules below
 

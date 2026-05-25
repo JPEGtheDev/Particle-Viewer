@@ -9,7 +9,7 @@ description: Use when creating, editing, or reviewing a skill file.
 ## Iron Law
 
 ```
-NO SKILL SHIPS WITHOUT MEETING THE 5-ELEMENT ANATOMY CHECK
+YOU MUST: VERIFY ALL FIVE GATE ELEMENTS BEFORE SHIPPING ANY SKILL. No exceptions.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.

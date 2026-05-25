@@ -4,6 +4,8 @@ license: MIT
 description: Use when writing tests for any interface, abstract base class, or type with multiple implementations.
 ---
 
+<!-- Tier 1 — Methodology. No project-specific references in this file. -->
+
 ## Iron Law
 
 ```
@@ -20,9 +22,9 @@ YOU MUST write a contract test fixture before shipping any interface with multip
 
 ## BEFORE PROCEEDING
 
-- [ ] Is this an interface, abstract class, or type with 2+ implementations?
-- [ ] Does a contract test fixture exist for it?
-- [ ] Does every concrete implementation pass all contract tests?
+1. Is this an interface, abstract class, or type with 2+ implementations?
+2. Does a contract test fixture exist for it?
+3. Does every concrete implementation pass all contract tests?
 
 ✓ All met → proceed
 ✗ Any unmet → write the contract test fixture before adding any new implementation

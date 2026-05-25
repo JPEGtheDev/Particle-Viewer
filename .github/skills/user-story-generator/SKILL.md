@@ -4,6 +4,8 @@ license: MIT
 description: Use when creating or refining INVEST-aligned user stories.
 ---
 
+<!-- Tier 1 — Methodology. No project-specific references in this file. -->
+
 ## Iron Law
 
 ```
@@ -19,8 +21,8 @@ YOU MUST validate every story against all six INVEST criteria (Independent, Nego
 ## BEFORE PROCEEDING
 
 After you've had the conversation and before generating, mentally verify you have:
-- [ ] **Verified this aligns with actual project purpose** (loaded project context)
-- [ ] **Confirmed the functionality/component actually exists** (didn't assume based on naming)
+1. **Verified this aligns with actual project purpose** (loaded project context)
+2. **Confirmed the functionality/component actually exists** (didn't assume based on naming)
 - [ ] Clear understanding of what they want to accomplish
 - [ ] Context about why it matters (the value)
 - [ ] Rough scope and size estimate (S/M/L)

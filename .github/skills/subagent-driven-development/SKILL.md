@@ -5,6 +5,8 @@ description: Use when delegating implementation tasks, confirming theories, runn
 token-budget: over-budget by design — this is a large Tier 1 reference skill; compression requires a dedicated pass
 ---
 
+<!-- Tier 1 — Methodology. No project-specific references in this file. -->
+
 ## Iron Laws
 
 ```
@@ -83,7 +85,7 @@ Pick up next todo.
 
 ---
 
-## BEFORE PROCEEDING — SDD Dispatch Gate
+## BEFORE PROCEEDING
 
 Before dispatching any subagent:
 

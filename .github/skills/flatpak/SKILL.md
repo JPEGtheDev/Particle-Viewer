@@ -4,6 +4,8 @@ license: MIT
 description: Use when packaging, running, or debugging a Flatpak application with OpenGL and SDL3.
 ---
 
+<!-- Tier 2 — Domain/Project. Flatpak packaging, OpenGL, and SDL3 runtime specifics. -->
+
 ## Iron Law
 
 ```
@@ -12,6 +14,8 @@ ON NATIVE SYSTEMS
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.
+
+YOU MUST gate every sandbox workaround on `/.flatpak-info`. No exceptions.
 
 A workaround that fires outside the Flatpak sandbox forces software rendering on native hardware, silently degrades quality, and masks real bugs.
 
@@ -23,11 +27,11 @@ A workaround that fires outside the Flatpak sandbox forces software rendering on
 
 Before modifying the Flatpak manifest, SDL3 window creation code, or GL context initialization:
 
-- [ ] Is this code running inside Flatpak? Check `/.flatpak-info` — gate every workaround on this.
-- [ ] Is SDL3 built as a **separate** manifest module (not via FetchContent inside the app module)?
-- [ ] Are all `setenv()` calls using `overwrite=1`?
-- [ ] Is the NVIDIA fallback check gated on both `/dev/nvidia0` AND absence of the mounted GL extension?
-- [ ] Is the MSAA fallback retry present if requesting multisample?
+1. Is this code running inside Flatpak? Check `/.flatpak-info` — gate every workaround on this.
+2. Is SDL3 built as a **separate** manifest module (not via FetchContent inside the app module)?
+3. Are all `setenv()` calls using `overwrite=1`?
+4. Is the NVIDIA fallback check gated on both `/dev/nvidia0` AND absence of the mounted GL extension?
+5. Is the MSAA fallback retry present if requesting multisample?
 
 ✓ All pass → proceed
 ✗ Any fail → fix the gate condition first, then proceed
