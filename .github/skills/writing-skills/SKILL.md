@@ -31,28 +31,18 @@ Before creating, editing, or shipping any skill or agent template:
    - ANNOUNCEMENT: `**Announce at start:** "I am using the [skill] to [purpose]."`
    - GATE FUNCTION: `## BEFORE PROCEEDING` with numbered conditions + ✓/✗ branches
    - RATIONALIZATION TABLE: `## Rationalization Prevention` with ≥5 rows
+   - Not all 5 present → add the missing element now; do not proceed until all 5 are in place.
 
-3. **Alexandrian form check** -- every non-trivial rule MUST answer Context + Forces. See `references/SKILL_ANATOMY_ELEMENTS.md`.
+3. **Alexandrian form check** -- every rule with more than one application context, or any rule that could be misapplied in an edge case, MUST answer Context + Forces. See `references/SKILL_ANATOMY_ELEMENTS.md`.
+   - Not met → identify which rules lack Context/Forces; add them before proceeding.
 
 4. **Modifying anatomy elements?** Read `references/SKILL_ANATOMY_ELEMENTS.md` before any edits. Frontmatter-only changes: reference files optional.
 
-5. **Auditing existing skills?** Load `skill-reviewer` agent template; inject 4 reference files; one agent per file. See Dispatch Pattern below.
+5. **Auditing existing skills?** Load `skill-reviewer` agent template; inject 4 reference files; one agent per file.
+   - Not following → read `references/DISPATCH_PATTERN.md` before dispatching any review agents.
 
 ✓ All met → proceed
-✗ Any unmet → resolve the unmet item before touching the skill file
-
----
-
-## Dispatch Pattern -- Skill Review
-
-1. Read these four files from `writing-skills/references/`:
-   - `SKILL_ANATOMY_ELEMENTS.md` → `{{SKILL_ANATOMY_ELEMENTS}}`
-   - `VOICE_AUTHORITY_RULES.md` → `{{VOICE_AUTHORITY_RULES}}`
-   - `SIZE_AND_COMPRESSION.md` → `{{SIZE_AND_COMPRESSION}}`
-   - `REVIEW_INSTRUCTIONS.md` → `{{REVIEW_INSTRUCTIONS}}`
-2. For each skill file: substitute all four placeholders in `agents/skill-reviewer.md`, set `{{SKILL_PATH}}`, `{{RECENT_CHANGES}}`, and `{{WORKTREE_PATH}}` (output of `git rev-parse --show-toplevel`), dispatch.
-3. Collect all reports before acting on any result.
-4. For each NEEDS WORK verdict: update the skill and re-dispatch a review of that file.
+✗ Any unmet → see the "Not met →" instruction on the failing condition above
 
 ---
 
@@ -96,3 +86,4 @@ Before creating, editing, or shipping any skill or agent template:
 - `references/VOICE_AUTHORITY_RULES.md` -- authority table, Absolute Path Rule, Acronym Rule
 - `references/MODEL_COMPATIBILITY.md` -- patterns most likely to be skipped by lower-end models
 - `references/REVIEW_INSTRUCTIONS.md` -- review process, checklist, qualitative questions, return format; injected into `skill-reviewer` agent at dispatch time
+- `references/DISPATCH_PATTERN.md` -- step-by-step dispatch instructions; read before auditing any skill
