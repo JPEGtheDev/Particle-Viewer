@@ -47,13 +47,12 @@ Before creating, editing, or shipping any skill or agent template:
    - Modifying or adding anatomy elements? → read `references/SKILL_ANATOMY_ELEMENTS.md` before any edits
 
 5. **Auditing existing skills (not creating or editing one)?**
-   - Load `dispatch-skill-review` agent template from `agents/dispatch-skill-review.md`
+   - Load `skill-reviewer` agent template from `agents/skill-reviewer.md`
    - Read all four reference files from `writing-skills/references/` and inject into placeholders before dispatching (see Dispatch Pattern below)
    - One agent per file. Parallel. Do not enumerate dimensions inline -- `references/REVIEW_INSTRUCTIONS.md` is the complete criteria list
 
 ✓ All met → proceed
 ✗ Any unmet → resolve the unmet item before touching the skill file
-↳ Auditing (not creating/editing)? → The ✓/✗ above applies to creation/editing only. For auditing, run the step 5 sub-tasks; proceed once all dimensions are named in each agent's prompt.
 
 ---
 
@@ -115,14 +114,14 @@ See `references/SKILL_ANATOMY_ELEMENTS.md` for full element schemas, bad/good ex
 
 ## Dispatch Pattern — Skill Review
 
-To audit one or more skill files, dispatch one `dispatch-skill-review` agent per file in parallel:
+To audit one or more skill files, dispatch one `skill-reviewer` agent per file in parallel:
 
 1. Read these four files from `writing-skills/references/`:
    - `SKILL_ANATOMY_ELEMENTS.md` → `{{SKILL_ANATOMY_ELEMENTS}}`
    - `VOICE_AUTHORITY_RULES.md` → `{{VOICE_AUTHORITY_RULES}}`
    - `SIZE_AND_COMPRESSION.md` → `{{SIZE_AND_COMPRESSION}}`
    - `REVIEW_INSTRUCTIONS.md` → `{{REVIEW_INSTRUCTIONS}}`
-2. For each skill file: substitute all four placeholders in `agents/dispatch-skill-review.md`, set `{{SKILL_PATH}}` and `{{RECENT_CHANGES}}`, dispatch.
+2. For each skill file: substitute all four placeholders in `agents/skill-reviewer.md`, set `{{SKILL_PATH}}`, `{{RECENT_CHANGES}}`, and `{{WORKTREE_PATH}}` (output of `git rev-parse --show-toplevel`), dispatch.
 3. Collect all reports before acting on any result.
 4. For each NEEDS WORK verdict: update the skill and re-dispatch a review of that file.
 
@@ -191,7 +190,7 @@ See `references/SIZE_AND_COMPRESSION.md` for token count targets, the GPT-4.1 me
 
 ## Related Skills
 
-- `dispatch-skill-review` agent template — dispatches review agents using this skill's reference files as injected criteria
+- `skill-reviewer` agent template — dispatches review agents using this skill's reference files as injected criteria
 - `documentation` — governs how skill reference docs are structured, formatted, and linked
 - `self-evaluation` — reviews skills updated during a session using this checklist
 
@@ -211,4 +210,4 @@ Creating a new skill or modifying anatomy elements (iron law, gate, rationalizat
 - `writing-skills/references/SIZE_AND_COMPRESSION.md` — token count targets, GPT-4.1 mechanical execution rules, compression rules, line limits
 - `writing-skills/references/VOICE_AUTHORITY_RULES.md` — authority table, Absolute Path Rule, Acronym Rule; embed directly in reviewer agent prompts
 - `writing-skills/references/MODEL_COMPATIBILITY.md` — patterns most likely to be skipped by lower-end models and how to write skills that survive them
-- `writing-skills/references/REVIEW_INSTRUCTIONS.md` — review process, checklist, qualitative questions, return format; injected into `dispatch-skill-review` agent at dispatch time
+- `writing-skills/references/REVIEW_INSTRUCTIONS.md` — review process, checklist, qualitative questions, return format; injected into `skill-reviewer` agent at dispatch time

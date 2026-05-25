@@ -158,7 +158,7 @@ After any mistake or user correction:
 | Flatpak packaging or GL runtime | `flatpak` |
 | Build or dependencies | `build` |
 | Code review | `code-review agent`, 1 per file |
-| Skill review | `writing-skills` + `dispatch-skill-review` agent template |
+| Skill review | `writing-skills` + `skill-reviewer` agent template |
 
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: dispatch-skill-review
+name: skill-reviewer
 description: Use when auditing a single skill file against writing-skills criteria.
 ---
 
