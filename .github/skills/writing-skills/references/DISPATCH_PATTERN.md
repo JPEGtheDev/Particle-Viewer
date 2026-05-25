@@ -1,6 +1,7 @@
 # Dispatch Pattern -- Skill Review
 
-How to dispatch the `skill-reviewer` agent to audit one or more skill files in parallel.
+How to dispatch the `skill-reviewer` agent to audit one or more skills in parallel.
+One agent per skill directory -- the agent reviews `SKILL.md` and every file in `references/`.
 
 ---
 
@@ -11,7 +12,7 @@ How to dispatch the `skill-reviewer` agent to audit one or more skill files in p
    - `VOICE_AUTHORITY_RULES.md` → `{{VOICE_AUTHORITY_RULES}}`
    - `SIZE_AND_COMPRESSION.md` → `{{SIZE_AND_COMPRESSION}}`
    - `REVIEW_INSTRUCTIONS.md` → `{{REVIEW_INSTRUCTIONS}}`
-2. For each skill file: substitute all four placeholders in `agents/skill-reviewer.md`, set `{{SKILL_PATH}}`, `{{RECENT_CHANGES}}`, and `{{WORKTREE_PATH}}` (output of `git rev-parse --show-toplevel`), dispatch.
+2. For each skill: substitute all four placeholders in `agents/skill-reviewer.md`, set `{{SKILL_PATH}}` (path to the skill's `SKILL.md`), `{{RECENT_CHANGES}}`, and `{{WORKTREE_PATH}}` (output of `git rev-parse --show-toplevel`), dispatch. The agent derives `references/` from `dirname({{SKILL_PATH}})` at runtime.
 3. Collect all reports before acting on any result.
 4. For each NEEDS WORK verdict: update the skill and re-dispatch a review of that file.
 

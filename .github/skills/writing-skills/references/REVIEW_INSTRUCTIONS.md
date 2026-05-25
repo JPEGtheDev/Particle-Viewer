@@ -13,10 +13,12 @@ Run before any element checks:
 wc -l "{{SKILL_PATH}}"
 wc -c "{{SKILL_PATH}}"
 head -6 "{{SKILL_PATH}}"
+ls "$(dirname "{{SKILL_PATH}}")/references/" 2>/dev/null || echo "No references/ directory"
 ```
 
-Record the output. Apply size limits from SIZE_AND_COMPRESSION. Apply frontmatter rules
-from SKILL_ANATOMY_ELEMENTS Element 1.
+Record all output. Apply size limits from SIZE_AND_COMPRESSION. Apply frontmatter rules
+from SKILL_ANATOMY_ELEMENTS Element 1. Note every file found in `references/` -- each will
+be reviewed in Part 2.
 
 ---
 
@@ -69,6 +71,41 @@ After the checklist, read the skill again and answer:
 List 1-5 concrete, actionable suggestions. Each must name the specific section or line,
 state the problem, and provide example replacement text or a clear direction.
 Do not suggest padding or structural bloat.
+
+---
+
+---
+
+## Part 2: Reference File Review
+
+After completing the SKILL.md review above, read and review every file listed in
+`references/` during Step 0. If there is no `references/` directory, skip this part.
+
+For each reference file, run:
+
+```bash
+wc -c "<file>"
+grep -n "should\|prefer\|consider\|try to\|might be worth\|could potentially" "<file>"
+grep -n "/home/\|/usr/\|/root/" "<file>"
+grep -n "\.\./[a-z].*references/" "<file>"
+```
+
+Apply this checklist per file (anatomy elements do not apply to reference files):
+
+- [ ] **No weak language** -- grep hit in a rule body is a FAIL
+- [ ] **Acronym Rule** -- all terms spelled out on first use
+- [ ] **No absolute paths** -- no `/home/`, `/usr/`, `/root/` literals
+- [ ] **No cross-skill file path refs** -- no `../other-skill/references/FILE.md` patterns
+- [ ] **Content matches SKILL.md pointer** -- file contains what SKILL.md says it contains
+- [ ] **Size** -- no hard limit for reference files; flag as SIZE ALERT if > 8,000 chars (~2,000 tokens)
+
+Reference file issues that trigger NEEDS WORK on the overall verdict:
+- Weak language in rule bodies
+- Absolute paths
+- Cross-skill file path references
+- Content that contradicts or is absent from what SKILL.md says it contains
+
+Size alerts on reference files are informational only -- not a NEEDS WORK trigger.
 
 ---
 
@@ -129,6 +166,19 @@ Return findings in EXACTLY this structure:
 | Skill-specific content | ✅/❌ | file:line |
 | Related skill cross-reference | ✅/❌ | file:line |
 | Domain language match | ✅/❌ | file:line or "no issues found" |
+
+### Reference Files
+[For each file in references/ -- repeat this block per file, or write "No references/ directory":]
+
+#### references/[filename]
+| Item | Result | Evidence |
+|------|--------|----------|
+| No weak language | ✅/❌ | grep output or "no instances" |
+| Acronym Rule | ✅/❌ | file:line or "no issues" |
+| No absolute paths | ✅/❌ | "no instances" or file:line |
+| No cross-skill path refs | ✅/❌ | "no instances" or file:line |
+| Content matches SKILL.md pointer | ✅/❌ | note what was expected vs. found |
+| Size | OK / SIZE ALERT | [N chars, ~N tokens] |
 
 ### Issues Found
 [Each issue: file:line -- description]
