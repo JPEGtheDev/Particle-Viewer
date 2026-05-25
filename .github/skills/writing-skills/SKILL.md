@@ -37,6 +37,7 @@ Before creating, editing, or shipping any skill or agent template:
    - Not met → identify which rules lack Context/Forces; add them before proceeding.
 
 4. **Modifying anatomy elements?** Read `references/SKILL_ANATOMY_ELEMENTS.md` before any edits. Frontmatter-only changes: reference files optional.
+   - Not met → stop. Read `references/SKILL_ANATOMY_ELEMENTS.md` now. Do not make edits until loaded.
 
 5. **Auditing existing skills?** Load `skill-reviewer` agent template; inject 4 reference files; one agent per skill directory (reviews `SKILL.md` + all `references/` files).
    - Not following → read `references/DISPATCH_PATTERN.md` before dispatching any review agents.
