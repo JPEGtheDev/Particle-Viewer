@@ -46,10 +46,10 @@ Before creating, editing, or shipping any skill or agent template:
    - Editing frontmatter only (no anatomy changes)? → reference files optional
    - Modifying or adding anatomy elements? → read `references/SKILL_ANATOMY_ELEMENTS.md` before any edits
 
-5. **Auditing existing skills (not creating or editing one)?** Before dispatching any agent:
-   - Run `wc -c .github/skills/*/SKILL.md | awk '{print int($1/4) " tokens — " $2}'` and compare results against `references/SIZE_AND_COMPRESSION.md` limits
-   - Enumerate every audit dimension explicitly in each agent's prompt
-   - The anatomy gate above applies to editing skills — audit use cases require their own dimension list; unnamed dimensions will not be checked
+5. **Auditing existing skills (not creating or editing one)?**
+   - Load `dispatch-skill-review` agent template from `agents/dispatch-skill-review.md`
+   - Read all four reference files from `writing-skills/references/` and inject into placeholders before dispatching (see Dispatch Pattern below)
+   - One agent per file. Parallel. Do not enumerate dimensions inline -- `references/REVIEW_INSTRUCTIONS.md` is the complete criteria list
 
 ✓ All met → proceed
 ✗ Any unmet → resolve the unmet item before touching the skill file
@@ -81,7 +81,7 @@ Every skill belongs to exactly one bounded context. Place new skills in the corr
 | **EXECUTION** | How work is planned and done | execution, writing-plans, brainstorming, subagent-driven-development, dispatching-parallel-agents, using-git-worktrees |
 | **QUALITY** | How code meets correctness standards | testing, visual-regression-testing, code-quality, cpp-patterns, verification-before-completion, systematic-debugging |
 | **DELIVERY** | How code ships | versioning, build, workflow, finishing-a-development-branch |
-| **REVIEW** | How work is validated | architecture-review, infrastructure-review, skill-reviewer, requesting-code-review, receiving-code-review |
+| **REVIEW** | How work is validated | architecture-review, infrastructure-review, requesting-code-review, receiving-code-review |
 | **REFLECTION** | How the agent improves | self-evaluation, session-postmortem |
 | **KNOWLEDGE** | How knowledge is captured | documentation, writing-skills, summarization |
 | **PRODUCT** | How features are defined | user-story-generator, user-story-estimation |
@@ -110,6 +110,21 @@ Any absent element = skill is incomplete. Fix before shipping.
 ---
 
 See `references/SKILL_ANATOMY_ELEMENTS.md` for full element schemas, bad/good examples, and rationale for each element.
+
+---
+
+## Dispatch Pattern — Skill Review
+
+To audit one or more skill files, dispatch one `dispatch-skill-review` agent per file in parallel:
+
+1. Read these four files from `writing-skills/references/`:
+   - `SKILL_ANATOMY_ELEMENTS.md` → `{{SKILL_ANATOMY_ELEMENTS}}`
+   - `VOICE_AUTHORITY_RULES.md` → `{{VOICE_AUTHORITY_RULES}}`
+   - `SIZE_AND_COMPRESSION.md` → `{{SIZE_AND_COMPRESSION}}`
+   - `REVIEW_INSTRUCTIONS.md` → `{{REVIEW_INSTRUCTIONS}}`
+2. For each skill file: substitute all four placeholders in `agents/dispatch-skill-review.md`, set `{{SKILL_PATH}}` and `{{RECENT_CHANGES}}`, dispatch.
+3. Collect all reports before acting on any result.
+4. For each NEEDS WORK verdict: update the skill and re-dispatch a review of that file.
 
 ---
 
@@ -176,7 +191,7 @@ See `references/SIZE_AND_COMPRESSION.md` for token count targets, the GPT-4.1 me
 
 ## Related Skills
 
-- `skill-reviewer` — runs the 5-element gate check on completed skills; dispatch 1 per file
+- `dispatch-skill-review` agent template — dispatches review agents using this skill's reference files as injected criteria
 - `documentation` — governs how skill reference docs are structured, formatted, and linked
 - `self-evaluation` — reviews skills updated during a session using this checklist
 
@@ -196,3 +211,4 @@ Creating a new skill or modifying anatomy elements (iron law, gate, rationalizat
 - `writing-skills/references/SIZE_AND_COMPRESSION.md` — token count targets, GPT-4.1 mechanical execution rules, compression rules, line limits
 - `writing-skills/references/VOICE_AUTHORITY_RULES.md` — authority table, Absolute Path Rule, Acronym Rule; embed directly in reviewer agent prompts
 - `writing-skills/references/MODEL_COMPATIBILITY.md` — patterns most likely to be skipped by lower-end models and how to write skills that survive them
+- `writing-skills/references/REVIEW_INSTRUCTIONS.md` — review process, checklist, qualitative questions, return format; injected into `dispatch-skill-review` agent at dispatch time

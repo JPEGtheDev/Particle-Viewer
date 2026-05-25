@@ -128,7 +128,7 @@ Before presenting documentation, verify:
 ## Related Skills
 
 - `writing-skills` — skill authoring standards and anatomy gate
-- `skill-reviewer` — validates completed skills
+- `writing-skills` — validates completed skills via `dispatch-skill-review` agent
 
 ## Reference
 
