@@ -5,7 +5,7 @@ sections injected above this document. Apply them exactly.
 
 ---
 
-## Step 0 -- Pre-Checks
+## Step 1 -- Pre-Checks
 
 Run before any element checks:
 
@@ -18,11 +18,11 @@ ls "$(dirname "{{SKILL_PATH}}")/references/" 2>/dev/null || echo "No references/
 
 Record all output. Apply size limits from SIZE_AND_COMPRESSION. Apply frontmatter rules
 from SKILL_ANATOMY_ELEMENTS Element 1. Note every file found in `references/` -- each will
-be reviewed in Part 2.
+be reviewed in Step 4.
 
 ---
 
-## Checklist
+## Step 2 -- SKILL.md Checklist
 
 Run every item. Mark ✅ (pass) or ❌ (fail) with file:line evidence. Criteria for each
 item are in the reference sections above.
@@ -43,14 +43,14 @@ item are in the reference sections above.
 - [ ] **Related skill cross-reference** -- at least one related skill named?
 - [ ] **Domain language** -- matches skill scope; no wrong-platform commands or terminology?
 
-✓ All pass → verdict: PASS
-✗ Any unmet → verdict: NEEDS WORK -- list every failing item
+✓ All pass → proceed to Step 3
+✗ Any unmet → record every failing item; continue through all steps before filing verdict
 
 ---
 
-## Qualitative Review
+## Step 3 -- Qualitative Assessment
 
-After the checklist, read the skill again and answer:
+Read the skill again and answer:
 
 **1. Gating effectiveness**
 - Does the Iron Law stop the most common failure mode for this domain?
@@ -74,12 +74,10 @@ Do not suggest padding or structural bloat.
 
 ---
 
----
+## Step 4 -- Reference File Review
 
-## Part 2: Reference File Review
-
-After completing the SKILL.md review above, read and review every file listed in
-`references/` during Step 0. If there is no `references/` directory, skip this part.
+Read and review every file listed in `references/` during Step 1. If there is no
+`references/` directory, write "No references/ directory" and proceed to Step 5.
 
 For each reference file, run:
 
@@ -109,7 +107,10 @@ Size alerts on reference files are informational only -- not a NEEDS WORK trigge
 
 ---
 
-## Red Flags -- Stop Before Filing
+## Step 5 -- Red Flags Gate
+
+Check before filing the verdict. Any hit here means re-examine the finding and correct
+the verdict if needed before returning.
 
 - "It has most of the required elements" -- count every element. Partial is FAIL.
 - "The Iron Law is present but mild" -- `YOU MUST` and `No exceptions.` must be INSIDE the backtick block.
