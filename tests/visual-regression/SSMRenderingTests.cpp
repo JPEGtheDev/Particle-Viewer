@@ -19,6 +19,7 @@
  */
 
 #include <cstdio>
+#include <cstdlib>
 #include <string>
 #include <vector>
 
@@ -35,29 +36,20 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Image.hpp"
+#include "VRTestCommon.hpp"
 #include "graphics/SDL3Context.hpp"
 #include "particle.hpp"
 #include "shader.hpp"
 #include "testing/FramebufferCapture.hpp"
 #include "testing/PixelComparator.hpp"
 
-// Test configuration
-namespace SSMTestConfig
-{
-static const uint32_t RENDER_WIDTH = 1280;
-static const uint32_t RENDER_HEIGHT = 720;
-static const float PARTICLE_TOLERANCE = 2.0f / 255.0f;
-static const float MAX_DIFF_RATIO = 0.0001f;
-static const std::string BASELINES_DIR = "baselines";
-} // namespace SSMTestConfig
-
 /*
  * Test fixture for SSM rendering regression tests.
  * Sets up a production SDL3Context (hidden window) and an off-screen
  * FramebufferCapture for pixel-accurate comparison.
  *
- * Provides getShaderPath() and getBaselinePath() helpers that probe
- * multiple candidate locations so the tests run from both build/ and
+ * Uses getShaderPath() and getBaselinePath() free functions from VRTestCommon.hpp
+ * to probe multiple candidate locations so the tests run from both build/ and
  * build/tests/ working directories.
  */
 class SSMRenderingTest : public testing::Test
@@ -71,12 +63,12 @@ class SSMRenderingTest : public testing::Test
     void SetUp() override
     {
         // Ensure output directories exist
-        std::string mkBaselines = "mkdir -p " + SSMTestConfig::BASELINES_DIR;
+        std::string mkBaselines = "mkdir -p " + VRTestConfig::BASELINES_DIR;
         ASSERT_EQ(std::system(mkBaselines.c_str()), 0) << "Failed to create baselines directory";
         ASSERT_EQ(std::system("mkdir -p artifacts"), 0) << "Failed to create artifacts directory";
 
         context_ =
-            new SDL3Context(SSMTestConfig::RENDER_WIDTH, SSMTestConfig::RENDER_HEIGHT, "SSM Rendering Test", false);
+            new SDL3Context(VRTestConfig::RENDER_WIDTH, VRTestConfig::RENDER_HEIGHT, "SSM Rendering Test", false);
         if (!context_->isValid()) {
             delete context_;
             context_ = nullptr;
@@ -117,48 +109,6 @@ class SSMRenderingTest : public testing::Test
             delete context_;
             context_ = nullptr;
         }
-    }
-
-    /*
-     * Resolve a shader name to a file path, probing several candidate
-     * locations relative to the current working directory.
-     */
-    std::string getShaderPath(const std::string& shaderName)
-    {
-        std::vector<std::string> candidates = {
-            "Viewer-Assets/shaders/" + shaderName,
-            "../Viewer-Assets/shaders/" + shaderName,
-            "../../src/shaders/" + shaderName,
-            "../../../src/shaders/" + shaderName,
-        };
-        for (const auto& p : candidates) {
-            if (FILE* f = fopen(p.c_str(), "r")) {
-                fclose(f);
-                return p;
-            }
-        }
-        return candidates[0]; // fallback — shader loading will report the error
-    }
-
-    /*
-     * Resolve a baseline name to a file path, probing several candidate
-     * locations relative to the current working directory.
-     */
-    std::string getBaselinePath(const std::string& baselineName)
-    {
-        std::vector<std::string> candidates = {
-            SSMTestConfig::BASELINES_DIR + "/" + baselineName,
-            "../../tests/visual-regression/baselines/" + baselineName,
-            "../tests/visual-regression/baselines/" + baselineName,
-            "../../../tests/visual-regression/baselines/" + baselineName,
-        };
-        for (const auto& p : candidates) {
-            if (FILE* f = fopen(p.c_str(), "r")) {
-                fclose(f);
-                return p;
-            }
-        }
-        return candidates[0]; // fallback — triggers baseline generation
     }
 };
 
@@ -269,8 +219,8 @@ TEST_F(SSMRenderingTest, SSMRender_4x4x4Grid_MatchesBaseline)
     glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
     glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
     glm::mat4 projection = glm::perspective(glm::radians(45.0f),
-                                            static_cast<float>(SSMTestConfig::RENDER_WIDTH) /
-                                                static_cast<float>(SSMTestConfig::RENDER_HEIGHT),
+                                            static_cast<float>(VRTestConfig::RENDER_WIDTH) /
+                                                static_cast<float>(VRTestConfig::RENDER_HEIGHT),
                                             0.1f, 3000.0f);
 
     // ---- Step 5: render (placeholder — sphere shader) ----------------------
@@ -318,7 +268,7 @@ TEST_F(SSMRenderingTest, SSMRender_4x4x4Grid_MatchesBaseline)
         // RED GATE: no baseline exists yet — save the current render as a
         // candidate and fail so that this todo stays RED until Wave 4 is
         // done and the baseline is reviewed and committed.
-        std::string candidatePath = SSMTestConfig::BASELINES_DIR + "/ssm_4x4x4_grid.png";
+        std::string candidatePath = VRTestConfig::BASELINES_DIR + "/ssm_4x4x4_grid.png";
         currentImage.save(candidatePath, ImageFormat::PNG);
         FAIL() << "SSM baseline not found — candidate baseline saved to: " << candidatePath << "\n"
                << "This test is intentionally RED (Wave 4 gate).\n"
@@ -330,12 +280,12 @@ TEST_F(SSMRenderingTest, SSMRender_4x4x4Grid_MatchesBaseline)
         << "Failed to save current render artifact";
 
     PixelComparator comparator;
-    ComparisonResult result = comparator.compare(baseline, currentImage, SSMTestConfig::PARTICLE_TOLERANCE, true);
+    ComparisonResult result = comparator.compare(baseline, currentImage, VRTestConfig::PARTICLE_TOLERANCE, true);
 
     float diff_ratio = result.total_pixels > 0
                            ? static_cast<float>(result.diff_pixels) / static_cast<float>(result.total_pixels)
                            : 1.0f;
-    if (diff_ratio > SSMTestConfig::MAX_DIFF_RATIO) {
+    if (diff_ratio > VRTestConfig::MAX_DIFF_RATIO) {
         result.diff_image.save("artifacts/ssm_4x4x4_grid_diff.png", ImageFormat::PNG);
         FAIL() << "SSM visual mismatch detected:\n"
                << "  Diff pixels: " << result.diff_pixels << " / " << result.total_pixels << " ("
