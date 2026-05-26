@@ -4,7 +4,7 @@ out vec4 color;
 
 uniform sampler2D blurredDensity;
 uniform float threshold = 0.5;
-uniform vec3 metaball_color = vec3(0.4, 0.7, 1.0);
+uniform vec3 metaballColor = vec3(0.4, 0.7, 1.0);
 
 void main()
 {
@@ -12,7 +12,7 @@ void main()
     if (density <= threshold) {
         discard;
     }
-    // Smooth the surface edge: remap density near threshold for soft falloff
+    // Smooth the surface edge
     float edge = smoothstep(threshold, threshold + 0.1, density);
-    color = vec4(metaball_color * edge, edge);
+    color = vec4(metaballColor * edge, edge);
 }
