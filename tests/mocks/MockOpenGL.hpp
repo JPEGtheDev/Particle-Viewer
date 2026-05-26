@@ -122,20 +122,15 @@ class MockOpenGL
     static void setLinkStatus(GLint status);
 
     /*
-     * Get the number of programs created during tests.
-     */
-    static size_t getProgramCount();
-
-    /*
-     * Get the number of shaders created during tests.
-     */
-    static size_t getShaderCount();
-
-    /*
      * Set the framebuffer status that will be returned by glCheckFramebufferStatus.
      * Use GL_FRAMEBUFFER_COMPLETE for success, or an incomplete enum to simulate failure.
      */
     static void setFramebufferStatus(GLenum status);
+
+    /*
+     * Get the number of programs created during tests.
+     */
+    static size_t getProgramCount();
 
     /*
      * Check if a specific program was created.
