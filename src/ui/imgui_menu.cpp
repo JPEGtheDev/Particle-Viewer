@@ -295,25 +295,42 @@ MenuActions renderControllerPanel(MenuState& state)
             return actions;
         }
 
-        item("Spheres", true, [&] {
+        // Named actions — single source of truth for both click and A-button confirm paths
+        auto selectSpheres = [&] {
             state.panel_layer = PanelLayer::Main;
             actions.render_mode_changed = true;
             actions.new_render_mode = 0;
-        });
-
-        item("Screen-Space Metaballs", state.ssm_available, [&] {
+        };
+        auto selectSSM = [&] {
             state.panel_layer = PanelLayer::Main;
             actions.render_mode_changed = true;
             actions.new_render_mode = 1;
-        });
+        };
+        auto goBack = [&] { state.panel_layer = PanelLayer::Main; };
+
+        item("Spheres", true, selectSpheres);
+        if (state.current_render_mode == 0) {
+            ImGui::SameLine();
+            ImGui::Text("[active]");
+        }
+
+        item("Screen-Space Metaballs", state.ssm_available, selectSSM);
         if (!state.ssm_available) {
             ImGui::SetItemTooltip("Mode not supported");
+        }
+        if (state.current_render_mode == 1) {
+            ImGui::SameLine();
+            ImGui::Text("[active]");
         }
 
         item("Marching Cubes", false, [&] {});
         ImGui::SetItemTooltip("Mode not supported");
+        if (state.current_render_mode == 2) {
+            ImGui::SameLine();
+            ImGui::Text("[active]");
+        }
 
-        item("Back", true, [&] { state.panel_layer = PanelLayer::Main; });
+        item("Back", true, goBack);
 
         state.panel_item_count = item_count; // 4
 
@@ -325,22 +342,18 @@ MenuActions renderControllerPanel(MenuState& state)
             state.confirm_panel_item = false;
             if (state.selected_panel_item >= 0 && state.selected_panel_item < state.panel_item_count) {
                 switch (state.selected_panel_item) {
-                    case 0: // Spheres
-                        state.panel_layer = PanelLayer::Main;
-                        actions.render_mode_changed = true;
-                        actions.new_render_mode = 0;
+                    case 0:
+                        selectSpheres();
                         break;
-                    case 1: // Screen-Space Metaballs
+                    case 1:
                         if (state.ssm_available) {
-                            state.panel_layer = PanelLayer::Main;
-                            actions.render_mode_changed = true;
-                            actions.new_render_mode = 1;
+                            selectSSM();
                         }
                         break;
-                    case 2: // Marching Cubes — always greyed, no-op
-                        break;
-                    case 3: // Back
-                        state.panel_layer = PanelLayer::Main;
+                    case 2:
+                        break; // greyed, no-op
+                    case 3:
+                        goBack();
                         break;
                     default:
                         break;
