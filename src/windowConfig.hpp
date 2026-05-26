@@ -168,7 +168,7 @@ inline bool saveWindowConfig(const std::string& filepath, int width, int height,
     if (ssm_threshold >= 0.0f) {
         file << "ssm_threshold=" << ssm_threshold << "\n";
     }
-    if (ssm_blob_radius >= 0.0f) {
+    if (ssm_blob_radius >= 0.1f) {
         file << "ssm_blob_radius=" << ssm_blob_radius << "\n";
     }
     if (ssm_blur_amount >= 0.0f) {

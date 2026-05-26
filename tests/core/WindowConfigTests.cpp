@@ -617,3 +617,38 @@ TEST_F(WindowConfigTest, WindowConfig_SsmParams_DefaultValues)
     EXPECT_FLOAT_EQ(config.ssm_blob_radius, 2.0f);
     EXPECT_FLOAT_EQ(config.ssm_blur_amount, 3.0f);
 }
+
+TEST_F(WindowConfigTest, SaveWindowConfig_SsmParams_DefaultSentinel_KeysAbsentInFile)
+{
+    // Arrange & Act: save with default sentinel args (no SSM params)
+    saveWindowConfig(test_config_path, 1280, 720, false);
+    // Assert: none of the SSM keys appear in the file
+    std::ifstream f(test_config_path);
+    std::string content((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
+    EXPECT_EQ(content.find("ssm_threshold"), std::string::npos);
+    EXPECT_EQ(content.find("ssm_blob_radius"), std::string::npos);
+    EXPECT_EQ(content.find("ssm_blur_amount"), std::string::npos);
+}
+
+TEST_F(WindowConfigTest, LoadWindowConfig_SsmParams_Unparseable_DefaultPreserved)
+{
+    // Arrange: file has unparseable SSM values
+    {
+        std::ofstream f(test_config_path);
+        f << "width=1280\nheight=720\nfullscreen=0\n";
+        f << "ssm_threshold=not_a_float\n";
+        f << "ssm_blob_radius=also_not_a_float\n";
+        f << "ssm_blur_amount=still_not_a_float\n";
+    }
+    int w = 0, h = 0;
+    bool fs = false;
+    float threshold = 0.5f;
+    float blob_radius = 2.0f;
+    float blur_amount = 3.0f;
+    // Act
+    loadWindowConfig(test_config_path, w, h, fs, nullptr, nullptr, &threshold, &blob_radius, &blur_amount);
+    // Assert: caller defaults preserved when values are unparseable
+    EXPECT_FLOAT_EQ(threshold, 0.5f);
+    EXPECT_FLOAT_EQ(blob_radius, 2.0f);
+    EXPECT_FLOAT_EQ(blur_amount, 3.0f);
+}
