@@ -143,7 +143,7 @@ TEST(DpadNav, AConfirm_AtMinusOne_IsNoOp)
 
 // --- PanelLayer types (add-panel-layer-types) ---
 
-TEST(PanelLayer, TwoLayersAreDistinct)
+TEST(PanelLayer, TwoLayers_AreDistinct)
 {
     EXPECT_NE(PanelLayer::Main, PanelLayer::RenderMode);
 }
