@@ -1,7 +1,7 @@
 ---
 name: session-bootstrap
 license: MIT
-description: Use at the start of every session.
+description: Use when starting a new session.
 ---
 
 

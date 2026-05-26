@@ -1,7 +1,7 @@
 ---
 name: session-postmortem
 license: MIT
-description: Use after a session completes.
+description: Use when a completed session needs behavioral retrospective analysis.
 ---
 
 
