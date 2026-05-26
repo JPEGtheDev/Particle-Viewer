@@ -44,6 +44,18 @@
 #include "viewerConfig.hpp"
 
 /*
+ * Render mode controls which particle rendering algorithm is used.
+ * The app always starts in Spheres mode.
+ * MarchingCubes is a placeholder for Story 2 (always greyed out for now).
+ */
+enum class RenderMode
+{
+    Spheres,
+    ScreenSpaceMetaballs,
+    MarchingCubes,
+};
+
+/*
  * Window configuration.
  */
 struct WindowConfig
@@ -203,6 +215,7 @@ class ViewerApp
     RecordingState recording_;
     ShaderPaths paths_;
     MenuState menu_state_;
+    RenderMode render_mode_ = RenderMode::Spheres;
     bool imgui_initialized_;
 
     // ============================================
