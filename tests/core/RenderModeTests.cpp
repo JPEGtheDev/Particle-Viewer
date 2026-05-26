@@ -87,6 +87,13 @@ TEST(ShaderPathsTest, SsmBlurVertex_DefaultPath_ContainsMetaballBlurVert)
     EXPECT_NE(paths.ssm_blur_vertex.find("metaball_blur.vert"), std::string::npos);
 }
 
+TEST(ShaderPathsTest, SsmBlurFragment_DefaultPath_ContainsMetaballBlurFrag)
+{
+    // Assert
+    ShaderPaths paths;
+    EXPECT_NE(paths.ssm_blur_fragment.find("metaball_blur.frag"), std::string::npos);
+}
+
 TEST(ShaderPathsTest, SsmCompositeFragment_DefaultPath_ContainsMetaballCompositeFrag)
 {
     // Assert
