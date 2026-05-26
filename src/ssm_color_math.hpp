@@ -7,24 +7,24 @@
  *                 gl_InstanceID%1600/1600.0f,
  *                 gl_InstanceID%64000/64000.0f);
  */
-#ifndef PARTICLE_VIEWER_SSM_COLOR_MATH_HPP
-#define PARTICLE_VIEWER_SSM_COLOR_MATH_HPP
+#ifndef PARTICLE_VIEWER_SSM_COLOR_MATH_H
+#define PARTICLE_VIEWER_SSM_COLOR_MATH_H
 
 #include <utility>
 #include <vector>
 
-#include "glm/glm.hpp"
+#include <glm/glm.hpp>
 
 /// Returns the RGB color for a category 500 particle, replicating the GLSL
 /// shader formula. Integer modulo is applied before float division, matching
 /// GLSL operator precedence exactly.
 ///
-/// @param particleId  The particle instance ID (gl_InstanceID equivalent).
-/// @return            RGB color in [0, 1].
-inline glm::vec3 category500Color(int particleId)
+/// @param particle_id  The particle instance ID (gl_InstanceID equivalent).
+/// @return             RGB color in [0, 1].
+inline glm::vec3 category500Color(int particle_id)
 {
-    return glm::vec3(static_cast<float>(particleId % 40) / 40.0f, static_cast<float>(particleId % 1600) / 1600.0f,
-                     static_cast<float>(particleId % 64000) / 64000.0f);
+    return glm::vec3(static_cast<float>(particle_id % 40) / 40.0f, static_cast<float>(particle_id % 1600) / 1600.0f,
+                     static_cast<float>(particle_id % 64000) / 64000.0f);
 }
 
 /// Computes a weighted-average blend of the given colors.
@@ -34,19 +34,19 @@ inline glm::vec3 category500Color(int particleId)
 ///                         all weights are zero or the input is empty.
 inline glm::vec3 blendColors(const std::vector<std::pair<glm::vec3, float>>& weighted_colors)
 {
-    float totalWeight = 0.0f;
+    float total_weight = 0.0f;
     glm::vec3 blended(0.0f);
 
     for (const auto& [color, weight] : weighted_colors) {
         blended += color * weight;
-        totalWeight += weight;
+        total_weight += weight;
     }
 
-    if (totalWeight == 0.0f) {
+    if (total_weight == 0.0f) {
         return glm::vec3(0.0f);
     }
 
-    return blended / totalWeight;
+    return blended / total_weight;
 }
 
-#endif // PARTICLE_VIEWER_SSM_COLOR_MATH_HPP
+#endif // PARTICLE_VIEWER_SSM_COLOR_MATH_H
