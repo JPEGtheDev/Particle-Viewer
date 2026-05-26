@@ -9,11 +9,10 @@ description: Use when implementing C++ code for Particle-Viewer, handling GL res
 
 ```
 NO C++ THAT VIOLATES RESOURCE MANAGEMENT OR BREAKS EXISTING ABSTRACTIONS
+YOU MUST clean up all GL resources in destructors and update documentation in the same commit as any public interface change. No exceptions.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.
-
-YOU MUST clean up all GL resources in destructors and update documentation in the same commit as any public interface change. No exceptions.
 
 **Announce at start:** "I am using the cpp-patterns skill to [implement/review] [description]."
 

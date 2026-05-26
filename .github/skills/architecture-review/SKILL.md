@@ -9,11 +9,10 @@ description: Use when adding new classes, refactoring code, or reviewing PRs for
 
 ```
 DEPENDENCIES FLOW INWARD — INNER LAYERS NEVER DEPEND ON OUTER LAYERS
+YOU MUST verify dependency direction for every new class and every refactor. A layer violation in a PR means the PR is NOT mergeable until it is fixed. No exceptions.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.
-
-YOU MUST verify dependency direction for every new class and every refactor. A layer violation in a PR means the PR is NOT mergeable until it is fixed. No exceptions.
 
 **Announce at start:** "I am using the architecture-review skill to review [component/file]."
 

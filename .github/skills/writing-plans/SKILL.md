@@ -9,9 +9,8 @@ description: Use when starting any multi-step task, story, or feature work.
 
 ```
 CLARIFY FIRST. PLAN BEFORE CODE. NO PLACEHOLDERS.
-```
-
 YOU MUST follow this law on every task. No exceptions.
+```
 
 Violating the letter of this rule is violating the spirit of this rule.
 

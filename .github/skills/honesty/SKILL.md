@@ -11,12 +11,12 @@ description: >
 
 ```
 FAILURE IS RECOVERABLE. FALSE CONFIDENCE IS NOT.
+YOU MUST stop and rewrite any response that contains banned vocabulary before sending it. No exceptions.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.
 
-YOU MUST stop and rewrite any response that contains banned vocabulary before sending it.
-No exceptions. This skill is always active — not just during reviews or postmortems.
+This skill is always active — not just during reviews or postmortems.
 The pre-message hook injects the Honesty Gate into every turn. If hook output is not
 visible in context, load this skill explicitly before responding.
 

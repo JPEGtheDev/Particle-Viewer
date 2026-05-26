@@ -9,11 +9,10 @@ description: Use when adding workflows, modifying CMakeLists.txt, or updating Fl
 
 ```
 PIPELINES MUST BE REPRODUCIBLE AND READ-ONLY — INFRASTRUCTURE CHANGES NEED REVIEW
+YOU MUST review every change to `.github/workflows/`, `CMakeLists.txt`, and `flatpak/` before merge. A pipeline that commits, pushes, or uses unpinned dependencies is NOT mergeable. No exceptions.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.
-
-YOU MUST review every change to `.github/workflows/`, `CMakeLists.txt`, and `flatpak/` before merge. A pipeline that commits, pushes, or uses unpinned dependencies is NOT mergeable. No exceptions.
 
 **Announce at start:** "I am using the infrastructure-review skill to review [workflow/CMake/Flatpak change]."
 

@@ -9,11 +9,11 @@ description: Use at the start of every session.
 
 ```
 READ THE SKILL. THEN ACT. NEVER ACT THEN READ.
+YOU MUST read all required skills before writing any code or sending any plan. No exceptions.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.
 
-YOU MUST read all required skills before writing any code or sending any plan. No exceptions.
 Skills contain rules that change what you do. Reading a skill AFTER acting defeats the purpose.
 
 **Announce at start:** "I am using the session-bootstrap skill to load required skills for this session."

@@ -9,11 +9,10 @@ description: Use when creating docs, updating guides, writing API references, or
 
 ```
 EVERY DOC IS SMALL, TAGGED, AND LINKED — ONE CONCEPT PER FILE
+YOU MUST keep every doc file under 600 words, include YAML frontmatter on every doc, and add a Related section at the bottom. No exceptions.
 ```
 
 Violating the letter of this rule is violating the spirit of this rule.
-
-YOU MUST keep every doc file under 600 words, include YAML frontmatter on every doc, and add a Related section at the bottom. No exceptions.
 
 **Announce at start:** "I am using the documentation skill to [write/update/review] [description]."
 
