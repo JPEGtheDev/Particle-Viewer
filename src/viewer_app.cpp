@@ -729,6 +729,9 @@ void ViewerApp::openRecordingFolderDialog()
 {
     if (recording_.is_active || recording_dialog_open_)
         return;
+    // RenderMode panel is open — recording dialog conflicts; user must navigate away first
+    // [UNTESTABLE_WITHOUT_FULL_CONTEXT] — openRecordingFolderDialog() and recording_dialog_open_
+    // are private with no getter; exercising this guard requires a full app context.
     if (menu_state_.panel_layer == PanelLayer::RenderMode)
         return;
     recording_.error_count = 0;

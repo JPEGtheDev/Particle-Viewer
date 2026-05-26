@@ -191,7 +191,7 @@ class ViewerApp
 
     // Cycles through available (non-greyed) render modes: Spheres → SSM → Spheres.
     // MarchingCubes is always skipped (always greyed — placeholder for Story 2).
-    static RenderMode cycleRenderMode(RenderMode current)
+    static constexpr RenderMode cycleRenderMode(RenderMode current)
     {
         switch (current) {
             case RenderMode::Spheres:
