@@ -67,3 +67,63 @@ TEST(RenderModeTest, CycleRenderMode_FromMarchingCubes_ReturnsSpheres)
     // Assert
     EXPECT_EQ(next, RenderMode::Spheres);
 }
+
+// SSMResources struct tests (add-ssm-resources-and-paths)
+
+TEST(SSMResourcesTest, DefaultConstruct_FloatFboSupported_IsFalse)
+{
+    // Assert
+    RenderResources r;
+    EXPECT_FALSE(r.ssm.float_fbo_supported);
+}
+
+TEST(SSMResourcesTest, DefaultConstruct_DensityFbo_IsZero)
+{
+    // Assert
+    RenderResources r;
+    EXPECT_EQ(r.ssm.density_fbo, 0u);
+}
+
+TEST(SSMResourcesTest, DefaultConstruct_BlurredFbo_IsZero)
+{
+    // Assert
+    RenderResources r;
+    EXPECT_EQ(r.ssm.blurred_fbo, 0u);
+}
+
+// ShaderPaths SSM path defaults
+
+TEST(ShaderPathsTest, SsmSplatVertex_DefaultPath_ContainsMetaballSplatVert)
+{
+    // Assert
+    ShaderPaths paths;
+    EXPECT_NE(paths.ssm_splat_vertex.find("metaball_splat.vert"), std::string::npos);
+}
+
+TEST(ShaderPathsTest, SsmSplatFragment_DefaultPath_ContainsMetaballSplatFrag)
+{
+    // Assert
+    ShaderPaths paths;
+    EXPECT_NE(paths.ssm_splat_fragment.find("metaball_splat.frag"), std::string::npos);
+}
+
+TEST(ShaderPathsTest, SsmBlurVertex_DefaultPath_ContainsMetaballBlurVert)
+{
+    // Assert
+    ShaderPaths paths;
+    EXPECT_NE(paths.ssm_blur_vertex.find("metaball_blur.vert"), std::string::npos);
+}
+
+TEST(ShaderPathsTest, SsmBlurFragment_DefaultPath_ContainsMetaballBlurFrag)
+{
+    // Assert
+    ShaderPaths paths;
+    EXPECT_NE(paths.ssm_blur_fragment.find("metaball_blur.frag"), std::string::npos);
+}
+
+TEST(ShaderPathsTest, SsmCompositeFragment_DefaultPath_ContainsMetaballCompositeFrag)
+{
+    // Assert
+    ShaderPaths paths;
+    EXPECT_NE(paths.ssm_composite_fragment.find("metaball_composite.frag"), std::string::npos);
+}
