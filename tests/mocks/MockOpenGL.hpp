@@ -133,6 +133,11 @@ class MockOpenGL
     static size_t getProgramCount();
 
     /*
+     * Get the number of shaders created during tests.
+     */
+    static size_t getShaderCount();
+
+    /*
      * Check if a specific program was created.
      */
     static bool wasProgramCreated(GLuint program);
