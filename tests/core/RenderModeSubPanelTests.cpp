@@ -49,7 +49,7 @@ class RenderModeSubPanelTest : public ::testing::Test
     }
 
     // Returns a MenuState with the panel open and panel_layer == RenderMode.
-    MenuState makeSubPanelState() const
+    static MenuState makeSubPanelState()
     {
         MenuState state;
         state.controller_panel_open = true;

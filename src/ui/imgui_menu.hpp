@@ -71,8 +71,9 @@ struct MenuState
     int selected_panel_item = -1;              // currently highlighted item index; -1 = none
     int panel_item_count = 0;                  // total selectable items in panel this frame
     bool confirm_panel_item = false;           // A-button confirm pending; read+reset by panel
-    bool panel_back_pressed = false;           // B-button back signal; used to navigate from sub-panel back to Main
-    bool is_recording = false;                 // mirrors recording_.is_active; set by ViewerApp each frame
+    bool panel_back_pressed =
+        false; // B-button back signal; read+reset by renderControllerPanel to navigate sub-panel back to Main
+    bool is_recording = false; // mirrors recording_.is_active; set by ViewerApp each frame
 };
 
 /*
