@@ -34,12 +34,14 @@ struct MenuActions
     bool toggle_fullscreen = false;
     int target_width = 0;
     int target_height = 0;
-    bool toggle_auto_com = false;   // toggled by the COM/Cache submenu checkbox
-    bool scale_changed = false;     // user selected a new UI scale
-    float new_scale = 1.0f;         // the newly selected scale value (only valid when scale_changed == true)
-    bool toggle_debug_mode = false; // toggles debug_mode in MenuState
-    bool close_panel = false;       // close the controller panel and exit MenuMode
-    bool stop_recording = false;    // stop an active recording
+    bool toggle_auto_com = false;     // toggled by the COM/Cache submenu checkbox
+    bool scale_changed = false;       // user selected a new UI scale
+    float new_scale = 1.0f;           // the newly selected scale value (only valid when scale_changed == true)
+    bool toggle_debug_mode = false;   // toggles debug_mode in MenuState
+    bool close_panel = false;         // close the controller panel and exit MenuMode
+    bool stop_recording = false;      // stop an active recording
+    bool render_mode_changed = false; // user selected a render mode from sub-panel
+    int new_render_mode = 0;          // 0=Spheres, 1=SSM, 2=MarchingCubes (valid only when render_mode_changed)
 };
 
 /*
@@ -74,6 +76,15 @@ struct MenuState
     bool panel_back_pressed =
         false; // B-button back signal; read+reset by renderControllerPanel to navigate sub-panel back to Main
     bool is_recording = false; // mirrors recording_.is_active; set by ViewerApp each frame
+
+    // Sub-panel state — set by ViewerApp each frame before renderControllerPanel()
+    int current_render_mode = 0; // 0=Spheres, 1=SSM, 2=MarchingCubes
+    bool ssm_available = false;  // set by ViewerApp from render_.ssm.float_fbo_supported
+
+    // SSM parameter sliders — read+written by renderControllerPanel(); changes visible to ViewerApp next frame
+    float ssm_threshold = 0.5f;   // valid range [0.0, 1.0]
+    float ssm_blob_radius = 2.0f; // valid range [0.1, 10.0]
+    float ssm_blur_amount = 3.0f; // valid range [0.0, 20.0]
 };
 
 /*
