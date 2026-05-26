@@ -1,4 +1,4 @@
-#Skill Anatomy — Element Reference
+# Skill Anatomy -- Element Reference
 
 Full schemas and examples for each of the 5 required skill elements.
 
