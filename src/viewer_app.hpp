@@ -74,8 +74,28 @@ struct WindowConfig
 };
 
 /*
+ * GL object handles for the Screen-Space Metaballs rendering pipeline.
+ * density_fbo accumulates per-particle falloff contributions into a float texture.
+ * blurred_fbo holds the optional box-blurred density field.
+ * float_fbo_supported is false if GL_RGBA32F framebuffers are unavailable at runtime;
+ * when false, SSM mode is greyed out with tooltip "Mode not supported".
+ */
+struct SSMResources
+{
+    GLuint density_fbo = 0;
+    GLuint density_texture = 0;
+    GLuint blurred_fbo = 0;
+    GLuint blurred_texture = 0;
+    bool float_fbo_supported = false;
+    Shader splat_shader;
+    Shader blur_shader;
+    Shader composite_shader;
+};
+
+/*
  * GL object handles for the framebuffer-based rendering pipeline.
- * Includes the offscreen FBO, fullscreen quad, and particle circle VAO/VBO.
+ * Includes the offscreen FBO, fullscreen quad, particle circle VAO/VBO,
+ * and SSM resources for the Screen-Space Metaballs pass.
  */
 struct RenderResources
 {
@@ -88,6 +108,7 @@ struct RenderResources
     GLuint circle_vbo = 0;
     Shader sphere_shader;
     Shader screen_shader;
+    SSMResources ssm;
 };
 
 /*
@@ -111,6 +132,11 @@ struct ShaderPaths
     std::string screen_vertex = "/Viewer-Assets/shaders/screenshader.vs";
     std::string screen_fragment = "/Viewer-Assets/shaders/screenshader.frag";
     std::string font;
+    std::string ssm_splat_vertex = "/Viewer-Assets/shaders/metaball_splat.vert";
+    std::string ssm_splat_fragment = "/Viewer-Assets/shaders/metaball_splat.frag";
+    std::string ssm_blur_vertex = "/Viewer-Assets/shaders/metaball_blur.vert";
+    std::string ssm_blur_fragment = "/Viewer-Assets/shaders/metaball_blur.frag";
+    std::string ssm_composite_fragment = "/Viewer-Assets/shaders/metaball_composite.frag";
 };
 
 /*
