@@ -40,3 +40,30 @@ TEST(RenderModeTest, AllEnumerators_WhenCompared_AreDistinct)
     EXPECT_NE(RenderMode::ScreenSpaceMetaballs, RenderMode::MarchingCubes);
     EXPECT_NE(RenderMode::Spheres, RenderMode::MarchingCubes);
 }
+
+// Cycling tests for cycleRenderMode static helper (add-m-key-handler)
+
+TEST(RenderModeTest, CycleRenderMode_FromSpheres_ReturnsSSM)
+{
+    // Act
+    RenderMode next = ViewerApp::cycleRenderMode(RenderMode::Spheres);
+    // Assert
+    EXPECT_EQ(next, RenderMode::ScreenSpaceMetaballs);
+}
+
+TEST(RenderModeTest, CycleRenderMode_FromSSM_ReturnsSpheres)
+{
+    // Act
+    RenderMode next = ViewerApp::cycleRenderMode(RenderMode::ScreenSpaceMetaballs);
+    // Assert
+    EXPECT_EQ(next, RenderMode::Spheres);
+}
+
+TEST(RenderModeTest, CycleRenderMode_FromMarchingCubes_ReturnsSpheres)
+{
+    // MarchingCubes is always greyed; cycling from it still wraps to Spheres
+    // Act
+    RenderMode next = ViewerApp::cycleRenderMode(RenderMode::MarchingCubes);
+    // Assert
+    EXPECT_EQ(next, RenderMode::Spheres);
+}
