@@ -9,26 +9,33 @@
 // These tests fail to compile until RenderMode enum is defined in viewer_app.hpp.
 // That is the RED gate.
 
-TEST(RenderMode, SpheresEnumeratorExists)
+TEST(RenderModeTest, Spheres_WhenEnumDefined_IsAccessible)
 {
+    // Act
     [[maybe_unused]] RenderMode mode = RenderMode::Spheres;
+    // Assert
     SUCCEED();
 }
 
-TEST(RenderMode, ScreenSpaceMetaballsEnumeratorExists)
+TEST(RenderModeTest, ScreenSpaceMetaballs_WhenEnumDefined_IsAccessible)
 {
+    // Act
     [[maybe_unused]] RenderMode mode = RenderMode::ScreenSpaceMetaballs;
+    // Assert
     SUCCEED();
 }
 
-TEST(RenderMode, MarchingCubesEnumeratorExists)
+TEST(RenderModeTest, MarchingCubes_WhenEnumDefined_IsAccessible)
 {
+    // Act
     [[maybe_unused]] RenderMode mode = RenderMode::MarchingCubes;
+    // Assert
     SUCCEED();
 }
 
-TEST(RenderMode, AllValuesAreDistinct)
+TEST(RenderModeTest, AllEnumerators_WhenCompared_AreDistinct)
 {
+    // Assert
     EXPECT_NE(RenderMode::Spheres, RenderMode::ScreenSpaceMetaballs);
     EXPECT_NE(RenderMode::ScreenSpaceMetaballs, RenderMode::MarchingCubes);
     EXPECT_NE(RenderMode::Spheres, RenderMode::MarchingCubes);
