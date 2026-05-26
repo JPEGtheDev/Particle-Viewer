@@ -4,12 +4,17 @@
  * Unit tests for window configuration save/load functionality.
  */
 
+// clang-format off
+#include <glad/glad.h>  // NOLINT(llvm-include-order) — must precede GL headers
+// clang-format on
+
 #include <cstdio>
 #include <fstream>
 #include <string>
 
 #include <gtest/gtest.h>
 
+#include "viewer_app.hpp"
 #include "windowConfig.hpp"
 
 // Test fixture for WindowConfig tests
@@ -492,4 +497,123 @@ TEST_F(WindowConfigTest, SaveWindowConfig_FolderWithNewline_NewlineStripped)
     EXPECT_EQ(contents.find("\nmalicious_key"), std::string::npos);
     // The folder key itself must still be written (non-empty sanitized path)
     EXPECT_NE(contents.find("last_confirmed_folder="), std::string::npos);
+}
+
+// ============================================
+// SSM Parameter Persistence Tests (persist-ssm-params)
+// ============================================
+
+TEST_F(WindowConfigTest, LoadWindowConfig_SsmThreshold_OutOfRangeHigh_ClampedToOne)
+{
+    // Arrange: write a file with ssm_threshold > 1.0
+    {
+        std::ofstream f(test_config_path);
+        f << "width=1280\nheight=720\nfullscreen=0\nssm_threshold=5.0\n";
+    }
+    int w = 0, h = 0;
+    bool fs = false;
+    float threshold = 0.5f;
+    // Act
+    loadWindowConfig(test_config_path, w, h, fs, nullptr, nullptr, &threshold);
+    // Assert
+    EXPECT_FLOAT_EQ(threshold, 1.0f);
+}
+
+TEST_F(WindowConfigTest, LoadWindowConfig_SsmThreshold_OutOfRangeLow_ClampedToZero)
+{
+    // Arrange
+    {
+        std::ofstream f(test_config_path);
+        f << "width=1280\nheight=720\nfullscreen=0\nssm_threshold=-0.5\n";
+    }
+    int w = 0, h = 0;
+    bool fs = false;
+    float threshold = 0.5f;
+    // Act
+    loadWindowConfig(test_config_path, w, h, fs, nullptr, nullptr, &threshold);
+    // Assert
+    EXPECT_FLOAT_EQ(threshold, 0.0f);
+}
+
+TEST_F(WindowConfigTest, LoadWindowConfig_SsmBlobRadius_OutOfRangeLow_ClampedToMinimum)
+{
+    // Arrange
+    {
+        std::ofstream f(test_config_path);
+        f << "width=1280\nheight=720\nfullscreen=0\nssm_blob_radius=0.0\n";
+    }
+    int w = 0, h = 0;
+    bool fs = false;
+    float blob_radius = 2.0f;
+    // Act
+    loadWindowConfig(test_config_path, w, h, fs, nullptr, nullptr, nullptr, &blob_radius);
+    // Assert
+    EXPECT_FLOAT_EQ(blob_radius, 0.1f);
+}
+
+TEST_F(WindowConfigTest, LoadWindowConfig_SsmBlurAmount_OutOfRangeHigh_ClampedToTwenty)
+{
+    // Arrange
+    {
+        std::ofstream f(test_config_path);
+        f << "width=1280\nheight=720\nfullscreen=0\nssm_blur_amount=99.0\n";
+    }
+    int w = 0, h = 0;
+    bool fs = false;
+    float blur_amount = 3.0f;
+    // Act
+    loadWindowConfig(test_config_path, w, h, fs, nullptr, nullptr, nullptr, nullptr, &blur_amount);
+    // Assert
+    EXPECT_FLOAT_EQ(blur_amount, 20.0f);
+}
+
+TEST_F(WindowConfigTest, LoadWindowConfig_SsmParams_Absent_DefaultPreserved)
+{
+    // Arrange: file has no SSM keys
+    {
+        std::ofstream f(test_config_path);
+        f << "width=1280\nheight=720\nfullscreen=0\n";
+    }
+    int w = 0, h = 0;
+    bool fs = false;
+    float threshold = 0.5f;
+    float blob_radius = 2.0f;
+    float blur_amount = 3.0f;
+    // Act
+    loadWindowConfig(test_config_path, w, h, fs, nullptr, nullptr, &threshold, &blob_radius, &blur_amount);
+    // Assert: caller defaults unchanged when keys are absent
+    EXPECT_FLOAT_EQ(threshold, 0.5f);
+    EXPECT_FLOAT_EQ(blob_radius, 2.0f);
+    EXPECT_FLOAT_EQ(blur_amount, 3.0f);
+}
+
+TEST_F(WindowConfigTest, SaveAndLoadWindowConfig_SsmParams_RoundTrip)
+{
+    // Arrange
+    float threshold = 0.3f;
+    float blob_radius = 5.0f;
+    float blur_amount = 7.0f;
+    // Act: save
+    saveWindowConfig(test_config_path, 1280, 720, false, 0.0f, nullptr, threshold, blob_radius, blur_amount);
+    // Act: load
+    int w = 0, h = 0;
+    bool fs = false;
+    float loaded_threshold = 0.5f;
+    float loaded_blob_radius = 2.0f;
+    float loaded_blur_amount = 3.0f;
+    loadWindowConfig(test_config_path, w, h, fs, nullptr, nullptr, &loaded_threshold, &loaded_blob_radius,
+                     &loaded_blur_amount);
+    // Assert
+    EXPECT_FLOAT_EQ(loaded_threshold, threshold);
+    EXPECT_FLOAT_EQ(loaded_blob_radius, blob_radius);
+    EXPECT_FLOAT_EQ(loaded_blur_amount, blur_amount);
+}
+
+TEST_F(WindowConfigTest, WindowConfig_SsmParams_DefaultValues)
+{
+    // Assert: struct defaults match spec
+    WindowConfig config;
+    EXPECT_FLOAT_EQ(config.ssm_threshold, 0.5f);
+    EXPECT_FLOAT_EQ(config.ssm_blob_radius, 2.0f);
+    EXPECT_FLOAT_EQ(config.ssm_blur_amount, 3.0f);
 }
