@@ -108,7 +108,6 @@ Skills are organized into **DDD bounded contexts**. Sub-domain skills (e.g., `vi
 |-------|------|--------|
 | `architecture-review` | `.github/skills/architecture-review/` | Layer boundary, dependency direction, and IOpenGLContext compliance |
 | `infrastructure-review` | `.github/skills/infrastructure-review/` | CI/CD pipelines, CMake reproducibility, Flatpak manifest compliance |
-| `skill-reviewer` | `.github/skills/skill-reviewer/` | Review skill files for completeness, iron laws, and gate elements |
 | `requesting-code-review` | `.github/skills/requesting-code-review/` | Targeted review requests, SHA-based dispatch, agent pre-review |
 | `receiving-code-review` | `.github/skills/receiving-code-review/` | Processing review feedback without performative agreement |
 
@@ -160,6 +159,7 @@ Reusable agent prompts live in `.github/agents/`. Use these when dispatching sub
 | `synthesizer.md` | Synthesize three method summaries (Abstractive, Extractive, SAAC) into a Markdown article |
 | `claim-enrichment.md` | Evaluate analytical claims in a synthesized article; keep noteworthy ones with framing, remove unsupported ones |
 | `summarization-quality.md` | Evaluate a synthesized summary for faithfulness, completeness, and actionability |
+| `skill-reviewer.md` | Audit a single skill file; inject writing-skills reference content before dispatching |
 
 ### Instruction Priority Hierarchy
 
