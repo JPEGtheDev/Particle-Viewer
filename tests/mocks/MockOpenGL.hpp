@@ -41,15 +41,22 @@ class MockOpenGL
     static int getShaderivCalls;
     static int getProgramivCalls;
     static int genVertexArraysCalls;
+    static int genFramebuffersCalls;
+    static int bindFramebufferCalls;
+    static int framebufferTexture2DCalls;
+    static int checkFramebufferStatusCalls;
+    static int deleteFramebuffersCalls;
 
     // ============================================
     // Return Values
     // ============================================
     static GLuint nextProgramId;
     static GLuint nextShaderId;
+    static GLuint nextFramebufferId;
     static GLint nextUniformLocation;
     static GLint mockCompileStatus;
     static GLint mockLinkStatus;
+    static GLenum mockFramebufferStatus;
 
     // ============================================
     // State Tracking
@@ -79,6 +86,12 @@ class MockOpenGL
     static void mockGetShaderiv(GLuint shader, GLenum pname, GLint* params);
     static void mockGetProgramiv(GLuint program, GLenum pname, GLint* params);
     static void mockGenVertexArrays(GLsizei n, GLuint* arrays);
+    static void mockGenFramebuffers(GLsizei n, GLuint* framebuffers);
+    static void mockBindFramebuffer(GLenum target, GLuint framebuffer);
+    static void mockFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture,
+                                         GLint level);
+    static GLenum mockCheckFramebufferStatus(GLenum target);
+    static void mockDeleteFramebuffers(GLsizei n, const GLuint* framebuffers);
 
     // ============================================
     // Test Helpers
@@ -109,14 +122,15 @@ class MockOpenGL
     static void setLinkStatus(GLint status);
 
     /*
+     * Set the framebuffer status that will be returned by glCheckFramebufferStatus.
+     * Use GL_FRAMEBUFFER_COMPLETE for success, or an incomplete enum to simulate failure.
+     */
+    static void setFramebufferStatus(GLenum status);
+
+    /*
      * Get the number of programs created during tests.
      */
     static size_t getProgramCount();
-
-    /*
-     * Get the number of shaders created during tests.
-     */
-    static size_t getShaderCount();
 
     /*
      * Check if a specific program was created.

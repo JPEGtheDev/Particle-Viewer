@@ -26,12 +26,19 @@ int MockOpenGL::shaderSourceCalls = 0;
 int MockOpenGL::getShaderivCalls = 0;
 int MockOpenGL::getProgramivCalls = 0;
 int MockOpenGL::genVertexArraysCalls = 0;
+int MockOpenGL::genFramebuffersCalls = 0;
+int MockOpenGL::bindFramebufferCalls = 0;
+int MockOpenGL::framebufferTexture2DCalls = 0;
+int MockOpenGL::checkFramebufferStatusCalls = 0;
+int MockOpenGL::deleteFramebuffersCalls = 0;
 
 GLuint MockOpenGL::nextProgramId = 1;
 GLuint MockOpenGL::nextShaderId = 1;
+GLuint MockOpenGL::nextFramebufferId = 1;
 GLint MockOpenGL::nextUniformLocation = 0;
 GLint MockOpenGL::mockCompileStatus = GL_TRUE;
 GLint MockOpenGL::mockLinkStatus = GL_TRUE;
+GLenum MockOpenGL::mockFramebufferStatus = GL_FRAMEBUFFER_COMPLETE;
 
 GLuint MockOpenGL::lastUsedProgram = 0;
 std::vector<GLuint> MockOpenGL::createdPrograms;
@@ -149,6 +156,36 @@ void MockOpenGL::mockGenVertexArrays(GLsizei n, GLuint* arrays)
     }
 }
 
+void MockOpenGL::mockGenFramebuffers(GLsizei n, GLuint* framebuffers)
+{
+    genFramebuffersCalls++;
+    for (GLsizei i = 0; i < n; i++) {
+        framebuffers[i] = nextFramebufferId++;
+    }
+}
+
+void MockOpenGL::mockBindFramebuffer(GLenum target, GLuint framebuffer)
+{
+    bindFramebufferCalls++;
+}
+
+void MockOpenGL::mockFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture,
+                                          GLint level)
+{
+    framebufferTexture2DCalls++;
+}
+
+GLenum MockOpenGL::mockCheckFramebufferStatus(GLenum target)
+{
+    checkFramebufferStatusCalls++;
+    return mockFramebufferStatus;
+}
+
+void MockOpenGL::mockDeleteFramebuffers(GLsizei n, const GLuint* framebuffers)
+{
+    deleteFramebuffersCalls++;
+}
+
 // ============================================
 // Test Helper Implementations
 // ============================================
@@ -172,13 +209,20 @@ void MockOpenGL::reset()
     getShaderivCalls = 0;
     getProgramivCalls = 0;
     genVertexArraysCalls = 0;
+    genFramebuffersCalls = 0;
+    bindFramebufferCalls = 0;
+    framebufferTexture2DCalls = 0;
+    checkFramebufferStatusCalls = 0;
+    deleteFramebuffersCalls = 0;
 
     // Reset return values
     nextProgramId = 1;
     nextShaderId = 1;
+    nextFramebufferId = 1;
     nextUniformLocation = 0;
     mockCompileStatus = GL_TRUE;
     mockLinkStatus = GL_TRUE;
+    mockFramebufferStatus = GL_FRAMEBUFFER_COMPLETE;
 
     // Reset state
     lastUsedProgram = 0;
@@ -195,6 +239,11 @@ void MockOpenGL::setCompileStatus(GLint status)
 void MockOpenGL::setLinkStatus(GLint status)
 {
     mockLinkStatus = status;
+}
+
+void MockOpenGL::setFramebufferStatus(GLenum status)
+{
+    mockFramebufferStatus = status;
 }
 
 size_t MockOpenGL::getProgramCount()
@@ -326,6 +375,36 @@ static void APIENTRY mock_glUseProgram(GLuint program)
     MockOpenGL::mockUseProgram(program);
 }
 
+// ============================================
+// Mock GL Framebuffer Functions
+// ============================================
+
+static void APIENTRY mock_glGenFramebuffers(GLsizei n, GLuint* framebuffers)
+{
+    MockOpenGL::mockGenFramebuffers(n, framebuffers);
+}
+
+static void APIENTRY mock_glBindFramebuffer(GLenum target, GLuint framebuffer)
+{
+    MockOpenGL::mockBindFramebuffer(target, framebuffer);
+}
+
+static void APIENTRY mock_glFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture,
+                                                 GLint level)
+{
+    MockOpenGL::mockFramebufferTexture2D(target, attachment, textarget, texture, level);
+}
+
+static GLenum APIENTRY mock_glCheckFramebufferStatus(GLenum target)
+{
+    return MockOpenGL::mockCheckFramebufferStatus(target);
+}
+
+static void APIENTRY mock_glDeleteFramebuffers(GLsizei n, const GLuint* framebuffers)
+{
+    MockOpenGL::mockDeleteFramebuffers(n, framebuffers);
+}
+
 void MockOpenGL::initGLAD()
 {
     // Initialize GLAD function pointers with mock implementations
@@ -352,4 +431,11 @@ void MockOpenGL::initGLAD()
     glGetProgramInfoLog = mock_glGetProgramInfoLog;
     glDeleteShader = mock_glDeleteShader;
     glUseProgram = mock_glUseProgram;
+
+    // Framebuffer functions
+    glGenFramebuffers = mock_glGenFramebuffers;
+    glBindFramebuffer = mock_glBindFramebuffer;
+    glFramebufferTexture2D = mock_glFramebufferTexture2D;
+    glCheckFramebufferStatus = mock_glCheckFramebufferStatus;
+    glDeleteFramebuffers = mock_glDeleteFramebuffers;
 }
