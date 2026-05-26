@@ -100,6 +100,14 @@ TEST_F(MockFBOTest, FramebufferTexture2DIncrementsCallCounter)
     EXPECT_EQ(MockOpenGL::framebufferTexture2DCalls, 1);
 }
 
+// glCheckFramebufferStatus increments checkFramebufferStatusCalls
+TEST_F(MockFBOTest, CheckFramebufferStatusIncrementsCallCounter)
+{
+    glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+    EXPECT_EQ(MockOpenGL::checkFramebufferStatusCalls, 1);
+}
+
 // reset() also restores mockFramebufferStatus to GL_FRAMEBUFFER_COMPLETE
 TEST_F(MockFBOTest, ResetRestoresDefaultFramebufferStatus)
 {
