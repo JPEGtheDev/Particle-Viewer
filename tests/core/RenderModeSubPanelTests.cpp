@@ -121,8 +121,7 @@ TEST_F(RenderModeSubPanelTest, SubPanel_ConfirmSpheres_ReturnsToPanelLayerMain)
 TEST_F(RenderModeSubPanelTest, SubPanel_BButton_ReturnsToPanelLayerMain_WithoutClosingPanel)
 {
     MenuState state = makeSubPanelState();
-    state.selected_panel_item = 3; // "Back" item — same path as B-button back
-    state.confirm_panel_item = true;
+    state.panel_back_pressed = true;
 
     MenuActions actions = renderControllerPanel(state);
 
