@@ -259,9 +259,6 @@ MenuActions renderControllerPanel(MenuState& state)
     ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
     ImGui::Begin("Controller Panel", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize);
 
-    ImGui::Text("D-pad: Navigate | A: Select | B: Close");
-    ImGui::Separator();
-
     int item_count = 0;
     MenuActions actions;
 
@@ -286,76 +283,160 @@ MenuActions renderControllerPanel(MenuState& state)
         ++item_count;
     };
 
-    item("Fullscreen", true, [&] { actions.toggle_fullscreen = true; });
-    item("Auto-COM", true, [&] { actions.toggle_auto_com = true; });
-    item("Debug Mode", true, [&] { actions.toggle_debug_mode = true; });
-    item("Quit", true, [&] { actions.quit = true; });
-    item("Load File", state.file_loading_enabled, [&] {
-        actions.load_file = true;
-        actions.close_panel = true;
-    });
-    const char* rec_label = state.is_recording ? "Stop Recording" : "Recording Folder";
-    const bool rec_enabled = state.is_recording || state.file_loading_enabled;
-    item(rec_label, rec_enabled, [&] {
-        if (state.is_recording) {
-            actions.stop_recording = true;
-            actions.close_panel = true;
-        } else {
-            actions.select_recording_folder = true;
-            actions.close_panel = true;
+    if (state.panel_layer == PanelLayer::RenderMode) {
+        ImGui::Text("D-pad: Navigate | A: Select | B: Back");
+        ImGui::Separator();
+
+        // Handle B-button FIRST — navigate back without closing the panel
+        if (state.panel_back_pressed) {
+            state.panel_back_pressed = false;
+            state.panel_layer = PanelLayer::Main;
+            ImGui::End();
+            return actions;
         }
-    });
 
-    item("Render Mode", !state.is_recording, [&] { state.panel_layer = PanelLayer::RenderMode; });
+        // Named actions — single source of truth for both click and A-button confirm paths
+        auto selectSpheres = [&] {
+            state.panel_layer = PanelLayer::Main;
+            actions.render_mode_changed = true;
+            actions.new_render_mode = 0;
+        };
+        auto selectSSM = [&] {
+            state.panel_layer = PanelLayer::Main;
+            actions.render_mode_changed = true;
+            actions.new_render_mode = 1;
+        };
+        auto goBack = [&] { state.panel_layer = PanelLayer::Main; };
 
-    item("Close", true, [&] { actions.close_panel = true; });
+        item("Spheres", true, selectSpheres);
+        if (state.current_render_mode == 0) {
+            ImGui::SameLine();
+            ImGui::Text("[active]");
+        }
 
-    state.panel_item_count = item_count;
-    if (state.confirm_panel_item) {
-        state.confirm_panel_item = false;
-        if (state.selected_panel_item >= 0 && state.selected_panel_item < state.panel_item_count) {
-            switch (static_cast<PanelItem>(state.selected_panel_item)) {
-                case PanelItem::FULLSCREEN:
-                    actions.toggle_fullscreen = true;
-                    break;
-                case PanelItem::AUTO_COM:
-                    actions.toggle_auto_com = true;
-                    break;
-                case PanelItem::DEBUG_MODE:
-                    actions.toggle_debug_mode = true;
-                    break;
-                case PanelItem::QUIT:
-                    actions.quit = true;
-                    break;
-                case PanelItem::LOAD_FILE:
-                    if (state.file_loading_enabled) {
-                        actions.load_file = true;
+        item("Screen-Space Metaballs", state.ssm_available, selectSSM);
+        if (!state.ssm_available) {
+            ImGui::SetItemTooltip("Mode not supported");
+        }
+        if (state.current_render_mode == 1) {
+            ImGui::SameLine();
+            ImGui::Text("[active]");
+        }
+
+        item("Marching Cubes", false, [&] {});
+        ImGui::SetItemTooltip("Mode not supported");
+        if (state.current_render_mode == 2) {
+            ImGui::SameLine();
+            ImGui::Text("[active]");
+        }
+
+        item("Back", true, goBack);
+
+        state.panel_item_count = item_count; // 4
+
+        ImGui::SliderFloat("Threshold", &state.ssm_threshold, 0.0f, 1.0f);
+        ImGui::SliderFloat("Blob Radius", &state.ssm_blob_radius, 0.1f, 10.0f);
+        ImGui::SliderFloat("Blur Amount", &state.ssm_blur_amount, 0.0f, 20.0f);
+
+        if (state.confirm_panel_item) {
+            state.confirm_panel_item = false;
+            if (state.selected_panel_item >= 0 && state.selected_panel_item < state.panel_item_count) {
+                switch (state.selected_panel_item) {
+                    case 0:
+                        selectSpheres();
+                        break;
+                    case 1:
+                        if (state.ssm_available) {
+                            selectSSM();
+                        }
+                        break;
+                    case 2:
+                        break; // greyed, no-op
+                    case 3:
+                        goBack();
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    } else {
+        // Main panel
+        ImGui::Text("D-pad: Navigate | A: Select | B: Close");
+        ImGui::Separator();
+
+        item("Fullscreen", true, [&] { actions.toggle_fullscreen = true; });
+        item("Auto-COM", true, [&] { actions.toggle_auto_com = true; });
+        item("Debug Mode", true, [&] { actions.toggle_debug_mode = true; });
+        item("Quit", true, [&] { actions.quit = true; });
+        item("Load File", state.file_loading_enabled, [&] {
+            actions.load_file = true;
+            actions.close_panel = true;
+        });
+        const char* rec_label = state.is_recording ? "Stop Recording" : "Recording Folder";
+        const bool rec_enabled = state.is_recording || state.file_loading_enabled;
+        item(rec_label, rec_enabled, [&] {
+            if (state.is_recording) {
+                actions.stop_recording = true;
+                actions.close_panel = true;
+            } else {
+                actions.select_recording_folder = true;
+                actions.close_panel = true;
+            }
+        });
+
+        item("Render Mode", !state.is_recording, [&] { state.panel_layer = PanelLayer::RenderMode; });
+
+        item("Close", true, [&] { actions.close_panel = true; });
+
+        state.panel_item_count = item_count;
+        if (state.confirm_panel_item) {
+            state.confirm_panel_item = false;
+            if (state.selected_panel_item >= 0 && state.selected_panel_item < state.panel_item_count) {
+                switch (static_cast<PanelItem>(state.selected_panel_item)) {
+                    case PanelItem::FULLSCREEN:
+                        actions.toggle_fullscreen = true;
+                        break;
+                    case PanelItem::AUTO_COM:
+                        actions.toggle_auto_com = true;
+                        break;
+                    case PanelItem::DEBUG_MODE:
+                        actions.toggle_debug_mode = true;
+                        break;
+                    case PanelItem::QUIT:
+                        actions.quit = true;
+                        break;
+                    case PanelItem::LOAD_FILE:
+                        if (state.file_loading_enabled) {
+                            actions.load_file = true;
+                            actions.close_panel = true;
+                        }
+                        break;
+                    case PanelItem::RECORDING_FOLDER:
+                        if (state.is_recording) {
+                            actions.stop_recording = true;
+                            actions.close_panel = true;
+                        } else if (state.file_loading_enabled) {
+                            actions.select_recording_folder = true;
+                            actions.close_panel = true;
+                        }
+                        break;
+                    case PanelItem::RENDER_MODE:
+                        if (!state.is_recording) {
+                            state.panel_layer = PanelLayer::RenderMode;
+                        }
+                        break;
+                    case PanelItem::CLOSE:
                         actions.close_panel = true;
-                    }
-                    break;
-                case PanelItem::RECORDING_FOLDER:
-                    if (state.is_recording) {
-                        actions.stop_recording = true;
-                        actions.close_panel = true;
-                    } else if (state.file_loading_enabled) {
-                        actions.select_recording_folder = true;
-                        actions.close_panel = true;
-                    }
-                    break;
-                case PanelItem::RENDER_MODE:
-                    if (!state.is_recording) {
-                        state.panel_layer = PanelLayer::RenderMode;
-                    }
-                    break;
-                case PanelItem::CLOSE:
-                    actions.close_panel = true;
-                    break;
-                default:
-                    assert(false && "selected_panel_item in-range but no PanelItem case — enum out of sync");
-                    break;
+                        break;
+                    default:
+                        assert(false && "selected_panel_item in-range but no PanelItem case — enum out of sync");
+                        break;
+                }
             }
         }
     }
+
     ImGui::End();
     return actions;
 }
