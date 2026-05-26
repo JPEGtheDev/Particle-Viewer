@@ -71,6 +71,10 @@ struct WindowConfig
     GLint windowed_y = 0;
     // UI scale factor (0.0f = sentinel meaning "no saved preference")
     float ui_scale = 0.0f;
+    // Screen-Space Metaballs parameters (persisted to window.cfg)
+    float ssm_threshold = 0.5f;   // valid range [0.0, 1.0]
+    float ssm_blob_radius = 2.0f; // valid range [0.1, 10.0]
+    float ssm_blur_amount = 3.0f; // valid range [0.0, 20.0]
 };
 
 /*
