@@ -122,23 +122,23 @@ TEST(NavConstants, StickNavThreshold_IsInValidNormalizedRange)
 
 TEST(DpadNav, FirstDownPress_MovesFromMinusOneToZero)
 {
-    EXPECT_EQ(ViewerApp::applyNavMove(-1, 5, 1), 0);
+    EXPECT_EQ(ViewerApp::applyNavMove(-1, 8, 1), 0);
 }
 
 TEST(DpadNav, AtLastItem_DownDoesNotWrap)
 {
-    EXPECT_EQ(ViewerApp::applyNavMove(4, 5, 1), 4);
+    EXPECT_EQ(ViewerApp::applyNavMove(7, 8, 1), 7);
 }
 
 TEST(DpadNav, AtFirstItem_UpDoesNotWrap)
 {
-    EXPECT_EQ(ViewerApp::applyNavMove(0, 5, -1), 0);
+    EXPECT_EQ(ViewerApp::applyNavMove(0, 8, -1), 0);
 }
 
 TEST(DpadNav, AConfirm_AtMinusOne_IsNoOp)
 {
     // A button with selected=-1 triggers no navigation move
-    EXPECT_EQ(ViewerApp::applyNavMove(-1, 5, 0), -1);
+    EXPECT_EQ(ViewerApp::applyNavMove(-1, 8, 0), -1);
 }
 
 // --- PanelLayer types (add-panel-layer-types) ---

@@ -27,6 +27,7 @@ enum class PanelItem : int
     QUIT,
     LOAD_FILE,
     RECORDING_FOLDER,
+    RENDER_MODE,
     CLOSE
 };
 
@@ -305,6 +306,8 @@ MenuActions renderControllerPanel(MenuState& state)
         }
     });
 
+    item("Render Mode", !state.is_recording, [&] { state.panel_layer = PanelLayer::RenderMode; });
+
     item("Close", true, [&] { actions.close_panel = true; });
 
     state.panel_item_count = item_count;
@@ -337,6 +340,11 @@ MenuActions renderControllerPanel(MenuState& state)
                     } else if (state.file_loading_enabled) {
                         actions.select_recording_folder = true;
                         actions.close_panel = true;
+                    }
+                    break;
+                case PanelItem::RENDER_MODE:
+                    if (!state.is_recording) {
+                        state.panel_layer = PanelLayer::RenderMode;
                     }
                     break;
                 case PanelItem::CLOSE:
