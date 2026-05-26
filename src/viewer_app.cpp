@@ -729,6 +729,11 @@ void ViewerApp::openRecordingFolderDialog()
 {
     if (recording_.is_active || recording_dialog_open_)
         return;
+    // RenderMode panel is open — recording dialog conflicts; user must navigate away first
+    // [UNTESTABLE_WITHOUT_FULL_CONTEXT] — openRecordingFolderDialog() and recording_dialog_open_
+    // are private with no getter; exercising this guard requires a full app context.
+    if (menu_state_.panel_layer == PanelLayer::RenderMode)
+        return;
     recording_.error_count = 0;
     pauseIfPlaying();
     recording_dialog_open_ = true;
@@ -824,6 +829,9 @@ void ViewerApp::handleKeyEvent(unsigned int scancode, bool is_pressed, unsigned 
             recording_.folder = "";
             recording_.is_active = false;
         }
+    }
+    if (scancode == SDL_SCANCODE_M && is_pressed && current_mode_ == InputMode::ViewMode && !recording_.is_active) {
+        render_mode_ = cycleRenderMode(render_mode_);
     }
 }
 
@@ -923,9 +931,13 @@ void ViewerApp::processGamepadInput()
             cam_->cycleRotateState();
         }
 
-        // Y (North) — toggle COM lock (mirrors O key, only active when rotation is locked)
+        // Y (North) — toggle COM lock when rotation is locked; cycle render mode when free camera
         if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_NORTH)) {
-            cam_->toggleComLock();
+            if (cam_->isRotLocked()) {
+                cam_->toggleComLock();
+            } else if (!recording_.is_active) {
+                render_mode_ = cycleRenderMode(render_mode_);
+            }
         }
     }
 

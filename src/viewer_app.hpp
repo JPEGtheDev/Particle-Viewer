@@ -189,6 +189,21 @@ class ViewerApp
     static constexpr float NAV_STICK_THRESHOLD = 0.5f;
     static_assert(NAV_STICK_THRESHOLD > 0.0f && NAV_STICK_THRESHOLD < 1.0f, "Stick threshold must be in (0, 1)");
 
+    // Cycles through available (non-greyed) render modes: Spheres → SSM → Spheres.
+    // MarchingCubes is always skipped (always greyed — placeholder for Story 2).
+    static constexpr RenderMode cycleRenderMode(RenderMode current)
+    {
+        switch (current) {
+            case RenderMode::Spheres:
+                return RenderMode::ScreenSpaceMetaballs;
+            case RenderMode::ScreenSpaceMetaballs:
+                return RenderMode::Spheres;
+            case RenderMode::MarchingCubes:
+                return RenderMode::Spheres;
+        }
+        return RenderMode::Spheres;
+    }
+
     // visible for testing — pure clamping helper used by processMenuNavigation()
     static int applyNavMove(int selected, int count, int delta)
     {
