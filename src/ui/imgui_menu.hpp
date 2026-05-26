@@ -43,23 +43,35 @@ struct MenuActions
 };
 
 /*
+ * Tracks which layer of the controller panel is active.
+ * Main: the standard panel item list.
+ * RenderMode: the Render Mode sub-panel (mode selector + parameter sliders).
+ */
+enum class PanelLayer
+{
+    Main,
+    RenderMode,
+};
+
+/*
  * Persistent state for the menu system.
  */
 struct MenuState
 {
     bool visible = false;
     bool debug_mode = false;
-    bool auto_com_compute = false;      // reflects the current auto-COM toggle state
-    CacheStatus cache_status;           // populated by ViewerApp each frame
-    float ui_scale = 0.0f;              // current active UI scale (0.0 = not yet set)
-    bool settings_open = false;         // Settings window visibility
-    bool controller_panel_open = false; // is the controller panel overlay visible?
-    bool button_hints_visible = false;  // show button hint row in panel
-    bool file_loading_enabled = true;   // enables file-load items in the controller panel
-    int selected_panel_item = -1;       // currently highlighted item index; -1 = none
-    int panel_item_count = 0;           // total selectable items in panel this frame
-    bool confirm_panel_item = false;    // A-button confirm pending; read+reset by panel
-    bool is_recording = false;          // mirrors recording_.is_active; set by ViewerApp each frame
+    bool auto_com_compute = false;             // reflects the current auto-COM toggle state
+    CacheStatus cache_status;                  // populated by ViewerApp each frame
+    float ui_scale = 0.0f;                     // current active UI scale (0.0 = not yet set)
+    bool settings_open = false;                // Settings window visibility
+    bool controller_panel_open = false;        // is the controller panel overlay visible?
+    PanelLayer panel_layer = PanelLayer::Main; // which layer of the panel is active
+    bool button_hints_visible = false;         // show button hint row in panel
+    bool file_loading_enabled = true;          // enables file-load items in the controller panel
+    int selected_panel_item = -1;              // currently highlighted item index; -1 = none
+    int panel_item_count = 0;                  // total selectable items in panel this frame
+    bool confirm_panel_item = false;           // A-button confirm pending; read+reset by panel
+    bool is_recording = false;                 // mirrors recording_.is_active; set by ViewerApp each frame
 };
 
 /*

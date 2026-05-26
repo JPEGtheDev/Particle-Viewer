@@ -140,3 +140,16 @@ TEST(DpadNav, AConfirm_AtMinusOne_IsNoOp)
     // A button with selected=-1 triggers no navigation move
     EXPECT_EQ(ViewerApp::applyNavMove(-1, 5, 0), -1);
 }
+
+// --- PanelLayer types (add-panel-layer-types) ---
+
+TEST(PanelLayer, TwoLayers_AreDistinct)
+{
+    EXPECT_NE(PanelLayer::Main, PanelLayer::RenderMode);
+}
+
+TEST(MenuState, PanelLayer_DefaultsToMain)
+{
+    MenuState s;
+    EXPECT_EQ(s.panel_layer, PanelLayer::Main);
+}
