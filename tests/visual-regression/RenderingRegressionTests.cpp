@@ -38,6 +38,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Image.hpp"
+#include "VRTestCommon.hpp"
 #include "graphics/SDL3Context.hpp"
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
@@ -48,15 +49,10 @@
 #include "testing/PixelComparator.hpp"
 #include "ui/imgui_menu.hpp"
 
-// Test configuration
+// Test configuration — GUI-exclusion-specific constants.
+// Shared constants (RENDER_WIDTH, RENDER_HEIGHT, etc.) live in VRTestCommon.hpp.
 namespace RenderingTestConfig
 {
-static const uint32_t RENDER_WIDTH = 1280;             // Default 720p width
-static const uint32_t RENDER_HEIGHT = 720;             // Default 720p height
-static const float PARTICLE_TOLERANCE = 2.0f / 255.0f; // ±2/255 (~0.8%) per-pixel channel tolerance
-static const float MAX_DIFF_RATIO = 0.0001f;           // Allow up to 0.01% of pixels to differ across Mesa versions
-static const std::string BASELINES_DIR = "baselines";  // Baseline images directory
-
 // GUI exclusion test: region to check for leaked ImGui content
 static const uint32_t MENU_BAR_CHECK_HEIGHT = 30;  // Menu bar is ~25px; check top 30 rows
 static const uint32_t MENU_BAR_CHECK_WIDTH = 200;  // "File  View" menu text spans ~200px
@@ -91,8 +87,7 @@ class OpenGLTestContext
      */
     bool initialize()
     {
-        context_ = new SDL3Context(RenderingTestConfig::RENDER_WIDTH, RenderingTestConfig::RENDER_HEIGHT,
-                                   "Rendering Test", false);
+        context_ = new SDL3Context(VRTestConfig::RENDER_WIDTH, VRTestConfig::RENDER_HEIGHT, "Rendering Test", false);
         if (!context_->isValid()) {
             cleanup();
             return false;
@@ -219,7 +214,7 @@ class RenderingRegressionTest : public testing::Test
     void SetUp() override
     {
         // Ensure baselines directory exists
-        std::string baselines_dir = RenderingTestConfig::BASELINES_DIR;
+        std::string baselines_dir = VRTestConfig::BASELINES_DIR;
         std::string command = "mkdir -p " + baselines_dir;
         int result = std::system(command.c_str());
         ASSERT_EQ(result, 0) << "Failed to create baselines directory: " << baselines_dir;
@@ -240,58 +235,6 @@ class RenderingRegressionTest : public testing::Test
     void TearDown() override
     {
         glContext_.cleanup();
-    }
-
-    /*
-     * Helper to get shader paths relative to the build directory.
-     * Shaders are copied to build/Viewer-Assets/shaders/ during build.
-     */
-    std::string getShaderPath(const std::string& shaderName)
-    {
-        // Try multiple possible locations
-        std::vector<std::string> possiblePaths = {
-            "Viewer-Assets/shaders/" + shaderName,    // From build directory
-            "../Viewer-Assets/shaders/" + shaderName, // From build/tests/
-            "../../src/shaders/" + shaderName,        // From build directory to src
-            "../../../src/shaders/" + shaderName      // From build/tests/ to src
-        };
-
-        for (const auto& path : possiblePaths) {
-            FILE* file = fopen(path.c_str(), "r");
-            if (file) {
-                fclose(file);
-                return path;
-            }
-        }
-
-        // If not found, return first path and let shader loading fail with error
-        return possiblePaths[0];
-    }
-
-    /*
-     * Helper to get baseline image paths relative to the test working directory.
-     * Baselines are committed in tests/visual-regression/baselines/ in the source tree.
-     */
-    std::string getBaselinePath(const std::string& baselineName)
-    {
-        // Try multiple possible locations (from build/tests/ working directory)
-        std::vector<std::string> possiblePaths = {
-            RenderingTestConfig::BASELINES_DIR + "/" + baselineName,     // baselines/ (local)
-            "../../tests/visual-regression/baselines/" + baselineName,   // From build/tests/ to source
-            "../tests/visual-regression/baselines/" + baselineName,      // From build/ to source
-            "../../../tests/visual-regression/baselines/" + baselineName // Alternative path
-        };
-
-        for (const auto& path : possiblePaths) {
-            FILE* file = fopen(path.c_str(), "r");
-            if (file) {
-                fclose(file);
-                return path;
-            }
-        }
-
-        // If not found, return first path (will trigger baseline generation)
-        return possiblePaths[0];
     }
 };
 
@@ -330,8 +273,7 @@ TEST_F(RenderingRegressionTest, RenderDefaultCube_AngledView_MatchesBaseline)
     glm::vec3 cameraUp(0.08f, 1.00f, 0.00f);
     glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
     glm::mat4 projection = glm::perspective(
-        glm::radians(45.0f), (float)RenderingTestConfig::RENDER_WIDTH / (float)RenderingTestConfig::RENDER_HEIGHT, 0.1f,
-        3000.0f);
+        glm::radians(45.0f), (float)VRTestConfig::RENDER_WIDTH / (float)VRTestConfig::RENDER_HEIGHT, 0.1f, 3000.0f);
 
     // Act
     glContext_.bindFramebuffer();
@@ -347,7 +289,7 @@ TEST_F(RenderingRegressionTest, RenderDefaultCube_AngledView_MatchesBaseline)
     Image baseline = Image::load(baselinePath, ImageFormat::PNG);
 
     if (baseline.empty()) {
-        std::string localBaselinePath = RenderingTestConfig::BASELINES_DIR + "/particle_cube_angle_baseline.png";
+        std::string localBaselinePath = VRTestConfig::BASELINES_DIR + "/particle_cube_angle_baseline.png";
         currentImage.save(localBaselinePath, ImageFormat::PNG);
         GTEST_SKIP() << "Baseline image not found. Current render saved to: " << localBaselinePath
                      << "\nPlease review and commit this baseline if correct.";
@@ -357,12 +299,12 @@ TEST_F(RenderingRegressionTest, RenderDefaultCube_AngledView_MatchesBaseline)
         << "Failed to save current render artifact";
 
     PixelComparator comparator;
-    ComparisonResult result = comparator.compare(baseline, currentImage, RenderingTestConfig::PARTICLE_TOLERANCE, true);
+    ComparisonResult result = comparator.compare(baseline, currentImage, VRTestConfig::PARTICLE_TOLERANCE, true);
 
     float diff_ratio = result.total_pixels > 0
                            ? static_cast<float>(result.diff_pixels) / static_cast<float>(result.total_pixels)
                            : 1.0f;
-    if (diff_ratio > RenderingTestConfig::MAX_DIFF_RATIO) {
+    if (diff_ratio > VRTestConfig::MAX_DIFF_RATIO) {
         result.diff_image.save("artifacts/particle_cube_angle_diff.png", ImageFormat::PNG);
         FAIL() << "Visual mismatch detected:\n"
                << "  Diff pixels: " << result.diff_pixels << " / " << result.total_pixels << " ("
@@ -406,8 +348,7 @@ TEST_F(RenderingRegressionTest, RenderSingleParticle_CenteredView_MatchesBaselin
     glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
     glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
     glm::mat4 projection = glm::perspective(
-        glm::radians(45.0f), (float)RenderingTestConfig::RENDER_WIDTH / (float)RenderingTestConfig::RENDER_HEIGHT, 0.1f,
-        3000.0f);
+        glm::radians(45.0f), (float)VRTestConfig::RENDER_WIDTH / (float)VRTestConfig::RENDER_HEIGHT, 0.1f, 3000.0f);
 
     // Act
     glContext_.bindFramebuffer();
@@ -423,7 +364,7 @@ TEST_F(RenderingRegressionTest, RenderSingleParticle_CenteredView_MatchesBaselin
     Image baseline = Image::load(baselinePath, ImageFormat::PNG);
 
     if (baseline.empty()) {
-        std::string localBaselinePath = RenderingTestConfig::BASELINES_DIR + "/single_particle_baseline.png";
+        std::string localBaselinePath = VRTestConfig::BASELINES_DIR + "/single_particle_baseline.png";
         currentImage.save(localBaselinePath, ImageFormat::PNG);
         GTEST_SKIP() << "Baseline image not found. Current render saved to: " << localBaselinePath
                      << "\nPlease review and commit this baseline if correct.";
@@ -433,12 +374,12 @@ TEST_F(RenderingRegressionTest, RenderSingleParticle_CenteredView_MatchesBaselin
         << "Failed to save current render artifact";
 
     PixelComparator comparator;
-    ComparisonResult result = comparator.compare(baseline, currentImage, RenderingTestConfig::PARTICLE_TOLERANCE, true);
+    ComparisonResult result = comparator.compare(baseline, currentImage, VRTestConfig::PARTICLE_TOLERANCE, true);
 
     float diff_ratio = result.total_pixels > 0
                            ? static_cast<float>(result.diff_pixels) / static_cast<float>(result.total_pixels)
                            : 1.0f;
-    if (diff_ratio > RenderingTestConfig::MAX_DIFF_RATIO) {
+    if (diff_ratio > VRTestConfig::MAX_DIFF_RATIO) {
         result.diff_image.save("artifacts/single_particle_diff.png", ImageFormat::PNG);
         FAIL() << "Visual mismatch detected:\n"
                << "  Diff pixels: " << result.diff_pixels << " / " << result.total_pixels << " ("
@@ -489,8 +430,7 @@ TEST_F(RenderingRegressionTest, RenderParticleGroup_ThreeParticles_MatchesBaseli
     glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
     glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
     glm::mat4 projection = glm::perspective(
-        glm::radians(45.0f), (float)RenderingTestConfig::RENDER_WIDTH / (float)RenderingTestConfig::RENDER_HEIGHT, 0.1f,
-        3000.0f);
+        glm::radians(45.0f), (float)VRTestConfig::RENDER_WIDTH / (float)VRTestConfig::RENDER_HEIGHT, 0.1f, 3000.0f);
 
     // Act
     glContext_.bindFramebuffer();
@@ -506,7 +446,7 @@ TEST_F(RenderingRegressionTest, RenderParticleGroup_ThreeParticles_MatchesBaseli
     Image baseline = Image::load(baselinePath, ImageFormat::PNG);
 
     if (baseline.empty()) {
-        std::string localBaselinePath = RenderingTestConfig::BASELINES_DIR + "/particle_group_baseline.png";
+        std::string localBaselinePath = VRTestConfig::BASELINES_DIR + "/particle_group_baseline.png";
         currentImage.save(localBaselinePath, ImageFormat::PNG);
         GTEST_SKIP() << "Baseline image not found. Current render saved to: " << localBaselinePath
                      << "\nPlease review and commit this baseline if correct.";
@@ -516,12 +456,12 @@ TEST_F(RenderingRegressionTest, RenderParticleGroup_ThreeParticles_MatchesBaseli
         << "Failed to save current render artifact";
 
     PixelComparator comparator;
-    ComparisonResult result = comparator.compare(baseline, currentImage, RenderingTestConfig::PARTICLE_TOLERANCE, true);
+    ComparisonResult result = comparator.compare(baseline, currentImage, VRTestConfig::PARTICLE_TOLERANCE, true);
 
     float diff_ratio = result.total_pixels > 0
                            ? static_cast<float>(result.diff_pixels) / static_cast<float>(result.total_pixels)
                            : 1.0f;
-    if (diff_ratio > RenderingTestConfig::MAX_DIFF_RATIO) {
+    if (diff_ratio > VRTestConfig::MAX_DIFF_RATIO) {
         result.diff_image.save("artifacts/particle_group_diff.png", ImageFormat::PNG);
         FAIL() << "Visual mismatch detected:\n"
                << "  Diff pixels: " << result.diff_pixels << " / " << result.total_pixels << " ("
@@ -867,8 +807,7 @@ TEST_F(RenderingRegressionTest, FBOCapture_WithImGuiActive_ExcludesGUI)
     glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
     glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
     glm::mat4 projection = glm::perspective(
-        glm::radians(45.0f), (float)RenderingTestConfig::RENDER_WIDTH / (float)RenderingTestConfig::RENDER_HEIGHT, 0.1f,
-        3000.0f);
+        glm::radians(45.0f), (float)VRTestConfig::RENDER_WIDTH / (float)VRTestConfig::RENDER_HEIGHT, 0.1f, 3000.0f);
 
     // Act — render to the FBO (not the default framebuffer)
     glContext_.bindFramebuffer();
