@@ -750,7 +750,7 @@ void ViewerApp::initSSMResources()
     render_.ssm.blur_shader =
         Shader((paths_.exe + paths_.ssm_blur_vertex).c_str(), (paths_.exe + paths_.ssm_blur_fragment).c_str());
     render_.ssm.composite_shader =
-        Shader((paths_.exe + paths_.screen_vertex).c_str(), (paths_.exe + paths_.ssm_composite_fragment).c_str());
+        Shader(paths_.screen_vertex.c_str(), (paths_.exe + paths_.ssm_composite_fragment).c_str());
 
     if (render_.ssm.splat_shader.Program == 0 || render_.ssm.blur_shader.Program == 0 ||
         render_.ssm.composite_shader.Program == 0) {
