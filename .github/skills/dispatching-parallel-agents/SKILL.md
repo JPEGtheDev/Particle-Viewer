@@ -41,19 +41,7 @@ When dispatching parallel agents, the main agent acts as a **team lead**:
 - Let two agents report contradictory findings without resolving the conflict
 - Report "agents completed" without summarizing what was learned
 
-### Caching Agent Responses for Postmortems
-
-Save the raw structured response from every dispatched agent before aggregating:
-
-```
-scratch/<session-id>/agent-<name>-<utc-timestamp>.md
-```
-
-Example: `scratch/58b87305/agent-spec-reviewer-20260418T230000Z.md`
-
-These cached responses serve as evidence in postmortems — they show what each agent found, what the team lead accepted, and what was discarded. Without the raw responses, a postmortem cannot determine whether a bad conclusion came from a bad agent or bad aggregation.
-
-`scratch/` is cleaned manually. Do not delete session caches during a session.
+See `references/AGENT_CACHING.md` for the agent response caching protocol (postmortem evidence format and scratch/ conventions).
 
 ---
 
@@ -176,17 +164,7 @@ When parallelizing write work (e.g., multiple implementers working on independen
 3. Pass worktree path as the agent's working directory
 4. After agents complete: review each diff independently before merging
 
-```bash
-# Create isolated worktrees
-git worktree add .worktrees/agent-feature-a -b feat/agent-feature-a
-git worktree add .worktrees/agent-feature-b -b feat/agent-feature-b
-
-# Review diffs after completion
-git -C .worktrees/agent-feature-a diff main
-git -C .worktrees/agent-feature-b diff main
-```
-
-See `using-git-worktrees` skill for full worktree lifecycle.
+See `references/WRITE_AGENTS_SETUP.md` for git commands and `using-git-worktrees` skill for full lifecycle.
 
 ---
 
