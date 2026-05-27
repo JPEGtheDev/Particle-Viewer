@@ -35,18 +35,6 @@ Before pushing any change:
 
 ---
 
-# Instructions for Agent
-
-## How This Skill is Invoked
-
-In VS Code, users will activate this skill by:
-- Typing `@workspace /build [description]` in Copilot Chat
-- Or asking: "How do I build?", "Fix the build", "Add a dependency", "Set up Flatpak"
-
-When activated, use the commands and patterns below.
-
----
-
 ## Core Principle: CMake Is the Single Source of Build Truth
 
 All build configuration lives in `CMakeLists.txt`. No manual file copying, no build scripts beyond convenience wrappers.
