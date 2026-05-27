@@ -4,14 +4,16 @@ out vec4 color;
 
 uniform sampler2D blurredDensity;
 uniform float threshold = 0.5;
-uniform vec3 metaballColor = vec3(0.4, 0.7, 1.0);
 
 void main()
 {
-    float density = texture(blurredDensity, TexCoords).r;
+    vec4 blurred = texture(blurredDensity, TexCoords);
+    float density = blurred.a;
     if (density <= threshold) {
         discard;
     }
+    // Derive weighted-average color from accumulated RGBA (RGB = color×falloff, A = falloff)
+    vec3 metaballColor = (blurred.a > 0.001) ? blurred.rgb / blurred.a : vec3(0.4, 0.7, 1.0);
     // Smooth the surface edge
     float edge = smoothstep(threshold, threshold + 0.1, density);
     color = vec4(metaballColor * edge, edge);

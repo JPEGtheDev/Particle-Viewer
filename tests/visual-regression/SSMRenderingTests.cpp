@@ -229,28 +229,28 @@ TEST_F(SSMRenderingTest, SSMRender_4x4x4Grid_MatchesBaseline)
                                            << "  Vert: " << screenVertPath << "\n"
                                            << "  Frag: " << compositeFragPath;
 
-    // Create density FBO (GL_R32F)
+    // Create density FBO (GL_RGBA32F)
     GLuint density_fbo = 0;
     GLuint density_tex = 0;
     glGenFramebuffers(1, &density_fbo);
     glGenTextures(1, &density_tex);
     glBindFramebuffer(GL_FRAMEBUFFER, density_fbo);
     glBindTexture(GL_TEXTURE_2D, density_tex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, framebuffer_width_, framebuffer_height_, 0, GL_RED, GL_FLOAT, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, framebuffer_width_, framebuffer_height_, 0, GL_RGBA, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, density_tex, 0);
     ASSERT_EQ(glCheckFramebufferStatus(GL_FRAMEBUFFER), (GLenum)GL_FRAMEBUFFER_COMPLETE) << "Density FBO incomplete";
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    // Create blur FBO (GL_R32F)
+    // Create blur FBO (GL_RGBA32F)
     GLuint blur_fbo = 0;
     GLuint blur_tex = 0;
     glGenFramebuffers(1, &blur_fbo);
     glGenTextures(1, &blur_tex);
     glBindFramebuffer(GL_FRAMEBUFFER, blur_fbo);
     glBindTexture(GL_TEXTURE_2D, blur_tex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, framebuffer_width_, framebuffer_height_, 0, GL_RED, GL_FLOAT, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, framebuffer_width_, framebuffer_height_, 0, GL_RGBA, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, blur_tex, 0);
@@ -331,7 +331,6 @@ TEST_F(SSMRenderingTest, SSMRender_4x4x4Grid_MatchesBaseline)
     glBindTexture(GL_TEXTURE_2D, blur_tex);
     glUniform1i(glGetUniformLocation(compositeShader.Program, "blurredDensity"), 0);
     glUniform1f(glGetUniformLocation(compositeShader.Program, "threshold"), 0.5f);
-    glUniform3f(glGetUniformLocation(compositeShader.Program, "metaballColor"), 0.4f, 0.7f, 1.0f);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
     glDisable(GL_BLEND);

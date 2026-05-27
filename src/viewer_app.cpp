@@ -710,12 +710,12 @@ void ViewerApp::initSSMResources()
         return;
     }
 
-    // Density FBO: accumulates per-particle falloff (GL_R32F single-channel float)
+    // Density FBO: accumulates per-particle color×falloff + falloff (GL_RGBA32F)
     glGenFramebuffers(1, &render_.ssm.density_fbo);
     glGenTextures(1, &render_.ssm.density_texture);
     glBindFramebuffer(GL_FRAMEBUFFER, render_.ssm.density_fbo);
     glBindTexture(GL_TEXTURE_2D, render_.ssm.density_texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, window_.width, window_.height, 0, GL_RED, GL_FLOAT, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, window_.width, window_.height, 0, GL_RGBA, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, render_.ssm.density_texture, 0);
@@ -727,12 +727,12 @@ void ViewerApp::initSSMResources()
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    // Blur FBO: box-blurred density field (GL_R32F single-channel float)
+    // Blur FBO: box-blurred RGBA accumulation field (GL_RGBA32F)
     glGenFramebuffers(1, &render_.ssm.blurred_fbo);
     glGenTextures(1, &render_.ssm.blurred_texture);
     glBindFramebuffer(GL_FRAMEBUFFER, render_.ssm.blurred_fbo);
     glBindTexture(GL_TEXTURE_2D, render_.ssm.blurred_texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, window_.width, window_.height, 0, GL_RED, GL_FLOAT, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, window_.width, window_.height, 0, GL_RGBA, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, render_.ssm.blurred_texture, 0);
@@ -822,7 +822,6 @@ void ViewerApp::drawSSMScene()
     glBindTexture(GL_TEXTURE_2D, render_.ssm.blurred_texture);
     glUniform1i(glGetUniformLocation(render_.ssm.composite_shader.Program, "blurredDensity"), 0);
     glUniform1f(glGetUniformLocation(render_.ssm.composite_shader.Program, "threshold"), window_.ssm_threshold);
-    glUniform3f(glGetUniformLocation(render_.ssm.composite_shader.Program, "metaballColor"), 0.4f, 0.7f, 1.0f);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
     glDisable(GL_BLEND);
@@ -1337,6 +1336,7 @@ void ViewerApp::resizeFBO(int width, int height)
 
     // Rebuild SSM FBOs at new size
     if (render_.ssm.float_fbo_supported) {
+        // Delete old textures and FBO handles
         if (render_.ssm.density_texture != 0) {
             glDeleteTextures(1, &render_.ssm.density_texture);
             render_.ssm.density_texture = 0;
@@ -1345,19 +1345,29 @@ void ViewerApp::resizeFBO(int width, int height)
             glDeleteTextures(1, &render_.ssm.blurred_texture);
             render_.ssm.blurred_texture = 0;
         }
+        if (render_.ssm.density_fbo != 0) {
+            glDeleteFramebuffers(1, &render_.ssm.density_fbo);
+            render_.ssm.density_fbo = 0;
+        }
+        if (render_.ssm.blurred_fbo != 0) {
+            glDeleteFramebuffers(1, &render_.ssm.blurred_fbo);
+            render_.ssm.blurred_fbo = 0;
+        }
 
+        glGenFramebuffers(1, &render_.ssm.density_fbo);
         glBindFramebuffer(GL_FRAMEBUFFER, render_.ssm.density_fbo);
         glGenTextures(1, &render_.ssm.density_texture);
         glBindTexture(GL_TEXTURE_2D, render_.ssm.density_texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, render_.ssm.density_texture, 0);
 
+        glGenFramebuffers(1, &render_.ssm.blurred_fbo);
         glBindFramebuffer(GL_FRAMEBUFFER, render_.ssm.blurred_fbo);
         glGenTextures(1, &render_.ssm.blurred_texture);
         glBindTexture(GL_TEXTURE_2D, render_.ssm.blurred_texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, render_.ssm.blurred_texture, 0);
