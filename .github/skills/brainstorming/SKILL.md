@@ -38,7 +38,7 @@ This skill is required before writing code when ANY of the following are true:
 
 ### Discovery Gate (run first)
 
-**Context:** A feature enters brainstorming with new or unclear AC.
+**Context:** A feature enters brainstorming with new or unclear Acceptance Criteria (AC).
 
 **Forces:** Brainstorming explores *how* to build. Discovery defines *what* to build. Designing how before defining what produces rework.
 

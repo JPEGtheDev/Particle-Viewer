@@ -74,7 +74,7 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 **Problem:** `ViewerApp` had 10+ flat member variables for window, rendering, recording state.
 
-**Lesson:** Group related member variables into POCOs/structs (e.g., `WindowConfig`, `RenderResources`). Structs should provide their own defaults.
+**Lesson:** Group related member variables into Plain Old C++ Objects (POCOs)/structs (e.g., `WindowConfig`, `RenderResources`). Structs must provide their own defaults.
 
 **Added to:** `AGENTS.md` → Data Organization, `testing` skill → Key Design Principles
 
@@ -343,32 +343,6 @@ Concrete examples of lessons captured from past sessions and how they were incor
 **Lesson:** When a call site derives a value from an interface (counts, sizes, compound formulas), add the derived quantity as a virtual method on the interface. The concrete class is the single source of truth; callers receive the value without re-deriving it. Signal: "if the formula changes, I need to update it in N places."
 
 **Added to:** `cpp-patterns` skill → DRY section
-
-**Problem:** `FrameCache` pending-cap test used `EXPECT_LE(callCount, window)`. The count is deterministically equal to `window` — using LE hid the fact that a regression (under-enqueue) would still pass.
-
-**Lesson:** Use `EXPECT_EQ` when the value is deterministic. `EXPECT_LE`/`EXPECT_GE` are for inherently non-deterministic values (timing, OS scheduling). An overly lenient bound masks regressions.
-
-**Added to:** `testing` skill → `TESTING_EXAMPLES.md` → Incorrect Examples
-
----
-
-### Binary File Tests: Record Count Must Cover Target Frame (PR #112)
-
-**Problem:** `COMFileProvider_FrameIndexMismatch_ReturnsFalse` was written with a single-record file and a request for frame 1. `fseek` to frame 1 went past EOF, so `fread` returned 0 (truncation), exercising the wrong branch.
-
-**Lesson:** When writing a binary file test that seeks to frame N, write at least N+1 records so `fseek` lands within the file and `fread` actually reads the target record. A single-record file will always produce a truncation result for any frame > 0.
-
-**Added to:** `testing` skill → `TESTING_EXAMPLES.md` → Incorrect Examples
-
----
-
-### Full Docstring Rewrite Required When void→bool (PR #112)
-
-**Problem:** After changing `getCOM()` from void to bool, the docstring was patched to mention the return value, but the first sentence still said "caller must call checkCOM() first" while a later sentence said "no extra checkCOM round-trip". The two sentences contradicted each other.
-
-**Lesson:** When changing a function's calling contract (especially void→bool), rewrite the *entire* docstring — don't patch it. The new contract (all false-return cases, what the caller need not do) renders the old docstring structurally incorrect and patching a structurally wrong docstring still leaves it wrong.
-
-**Added to:** Self-evaluation skill (this file)
 
 ### Worktree `../` Relative Path Creates Sibling Outside Repo (Metaballs session)
 

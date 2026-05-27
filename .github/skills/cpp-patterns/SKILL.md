@@ -21,10 +21,10 @@ Violating the letter of this rule is violating the spirit of this rule.
 ## BEFORE PROCEEDING
 
 1. Have I loaded the code-quality skill?
-2. Am I about to introduce a GL resource without RAII?
+2. Am I about to introduce a GL resource without RAII (Resource Acquisition Is Initialization)?
 3. Am I about to duplicate logic that already exists in the codebase?
 4. Has the class or function I am changing been read — not recalled from memory?
-5. Before declaring a new type: is this part of the public API, or an implementation detail used only in one TU? If implementation detail → declare in `.cpp`, not the header.
+5. Before declaring a new type: is this part of the public API, or an implementation detail used only in one Translation Unit (TU)? If implementation detail → declare in `.cpp`, not the header.
 
 ✓ All met → proceed
 ✗ Any unmet → load the code-quality skill, apply RAII, search for existing implementations, read the target code, or move the implementation detail into the `.cpp` before writing any production code
@@ -39,7 +39,7 @@ When writing C++ code for this project, apply these patterns consistently.
 
 ## Data Organization
 
-- Group related member variables into POCOs/structs (e.g., `WindowConfig`, `SphereParams`)
+- Group related member variables into Plain Old C++ Objects (POCOs)/structs (e.g., `WindowConfig`, `SphereParams`)
 - Structs provide their own defaults to reduce constructor initializer lists
 - Use structs for vertex data (`QuadVertex` with x, y, u, v) instead of raw float arrays
 - When a test or fixture has many flat member variables, group them into domain-specific structs
@@ -87,7 +87,7 @@ if (!success) {
 - Use stack allocation; heap only when lifetime or size requires it
 - Use RAII for resource management
 - Smart pointers for dynamic memory
-- Clean up ALL GL resources in destructors (VAOs, VBOs, FBOs, RBOs, textures)
+- Clean up ALL GL resources in destructors (Vertex Array Objects (VAOs), Vertex Buffer Objects (VBOs), Framebuffer Objects (FBOs), Renderbuffer Objects (RBOs), textures)
 - Prevent copy of classes that own GL resources (delete copy ctor/assignment)
 
 ---
@@ -195,7 +195,7 @@ These smells are not caught by clang-tidy. Catch them in code review.
 | **PrimitiveObsession** | `int textureUnit` for `GL_TEXTURE0` binding point | `enum class TextureUnit : GLint` or typed wrapper |
 | **ArrowAntiPattern** | `if (gladLoad()) { if (SDL_Init()) { if (createWindow()) { ... } } }` | RAII wrappers — each resource cleans itself up on scope exit |
 | **SpeculativeGenerality** | Abstract render interface with exactly one concrete implementation | Remove the abstraction until a second implementation exists |
-| **CopyAndPasteProgramming** | VAO setup duplicated per render pass; shader variants copied with minor edits | `setupVAO()` extracted function; GLSL `#define` or UBO for variants |
+| **CopyAndPasteProgramming** | VAO setup duplicated per render pass; shader variants copied with minor edits | `setupVAO()` extracted function; OpenGL Shading Language (GLSL) `#define` or UBO for variants |
 | **ExceptionHiding** | `glCompileShader()` with no `glGetShaderiv(GL_COMPILE_STATUS)` check | Always check, log, and terminate on unrecoverable GL errors (see FailFast above) |
 
 ---

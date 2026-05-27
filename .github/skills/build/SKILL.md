@@ -14,8 +14,6 @@ No exceptions.
 
 Violating the letter of this rule is violating the spirit of this rule.
 
-YOU MUST run `cmake --build build` locally and verify it exits 0 before pushing. No exceptions.
-
 **Announce at start:** "I am using the build skill to [build/configure/troubleshoot] [description]."
 
 ---

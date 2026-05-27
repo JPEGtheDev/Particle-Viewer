@@ -46,7 +46,7 @@ Load this skill when:
 
 ## OpenGL Visual Testing Boundary
 
-OpenGL rendering is inherently visual. Pixel output depends on GPU drivers, platform, and rendering state that unit tests cannot fully capture.
+OpenGL rendering is inherently visual. Pixel output depends on Graphics Processing Unit (GPU) drivers, platform, and rendering state that unit tests cannot fully capture.
 
 ### What MockOpenGL CAN test (full TDD applies)
 
@@ -99,7 +99,7 @@ Use production classes directly — **never duplicate production logic in test h
 
 Use the viewer's default resolution (1280×720). Do NOT copy debug camera coordinates.
 
-**Distance calculation:** `distance = subject_size / (coverage_% × tan(FOV/2))`
+**Distance calculation (where FOV = Field of View):** `distance = subject_size / (coverage_% × tan(FOV/2))`
 
 Full guidance: `docs/visual-regression/camera-positioning-lessons-learned.md`
 

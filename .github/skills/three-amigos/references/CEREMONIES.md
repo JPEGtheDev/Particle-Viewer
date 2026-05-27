@@ -34,7 +34,7 @@ The Feature Specification is written at **user behavior and outcome** level only
 ### Synthesis step (orchestrator)
 
 After all three Discovery amigos return:
-1. Write `## Feature Specification` from the **Business and Tester findings only** — behavioral ACs, BDD scenarios, out-of-scope items, open questions.
+1. Write `## Feature Specification` from the **Business and Tester findings only** — behavioral ACs, Behavior-Driven Development (BDD) scenarios, out-of-scope items, open questions.
 2. Record Developer implementation findings separately under `## Implementation Notes` — these become inputs to todo planning.
 3. Do NOT mix the two. Implementation details in the Feature Specification defeat the purpose of the ceremony.
 
