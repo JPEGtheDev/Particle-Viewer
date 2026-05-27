@@ -387,11 +387,11 @@ Use this for fast question-based lookup — "my lesson is about X, where does it
 | If the lesson is about... | Add to... |
 |---|---|
 | Code patterns, naming, error handling | `AGENTS.md` |
-| Test writing, AAA, mocking, visual regression | `.github/skills/testing/SKILL.md` |
-| CI/CD workflows, artifacts, permissions | `.github/skills/workflow/SKILL.md` |
-| Documentation format, linking, content | `.github/skills/documentation/SKILL.md` |
-| User story creation, estimation | `.github/skills/user-story-generator/SKILL.md` |
-| Meta/process (skill creation, evaluation) | `.github/skills/self-evaluation/SKILL.md` |
+| Test writing, AAA, mocking, visual regression | `testing` skill |
+| CI/CD workflows, artifacts, permissions | `workflow` skill |
+| Documentation format, linking, content | `documentation` skill |
+| User story creation, estimation | `user-story-generator` skill |
+| Meta/process (skill creation, evaluation) | `self-evaluation` skill |
 
 ---
 

@@ -173,12 +173,12 @@ Stories involving visual regression testing should:
 
 1. **Use the Image class** as the base type for all image data (defined in `src/Image.hpp`)
 
-2. **Follow AAA Pattern** in tests — use the `testing` skill (`.github/skills/testing/`) for guidelines:
+2. **Follow AAA Pattern** in tests — use the `testing` skill for guidelines:
    - Do not combine Arrange and Act into `// Arrange & Act`
    - Omit `// Arrange` if no setup is needed
    - Put expected values as named variables in Arrange
 
-3. **Follow CI pipeline rules** — use the `workflow` skill (`.github/skills/workflow/`) for guidelines
+3. **Follow CI pipeline rules** — use the `workflow` skill for guidelines
 
 3. **Support Headless Mode**  
    - No display required (works with Xvfb on CI)

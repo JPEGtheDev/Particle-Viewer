@@ -101,7 +101,7 @@ if (!success) {
 - Bounds-check SDL3 scancode values before indexing key state arrays
 - Use `glGetIntegerv(GL_VIEWPORT, ...)` over cached viewport values where viewport may change
 - `gl_PointSize` clamped by `GL_POINT_SIZE_RANGE` (max 256px on Mesa/llvmpipe)
-- For Flatpak/SDL3/GL gotchas: see the `flatpak` skill (`.github/skills/flatpak/`)
+- For Flatpak/SDL3/GL gotchas: see the `flatpak` skill
 
 ### SDL3 Gotchas
 
@@ -177,7 +177,7 @@ When you change a **public interface** (function signature, class API, behavior 
 
 Applies to:
 - `docs/` markdown files describing the changed interface
-- `.github/skills/` files referencing the changed behavior
+- Skill files referencing the changed behavior
 - Inline doc comments in headers describing the contract
 
 Documentation out of sync with the interface actively misleads. Not a follow-up commit. Same commit.

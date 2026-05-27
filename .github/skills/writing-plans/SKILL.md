@@ -71,7 +71,7 @@ Every todo must contain what an engineer needs to execute it. These are **plan f
 - "Similar to Task N" (repeat the specifics — tasks may be read out of order)
 - Steps that describe what to do without showing how
 
-### Task Granularity (TDD Steps)
+### Task Granularity (TDD: Test-Driven Development Steps)
 
 Each task MUST be one concrete action (2–5 minutes), touch ≤2 files, and is estimated at ≤25 tool calls. Any todo exceeding either limit MUST be split before the plan is presented.
 
