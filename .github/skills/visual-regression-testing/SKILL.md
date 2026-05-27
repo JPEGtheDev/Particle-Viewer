@@ -14,8 +14,6 @@ No exceptions.
 
 Violating the letter of this rule is violating the spirit of this rule.
 
-YOU MUST get explicit human approval before committing any new or changed visual baseline. No exceptions.
-
 A visual regression test proves output **hasn't changed**, not that it was correct to begin with.
 
 **Announce at start:** "I am using the visual-regression-testing skill to [write/update/debug] visual regression tests for [description]."
@@ -85,41 +83,7 @@ OpenGL rendering is inherently visual. Pixel output depends on GPU drivers, plat
 
 ## Writing a Visual Regression Test
 
-Use production classes directly — **never duplicate production logic in test helpers**.
-
-```cpp
-TEST_F(RenderingRegressionTest, RenderDefaultCube_AngledView_MatchesBaseline)
-{
-    // Arrange
-    Shader particleShader(vertexPath.c_str(), fragmentPath.c_str());
-    Particle particles;  // Production class directly — no test helper duplication
-    glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 3000.0f);
-
-    // Act
-    glContext_.bindFramebuffer();
-    renderParticle(particles, particleShader, view, projection);
-    Image currentImage = glContext_.captureFramebuffer();
-
-    // Assert
-    Image baseline = Image::load(baselinePath, ImageFormat::PNG);
-    PixelComparator comparator;
-    ComparisonResult result = comparator.compare(baseline, currentImage, tolerance, true);
-    EXPECT_TRUE(result.matches);
-}
-```
-
----
-
-## Testing Utilities
-
-| Type | Location | Purpose |
-|------|----------|---------|
-| `Image` | `src/Image.hpp` | RGBA pixel buffer with save/load (PPM, PNG) |
-| `ComparisonResult` | `src/testing/PixelComparator.hpp` | Match status, similarity, diff image |
-| `PixelComparator` | `src/testing/PixelComparator.hpp` | Pixel comparison engine |
-| `ImageFormat` | `src/Image.hpp` | Format enum (PPM, PNG) for Image::save/load |
-| `Particle` | `src/particle.hpp` | Production particle data (std::vector<glm::vec4>) |
+Use production classes directly — **never duplicate production logic in test helpers**. For a complete code example and testing utilities table, see `references/VRT_EXAMPLES.md`.
 
 ---
 
