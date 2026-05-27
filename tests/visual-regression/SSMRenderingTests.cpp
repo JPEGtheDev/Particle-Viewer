@@ -215,6 +215,7 @@ TEST_F(SSMRenderingTest, SSMRender_4x4x4Grid_MatchesBaseline)
                                             0.1f, 3000.0f);
 
     // ---- Step 5: render — real SSM pipeline --------------------------------
+    // NOTE: mirrors drawSSMScene() — keep in sync if the pipeline order or uniforms change.
     std::string blurVertPath = getShaderPath("metaball_blur.vert");
     std::string blurFragPath = getShaderPath("metaball_blur.frag");
     Shader blurShader(blurVertPath.c_str(), blurFragPath.c_str());
@@ -240,7 +241,8 @@ TEST_F(SSMRenderingTest, SSMRender_4x4x4Grid_MatchesBaseline)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, density_tex, 0);
-    ASSERT_EQ(glCheckFramebufferStatus(GL_FRAMEBUFFER), (GLenum)GL_FRAMEBUFFER_COMPLETE) << "Density FBO incomplete";
+    ASSERT_EQ(glCheckFramebufferStatus(GL_FRAMEBUFFER), static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE))
+        << "Density FBO incomplete";
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     // Create blur FBO (GL_RGBA32F)
@@ -254,7 +256,8 @@ TEST_F(SSMRenderingTest, SSMRender_4x4x4Grid_MatchesBaseline)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, blur_tex, 0);
-    ASSERT_EQ(glCheckFramebufferStatus(GL_FRAMEBUFFER), (GLenum)GL_FRAMEBUFFER_COMPLETE) << "Blur FBO incomplete";
+    ASSERT_EQ(glCheckFramebufferStatus(GL_FRAMEBUFFER), static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE))
+        << "Blur FBO incomplete";
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     // Full-screen quad VAO/VBO (matches screenshader.vs layout)

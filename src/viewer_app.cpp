@@ -1362,6 +1362,12 @@ void ViewerApp::resizeFBO(int width, int height)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, render_.ssm.density_texture, 0);
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            std::cerr << "ERROR: SSM density FBO incomplete after resize\n";
+            render_.ssm.float_fbo_supported = false;
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            return;
+        }
 
         glGenFramebuffers(1, &render_.ssm.blurred_fbo);
         glBindFramebuffer(GL_FRAMEBUFFER, render_.ssm.blurred_fbo);
@@ -1371,6 +1377,12 @@ void ViewerApp::resizeFBO(int width, int height)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, render_.ssm.blurred_texture, 0);
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            std::cerr << "ERROR: SSM blur FBO incomplete after resize\n";
+            render_.ssm.float_fbo_supported = false;
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            return;
+        }
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
