@@ -59,7 +59,7 @@ Pick up next todo.
 
 - **BLOCKED → Ceremony 4:** A blocker is a fork in the feature, not a delay. Assessing without Business and Tester perspectives risks silent scope changes.
 - **DONE_WITH_CONCERNS → Ceremony 4:** Correctness or scope risk means delivered work may not match accepted criteria. Independent review before rework compounds cost.
-- **After all todos → Ceremony 5:** Merging without Signoff means Business and Tester have not confirmed delivered behavior matches the Feature Specification.
+- **After all todos → Ceremony 5 (Discovery ran) / final code reviewer (Discovery absent):** Merging without Signoff means Business and Tester have not confirmed delivered behavior matches the Feature Specification.
 
 ## Quick Reference Flowchart
 

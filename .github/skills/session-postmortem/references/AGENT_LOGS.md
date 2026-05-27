@@ -35,7 +35,7 @@ read the full transcript at: ~/.claude/projects/.../session-id.jsonl
 ## Future Work
 
 **Pending task:** Build a script in `scripts/` to parse Claude Code session JSONL into
-structured postmortem input for the `session-postmortem` skill. Output format should be:
+structured postmortem input for the `session-postmortem` skill. Output format:
 
 ```json
 {
