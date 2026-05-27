@@ -14,8 +14,6 @@ No exceptions.
 
 Violating the letter of this rule is violating the spirit of this rule.
 
-YOU MUST dispatch all three amigos in parallel and collect all verdicts before acting.
-
 **Announce at start:** "I am using the three-amigos skill to [ceremony name] for [brief feature description]."
 
 ---
@@ -31,9 +29,7 @@ YOU MUST dispatch all three amigos in parallel and collect all verdicts before a
 | 5 | All todos done, pre-merge | Signoff | ACCEPTED / REVISIONS NEEDED | `claude-sonnet-4.6` |
 | 6 | Feature merged and closed | Retrospective | Process improvement items | `claude-haiku-4.5` |
 
-Simple 1-todo, clear AC → skip; use Skeptic. 1+2 required for Discovery features. 5 required if Discovery ran. 3+4 trigger-based. 6 expected post-merge. Full agendas: `references/CEREMONIES.md`.
-
-**Model rationale:** Discovery, Progress Check, and Retrospective are question-generation or summary tasks (reading spec, identifying gaps, listing lessons). Haiku handles these adequately. Refinement, Pivot Assessment, and Signoff require multi-file analysis, nuanced tradeoff evaluation, and condition resolution — Sonnet is worth the cost there.
+Simple 1-todo, clear AC → skip; use Skeptic. 1+2 required for Discovery features. 5 required if Discovery ran. 3+4 trigger-based. 6 expected post-merge. Full agendas + model selection rationale: `references/CEREMONIES.md`.
 
 ---
 
@@ -114,4 +110,4 @@ CANARY: Three Amigos loaded. Name the ceremony and feature before dispatching an
 
 ## References
 
-- `three-amigos/references/CEREMONIES.md` — per-amigo sources, agenda lists, and output formats for all 6 ceremonies
+- `references/CEREMONIES.md` — per-amigo sources, agenda lists, output formats, and model selection rationale for all 6 ceremonies

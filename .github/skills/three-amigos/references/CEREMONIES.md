@@ -162,3 +162,12 @@ After all three Discovery amigos return:
 3. Were the ceremony triggers correctly calibrated? Any false positives or missed triggers?
 4. Did persona differentiation produce unique findings? If not, what was redundant?
 5. What one process change would make the next Three Amigos cycle more effective?
+
+---
+
+## Model Selection Rationale
+
+| Ceremonies | Model | Reason |
+|------------|-------|--------|
+| 1 (Discovery), 3 (Progress Check), 6 (Retrospective) | `claude-haiku-4.5` | Question-generation or summary tasks (reading spec, identifying gaps, listing lessons) -- Haiku handles these adequately |
+| 2 (Refinement), 4 (Pivot Assessment), 5 (Signoff) | `claude-sonnet-4.6` | Multi-file analysis, nuanced tradeoff evaluation, condition resolution -- Sonnet is worth the cost |
