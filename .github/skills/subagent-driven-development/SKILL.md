@@ -23,9 +23,18 @@ Violating the letter of these rules is violating the spirit of these rules.
 
 Pick up todo → Dispatch implementer → Handle status code → Stage 1 spec review → Stage 2 quality review → Mark done.
 
+**Status code branches:**
+- `NEEDS_CONTEXT` → Provide missing info. Re-dispatch.
+- `BLOCKED` → **Invoke Three Amigos Pivot Assessment (Ceremony 4).** If unavailable: assess, escalate to user.
+- `PARTIAL` → Verify completed portion. Create new todo(s) for remaining. Stage 1 for completed portion only.
+- `DONE_WITH_CONCERNS` → Read concerns. Correctness or scope risk? → **Ceremony 4.** Otherwise → canary + Stage 1.
+- `DONE` → Canary confirmation → Stage 1 → Stage 2 → mark done.
+
+**After all todos:** Check plan.md for `## Feature Specification`. Present → **Invoke Signoff (Ceremony 5)** before `finishing-a-development-branch`. Absent → dispatch final code reviewer → `finishing-a-development-branch`.
+
 **Do not advance past any todo until both Stage 1 and Stage 2 are PASS/APPROVE.**
 
-See `references/SDD_LOOP.md` for the full decision tree with all status code branches and post-todo Signoff routing.
+See `references/SDD_LOOP.md` for the full decision tree with complete ASCII flow.
 
 ---
 
@@ -122,6 +131,12 @@ Stage 2: Code Quality Review        ← ONLY after Stage 1 passes (code-quality-
 **Canary confirmation (before Stage 1):** Before proceeding to Stage 1 from any implementer result (DONE, DONE_WITH_CONCERNS, or PARTIAL), state: `Canary confirmed: [paste the Worktree: line from implementer output]`. If the canary line is absent from the implementer's output, the implementer did not follow BEFORE PROCEEDING — require skill reload and resubmit before dispatching Stage 1.
 
 **Never skip Stage 1.** Code that doesn't meet the spec doesn't benefit from quality review.
+
+**Worktree hygiene:** All implementer subagents MUST work in a worktree. Never dispatch an implementer to the main working tree.
+
+**Stage 1:** Use `spec-compliance-reviewer.md` with full requirements and the implementation diff. If GAPS returned: implementer fixes gaps, Stage 1 re-runs before proceeding to Stage 2.
+
+**Stage 2:** Use `code-quality-reviewer.md` — one agent per file changed. If REQUEST CHANGES: implementer fixes, Stage 2 re-runs before proceeding.
 
 See `references/REVIEW_PROTOCOL.md` for full protocol details.
 
