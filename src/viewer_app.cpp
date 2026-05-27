@@ -786,6 +786,7 @@ void ViewerApp::drawSSMScene()
     glUniformMatrix4fv(glGetUniformLocation(render_.ssm.splat_shader.Program, "projection"), 1, GL_FALSE,
                        glm::value_ptr(cam_->getProjection()));
     glUniform1f(glGetUniformLocation(render_.ssm.splat_shader.Program, "blobRadius"), window_.ssm_blob_radius);
+    // sphere_.base_radius defaults to 250.0f; falling back to it is never a supported zero state.
     float ssm_scale = sphere_.radius > 0.0f ? sphere_.radius : sphere_.base_radius;
     glUniform1f(glGetUniformLocation(render_.ssm.splat_shader.Program, "scale"), ssm_scale);
     glUniform1f(glGetUniformLocation(render_.ssm.splat_shader.Program, "transScale"), kSimToDisplayScale);

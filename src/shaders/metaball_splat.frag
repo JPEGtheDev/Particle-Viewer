@@ -21,7 +21,7 @@ void main()
 	    catColor = vec3(1.0, 0.0, 1.0);
 	} else if (cat == 3) {
 	    catColor = vec3(0.89, 0.59, 0.0);
-	} else if (cat == 500) {
+	} else if (cat == 500) { // 500 = per-instance debug/rainbow colour mode (matches sphereVertex.vs)
 	    catColor = vec3(float(v_instance_id % 40) / 40.0,
 	                    float(v_instance_id % 1600) / 1600.0,
 	                    float(v_instance_id % 64000) / 64000.0);
