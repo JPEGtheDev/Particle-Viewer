@@ -407,3 +407,16 @@ Use this when classifying a captured lesson into a skill update. The Examples co
 | **Documentation** | Link fixes, formatting, content standards | `documentation` skill |
 | **Build** | CMake, dependencies, Flatpak packaging | `build` skill |
 | **Versioning** | PR title format, commit conventions, releases | `versioning` skill |
+
+
+---
+
+## Objectivity Block — Why Structural Mechanisms Beat "Try Harder"
+
+Humans are structurally poor at evaluating their own work. This is not a character flaw -- it is an architectural constraint of cognition. The response is not "try harder to be objective" but "use structural mechanisms that bypass the block":
+
+- Dispatch a separate reviewer agent rather than self-reviewing
+- Compare against requirements written before the work began, not a remembered version
+- Use a checklist created before the session, not reconstructed from memory after it
+
+The self-evaluation block itself is imperfect by construction. Use it to surface what you can, knowing that a separate postmortem reviewer will catch what you cannot. Source: C2 Wiki "HumansAreLousyAtSelfEvaluation".
