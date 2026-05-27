@@ -213,7 +213,7 @@ If you catch yourself thinking any of these, stop and follow the rule:
 - "I already know what I'd write — no need to actually write it"
 - Closing a session without the Session Self-Evaluation block in the final message
 
-**All of these mean: Read `.github/skills/self-evaluation/SKILL.md` and complete every step. Then include the `### Session Self-Evaluation` block before your final message.**
+**All of these mean: Load the `self-evaluation` skill and complete every step. Then include the `### Session Self-Evaluation` block before your final message.**
 
 ---
 

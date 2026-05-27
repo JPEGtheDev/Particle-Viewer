@@ -156,7 +156,7 @@ If you genuinely find no gaps after thorough analysis, state that explicitly.
 
 ## Heuristics: YAGNI · Simplest Thing · PPP
 
-**YAGNI:** If a todo cannot be traced to a specific acceptance criterion, cut it.
+**YAGNI (You Ain't Gonna Need It):** If a todo cannot be traced to a specific acceptance criterion, cut it.
 > Forbidden: "We'll probably need it later."
 
 **Simplest Thing That Could Possibly Work:** After the Smart Trust gate, verify a simpler implementation satisfies all criteria. Fewer files, fewer abstractions, fewer dependencies.

@@ -142,7 +142,7 @@ Before presenting visual regression tests:
 
 ## Related Skills
 
-- [`testing`](.github/skills/testing/) — parent skill; TDD iron law and AAA naming conventions apply to all test files including visual regression tests
-- [`code-quality`](.github/skills/code-quality/) — code conventions, clang-format, and naming rules apply to test code in this directory
-- [`systematic-debugging`](.github/skills/systematic-debugging/) — use when investigating visual regression failures before proposing fixes
-- [`cpp-patterns`](.github/skills/cpp-patterns/) — production class patterns (GL resource cleanup, RAII) used in visual test fixtures
+- `testing` — parent skill; TDD iron law and AAA naming conventions apply to all test files including visual regression tests
+- `code-quality` — code conventions, clang-format, and naming rules apply to test code in this directory
+- `systematic-debugging` — use when investigating visual regression failures before proposing fixes
+- `cpp-patterns` — production class patterns (GL resource cleanup, RAII) used in visual test fixtures

@@ -57,7 +57,7 @@ src/
 ### Architecture Notes
 - **ViewerApp** encapsulates all application state (replaces former `clutter.hpp` globals)
 - State is organized into POCOs: `WindowConfig`, `RenderResources`, `SphereParams`, `RecordingState`, `ShaderPaths`
-- GLFW callbacks delegate to ViewerApp via user pointer pattern
+- SDL3 events delegate to ViewerApp via the event loop
 - `Particle` uses `std::vector<glm::vec4>` for safe memory management
 
 ### Remaining Issues to Address
@@ -223,7 +223,7 @@ Current refactoring priorities:
 1. **Global State Elimination** (✅ Done)
    - Extracted global variables from former `clutter.hpp` into `ViewerApp` class
    - State grouped into POCOs: `WindowConfig`, `RenderResources`, `SphereParams`, `RecordingState`, `ShaderPaths`
-   - GLFW callbacks use user pointer pattern
+   - SDL3 event loop delegates to ViewerApp
 
 2. **Main Loop Simplification** (Priority: Medium)
    - Separate concerns: input handling, data loading, rendering

@@ -31,6 +31,14 @@ Violating the letter of this rule is violating the spirit of this rule.
 
 ---
 
+## Canary
+
+```
+CANARY: systematic-debugging loaded. Issue: [name it]. No fix before root cause.
+```
+
+---
+
 ## BEFORE PROCEEDING
 
 1. The full error output has been read completely — not just the last line
