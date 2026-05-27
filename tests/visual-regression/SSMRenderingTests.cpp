@@ -128,7 +128,7 @@ class SSMRenderingTest : public testing::Test
  *   x ∈ {-1.5, -0.5, 0.5, 1.5} × scale,
  *   y ∈ {-1.5, -0.5, 0.5, 1.5} × scale,
  *   z ∈ {-1.5, -0.5, 0.5, 1.5} × scale
- *   where scale = 2.0.  w component = category index (1–4, cycling).
+ *   where scale = 2.0.  w component = category index (0–3, cycling).
  *
  * Camera configuration:
  *   Position  : (0, 0, 10) — directly in front of the grid
@@ -186,18 +186,18 @@ TEST_F(SSMRenderingTest, SSMRender_4x4x4Grid_MatchesBaseline)
     // ---- Step 3: build 64-particle 4×4×4 grid -----------------------------
     //
     // Positions are x/y/z ∈ {-1.5, -0.5, 0.5, 1.5} × 2.0.
-    // The w component encodes the particle category (1–4, cycling).
+    // The w component encodes the particle category (0–3, cycling).
     static constexpr float COORDS[4] = {-1.5f, -0.5f, 0.5f, 1.5f};
     static constexpr float DISPLAY_SCALE = 2.0f;
     std::vector<glm::vec4> positions;
     positions.reserve(64);
-    int category = 1;
+    int category = 0;
     for (float x : COORDS) {
         for (float y : COORDS) {
             for (float z : COORDS) {
                 positions.push_back(
                     glm::vec4(x * DISPLAY_SCALE, y * DISPLAY_SCALE, z * DISPLAY_SCALE, static_cast<float>(category)));
-                category = (category % 4) + 1;
+                category = (category + 1) % 4;
             }
         }
     }
