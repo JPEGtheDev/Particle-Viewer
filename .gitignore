@@ -51,3 +51,9 @@ diffs/
 # Scratch directory for temporary agent/research data
 scratch/
 .worktrees/
+
+# CMake FetchContent build artifacts
+_deps/
+
+# ImGui runtime config
+imgui.ini
