@@ -38,9 +38,9 @@ Before writing any documentation:
 | API/class reference | Header file comments (≤5 lines inline; longer → `docs/`) |
 | Domain guides | `docs/<domain>/<subdomain>/` — one concept per file, ≤600 words |
 | Cross-cutting standards | `docs/UPPERCASE.md` |
-| Copilot skills | `.github/skills/<name>/SKILL.md` |
+| Agent skills | `.github/skills/<name>/SKILL.md` |
 | Skill reference content | `.github/skills/<name>/references/*.md` |
-| Agent onboarding | `.github/copilot-instructions.md` — summarize only |
+| Agent onboarding | `AGENTS.md` — summarize only |
 
 ---
 
@@ -70,7 +70,7 @@ All files in `docs/` MUST be **Document Mode** — readable independently, with 
 
 ---
 
-## Step 3: Update copilot-instructions.md When Adding a New Skill
+## Step 3: Update AGENTS.md When Adding a New Skill
 
 Update all 4 locations:
 1. **Skills Directory table** — add row with name, path, domain

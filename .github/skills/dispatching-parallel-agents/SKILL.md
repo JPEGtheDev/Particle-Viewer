@@ -105,11 +105,9 @@ BEFORE DISPATCHING PARALLEL AGENTS, verify:
 
 ## Concurrency Rules
 
-**Copilot Enterprise:** No practical concurrency limit. Dispatch as many as the task warrants.
+Verify your account's agent concurrency limit before dispatching. Default assumption: up to 4 concurrent unless you have confirmed a higher limit.
 
-**Standard accounts:** Verify your account's agent concurrency limit before dispatching. Default assumption: up to 4 concurrent unless you have confirmed a higher limit.
-
-State your concurrency assumption before dispatching: "Dispatching N agents in parallel — [Enterprise / confirmed N-agent limit / assuming default]."
+State your concurrency assumption before dispatching: "Dispatching N agents in parallel — [confirmed N-agent limit / assuming default 4]."
 
 ---
 

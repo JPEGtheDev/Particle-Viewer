@@ -12,7 +12,7 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 **Lesson:** Always open binary data files with `"rb"` mode for cross-platform correctness.
 
-**Added to:** `copilot-instructions.md` → Error Handling section, `testing` skill → Key Design Principles
+**Added to:** `AGENTS.md` → Error Handling section, `testing` skill → Key Design Principles
 
 ### Return By Const Reference (PR #73)
 
@@ -20,7 +20,7 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 **Lesson:** Return large objects (matrices, vectors, structs) by `const&` from getters when the member is stored in the class.
 
-**Added to:** `copilot-instructions.md` → Common Pitfalls
+**Added to:** `AGENTS.md` → Common Pitfalls
 
 ### GLFW Key Bounds Check (PR #73)
 
@@ -28,7 +28,7 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 **Lesson:** Bounds-check GLFW key callbacks — `GLFW_KEY_UNKNOWN` is -1.
 
-**Added to:** `copilot-instructions.md` → OpenGL Usage section
+**Added to:** `AGENTS.md` → OpenGL Usage section
 
 ---
 
@@ -64,7 +64,7 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 **Lesson:** Extract viewing direction from debug output, but calculate distance based on desired viewport coverage. Formula: `distance = subject_size / (coverage_% * tan(FOV/2))`.
 
-**Added to:** `copilot-instructions.md` → Visual Regression Tests section, `docs/visual-regression/camera-positioning-lessons-learned.md`
+**Added to:** `AGENTS.md` → Visual Regression Tests section, `docs/visual-regression/camera-positioning-lessons-learned.md`
 
 ---
 
@@ -76,7 +76,7 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 **Lesson:** Group related member variables into POCOs/structs (e.g., `WindowConfig`, `RenderResources`). Structs should provide their own defaults.
 
-**Added to:** `copilot-instructions.md` → Data Organization, `testing` skill → Key Design Principles
+**Added to:** `AGENTS.md` → Data Organization, `testing` skill → Key Design Principles
 
 ### Headers Must Be Self-Contained (PR #70)
 
@@ -84,7 +84,7 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 **Lesson:** Headers must include all their own dependencies. Don't rely on transitive includes from other headers.
 
-**Added to:** `copilot-instructions.md` → Common Pitfalls
+**Added to:** `AGENTS.md` → Common Pitfalls
 
 ### GL Resource Cleanup (PR #73)
 
@@ -92,7 +92,7 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 **Lesson:** Clean up ALL GL resources in destructors — VAOs, VBOs, FBOs, RBOs, textures. Check for non-zero before deleting.
 
-**Added to:** `copilot-instructions.md` → Memory Management
+**Added to:** `AGENTS.md` → Memory Management
 
 ### GL_POINT_SIZE_RANGE Clamping (PR #81)
 
@@ -100,7 +100,7 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 **Lesson:** `gl_PointSize` is silently clamped by `GL_POINT_SIZE_RANGE` (256px on Mesa/llvmpipe). When testing resolution-independent scaling, choose camera distances that keep computed point sizes under this limit at all target resolutions. Use tolerances proportional to the values being compared — an absolute tolerance larger than the expected value itself will mask real failures.
 
-**Added to:** `copilot-instructions.md` → OpenGL Usage
+**Added to:** `AGENTS.md` → OpenGL Usage
 
 ### Cross-Mesa Baseline Stability (PR #81)
 
@@ -108,7 +108,7 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 **Lesson:** Different Mesa/llvmpipe versions may compile the same shader differently, causing sprite-boundary rounding differences. Visual regression baselines should allow a small `MAX_DIFF_RATIO` (e.g., 0.01%) instead of requiring 100% pixel match. Always `ASSERT_TRUE(image.save(...))` artifact writes so debug images are not silently lost.
 
-**Added to:** `copilot-instructions.md` → Test Issues
+**Added to:** `AGENTS.md` → Test Issues
 
 ---
 
@@ -134,7 +134,7 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 **Lesson:** Use `FetchContent_Declare()` with `SOURCE_SUBDIR` set to a non-existent path, then call `FetchContent_MakeAvailable()`. This downloads the source without attempting `add_subdirectory()`, and avoids the `FetchContent_Populate()` deprecation warning. Then add the source files manually to your target.
 
-**Added to:** `copilot-instructions.md` → ImGui Integration
+**Added to:** `AGENTS.md` → ImGui Integration
 
 ### GLFW Callback Chaining Order (PR #79)
 
@@ -142,7 +142,7 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 **Lesson:** Set application GLFW callbacks (e.g., `glfwSetKeyCallback`) **before** calling `ImGui_ImplGlfw_InitForOpenGL(window, true)`. ImGui saves the current callbacks and chains to them, ensuring both ImGui and the application receive input events.
 
-**Added to:** `copilot-instructions.md` → ImGui Integration
+**Added to:** `AGENTS.md` → ImGui Integration
 
 ### ImGui Renders to Default Framebuffer (PR #79)
 
@@ -150,7 +150,7 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 **Lesson:** ImGui renders to the default framebuffer after the FBO blit pass. Since recording reads pixels from the offscreen FBO (before the blit), ImGui content is naturally excluded. This is an architectural advantage of the FBO pipeline — no special handling needed.
 
-**Added to:** `copilot-instructions.md` → ImGui Integration
+**Added to:** `AGENTS.md` → ImGui Integration
 
 ### Debug Overlay Must Offset for Menu Bar (PR #79)
 
@@ -158,7 +158,7 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 **Lesson:** Use ImGui windows instead of raw GL overlays — `ImGui::GetFrameHeight()` gives the actual menu bar height for dynamic positioning. This avoids hard-coded offsets that break with DPI/font scaling changes.
 
-**Added to:** `copilot-instructions.md` → ImGui Integration
+**Added to:** `AGENTS.md` → ImGui Integration
 
 ---
 
@@ -184,7 +184,7 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 **Lesson:** Minimize duplication across skills. Each skill owns one domain. Skills reference other skills instead of repeating content.
 
-**Added to:** `copilot-instructions.md` → Skill Architecture section
+**Added to:** `AGENTS.md` → Skill Architecture section
 
 ### Always Upload Current Images (PR #64)
 
@@ -204,7 +204,7 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 **Lesson:** Always add a fallback retry for MSAA: attempt creation with 4x MSAA first; if that returns NULL, reset the attribute to 0 and retry. This ensures headless/CI tests can run on software renderers.
 
-**Added to:** `copilot-instructions.md` → OpenGL Usage section
+**Added to:** `AGENTS.md` → OpenGL Usage section
 
 ---
 
@@ -214,7 +214,7 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 **Lesson:** When mixing FetchContent dependencies, make all lightweight/header-only deps (ImGui) and all non-subdirectory deps (GoogleTest) available **before** a full-CMakeLists dep (SDL3). Declare all deps at the top, then call `FetchContent_MakeAvailable` in a safe order.
 
-**Added to:** `copilot-instructions.md` → ImGui Integration / Architecture section
+**Added to:** `AGENTS.md` → ImGui Integration / Architecture section
 
 ---
 
@@ -224,7 +224,7 @@ Concrete examples of lessons captured from past sessions and how they were incor
 
 **Lesson:** When migrating a windowing/graphics backend, search ALL source files (`find src -name "*.cpp" -o -name "*.hpp" | xargs grep OLDLIBNAME`) rather than targeting specific files by name. The old API may appear in unexpected locations (monitor queries in menu code, etc.).
 
-**Added to:** `copilot-instructions.md` → Common Pitfalls (as a Build Issues entry)
+**Added to:** `AGENTS.md` → Common Pitfalls (as a Build Issues entry)
 
 ---
 
@@ -386,7 +386,7 @@ Use this for fast question-based lookup — "my lesson is about X, where does it
 
 | If the lesson is about... | Add to... |
 |---|---|
-| Code patterns, naming, error handling | `copilot-instructions.md` |
+| Code patterns, naming, error handling | `AGENTS.md` |
 | Test writing, AAA, mocking, visual regression | `.github/skills/testing/SKILL.md` |
 | CI/CD workflows, artifacts, permissions | `.github/skills/workflow/SKILL.md` |
 | Documentation format, linking, content | `.github/skills/documentation/SKILL.md` |

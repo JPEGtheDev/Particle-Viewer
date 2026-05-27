@@ -33,7 +33,7 @@ Violating the letter of this rule is violating the spirit of this rule.
 
 ## How This Skill is Invoked
 
-This skill is **mandatory** — `copilot-instructions.md` § Session Lifecycle requires it before every final message. You will also be invoked:
+This skill is **mandatory** — `AGENTS.md` § Session Lifecycle requires it before every final message. You will also be invoked:
 - When explicitly asked: "Run self-evaluation", "What did you learn?", "Improve skills"
 - After addressing code review feedback that reveals a recurring pattern
 
@@ -77,7 +77,7 @@ Classify each lesson into one of these categories. For the full routing table wi
 
 Before proposing updates, verify the lesson is not already documented:
 
-1. Check `copilot-instructions.md` — Is this pattern already listed?
+1. Check `AGENTS.md` — Is this pattern already listed?
 2. Check the relevant skill's `SKILL.md` — Is this rule already stated?
 3. Check skill `references/` — Is there already an example?
 
