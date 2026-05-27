@@ -211,30 +211,6 @@ If you genuinely find no gaps after thorough analysis, state that explicitly.
 
 ---
 
-## Quick Reference
-
-```
-Task arrives
-    ↓
-Trivial (1 file, 1 step)? → Implement directly
-    ↓ (multi-step)
-Step 0: Clarify Expectations — restate requirements, label [UNCLEAR:]
-    ↓
-Smart Trust Gate — answer 5 questions; if 2+ todos: check for `## Feature Specification` → three-amigos Refinement OR Skeptic
-    ↓
-Build todo list: YAGNI + PPP per item + No Placeholders
-    ↓
-TDD task structure: RED / GREEN / REFACTOR / COMMIT as separate todos
-    ↓
-Plan review: covers all criteria? downsides named?
-    ↓
-Present plan to user — WAIT for explicit approval
-    ↓
-Begin execution (invoke execution skill)
-```
-
----
-
 ## References
 
-- Simplicity principles and dimensions: `references/SIMPLICITY_PRINCIPLES.md` — Simplest Thing gate, dimensions of simplicity table, assign problems not tasks
+- Simplicity principles, dimensions of simplicity table, quick reference flowchart, assign problems not tasks: `references/SIMPLICITY_PRINCIPLES.md`

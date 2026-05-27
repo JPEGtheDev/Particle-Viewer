@@ -200,3 +200,27 @@ The root cause is usually an incorrect domain model or missed abstraction. Stop 
 - `writing-plans` — YAGNI, PPP, Skeptic Agent gate
 - `brainstorming` — Structured Ideation reference for design exploration
 - `execution` — Make It Work → Make It Right → Make It Fast gate
+
+---
+
+## Planning Quick Reference
+
+```
+Task arrives
+    ↓
+Trivial (1 file, 1 step)? → Implement directly
+    ↓ (multi-step)
+Step 0: Clarify Expectations — restate requirements, label [UNCLEAR:]
+    ↓
+Smart Trust Gate — answer 5 questions; if 2+ todos: check for `## Feature Specification` → three-amigos Refinement OR Skeptic
+    ↓
+Build todo list: YAGNI + PPP per item + No Placeholders
+    ↓
+TDD task structure: RED / GREEN / REFACTOR / COMMIT as separate todos
+    ↓
+Plan review: covers all criteria? downsides named?
+    ↓
+Present plan to user — WAIT for explicit approval
+    ↓
+Begin execution (invoke execution skill)
+```
