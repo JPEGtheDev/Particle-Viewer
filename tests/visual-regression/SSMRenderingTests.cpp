@@ -191,13 +191,13 @@ TEST_F(SSMRenderingTest, SSMRender_4x4x4Grid_MatchesBaseline)
     static constexpr float DISPLAY_SCALE = 2.0f;
     std::vector<glm::vec4> positions;
     positions.reserve(64);
-    int category = 1;
+    int category = 0;
     for (float x : COORDS) {
         for (float y : COORDS) {
             for (float z : COORDS) {
                 positions.push_back(
                     glm::vec4(x * DISPLAY_SCALE, y * DISPLAY_SCALE, z * DISPLAY_SCALE, static_cast<float>(category)));
-                category = (category % 4) + 1;
+                category = (category + 1) % 4;
             }
         }
     }
