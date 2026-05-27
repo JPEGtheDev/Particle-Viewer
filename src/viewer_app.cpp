@@ -126,6 +126,7 @@ bool ViewerApp::initialize()
     part_ = new Particle();
     setupGLStuff();
     setupScreenFBO();
+    initSSMResources();
 
     // Create in-app folder browsers (after ImGui is initialized).
     // Only assign file_dialog_ / recording_dialog_ if no mock was injected
@@ -339,14 +340,35 @@ void ViewerApp::run()
 
         beforeDraw();
         drawScene();
-        cam_->RenderSphere();
+        if (render_mode_ == RenderMode::Spheres) {
+            cam_->RenderSphere();
+        }
         drawFBO();
+
+        if (set_->isPlaying && recording_.is_active) {
+            glReadPixels(0, 0, (int)window_.width, (int)window_.height, GL_RGB, GL_UNSIGNED_BYTE, pixels_);
+            if (!stbi_write_tga(std::string(recording_.folder + "/" + std::to_string(cur_frame_) + ".tga").c_str(),
+                                (int)window_.width, (int)window_.height, 3, pixels_)) {
+                if (recording_.error_count < recording_.error_max) {
+                    recording_.error_count++;
+                    std::cout << "Unable to save image: Error " << recording_.error_count << std::endl;
+                } else {
+                    std::cout << "Max Image Error Count Reached! Ending Recording!" << std::endl;
+                    recording_.is_active = false;
+                }
+            }
+        }
 
         // Update menu state with current cache status — must happen before
         // renderMainMenu so the UI reflects values from the current frame.
         menu_state_.auto_com_compute = auto_com_compute_;
         menu_state_.ui_scale = window_.ui_scale;
         menu_state_.is_recording = recording_.is_active;
+        menu_state_.current_render_mode = static_cast<int>(render_mode_);
+        menu_state_.ssm_available = render_.ssm.float_fbo_supported;
+        menu_state_.ssm_threshold = window_.ssm_threshold;
+        menu_state_.ssm_blob_radius = window_.ssm_blob_radius;
+        menu_state_.ssm_blur_amount = window_.ssm_blur_amount;
         const std::size_t cached_frames = frame_cache_ ? frame_cache_->cachedCount() : 0;
         menu_state_.cache_status.frames_cached = static_cast<int>(cached_frames);
         menu_state_.cache_status.bytes_used = frame_cache_ ? cached_frames * frame_cache_->frameSizeBytes() : 0;
@@ -376,6 +398,12 @@ void ViewerApp::run()
                     recording_.is_active = false;
                     recording_.folder = "";
                 }
+                if (panel_actions.render_mode_changed) {
+                    render_mode_ = static_cast<RenderMode>(panel_actions.new_render_mode);
+                }
+                window_.ssm_threshold = menu_state_.ssm_threshold;
+                window_.ssm_blob_radius = menu_state_.ssm_blob_radius;
+                window_.ssm_blur_amount = menu_state_.ssm_blur_amount;
                 // Defensive sync: if panel was closed via a path that bypassed
                 // toggleControllerPanel() (e.g. direct ImGui close), exit MenuMode.
                 if (!menu_state_.controller_panel_open && current_mode_ == InputMode::MenuMode) {
@@ -619,7 +647,16 @@ void ViewerApp::drawScene()
                 static_cast<double>(com_.y), static_cast<double>(com_.z), static_cast<int>(auto_com_compute_),
                 static_cast<int>(cam_->isComLocked()));
     }
+
     cam_->setSphereCenter(com_);
+
+    if (render_mode_ == RenderMode::ScreenSpaceMetaballs) {
+        if (render_.ssm.float_fbo_supported) {
+            drawSSMScene();
+        }
+        return;
+    }
+
     render_.sphere_shader.Use();
     part_->pushVBO();
     glBindVertexArray(render_.circle_vao);
@@ -637,20 +674,6 @@ void ViewerApp::drawScene()
                 static_cast<GLfloat>(viewport[3]));
     glDrawArraysInstanced(GL_POINTS, 0, 1, part_->n);
     glBindVertexArray(0);
-
-    if (set_->isPlaying && recording_.is_active) {
-        glReadPixels(0, 0, (int)window_.width, (int)window_.height, GL_RGB, GL_UNSIGNED_BYTE, pixels_);
-        if (!stbi_write_tga(std::string(recording_.folder + "/" + std::to_string(cur_frame_) + ".tga").c_str(),
-                            (int)window_.width, (int)window_.height, 3, pixels_)) {
-            if (recording_.error_count < recording_.error_max) {
-                recording_.error_count++;
-                std::cout << "Unable to save image: Error " << recording_.error_count << std::endl;
-            } else {
-                std::cout << "Max Image Error Count Reached! Ending Recording!" << std::endl;
-                recording_.is_active = false;
-            }
-        }
-    }
 }
 
 void ViewerApp::drawFBO()
@@ -664,6 +687,145 @@ void ViewerApp::drawFBO()
     glBindTexture(GL_TEXTURE_2D, render_.texture_colorbuffer);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
+}
+
+void ViewerApp::initSSMResources()
+{
+    // Probe GL_RGBA32F float framebuffer support
+    GLuint probe_fbo = 0;
+    GLuint probe_tex = 0;
+    glGenFramebuffers(1, &probe_fbo);
+    glGenTextures(1, &probe_tex);
+    glBindFramebuffer(GL_FRAMEBUFFER, probe_fbo);
+    glBindTexture(GL_TEXTURE_2D, probe_tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 1, 1, 0, GL_RGBA, GL_FLOAT, nullptr);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, probe_tex, 0);
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glDeleteTextures(1, &probe_tex);
+    glDeleteFramebuffers(1, &probe_fbo);
+    if (status != GL_FRAMEBUFFER_COMPLETE) {
+        std::cerr << "SSM: GL_RGBA32F float FBO unsupported — SSM mode disabled" << std::endl;
+        render_.ssm.float_fbo_supported = false;
+        return;
+    }
+
+    // Density FBO: accumulates per-particle color×falloff + falloff (GL_RGBA32F)
+    glGenFramebuffers(1, &render_.ssm.density_fbo);
+    glGenTextures(1, &render_.ssm.density_texture);
+    glBindFramebuffer(GL_FRAMEBUFFER, render_.ssm.density_fbo);
+    glBindTexture(GL_TEXTURE_2D, render_.ssm.density_texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, window_.width, window_.height, 0, GL_RGBA, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, render_.ssm.density_texture, 0);
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        std::cerr << "SSM: density FBO incomplete — SSM mode disabled" << std::endl;
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        render_.ssm.float_fbo_supported = false;
+        return;
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // Blur FBO: box-blurred RGBA accumulation field (GL_RGBA32F)
+    glGenFramebuffers(1, &render_.ssm.blurred_fbo);
+    glGenTextures(1, &render_.ssm.blurred_texture);
+    glBindFramebuffer(GL_FRAMEBUFFER, render_.ssm.blurred_fbo);
+    glBindTexture(GL_TEXTURE_2D, render_.ssm.blurred_texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, window_.width, window_.height, 0, GL_RGBA, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, render_.ssm.blurred_texture, 0);
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        std::cerr << "SSM: blur FBO incomplete — SSM mode disabled" << std::endl;
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        render_.ssm.float_fbo_supported = false;
+        return;
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // Load SSM shaders — compile/link failure treated same as unsupported GL_RGBA32F
+    render_.ssm.splat_shader =
+        Shader((paths_.exe + paths_.ssm_splat_vertex).c_str(), (paths_.exe + paths_.ssm_splat_fragment).c_str());
+    render_.ssm.blur_shader =
+        Shader((paths_.exe + paths_.ssm_blur_vertex).c_str(), (paths_.exe + paths_.ssm_blur_fragment).c_str());
+    render_.ssm.composite_shader =
+        Shader((paths_.exe + paths_.screen_vertex).c_str(), (paths_.exe + paths_.ssm_composite_fragment).c_str());
+
+    if (render_.ssm.splat_shader.Program == 0 || render_.ssm.blur_shader.Program == 0 ||
+        render_.ssm.composite_shader.Program == 0) {
+        std::cerr << "SSM: shader compile/link failed — SSM mode disabled" << std::endl;
+        render_.ssm.float_fbo_supported = false;
+        return;
+    }
+
+    render_.ssm.float_fbo_supported = true;
+}
+
+void ViewerApp::drawSSMScene()
+{
+    GLint viewport[4] = {0, 0, 0, 0};
+    glGetIntegerv(GL_VIEWPORT, viewport);
+
+    // Splat pass: accumulate per-particle density into density_fbo (additive blending)
+    glBindFramebuffer(GL_FRAMEBUFFER, render_.ssm.density_fbo);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE);
+
+    render_.ssm.splat_shader.Use();
+    part_->pushVBO();
+    glBindVertexArray(render_.circle_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, part_->instanceVBO);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glUniformMatrix4fv(glGetUniformLocation(render_.ssm.splat_shader.Program, "view"), 1, GL_FALSE,
+                       glm::value_ptr(view_));
+    glUniformMatrix4fv(glGetUniformLocation(render_.ssm.splat_shader.Program, "projection"), 1, GL_FALSE,
+                       glm::value_ptr(cam_->getProjection()));
+    glUniform1f(glGetUniformLocation(render_.ssm.splat_shader.Program, "blobRadius"), window_.ssm_blob_radius);
+    glUniform1f(glGetUniformLocation(render_.ssm.splat_shader.Program, "scale"), sphere_.scale);
+    glUniform1f(glGetUniformLocation(render_.ssm.splat_shader.Program, "transScale"),
+                sphere_.scale != 0.0f ? 1.0f / sphere_.scale : 1.0f);
+    glUniform1f(glGetUniformLocation(render_.ssm.splat_shader.Program, "viewportHeight"),
+                static_cast<GLfloat>(viewport[3]));
+    glDrawArraysInstanced(GL_POINTS, 0, 1, part_->n);
+    glBindVertexArray(0);
+    glDisable(GL_BLEND);
+
+    // Blur pass: box-blur density field into blurred_fbo
+    glBindFramebuffer(GL_FRAMEBUFFER, render_.ssm.blurred_fbo);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    render_.ssm.blur_shader.Use();
+    glBindVertexArray(render_.quad_vao);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, render_.ssm.density_texture);
+    glUniform1i(glGetUniformLocation(render_.ssm.blur_shader.Program, "densityTexture"), 0);
+    glUniform1f(glGetUniformLocation(render_.ssm.blur_shader.Program, "blurAmount"), window_.ssm_blur_amount);
+    glUniform2f(glGetUniformLocation(render_.ssm.blur_shader.Program, "texelSize"),
+                1.0f / static_cast<float>(viewport[2]), 1.0f / static_cast<float>(viewport[3]));
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+
+    // Composite pass: threshold + shade into render_.framebuffer (alpha blend over background)
+    glBindFramebuffer(GL_FRAMEBUFFER, render_.framebuffer);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    render_.ssm.composite_shader.Use();
+    glBindVertexArray(render_.quad_vao);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, render_.ssm.blurred_texture);
+    glUniform1i(glGetUniformLocation(render_.ssm.composite_shader.Program, "blurredDensity"), 0);
+    glUniform1f(glGetUniformLocation(render_.ssm.composite_shader.Program, "threshold"), window_.ssm_threshold);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+    glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
 }
 
 // ============================================================================
@@ -1066,6 +1228,22 @@ void ViewerApp::cleanup()
         glDeleteVertexArrays(1, &render_.circle_vao);
         render_.circle_vao = 0;
     }
+    if (render_.ssm.density_texture != 0) {
+        glDeleteTextures(1, &render_.ssm.density_texture);
+        render_.ssm.density_texture = 0;
+    }
+    if (render_.ssm.blurred_texture != 0) {
+        glDeleteTextures(1, &render_.ssm.blurred_texture);
+        render_.ssm.blurred_texture = 0;
+    }
+    if (render_.ssm.density_fbo != 0) {
+        glDeleteFramebuffers(1, &render_.ssm.density_fbo);
+        render_.ssm.density_fbo = 0;
+    }
+    if (render_.ssm.blurred_fbo != 0) {
+        glDeleteFramebuffers(1, &render_.ssm.blurred_fbo);
+        render_.ssm.blurred_fbo = 0;
+    }
 
     // Cache teardown: drain executors FIRST so no in-flight tasks reference
     // the caches or SettingsIO after they are deleted.
@@ -1156,6 +1334,57 @@ void ViewerApp::resizeFBO(int width, int height)
         std::cerr << "ERROR::FRAMEBUFFER:: Framebuffer incomplete after resize!" << std::endl;
     }
 
+    // Rebuild SSM FBOs at new size
+    if (render_.ssm.float_fbo_supported) {
+        // Delete old textures and FBO handles
+        if (render_.ssm.density_texture != 0) {
+            glDeleteTextures(1, &render_.ssm.density_texture);
+            render_.ssm.density_texture = 0;
+        }
+        if (render_.ssm.blurred_texture != 0) {
+            glDeleteTextures(1, &render_.ssm.blurred_texture);
+            render_.ssm.blurred_texture = 0;
+        }
+        if (render_.ssm.density_fbo != 0) {
+            glDeleteFramebuffers(1, &render_.ssm.density_fbo);
+            render_.ssm.density_fbo = 0;
+        }
+        if (render_.ssm.blurred_fbo != 0) {
+            glDeleteFramebuffers(1, &render_.ssm.blurred_fbo);
+            render_.ssm.blurred_fbo = 0;
+        }
+
+        glGenFramebuffers(1, &render_.ssm.density_fbo);
+        glBindFramebuffer(GL_FRAMEBUFFER, render_.ssm.density_fbo);
+        glGenTextures(1, &render_.ssm.density_texture);
+        glBindTexture(GL_TEXTURE_2D, render_.ssm.density_texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, render_.ssm.density_texture, 0);
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            std::cerr << "ERROR: SSM density FBO incomplete after resize\n";
+            render_.ssm.float_fbo_supported = false;
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            return;
+        }
+
+        glGenFramebuffers(1, &render_.ssm.blurred_fbo);
+        glBindFramebuffer(GL_FRAMEBUFFER, render_.ssm.blurred_fbo);
+        glGenTextures(1, &render_.ssm.blurred_texture);
+        glBindTexture(GL_TEXTURE_2D, render_.ssm.blurred_texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, render_.ssm.blurred_texture, 0);
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            std::cerr << "ERROR: SSM blur FBO incomplete after resize\n";
+            render_.ssm.float_fbo_supported = false;
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            return;
+        }
+    }
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -1196,7 +1425,8 @@ void ViewerApp::saveWindowSettings()
     // Save windowed size (not fullscreen size)
     bool fullscreen = (window_.fullscreen != 0);
     bool success = saveWindowConfig(config_path, window_.windowed_width, window_.windowed_height, fullscreen,
-                                    window_.ui_scale, &last_confirmed_folder_);
+                                    window_.ui_scale, &last_confirmed_folder_, window_.ssm_threshold,
+                                    window_.ssm_blob_radius, window_.ssm_blur_amount);
 
     if (!success) {
         std::cerr << "Warning: Failed to save window configuration" << std::endl;
@@ -1210,7 +1440,8 @@ void ViewerApp::loadWindowSettings()
     int height = 0;
     bool fullscreen = false;
 
-    if (loadWindowConfig(config_path, width, height, fullscreen, &window_.ui_scale, &last_confirmed_folder_)) {
+    if (loadWindowConfig(config_path, width, height, fullscreen, &window_.ui_scale, &last_confirmed_folder_,
+                         &window_.ssm_threshold, &window_.ssm_blob_radius, &window_.ssm_blur_amount)) {
         // Merge the OS-detected content scale with the persisted preference.
         // selectUiScale returns the persisted value if it is a real preference
         // (>= 1.0), or falls back to the OS-detected scale (min 1.5).

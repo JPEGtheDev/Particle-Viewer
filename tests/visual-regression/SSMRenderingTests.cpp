@@ -171,26 +171,17 @@ TEST_F(SSMRenderingTest, SSMRender_4x4x4Grid_MatchesBaseline)
         }
     }
 
-    // ---- Step 2: compile sphere shader (placeholder for Wave 4 SSM) -------
+    // ---- Step 2: compile SSM shaders ----------------------------------------
     //
     // The SSM splat shader is compiled here to verify it is well-formed.
-    // The full SSM render passes (splat → blur → composite) will be wired up
-    // by Wave 4 (implement-ssm-render-passes).  Until then the scene is
-    // rendered with the sphere shader so the test produces a stable pixel
-    // output to base a comparison on.
+    // The full SSM render passes (splat → blur → composite) are now wired up
+    // to match the production ViewerApp pipeline.
     std::string splatVertPath = getShaderPath("metaball_splat.vert");
     std::string splatFragPath = getShaderPath("metaball_splat.frag");
     Shader splatShader(splatVertPath.c_str(), splatFragPath.c_str());
     ASSERT_NE(splatShader.Program, 0u) << "Failed to compile SSM splat shader.\n"
                                        << "  Vert: " << splatVertPath << "\n"
                                        << "  Frag: " << splatFragPath;
-
-    std::string sphereVertPath = getShaderPath("sphereVertex.vs");
-    std::string sphereFragPath = getShaderPath("sphereFragment.frag");
-    Shader sphereShader(sphereVertPath.c_str(), sphereFragPath.c_str());
-    ASSERT_NE(sphereShader.Program, 0u) << "Failed to compile sphere shader (placeholder renderer).\n"
-                                        << "  Vert: " << sphereVertPath << "\n"
-                                        << "  Frag: " << sphereFragPath;
 
     // ---- Step 3: build 64-particle 4×4×4 grid -----------------------------
     //
@@ -223,38 +214,138 @@ TEST_F(SSMRenderingTest, SSMRender_4x4x4Grid_MatchesBaseline)
                                                 static_cast<float>(VRTestConfig::RENDER_HEIGHT),
                                             0.1f, 3000.0f);
 
-    // ---- Step 5: render (placeholder — sphere shader) ----------------------
-    //
-    // Wave 4 will replace this block with the real SSM splat → blur →
-    // composite pipeline.  The sphere render is intentionally used here so
-    // the test produces a reproducible pixel output; when Wave 4 switches to
-    // SSM the pixel output will change and the comparison will fail, keeping
-    // the test RED until a new SSM baseline is approved.
-    framebuffer_->bind();
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // ---- Step 5: render — real SSM pipeline --------------------------------
+    // NOTE: mirrors drawSSMScene() — keep in sync if the pipeline order or uniforms change.
+    std::string blurVertPath = getShaderPath("metaball_blur.vert");
+    std::string blurFragPath = getShaderPath("metaball_blur.frag");
+    Shader blurShader(blurVertPath.c_str(), blurFragPath.c_str());
+    ASSERT_NE(blurShader.Program, 0u) << "Failed to compile SSM blur shader.\n"
+                                      << "  Vert: " << blurVertPath << "\n"
+                                      << "  Frag: " << blurFragPath;
 
-    sphereShader.Use();
-    glUniformMatrix4fv(glGetUniformLocation(sphereShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
-    glUniformMatrix4fv(glGetUniformLocation(sphereShader.Program, "projection"), 1, GL_FALSE,
-                       glm::value_ptr(projection));
-    glUniform1f(glGetUniformLocation(sphereShader.Program, "radius"), 100.0f);
-    glUniform1f(glGetUniformLocation(sphereShader.Program, "scale"), 5.0f);
-    glUniform1f(glGetUniformLocation(sphereShader.Program, "transScale"), 0.25f);
-    glUniform1f(glGetUniformLocation(sphereShader.Program, "viewportHeight"), static_cast<float>(framebuffer_height_));
-    glUniform3fv(glGetUniformLocation(sphereShader.Program, "lightDirection"), 1,
-                 glm::value_ptr(glm::vec3(0.1f, 0.1f, 0.85f)));
+    std::string screenVertPath = getShaderPath("screenshader.vs");
+    std::string compositeFragPath = getShaderPath("metaball_composite.frag");
+    Shader compositeShader(screenVertPath.c_str(), compositeFragPath.c_str());
+    ASSERT_NE(compositeShader.Program, 0u) << "Failed to compile SSM composite shader.\n"
+                                           << "  Vert: " << screenVertPath << "\n"
+                                           << "  Frag: " << compositeFragPath;
+
+    // Create density FBO (GL_RGBA32F)
+    GLuint density_fbo = 0;
+    GLuint density_tex = 0;
+    glGenFramebuffers(1, &density_fbo);
+    glGenTextures(1, &density_tex);
+    glBindFramebuffer(GL_FRAMEBUFFER, density_fbo);
+    glBindTexture(GL_TEXTURE_2D, density_tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, framebuffer_width_, framebuffer_height_, 0, GL_RGBA, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, density_tex, 0);
+    ASSERT_EQ(glCheckFramebufferStatus(GL_FRAMEBUFFER), static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE))
+        << "Density FBO incomplete";
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // Create blur FBO (GL_RGBA32F)
+    GLuint blur_fbo = 0;
+    GLuint blur_tex = 0;
+    glGenFramebuffers(1, &blur_fbo);
+    glGenTextures(1, &blur_tex);
+    glBindFramebuffer(GL_FRAMEBUFFER, blur_fbo);
+    glBindTexture(GL_TEXTURE_2D, blur_tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, framebuffer_width_, framebuffer_height_, 0, GL_RGBA, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, blur_tex, 0);
+    ASSERT_EQ(glCheckFramebufferStatus(GL_FRAMEBUFFER), static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE))
+        << "Blur FBO incomplete";
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // Full-screen quad VAO/VBO (matches screenshader.vs layout)
+    static constexpr float QUAD_VERTS[] = {
+        -1.0f, 1.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f, 0.0f,
+        -1.0f, 1.0f, 0.0f, 1.0f, 1.0f,  -1.0f, 1.0f, 0.0f, 1.0f, 1.0f,  1.0f, 1.0f,
+    };
+    GLuint quad_vao = 0;
+    GLuint quad_vbo = 0;
+    glGenVertexArrays(1, &quad_vao);
+    glGenBuffers(1, &quad_vbo);
+    glBindVertexArray(quad_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, quad_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(QUAD_VERTS), QUAD_VERTS, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (GLvoid*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (GLvoid*)(2 * sizeof(float)));
+    glBindVertexArray(0);
+
+    // VAO for particle point sprites (circle_vao equivalent)
+    GLuint circle_vao = 0;
+    glGenVertexArrays(1, &circle_vao);
 
     particles.pushVBO();
 
-    GLuint vao = 0;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
+    // Splat pass
+    glBindFramebuffer(GL_FRAMEBUFFER, density_fbo);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE);
+    splatShader.Use();
+    glBindVertexArray(circle_vao);
     glEnableVertexAttribArray(0);
-    particles.setUpInstanceArray();
+    glBindBuffer(GL_ARRAY_BUFFER, particles.instanceVBO);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
+    glUniformMatrix4fv(glGetUniformLocation(splatShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(splatShader.Program, "projection"), 1, GL_FALSE,
+                       glm::value_ptr(projection));
+    glUniform1f(glGetUniformLocation(splatShader.Program, "blobRadius"), 100.0f);
+    glUniform1f(glGetUniformLocation(splatShader.Program, "scale"), 5.0f);
+    glUniform1f(glGetUniformLocation(splatShader.Program, "transScale"), 0.25f);
+    glUniform1f(glGetUniformLocation(splatShader.Program, "viewportHeight"), static_cast<float>(framebuffer_height_));
     glDrawArraysInstanced(GL_POINTS, 0, 1, particles.n);
     glBindVertexArray(0);
-    glDeleteVertexArrays(1, &vao);
+    glDisable(GL_BLEND);
+
+    // Blur pass
+    glBindFramebuffer(GL_FRAMEBUFFER, blur_fbo);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    blurShader.Use();
+    glBindVertexArray(quad_vao);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, density_tex);
+    glUniform1i(glGetUniformLocation(blurShader.Program, "densityTexture"), 0);
+    glUniform1f(glGetUniformLocation(blurShader.Program, "blurAmount"), 3.0f);
+    glUniform2f(glGetUniformLocation(blurShader.Program, "texelSize"), 1.0f / static_cast<float>(framebuffer_width_),
+                1.0f / static_cast<float>(framebuffer_height_));
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+
+    // Composite pass into framebuffer_
+    framebuffer_->bind();
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    compositeShader.Use();
+    glBindVertexArray(quad_vao);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, blur_tex);
+    glUniform1i(glGetUniformLocation(compositeShader.Program, "blurredDensity"), 0);
+    glUniform1f(glGetUniformLocation(compositeShader.Program, "threshold"), 0.5f);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+    glDisable(GL_BLEND);
+
+    // Cleanup intermediate GL resources
+    glDeleteVertexArrays(1, &circle_vao);
+    glDeleteVertexArrays(1, &quad_vao);
+    glDeleteBuffers(1, &quad_vbo);
+    glDeleteTextures(1, &density_tex);
+    glDeleteFramebuffers(1, &density_fbo);
+    glDeleteTextures(1, &blur_tex);
+    glDeleteFramebuffers(1, &blur_fbo);
 
     Image currentImage = framebuffer_->capture();
 

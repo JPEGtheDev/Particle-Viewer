@@ -360,6 +360,8 @@ class ViewerApp
     // ============================================
     void setupGLStuff();
     void setupScreenFBO();
+    void initSSMResources();
+    void drawSSMScene();
     GLuint generateAttachmentTexture(GLboolean depth, GLboolean stencil);
     void beforeDraw();
     void drawScene();
