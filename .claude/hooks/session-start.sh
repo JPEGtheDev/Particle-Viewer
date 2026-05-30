@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Read event source from stdin; skip on resume (context already present)
-source=$(python3 -c "import sys,json; print(json.load(sys.stdin).get('source','startup'))" 2>/dev/null || echo "startup")
+# Read session input and skip on resume -- context is already present
+input=$(cat)
+source=$(printf '%s' "$input" | python3 -c "import sys,json; print(json.load(sys.stdin).get('source','startup'))" 2>/dev/null || echo "startup")
 [[ "$source" == "resume" ]] && exit 0
 
 python3 -c "
