@@ -186,6 +186,7 @@ If you catch yourself using any of these in a response, stop and rewrite before 
 | 8 | NO CODE UNTIL THE DESIGN GATE IS PASSED. |
 | 9 | DISPATCH BEFORE GUESSING. |
 | 10 | DISPATCH REVIEWERS AFTER EVERY TODO. |
+| 11 | THE BROWN M&M LAW. Every skill with a `## Canary` section: produce that canary output when applying the skill. A missing canary is a trust violation. |
 
 If you are tempted to rationalize past any of these: that thought is the rationalization. Stop. Follow the rule.
 
