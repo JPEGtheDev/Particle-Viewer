@@ -27,14 +27,14 @@ If you have no memory of bootstrapping this session, load `session-bootstrap` no
 
 ---
 
-## Honesty Skill — Active on Every Turn
+## Honesty Skill -- Active on Every Turn
 
 """
 
 FOOTER = """
 ---
 
-## Iron Laws — Active on Every Response
+## Iron Laws -- Active on Every Response
 
 | # | Law |
 |---|-----|
@@ -54,7 +54,7 @@ If you are tempted to rationalize past any of these: that thought is the rationa
 
 ---
 
-## Skill Reload Triggers — STOP and Reload When:
+## Skill Reload Triggers -- STOP and Reload When:
 
 1. Picking up a new todo -- reload the skill(s) for that todo's domain
 2. After 3 user prompts without a skill reload -- reload the skill for whatever you are doing
