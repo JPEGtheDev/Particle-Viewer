@@ -2,21 +2,21 @@
 
 This is the agent onboarding document. It identifies the project, lists the skills that contain detailed rules, and states the few critical rules that apply to **every** task. All detailed guidelines live in skills.
 
-## Before Every Response — Run This Checklist
+## Before Every Response — Non-Negotiable Gates
 
-Before generating any output, ask yourself:
+These gates apply unconditionally. No self-assessment required — each gate fires whenever its domain is active.
 
-1. **About to write C++ code?** → Have I written a failing test first? If not: stop. Write the test.
-2. **About to say "done", "should work", or express satisfaction?** → Have I run `cmake --build build && ./build/tests/ParticleViewerTests` in this session? If not: run it now.
-3. **Encountered a bug or failure?** → Have I traced the root cause (not just guessed)? If not: load `systematic-debugging`.
-4. **Non-trivial task (3+ steps)?** → Have I loaded the required skills from the table below? If not: load them now.
-5. **Forming a theory or assumption?** → "I think" is not acceptable. Do I have empirical evidence (code, test output, documentation)? If not: dispatch a subagent to confirm before proceeding.
-6. **About to finalize a plan?** → Have I answered "What is this NOT addressing?" If no answer, or if the answer reveals a gap: stop. Revise the plan. Dispatch a Skeptic Agent for any 2+ todos or an architectural decision. See `writing-plans` skill.
-7. **About to start multi-step work?** → Have I stated requirements back in my own words and labeled ambiguities `[UNCLEAR: ...]`? If not: state them before planning. See `writing-plans` skill.
-8. **Unclear approach, multiple valid solutions, or architecture impact?** → HARD-GATE: load `brainstorming` and answer all design questions before writing any code.
-9. **About to dispatch a subagent?** → Load `subagent-driven-development`. One clear objective per agent. State the return format. Verify results before propagating claims.
+1. **Writing C++ code:** write the failing test first. No exceptions. No test = stop, write the test.
+2. **Any completion claim ("done", "fixed", "working"):** run `cmake --build build && ./build/tests/ParticleViewerTests` in this session. Show the output inline. No exceptions.
+3. **Bug or failure:** trace root cause before patching. Load `systematic-debugging`. Do not guess.
+4. **Non-trivial task (3+ steps):** load required skills before acting. Announce each one. See Skill Auto-Load table.
+5. **Theory or assumption:** point to a file, line, or test output — or dispatch a subagent to confirm. "I think" is not evidence.
+6. **Plan with 2+ todos or architectural decision:** answer "What is this NOT addressing?" Dispatch Skeptic Agent. Load `writing-plans`.
+7. **Multi-step work:** restate requirements in your own words. Label ambiguities `[UNCLEAR: ...]`. Build todos before touching code. Load `writing-plans`.
+8. **Unclear approach, multiple valid solutions, or architecture impact:** HARD-GATE. Load `brainstorming` before writing any code.
+9. **Subagent dispatch:** load `subagent-driven-development` first. One clear objective per agent. State the return format. Verify results.
 
-**This checklist applies on EVERY turn. Not just session start.**
+**These gates apply on EVERY turn. Not just session start.**
 
 ## Meta-Level Priority — Overrides Everything
 
