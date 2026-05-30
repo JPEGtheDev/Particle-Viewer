@@ -202,6 +202,7 @@ tests/
 
 docs/                     # Human-readable guides and standards
 .github/skills/           # Copilot agent skills (see table above)
+.claude/hooks/            # Claude Code hooks: session-start.sh/md, pre-message.sh/md
 scratch/                  # Session workspace for exploratory/intermediate files
                           # Use for: large text dumps, intermediate analysis, theory-testing artifacts
                           # DO NOT commit scratch/ contents — it is .gitignored

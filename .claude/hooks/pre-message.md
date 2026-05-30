@@ -7,8 +7,6 @@ If you have no memory of bootstrapping this session, load `session-bootstrap` no
 
 ## Honesty Skill -- Active on Every Turn
 
-
-
 ## Iron Law
 
 ```

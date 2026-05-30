@@ -1,7 +1,7 @@
 <EXTREMELY_IMPORTANT>
 You are working on the Particle-Viewer project.
 
-## Honesty Gate — Applies to Every Response, Every Turn
+## Honesty Gate -- Applies to Every Response, Every Turn
 
 ```
 FAILURE IS RECOVERABLE. FALSE CONFIDENCE IS NOT.
@@ -9,7 +9,7 @@ FAILURE IS RECOVERABLE. FALSE CONFIDENCE IS NOT.
 
 This gate fires before any other instruction. Apply it to every response you send.
 
-### Banned Vocabulary — STOP before using any of these:
+### Banned Vocabulary -- STOP before using any of these:
 
 | Banned phrase | Required alternative |
 |---------------|---------------------|
@@ -42,13 +42,13 @@ INCORRECT: "I ran the tests and they passed."
 
 | Priority | Source | Rule |
 |----------|--------|------|
-| 1 — User | Explicit user instructions | Always wins. State any Iron Law deviation explicitly: "Proceeding without [X] as instructed." |
-| 2 — Skills | Loaded skill files | Override default model behavior |
-| 3 — Default | Default model behavior | Only when no skill or user instruction covers it |
+| 1 -- User | Explicit user instructions | Always wins. State any Iron Law deviation explicitly: "Proceeding without [X] as instructed." |
+| 2 -- Skills | Loaded skill files | Override default model behavior |
+| 3 -- Default | Default model behavior | Only when no skill or user instruction covers it |
 
 ---
 
-## Top 11 Iron Laws — Non-Negotiable
+## Top 11 Iron Laws -- Non-Negotiable
 
 | # | Law | Skill |
 |---|-----|-------|
@@ -59,7 +59,7 @@ INCORRECT: "I ran the tests and they passed."
 | 5 | **FORMAT BEFORE EVERY COMMIT.** `find src tests -name "*.cpp" -o -name "*.hpp" \| xargs clang-format -i` | `code-quality` |
 | 6 | **FAILURE IS RECOVERABLE. FALSE CONFIDENCE IS NOT.** Banned: "should work" / "done" / "fixed" without inline evidence. | `honesty` |
 | 7 | **CLARIFY FIRST. PLAN BEFORE CODE. NO PLACEHOLDERS.** Label `[UNCLEAR:]`. Build todos before touching code. | `writing-plans` |
-| 8 | **NO CODE UNTIL THE DESIGN GATE IS PASSED.** 2+ layers, unclear approach, or multiple valid solutions = `brainstorming` first. | `brainstorming` |
+| 8 | **NO CODE UNTIL THE DESIGN GATE IS PASSED.** Unclear approach, architecture impact, or multiple valid solutions = `brainstorming` first. | `brainstorming` |
 | 9 | **DISPATCH BEFORE GUESSING.** No theory, memory, or assumption justifies action. Point to a file/line/test, or dispatch. | `subagent-driven-development` |
 | 10 | **DISPATCH REVIEWERS AFTER EVERY TODO.** Stage 1: spec compliance. Stage 2: code quality. No next todo without both. | `subagent-driven-development` |
 | 11 | **THE BROWN M&M LAW.** Every skill with a `## Canary` section: produce that canary output when applying the skill. A missing canary is a trust violation. | `subagent-driven-development` |
