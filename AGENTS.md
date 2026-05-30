@@ -2,6 +2,30 @@
 
 This is the agent onboarding document. It identifies the project, lists the skills that contain detailed rules, and states the few critical rules that apply to **every** task. All detailed guidelines live in skills.
 
+## Iron Laws — Always Active
+
+These apply in every session, every task, every model. No exceptions unless the user explicitly overrides (Meta-Level Priority below).
+
+| # | Law |
+|---|-----|
+| 1 | **NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST.** Write test → watch it fail → write code. See `testing` skill. |
+| 2 | **NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION.** Run `cmake --build build && ./build/tests/ParticleViewerTests` in THIS session. Evidence must be inline. See `verification-before-completion` skill. |
+| 3 | **NO FIXES WITHOUT ROOT CAUSE INVESTIGATION.** Follow the 4-phase protocol. See `systematic-debugging` skill. |
+| 4 | **EVERY COMMIT USES CONVENTIONAL FORMAT.** `<type>[scope]: <description>` — wrong format breaks release automation. See `versioning` skill. |
+| 5 | **FORMAT BEFORE EVERY COMMIT.** `find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i`. CI rejects violations. |
+| 6 | **FAILURE IS RECOVERABLE. FALSE CONFIDENCE IS NOT.** "Should work" is banned. No completion claim without inline evidence. See `honesty` skill. |
+| 7 | **CLARIFY FIRST. PLAN BEFORE CODE. NO PLACEHOLDERS.** Restate requirements, label `[UNCLEAR:]`, build todos before touching code. See `writing-plans` skill. |
+| 8 | **NO CODE UNTIL THE DESIGN GATE IS PASSED.** Unclear approach, architecture impact, or multiple valid solutions = load `brainstorming` first. |
+| 9 | **DISPATCH BEFORE GUESSING.** No theory, assumption, or memory is a basis for action. If you cannot point to a file, line, or test output — dispatch a subagent. See `subagent-driven-development` skill. |
+| 10 | **DISPATCH REVIEWERS AFTER EVERY TODO.** Stage 1: spec compliance. Stage 2: code quality. Never advance to the next todo with an unreviewed todo behind you. See `subagent-driven-development` skill. |
+| 11 | **THE BROWN M&M LAW.** Named after Van Halen's 1982 World Tour rider (Article 126: M&Ms backstage, no brown ones — buried in technical requirements as a canary. Brown M&Ms meant the contract wasn't read; safety requirements were also at risk). Every skill that defines a `## Canary` section requires the agent to produce that canary output when applying the skill. A missing canary is a trust violation. See `subagent-driven-development` skill. |
+
+**If you are tempted to rationalize past any of these: that thought is the rationalization. Stop. Follow the rule.**
+
+**Violating the letter of any Iron Law is violating the spirit of it.**
+
+**`honesty` is always active and applies on every turn. Full mechanics in `.github/skills/honesty/SKILL.md`.**
+
 ## Before Every Response — Non-Negotiable Gates
 
 These gates apply unconditionally. No self-assessment required — each gate fires whenever its domain is active.
@@ -31,30 +55,6 @@ When instructions conflict, this order governs **at the meta level**:
 **If the user overrides an Iron Law:** follow the user. State the override explicitly: "Proceeding without [X] as instructed — noting this deviates from Iron Law N."
 
 ---
-
-## Iron Laws — Always Active
-
-These apply in every session, every task, every model. No exceptions unless the user explicitly overrides (Meta-Level Priority 1 above).
-
-| # | Law |
-|---|-----|
-| 1 | **NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST.** Write test → watch it fail → write code. See `testing` skill. |
-| 2 | **NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION.** Run `cmake --build build && ./build/tests/ParticleViewerTests` in THIS session. Evidence must be inline. See `verification-before-completion` skill. |
-| 3 | **NO FIXES WITHOUT ROOT CAUSE INVESTIGATION.** Follow the 4-phase protocol. See `systematic-debugging` skill. |
-| 4 | **EVERY COMMIT USES CONVENTIONAL FORMAT.** `<type>[scope]: <description>` — wrong format breaks release automation. See `versioning` skill. |
-| 5 | **FORMAT BEFORE EVERY COMMIT.** `find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i`. CI rejects violations. |
-| 6 | **FAILURE IS RECOVERABLE. FALSE CONFIDENCE IS NOT.** "Should work" is banned. No completion claim without inline evidence. See `honesty` skill. |
-| 7 | **CLARIFY FIRST. PLAN BEFORE CODE. NO PLACEHOLDERS.** Restate requirements, label `[UNCLEAR:]`, build todos before touching code. See `writing-plans` skill. |
-| 8 | **NO CODE UNTIL THE DESIGN GATE IS PASSED.** Unclear approach, architecture impact, or multiple valid solutions = load `brainstorming` first. |
-| 9 | **DISPATCH BEFORE GUESSING.** No theory, assumption, or memory is a basis for action. If you cannot point to a file, line, or test output — dispatch a subagent. See `subagent-driven-development` skill. |
-| 10 | **DISPATCH REVIEWERS AFTER EVERY TODO.** Stage 1: spec compliance. Stage 2: code quality. Never advance to the next todo with an unreviewed todo behind you. See `subagent-driven-development` skill. |
-| 11 | **THE BROWN M&M LAW.** Named after Van Halen's 1982 World Tour rider (Article 126: M&Ms backstage, no brown ones — buried in technical requirements as a canary. Brown M&Ms meant the contract wasn't read; safety requirements were also at risk). Every skill that defines a `## Canary` section requires the agent to produce that canary output when applying the skill. A missing canary is a trust violation. See `subagent-driven-development` skill. |
-
-**If you are tempted to rationalize past any of these: that thought is the rationalization. Stop. Follow the rule.**
-
-**Violating the letter of any Iron Law is violating the spirit of it.**
-
-**`honesty` is always active and applies on every turn. Full mechanics in `.github/skills/honesty/SKILL.md`.**
 
 Particle-Viewer is a C++ OpenGL-based viewer for N-Body simulations — viewing 3D particle data, taking screenshots, and rendering videos.
 
@@ -163,7 +163,7 @@ Reusable agent prompts live in `.github/agents/`. Use these when dispatching sub
 
 ### Instruction Priority Hierarchy
 
-This is the **internal** rule precedence (within the skills system). For meta-level priority (user vs. skills vs. default), see the section at the top of this file.
+This is the **internal** rule precedence (within the skills system). For meta-level priority (user vs. skills vs. default), see the Meta-Level Priority section above.
 
 | Priority | Source | Scope |
 |----------|--------|-------|
