@@ -8,7 +8,6 @@
 set -euo pipefail
 
 REPO=$(git rev-parse --show-toplevel)
-PERMITTED='s/\x{2713}//g; s/\x{2717}//g; s/\x{2705}//g; s/\x{274C}//g; s/\x{1F4E5}//g; s/\x{00B7}//g'
 
 collect_files() {
     find "$REPO/.github/skills" "$REPO/docs" -name "*.md" -type f 2>/dev/null
@@ -17,17 +16,26 @@ collect_files() {
     done
 }
 
-VIOLATIONS=$(collect_files | sort -u | \
-    xargs grep -Pln '[^\x00-\x7F]' 2>/dev/null | \
-    while IFS= read -r file; do
-        result=$(grep -Pn '[^\x00-\x7F]' "$file" \
-            | perl -pe "$PERMITTED" \
-            | grep -P '[^\x00-\x7F]' || true)
-        if [ -n "$result" ]; then
-            printf '  %s:\n' "$file"
-            printf '%s\n' "$result" | head -3 | sed 's/^/    /'
-        fi
-    done)
+check_file() {
+    python3 -c "
+import sys, re
+PERMITTED = re.compile('[✓✗✅❌\U0001f4e5·]')
+NON_ASCII = re.compile('[^\x00-\x7f]')
+with open(sys.argv[1], encoding='utf-8') as f:
+    for n, line in enumerate(f, 1):
+        clean = PERMITTED.sub('', line)
+        if NON_ASCII.search(clean):
+            print(str(n) + ':' + line.rstrip()[:120])
+" "$1" 2>/dev/null
+}
+
+VIOLATIONS=$(collect_files | sort -u | while IFS= read -r file; do
+    result=$(check_file "$file")
+    if [ -n "$result" ]; then
+        printf '  %s:\n' "$file"
+        printf '%s\n' "$result" | head -3 | sed 's/^/    /'
+    fi
+done)
 
 if [ -n "$VIOLATIONS" ]; then
     printf 'ERROR: ASCII policy violation -- non-ASCII characters found:\n%s\n\n' "$VIOLATIONS"
