@@ -14,7 +14,7 @@ related:
 ## Header Files
 
 - Use include guards: `<PROJECT>_<PATH>_<FILE>_H`
-- Order: includes → forward declarations → class/function declarations
+- Order: includes -> forward declarations -> class/function declarations
 
 ```cpp
 #ifndef PARTICLE_VIEWER_PARTICLE_SYSTEM_H
@@ -31,13 +31,13 @@ class ParticleSystem { };
 ## Source Files
 
 - Include the corresponding header first
-- Keep functions ≤50 statements
+- Keep functions <=50 statements
 - Limit parameters to <5
 
 ## Class Member Order
 
-1. Public → Protected → Private
-2. Within each section: type definitions → constructors/destructors → methods → data members
+1. Public -> Protected -> Private
+2. Within each section: type definitions -> constructors/destructors -> methods -> data members
 
 ```cpp
 class ParticleSystem
@@ -96,6 +96,6 @@ force = calculateGravitationalForce(particle, theta);
 
 ## Related
 
-- [Coding Standards](CODING_STANDARDS.md) — parent document and full ToC
-- [coding-standards-naming.md](coding-standards-naming.md) — naming conventions
-- [coding-standards-modern-cpp.md](coding-standards-modern-cpp.md) — modern C++ idioms
+- [Coding Standards](CODING_STANDARDS.md) -- parent document and full ToC
+- [coding-standards-naming.md](coding-standards-naming.md) -- naming conventions
+- [coding-standards-modern-cpp.md](coding-standards-modern-cpp.md) -- modern C++ idioms

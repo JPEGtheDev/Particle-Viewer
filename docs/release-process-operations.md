@@ -27,17 +27,17 @@ related:
 
 The release workflow is defined in `.github/workflows/release.yml`:
 
-- **Concurrency control** — prevents simultaneous releases
-- **Permissions** — `contents: write` for creating releases
-- **Skip CI** — version bump commits include `[skip ci]` to prevent recursive workflows
-- **Full history** — fetches complete git history for changelog generation
+- **Concurrency control** -- prevents simultaneous releases
+- **Permissions** -- `contents: write` for creating releases
+- **Skip CI** -- version bump commits include `[skip ci]` to prevent recursive workflows
+- **Full history** -- fetches complete git history for changelog generation
 
 ## Troubleshooting
 
 ### Release did not trigger automatically
 
 - Verify commits are pushed to `main`
-- Check if only non-source files changed (tests, docs, CI) — release is skipped by design
+- Check if only non-source files changed (tests, docs, CI) -- release is skipped by design
 - Review GitHub Actions logs for skip or error messages
 
 ### Wrong version bump detected
@@ -57,9 +57,9 @@ The release workflow is defined in `.github/workflows/release.yml`:
 
 ## Best Practices
 
-1. Write meaningful commit messages — they become release notes
+1. Write meaningful commit messages -- they become release notes
 2. Use conventional commits consistently
-3. Test before merging to main — releases trigger automatically
+3. Test before merging to main -- releases trigger automatically
 4. Use scopes for better organization: `feat(renderer): add feature`
 
 ## Release History
@@ -70,6 +70,6 @@ All releases are tracked in:
 
 ## Related
 
-- [Release Process](RELEASE_PROCESS.md) — parent ToC stub
-- [release-process-automation.md](release-process-automation.md) — trigger logic and release steps
-- [Conventional Commits](CONVENTIONAL_COMMITS.md) — commit format reference
+- [Release Process](RELEASE_PROCESS.md) -- parent ToC stub
+- [release-process-automation.md](release-process-automation.md) -- trigger logic and release steps
+- [Conventional Commits](CONVENTIONAL_COMMITS.md) -- commit format reference

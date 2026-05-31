@@ -1,5 +1,5 @@
 ---
-title: Enhanced Debug Output — Use Cases
+title: Enhanced Debug Output -- Use Cases
 description: Step-by-step workflows for using the --debug-camera overlay to set up visual regression tests, analyze camera state, and plan composition.
 domain: testing
 subdomain: visual-regression
@@ -18,8 +18,8 @@ When setting up a test with simulation data (COM active):
 
 1. Launch with `--debug-camera` and load the simulation.
 2. Navigate to the desired viewing angle.
-3. Note **Dir to COM** — this preserves your viewing direction toward the subject.
-4. Check **Est. Coverage** — is the subject too large or too small?
+3. Note **Dir to COM** -- this preserves your viewing direction toward the subject.
+4. Check **Est. Coverage** -- is the subject too large or too small?
 5. Use the recommended distances to reach the desired framing.
 
 Example:
@@ -39,7 +39,7 @@ When working with the default particle cube (no simulation, COM = (0,0,0)):
 1. Launch with `--debug-camera`.
 2. Navigate to the desired angle.
 3. Note the **Front** vector to preserve viewing direction.
-4. Check **Est. Coverage (est.)** — rough estimate using 50-unit reference.
+4. Check **Est. Coverage (est.)** -- rough estimate using 50-unit reference.
 5. Use recommended distances as a starting point; iterate on visual results.
 
 ## 3. Understanding Camera State
@@ -61,13 +61,13 @@ Coverage targets for regression baselines:
 | Coverage | Description |
 |----------|-------------|
 | ~50% | Subject fills half the viewport (comfortable framing) |
-| ~40% | Balanced blank space — typical for baselines |
+| ~40% | Balanced blank space -- typical for baselines |
 
 See [Calculations & Examples](enhanced-debug-output-calculations.md) for the formulas.
 
 ## Key Do's and Don'ts
 
-| ✅ DO | ❌ DON'T |
+| [+] DO | [-] DON'T |
 |-------|---------|
 | Extract viewing direction (Front vector) | Blindly copy Pos/Target coordinates |
 | Calculate distance from coverage goals | Assume current distance is optimal |
@@ -75,6 +75,6 @@ See [Calculations & Examples](enhanced-debug-output-calculations.md) for the for
 
 ## Related
 
-- [Enhanced Debug Output (overview)](enhanced-debug-output.md) — navigation and quick reference
-- [Calculations & Examples](enhanced-debug-output-calculations.md) — formulas and worked examples
-- [Camera Positioning Lessons Learned](camera-positioning-lessons-learned.md) — pitfalls and analysis
+- [Enhanced Debug Output (overview)](enhanced-debug-output.md) -- navigation and quick reference
+- [Calculations & Examples](enhanced-debug-output-calculations.md) -- formulas and worked examples
+- [Camera Positioning Lessons Learned](camera-positioning-lessons-learned.md) -- pitfalls and analysis

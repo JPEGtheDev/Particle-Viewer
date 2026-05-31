@@ -40,12 +40,12 @@ xvfb-run -a ./build/tests/ParticleViewerTests \
 
 The visual regression job is defined in `.github/workflows/unit-tests.yml` and runs **after unit tests pass**:
 
-1. **Unit tests pass** — The `test` job must succeed first
-2. **Install dependencies** — CMake, GLFW, GLM, Mesa, Xvfb
-3. **Build** — Compiles test executable
-4. **Run tests** — Under Xvfb for headless OpenGL (`VisualRegressionTest.*` only)
-5. **Upload artifacts** — Images and test results retained for 30 days
-6. **Post PR comment** — Summary table with pass/fail counts and artifact download link
+1. **Unit tests pass** -- The `test` job must succeed first
+2. **Install dependencies** -- CMake, GLFW, GLM, Mesa, Xvfb
+3. **Build** -- Compiles test executable
+4. **Run tests** -- Under Xvfb for headless OpenGL (`VisualRegressionTest.*` only)
+5. **Upload artifacts** -- Images and test results retained for 30 days
+6. **Post PR comment** -- Summary table with pass/fail counts and artifact download link
 
 ### Artifacts
 
@@ -82,7 +82,7 @@ Visual regression detected for 'test_name':
 
 1. Check the PR comment for the test summary and artifact link
 2. Download `visual-regression-images` from the workflow run
-3. Inspect `*_diff.png` — differing pixels are highlighted in red
+3. Inspect `*_diff.png` -- differing pixels are highlighted in red
 4. Compare `*_baseline.png` with `*_current.png` side-by-side
 5. Check `visual-test-output.txt` for detailed similarity percentages
 
@@ -90,6 +90,6 @@ If the difference is intentional (e.g., a rendering improvement), follow the [ba
 
 ## Related
 
-- [Visual Regression Overview](visual-regression.md) — Architecture and data types
-- [Writing Tests](visual-regression-authoring.md) — Fixture, macros, helpers, and best practices
-- [Testing Standards](../TESTING_STANDARDS.md) — Project-wide test guidelines
+- [Visual Regression Overview](visual-regression.md) -- Architecture and data types
+- [Writing Tests](visual-regression-authoring.md) -- Fixture, macros, helpers, and best practices
+- [Testing Standards](../TESTING_STANDARDS.md) -- Project-wide test guidelines

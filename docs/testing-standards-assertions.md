@@ -27,7 +27,7 @@ TEST(CameraTest, MoveForward_IncreasesPositionAlongFrontVector)
 }
 ```
 
-**Multiple assertions — same concept (acceptable):**
+**Multiple assertions -- same concept (acceptable):**
 ```cpp
 TEST(CameraTest, Update_CalculatesFrontVector)
 {
@@ -46,9 +46,9 @@ If you cannot describe the test in one sentence without "and", split it.
 
 **Pattern:** `UnitName_StateUnderTest_ExpectedResult`
 
-- **UnitName** — the method or behavior under test
-- **StateUnderTest** — the condition or input scenario (omit for default behavior)
-- **ExpectedResult** — what MUST happen
+- **UnitName** -- the method or behavior under test
+- **StateUnderTest** -- the condition or input scenario (omit for default behavior)
+- **ExpectedResult** -- what MUST happen
 
 ```cpp
 // Specific condition
@@ -68,26 +68,26 @@ TEST(CameraTest, SetupCam_ReturnsValidViewMatrix)
 ## Anti-Patterns
 
 ```cpp
-// WRONG — too vague
+// WRONG -- too vague
 TEST(CameraTest, SpeedWorks)
 TEST(ShaderTest, TestShader)
 
-// WRONG — two independent behaviors in one test
+// WRONG -- two independent behaviors in one test
 TEST(CameraTest, MoveAndLook)
 {
     camera.moveForward();
     EXPECT_NE(camera.cameraPos, glm::vec3(0.0f));
     camera.lookUp(10.0f);
-    EXPECT_GT(camera.pitch, 0.0f); // different behavior — split this
+    EXPECT_GT(camera.pitch, 0.0f); // different behavior -- split this
 }
 
-// CORRECT — split into independent tests
+// CORRECT -- split into independent tests
 TEST(CameraTest, MoveForward_ChangesPosition) { }
 TEST(CameraTest, LookUp_IncreasesPitch) { }
 ```
 
 ## Related
 
-- [Testing Standards](TESTING_STANDARDS.md) — parent ToC stub
-- [testing-standards-aaa.md](testing-standards-aaa.md) — Arrange-Act-Assert structure
-- [testing-standards-organization.md](testing-standards-organization.md) — test file layout
+- [Testing Standards](TESTING_STANDARDS.md) -- parent ToC stub
+- [testing-standards-aaa.md](testing-standards-aaa.md) -- Arrange-Act-Assert structure
+- [testing-standards-organization.md](testing-standards-organization.md) -- test file layout

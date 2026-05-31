@@ -46,6 +46,6 @@ This project follows the [Microsoft C++ Core Guidelines](https://isocpp.github.i
 
 ## Related
 
-- [Testing Standards](TESTING_STANDARDS.md) — testing expectations and patterns
-- [coding-standards-formatting.md](coding-standards-formatting.md) — indentation, braces, spacing, include order
-- [coding-standards-naming.md](coding-standards-naming.md) — PascalCase, camelCase, snake_case conventions
+- [Testing Standards](TESTING_STANDARDS.md) -- testing expectations and patterns
+- [coding-standards-formatting.md](coding-standards-formatting.md) -- indentation, braces, spacing, include order
+- [coding-standards-naming.md](coding-standards-naming.md) -- PascalCase, camelCase, snake_case conventions

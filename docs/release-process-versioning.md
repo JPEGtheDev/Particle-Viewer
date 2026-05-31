@@ -23,7 +23,7 @@ The project follows [Semantic Versioning 2.0.0](https://semver.org/):
 
 At build time, the version is taken from the `PROJECT_VERSION` build variable, falling back to git tags, then `0.0.0`.
 
-## Commit Types → Version Bumps
+## Commit Types -> Version Bumps
 
 | Commit Type | Version Bump |
 |------------|--------------|
@@ -34,17 +34,17 @@ At build time, the version is taken from the `PROJECT_VERSION` build variable, f
 
 ## Examples
 
-**Patch release (0.1.0 → 0.1.1):**
+**Patch release (0.1.0 -> 0.1.1):**
 ```bash
 git commit -m "fix: resolve crash when loading empty particle files"
 ```
 
-**Minor release (0.1.0 → 0.2.0):**
+**Minor release (0.1.0 -> 0.2.0):**
 ```bash
 git commit -m "feat: add support for particle velocity visualization"
 ```
 
-**Major release (0.1.0 → 1.0.0):**
+**Major release (0.1.0 -> 1.0.0):**
 ```bash
 git commit -m "feat!: redesign shader pipeline with breaking changes"
 ```
@@ -66,6 +66,6 @@ BREAKING CHANGE: Shader configuration API has changed"
 
 ## Related
 
-- [Release Process](RELEASE_PROCESS.md) — parent ToC stub and full pipeline overview
-- [Conventional Commits](CONVENTIONAL_COMMITS.md) — quick reference for commit format
-- [release-process-automation.md](release-process-automation.md) — how the workflow runs
+- [Release Process](RELEASE_PROCESS.md) -- parent ToC stub and full pipeline overview
+- [Conventional Commits](CONVENTIONAL_COMMITS.md) -- quick reference for commit format
+- [release-process-automation.md](release-process-automation.md) -- how the workflow runs

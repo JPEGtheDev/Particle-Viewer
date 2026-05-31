@@ -1,5 +1,5 @@
 ---
-title: Enhanced Debug Output — Overlay Fields
+title: Enhanced Debug Output -- Overlay Fields
 description: Reference for all fields displayed by the --debug-camera overlay, including camera orientation, distance metrics, simulation tracking, and composition analysis.
 domain: testing
 subdomain: visual-regression
@@ -38,7 +38,7 @@ related:
 |-------|-------------|
 | **Dist to Target** | Always 1.0 unit (`Target = Pos + Front`) |
 
-### Simulation Tracking (conditional — COM must be active/non-zero)
+### Simulation Tracking (conditional -- COM must be active/non-zero)
 
 | Field | Description |
 |-------|-------------|
@@ -62,12 +62,12 @@ distance of 50 units is assumed.
 
 ## Understanding "Target"
 
-**Target** (`Pos + Front`) shows the lookat point — always 1 unit away. It is
+**Target** (`Pos + Front`) shows the lookat point -- always 1 unit away. It is
 **not** the subject position. Do not confuse it with COM or the rendered particle
 center.
 
 ## Related
 
-- [Enhanced Debug Output (overview)](enhanced-debug-output.md) — navigation and quick reference
-- [Use Cases](enhanced-debug-output-use-cases.md) — how to use these fields in practice
-- [Calculations & Examples](enhanced-debug-output-calculations.md) — formulas behind coverage estimates
+- [Enhanced Debug Output (overview)](enhanced-debug-output.md) -- navigation and quick reference
+- [Use Cases](enhanced-debug-output-use-cases.md) -- how to use these fields in practice
+- [Calculations & Examples](enhanced-debug-output-calculations.md) -- formulas behind coverage estimates

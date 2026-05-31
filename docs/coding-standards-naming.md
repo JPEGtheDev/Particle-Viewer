@@ -15,7 +15,7 @@ Naming conventions are enforced by **clang-tidy** and follow Microsoft C++ style
 
 ## Types, Structs, Enums
 
-**PascalCase** — capitalize first letter of each word:
+**PascalCase** -- capitalize first letter of each word:
 
 ```cpp
 class ParticleSystem { };
@@ -26,7 +26,7 @@ using VertexBuffer = std::vector<Vertex>;
 
 ## Functions and Methods
 
-**camelCase** — lowercase first letter, capitalize subsequent words:
+**camelCase** -- lowercase first letter, capitalize subsequent words:
 
 ```cpp
 void initializeBuffers();
@@ -38,7 +38,7 @@ int getParticleCount() const;
 
 ## Variables and Parameters
 
-**snake_case** — all lowercase with underscores:
+**snake_case** -- all lowercase with underscores:
 
 ```cpp
 int particle_count = 0;
@@ -87,6 +87,6 @@ namespace rendering { }
 
 ## Related
 
-- [Coding Standards](CODING_STANDARDS.md) — parent document and full ToC
-- [coding-standards-formatting.md](coding-standards-formatting.md) — brace style, spacing, include order
-- [coding-standards-tools.md](coding-standards-tools.md) — clang-tidy enforcement
+- [Coding Standards](CODING_STANDARDS.md) -- parent document and full ToC
+- [coding-standards-formatting.md](coding-standards-formatting.md) -- brace style, spacing, include order
+- [coding-standards-tools.md](coding-standards-tools.md) -- clang-tidy enforcement
