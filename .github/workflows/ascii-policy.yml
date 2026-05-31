@@ -5,11 +5,13 @@ on:
     paths:
       - '**.md'
       - '.github/skills/**'
+      - '.github/workflows/ascii-policy.yml'
       - 'docs/**'
   pull_request:
     paths:
       - '**.md'
       - '.github/skills/**'
+      - '.github/workflows/ascii-policy.yml'
       - 'docs/**'
 
 permissions:
