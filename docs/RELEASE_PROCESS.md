@@ -19,7 +19,7 @@ This project uses a **zero-manual release pipeline**. All version increments, ch
 
 | Concept | File | Coverage |
 |---------|------|----------|
-| Versioning | [release-process-versioning.md](release-process-versioning.md) | Semantic versioning, commit→version-bump mapping, version storage |
+| Versioning | [release-process-versioning.md](release-process-versioning.md) | Semantic versioning, commit->version-bump mapping, version storage |
 | Automation | [release-process-automation.md](release-process-automation.md) | Trigger conditions, release steps, source file patterns |
 | Operations | [release-process-operations.md](release-process-operations.md) | Zero-manual requirements, workflow config, troubleshooting |
 
@@ -37,12 +37,12 @@ This project uses a **zero-manual release pipeline**. All version increments, ch
 | `feat:` | Minor | `feat: add particle color picker` |
 | `fix:` | Patch | `fix: resolve startup crash` |
 | `feat!:` | Major | `feat!: redesign shader API` |
-| `docs:`, `test:`, `chore:` | Patch | — |
+| `docs:`, `test:`, `chore:` | Patch | -- |
 
 Releases are **skipped** when only non-source files change (`tests/`, `docs/`, `.github/`).
 
 ## Related
 
-- [Conventional Commits](CONVENTIONAL_COMMITS.md) — commit format quick reference
-- [release-process-versioning.md](release-process-versioning.md) — how commits map to version bumps
-- [release-process-automation.md](release-process-automation.md) — full release pipeline steps
+- [Conventional Commits](CONVENTIONAL_COMMITS.md) -- commit format quick reference
+- [release-process-versioning.md](release-process-versioning.md) -- how commits map to version bumps
+- [release-process-automation.md](release-process-automation.md) -- full release pipeline steps

@@ -15,21 +15,21 @@ related:
 
 ```
 tests/
-├── core/               — unit tests for src/ classes
-│   ├── CameraTests.cpp
-│   ├── ShaderTests.cpp
-│   └── ParticleTests.cpp
-├── integration/        — multi-component tests
-│   ├── DataLoadingPipelineTests.cpp
-│   └── ShaderPipelineTests.cpp
-├── testing/            — tests for test utilities
-│   ├── PixelComparatorTests.cpp
-│   └── ImageTests.cpp
-├── visual-regression/  — headless visual output tests
-│   └── VisualRegressionTests.cpp
-└── mocks/
-    ├── MockOpenGL.hpp
-    └── MockOpenGL.cpp
++-- core/               -- unit tests for src/ classes
+|   +-- CameraTests.cpp
+|   +-- ShaderTests.cpp
+|   +-- ParticleTests.cpp
++-- integration/        -- multi-component tests
+|   +-- DataLoadingPipelineTests.cpp
+|   +-- ShaderPipelineTests.cpp
++-- testing/            -- tests for test utilities
+|   +-- PixelComparatorTests.cpp
+|   +-- ImageTests.cpp
++-- visual-regression/  -- headless visual output tests
+|   +-- VisualRegressionTests.cpp
++-- mocks/
+    +-- MockOpenGL.hpp
+    +-- MockOpenGL.cpp
 ```
 
 ## File Layout
@@ -39,7 +39,7 @@ Each test file MUST:
 1. Include necessary headers
 2. Include mock headers
 3. Group related tests in the same suite
-4. Order tests: basic → complex → edge cases
+4. Order tests: basic -> complex -> edge cases
 
 ```cpp
 #include <gtest/gtest.h>
@@ -86,6 +86,6 @@ Tests run automatically on every pull request:
 
 ## Related
 
-- [Testing Standards](TESTING_STANDARDS.md) — parent ToC stub
-- [testing-standards-mocking.md](testing-standards-mocking.md) — mocking design and OpenGL mocks
-- [testing-standards-coverage.md](testing-standards-coverage.md) — coverage targets and priorities
+- [Testing Standards](TESTING_STANDARDS.md) -- parent ToC stub
+- [testing-standards-mocking.md](testing-standards-mocking.md) -- mocking design and OpenGL mocks
+- [testing-standards-coverage.md](testing-standards-coverage.md) -- coverage targets and priorities

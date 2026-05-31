@@ -1,0 +1,66 @@
+name: ASCII Policy
+
+on:
+  push:
+    paths:
+      - '**.md'
+      - '.github/skills/**'
+      - 'docs/**'
+  pull_request:
+    paths:
+      - '**.md'
+      - '.github/skills/**'
+      - 'docs/**'
+
+permissions:
+  contents: read
+
+jobs:
+  ascii-check:
+    name: Check ASCII-only markdown
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan for non-ASCII violations
+        run: |
+          PERMITTED='s/\x{2713}//g; s/\x{2717}//g; s/\x{2705}//g; s/\x{274C}//g; s/\x{1F4E5}//g; s/\x{00B7}//g'
+
+          collect_files() {
+            find .github/skills docs -name "*.md" -type f 2>/dev/null
+            for f in AGENTS.md README.md THIRD_PARTY_NOTICES.md; do
+              [ -f "$f" ] && printf '%s\n' "$f"
+            done
+          }
+
+          VIOLATIONS=$(collect_files | sort -u | \
+            xargs grep -Pln '[^\x00-\x7F]' 2>/dev/null | \
+            while IFS= read -r file; do
+              result=$(grep -Pn '[^\x00-\x7F]' "$file" \
+                | perl -pe "$PERMITTED" \
+                | grep -P '[^\x00-\x7F]' || true)
+              if [ -n "$result" ]; then
+                printf '  %s:\n' "$file"
+                printf '%s\n' "$result" | head -3 | sed 's/^/    /'
+              fi
+            done)
+
+          if [ -n "$VIOLATIONS" ]; then
+            {
+              echo "## ASCII Policy Violation"
+              echo ""
+              echo "Non-ASCII characters found in markdown files:"
+              echo ""
+              echo '```'
+              echo "$VIOLATIONS"
+              echo '```'
+              echo ""
+              echo "Run \`python3 scratch/ascii_replace.py\` to fix."
+            } >> "$GITHUB_STEP_SUMMARY"
+
+            echo "ERROR: ASCII policy violation -- see step summary for details."
+            exit 1
+          fi
+
+          echo "ASCII policy check passed." >> "$GITHUB_STEP_SUMMARY"
+          echo "ASCII policy check passed."

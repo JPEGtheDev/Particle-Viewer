@@ -33,8 +33,8 @@ TEST_F(VisualRegressionTest, RenderScene_SolidBackground_MatchesBaseline)
 }
 ```
 
-- `assertVisualMatch()` — compares and saves diffs on failure
-- `assertVisualMatchTolerant()` — uses the default tolerant threshold
+- `assertVisualMatch()` -- compares and saves diffs on failure
+- `assertVisualMatchTolerant()` -- uses the default tolerant threshold
 
 ## Macros
 
@@ -57,7 +57,7 @@ TEST_F(VisualRegressionTest, RenderScene_SolidBackground_MatchesBaseline)
 - Follow AAA pattern: Arrange (create images), Act (compare), Assert (check result)
 - **Never combine Act and Assert** into `// Act & Assert`
 - Name tests descriptively: `RenderScene_Particles_MatchesBaseline`
-- Keep test images small (< 64×64) for speed
+- Keep test images small (< 64x64) for speed
 - Use exact match (`0.0f` tolerance) for synthetic data
 - Use tolerant match only for GPU-rendered content where minor variations are expected
 
@@ -66,9 +66,9 @@ TEST_F(VisualRegressionTest, RenderScene_SolidBackground_MatchesBaseline)
 | Scenario | Recommended Tolerance |
 |----------|-----------------------|
 | Synthetic test images | `0.0f` (exact) |
-| Software-rendered (Mesa) | `1.0f / 255.0f` (±1) |
-| Cross-platform GPU | `2.0f / 255.0f` (±2) |
-| Anti-aliased content | `5.0f / 255.0f` (±5) |
+| Software-rendered (Mesa) | `1.0f / 255.0f` (+/-1) |
+| Cross-platform GPU | `2.0f / 255.0f` (+/-2) |
+| Anti-aliased content | `5.0f / 255.0f` (+/-5) |
 
 ### AAA Pattern Example
 
@@ -100,6 +100,6 @@ When a visual change is intentional:
 
 ## Related
 
-- [Visual Regression Overview](visual-regression.md) — Architecture and data types
-- [Running & CI](visual-regression-ci.md) — Running tests and CI integration
-- [Testing Standards](../TESTING_STANDARDS.md) — AAA pattern and project-wide test guidelines
+- [Visual Regression Overview](visual-regression.md) -- Architecture and data types
+- [Running & CI](visual-regression-ci.md) -- Running tests and CI integration
+- [Testing Standards](../TESTING_STANDARDS.md) -- AAA pattern and project-wide test guidelines

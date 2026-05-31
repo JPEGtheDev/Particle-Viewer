@@ -25,7 +25,7 @@ Standards and best practices for all tests in this project, using **Google Test*
 | Assertions & Naming | [testing-standards-assertions.md](testing-standards-assertions.md) | Single assertion principle, test splitting, naming convention |
 | Organization | [testing-standards-organization.md](testing-standards-organization.md) | Directory structure, file layout, running tests, CI |
 | Mocking | [testing-standards-mocking.md](testing-standards-mocking.md) | When/how to mock, MockOpenGL design, what NOT to mock |
-| Coverage | [testing-standards-coverage.md](testing-standards-coverage.md) | ≥80% target, what to test vs. skip, priority tiers |
+| Coverage | [testing-standards-coverage.md](testing-standards-coverage.md) | >=80% target, what to test vs. skip, priority tiers |
 
 ## Core Principle
 
@@ -35,16 +35,16 @@ Standards and best practices for all tests in this project, using **Google Test*
 
 | Rule | Value |
 |------|-------|
-| Structure | Arrange → Act → Assert (never combined) |
+| Structure | Arrange -> Act -> Assert (never combined) |
 | Name pattern | `UnitName_StateUnderTest_ExpectedResult` |
 | Suite name | `ClassName` + `Test` (e.g., `CameraTest`) |
-| Coverage target | ≥80% for tested modules |
+| Coverage target | >=80% for tested modules |
 | Individual test runtime | < 100ms |
 | Full suite runtime | < 10 seconds |
-| OpenGL | MUST mock — DO NOT require real GPU |
+| OpenGL | MUST mock -- DO NOT require real GPU |
 
 ## Related
 
-- [Coding Standards](CODING_STANDARDS.md) — formatting and naming conventions
-- [testing-standards-aaa.md](testing-standards-aaa.md) — Arrange-Act-Assert structure and rules
-- [testing-standards-coverage.md](testing-standards-coverage.md) — coverage targets and priorities
+- [Coding Standards](CODING_STANDARDS.md) -- formatting and naming conventions
+- [testing-standards-aaa.md](testing-standards-aaa.md) -- Arrange-Act-Assert structure and rules
+- [testing-standards-coverage.md](testing-standards-coverage.md) -- coverage targets and priorities

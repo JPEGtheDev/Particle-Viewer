@@ -18,10 +18,10 @@ This project targets **C++20**. Apply these idioms in all new code.
 USE smart pointers. DO NOT use manual `new`/`delete`.
 
 ```cpp
-// CORRECT — automatic cleanup
+// CORRECT -- automatic cleanup
 std::unique_ptr<ParticleSystem> system = std::make_unique<ParticleSystem>();
 
-// WRONG — manual memory management
+// WRONG -- manual memory management
 ParticleSystem* system = new ParticleSystem();
 delete system;
 ```
@@ -51,12 +51,12 @@ auto it = particles.begin();
 USE range-based `for` instead of index-based loops:
 
 ```cpp
-// Modifying — use non-const reference
+// Modifying -- use non-const reference
 for (auto& particle : particles) {
     particle.update();
 }
 
-// Read-only — use const reference
+// Read-only -- use const reference
 for (const auto& particle : particles) {
     renderParticle(particle);
 }
@@ -80,6 +80,6 @@ private:
 
 ## Related
 
-- [Coding Standards](CODING_STANDARDS.md) — parent document and full ToC
-- [coding-standards-organization.md](coding-standards-organization.md) — header layout and class member ordering
-- [coding-standards-tools.md](coding-standards-tools.md) — clang-tidy enforcement of these practices
+- [Coding Standards](CODING_STANDARDS.md) -- parent document and full ToC
+- [coding-standards-organization.md](coding-standards-organization.md) -- header layout and class member ordering
+- [coding-standards-tools.md](coding-standards-tools.md) -- clang-tidy enforcement of these practices

@@ -101,7 +101,7 @@ TEST_F(ShaderPipelineTest, FullPipeline_CompletesSuccessfully)
 
 1. Place files in `tests/integration/`. Use naming: `{Feature}PipelineTests.cpp` or `{Feature}IntegrationTests.cpp`
 2. Inherit from `::testing::Test` and follow the fixture pattern above
-3. Write tests using the AAA pattern — never combine Act and Assert
+3. Write tests using the AAA pattern -- never combine Act and Assert
 4. If you added new files, re-run CMake:
 
 ```bash
@@ -120,6 +120,6 @@ rm -rf build && cmake -B build -S . -DBUILD_TESTS=ON && cmake --build build
 
 ## Related
 
-- [Integration Tests Overview](integration-tests.md) — Running all tests and directory structure
-- [Mock Patterns](integration-tests-mocking.md) — MockOpenGL setup and troubleshooting
-- [Testing Standards](../TESTING_STANDARDS.md) — AAA pattern and project-wide test guidelines
+- [Integration Tests Overview](integration-tests.md) -- Running all tests and directory structure
+- [Mock Patterns](integration-tests-mocking.md) -- MockOpenGL setup and troubleshooting
+- [Testing Standards](../TESTING_STANDARDS.md) -- AAA pattern and project-wide test guidelines

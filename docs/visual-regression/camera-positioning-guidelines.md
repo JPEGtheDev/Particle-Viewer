@@ -35,7 +35,7 @@ dist_new = dist_original * scale_factor  # = 51.16 units
 
 ### Outcome
 
-- Cube fills ~40–50% of viewport ✓
+- Cube fills ~40-50% of viewport ✓
 - Balanced blank space around cube ✓
 - Same viewing angle preserved ✓
 - Matches reference image composition ✓
@@ -44,15 +44,15 @@ dist_new = dist_original * scale_factor  # = 51.16 units
 
 ### For Visual Regression Tests
 
-1. **Don't blindly copy debug coordinates** — they may represent a zoomed-in view.
-2. **Separate angle from distance** — preserve direction from debug; recalculate distance.
-3. **Define composition goals first** — what percentage of the viewport should the subject fill?
+1. **Don't blindly copy debug coordinates** -- they may represent a zoomed-in view.
+2. **Separate angle from distance** -- preserve direction from debug; recalculate distance.
+3. **Define composition goals first** -- what percentage of the viewport should the subject fill?
 
 ### For Debug Output Users
 
-1. **Trust debug calculations** — they accurately report camera state.
-2. **Consider context** — was the camera zoomed in or panned at capture time?
-3. **Use debug as a starting point** — extract direction and up vector, then recalculate distance.
+1. **Trust debug calculations** -- they accurately report camera state.
+2. **Consider context** -- was the camera zoomed in or panned at capture time?
+3. **Use debug as a starting point** -- extract direction and up vector, then recalculate distance.
 
 ## Prevention Checklist
 
@@ -62,7 +62,7 @@ dist_new = dist_original * scale_factor  # = 51.16 units
 - [ ] Calculate ideal camera distance using the formula below
 - [ ] Generate test baseline
 - [ ] Visually compare to reference
-- [ ] Adjust if needed (typical scale factor: 1.5× – 2.0×)
+- [ ] Adjust if needed (typical scale factor: 1.5x - 2.0x)
 
 ## Formula Reference
 
@@ -70,17 +70,17 @@ dist_new = dist_original * scale_factor  # = 51.16 units
 # Camera distance for desired composition
 distance = subject_size / (coverage_percent * tan(FOV_radians / 2))
 
-# Example: 12-unit cube, 45° FOV, 45% coverage
-# distance ≈ 51 units
+# Example: 12-unit cube, 45 degrees FOV, 45% coverage
+# distance ~ 51 units
 ```
 
-| Coverage | Distance (12-unit cube, 45° FOV) |
+| Coverage | Distance (12-unit cube, 45 degrees FOV) |
 |----------|----------------------------------|
 | 50% | ~51.4 units |
 | 40% | ~64.3 units |
 
 ## Related
 
-- [Camera Positioning Lessons Learned](camera-positioning-lessons-learned.md) — overview
-- [Root Cause Analysis](camera-positioning-root-cause.md) — what went wrong
-- [Enhanced Debug Output](enhanced-debug-output.md) — debug overlay reference for composition analysis
+- [Camera Positioning Lessons Learned](camera-positioning-lessons-learned.md) -- overview
+- [Root Cause Analysis](camera-positioning-root-cause.md) -- what went wrong
+- [Enhanced Debug Output](enhanced-debug-output.md) -- debug overlay reference for composition analysis

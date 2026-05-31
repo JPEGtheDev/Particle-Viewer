@@ -28,21 +28,21 @@ Particle Viewer is distributed as a Flatpak package for cross-distribution Linux
 
 Flatpak is a universal package format for Linux that provides:
 - **Sandboxed execution** for security and stability
-- **Dependency isolation** — all dependencies are bundled
-- **Cross-distribution compatibility** — works on any Linux distribution
-- **Easy installation** — single-file bundles (`.flatpak`)
+- **Dependency isolation** -- all dependencies are bundled
+- **Cross-distribution compatibility** -- works on any Linux distribution
+- **Easy installation** -- single-file bundles (`.flatpak`)
 
 ## Future Improvements
 
 - [ ] Submit to Flathub for wider distribution
-- [x] Add application icon (completed — collision visualization SVG)
+- [x] Add application icon (completed -- collision visualization SVG)
 - [ ] Implement desktop file actions
 - [ ] Add screenshots to AppStream metadata
 - [ ] Consider implementing native file portal support
 
 ## Related
 
-- [flatpak-users.md](flatpak-users.md) — User installation and file access guide
-- [flatpak-build.md](flatpak-build.md) — Developer build guide with manifest and dependency details
-- [flatpak-gotchas.md](flatpak-gotchas.md) — CI/CD and troubleshooting reference
-- [FLATPAK_VERIFICATION.md](FLATPAK_VERIFICATION.md) — Verification checklist for PR and release workflows
+- [flatpak-users.md](flatpak-users.md) -- User installation and file access guide
+- [flatpak-build.md](flatpak-build.md) -- Developer build guide with manifest and dependency details
+- [flatpak-gotchas.md](flatpak-gotchas.md) -- CI/CD and troubleshooting reference
+- [FLATPAK_VERIFICATION.md](FLATPAK_VERIFICATION.md) -- Verification checklist for PR and release workflows

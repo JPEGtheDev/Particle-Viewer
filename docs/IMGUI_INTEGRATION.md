@@ -1,6 +1,6 @@
 ---
 title: "ImGui Integration"
-description: "Patterns for integrating Dear ImGui into Particle-Viewer — FetchContent setup, SDL3 event order, menu system, and debug overlay positioning."
+description: "Patterns for integrating Dear ImGui into Particle-Viewer -- FetchContent setup, SDL3 event order, menu system, and debug overlay positioning."
 domain: architecture
 subdomain: imgui
 tags: [architecture, imgui, dear-imgui, c++]
@@ -11,7 +11,7 @@ related:
 # ImGui Integration
 
 Dear ImGui is used for the main menu bar and debug overlay. This document
-covers how ImGui is integrated into Particle-Viewer — specifically the
+covers how ImGui is integrated into Particle-Viewer -- specifically the
 patterns agents should follow when touching `src/ui/` or any code that
 interacts with the ImGui layer.
 
@@ -59,4 +59,4 @@ interacts with the ImGui layer.
 
 ## Related
 
-- [WINDOW_MANAGEMENT.md](WINDOW_MANAGEMENT.md) — SDL3 window and resolution management, fullscreen, and config persistence.
+- [WINDOW_MANAGEMENT.md](WINDOW_MANAGEMENT.md) -- SDL3 window and resolution management, fullscreen, and config persistence.

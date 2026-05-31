@@ -60,7 +60,7 @@ This reference provides concrete examples of correct and incorrect CI/CD workflo
 
 ---
 
-## Pipeline Safety — Correct Examples
+## Pipeline Safety -- Correct Examples
 
 ### ✅ Upload Artifacts Instead of Committing
 
@@ -116,7 +116,7 @@ if (existing) {
 
 ---
 
-## Pipeline Safety — INCORRECT Examples (Do NOT Follow)
+## Pipeline Safety -- INCORRECT Examples (Do NOT Follow)
 
 ### ❌ Committing from CI
 
@@ -167,7 +167,7 @@ await github.rest.issues.createComment({
 
 ## Job Dependency Patterns
 
-### Sequential: Unit → Integration → Visual
+### Sequential: Unit -> Integration -> Visual
 
 ```yaml
 jobs:
@@ -192,7 +192,7 @@ FAILED=$(grep -E '^\[  FAILED  \] [0-9]+ tests?, listed below:' output.txt \
   | tail -1 | grep -oE '[0-9]+' | head -1 || echo "0")
 ```
 
-**Note:** Don't use `"X tests from"` lines — gtest outputs one per suite. Always parse the final summary.
+**Note:** Don't use `"X tests from"` lines -- gtest outputs one per suite. Always parse the final summary.
 
 ---
 
@@ -200,5 +200,5 @@ FAILED=$(grep -E '^\[  FAILED  \] [0-9]+ tests?, listed below:' output.txt \
 
 The project uses `unit-tests.yml` with two jobs:
 
-1. **`test`** — Build, run unit tests, generate coverage, comment on PR
-2. **`visual-regression`** — Build, run `VisualRegressionTest.*` under Xvfb, upload artifact images, comment on PR
+1. **`test`** -- Build, run unit tests, generate coverage, comment on PR
+2. **`visual-regression`** -- Build, run `VisualRegressionTest.*` under Xvfb, upload artifact images, comment on PR

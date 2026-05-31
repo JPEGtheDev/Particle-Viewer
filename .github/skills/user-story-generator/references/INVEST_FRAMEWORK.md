@@ -2,7 +2,7 @@
 
 **INVEST** is a checklist for well-formed user stories in Agile development. Each letter represents a principle:
 
-## I – Independent
+## I - Independent
 
 **What it means:** Stories should have minimal dependencies on other stories.
 
@@ -23,7 +23,7 @@
 
 ---
 
-## N – Negotiable
+## N - Negotiable
 
 **What it means:** Details are flexible until the story enters the sprint; the goal is fixed, but how to achieve it can be refined.
 
@@ -44,7 +44,7 @@
 
 ---
 
-## V – Valuable
+## V - Valuable
 
 **What it means:** The story delivers clear value to the user, business, or codebase.
 
@@ -65,7 +65,7 @@
 
 ---
 
-## E – Estimable
+## E - Estimable
 
 **What it means:** The team can roughly estimate how long the story will take.
 
@@ -86,9 +86,9 @@
 
 ---
 
-## S – Small
+## S - Small
 
-**What it means:** Stories should be completable within one sprint (typically 1–2 weeks).
+**What it means:** Stories should be completable within one sprint (typically 1-2 weeks).
 
 **Why it matters:**
 - Fast feedback loops
@@ -97,7 +97,7 @@
 - Multiple stories can be merged and released frequently
 
 **How to check:**
-- [ ] This story can be completed in 3–5 days max
+- [ ] This story can be completed in 3-5 days max
 - [ ] One developer (or small pair) can own it start-to-finish
 - [ ] Fits comfortably in the sprint timeline
 
@@ -109,9 +109,9 @@
 
 ---
 
-## T – Testable
+## T - Testable
 
-**What it means:** Acceptance criteria are concrete, measurable, and verifiable—not subjective.
+**What it means:** Acceptance criteria are concrete, measurable, and verifiable--not subjective.
 
 **Why it matters:**
 - Team knows when story is truly "done"
@@ -198,4 +198,4 @@ Testable:
 ## References
 
 - [Bill Wake's INVEST](https://xp123.com/articles/invest-in-good-stories-and-smart-tasks/)
-- [Agile Alliance – User Stories](https://www.agilealliance.org/glossary/user-stories/)
+- [Agile Alliance - User Stories](https://www.agilealliance.org/glossary/user-stories/)

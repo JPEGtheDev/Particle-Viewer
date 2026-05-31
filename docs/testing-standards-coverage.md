@@ -11,7 +11,7 @@ related:
 
 # Coverage Expectations
 
-## Target: ≥80%
+## Target: >=80%
 
 Aim for at least 80% code coverage for tested modules. Focus on:
 
@@ -20,7 +20,7 @@ Aim for at least 80% code coverage for tested modules. Focus on:
 - Error handling paths
 - Edge cases and boundary conditions
 
-## Test YOUR Code — Not External Libraries
+## Test YOUR Code -- Not External Libraries
 
 The goal is to verify that **your** code works correctly. DO NOT test third-party libraries.
 
@@ -34,19 +34,19 @@ The goal is to verify that **your** code works correctly. DO NOT test third-part
 **DO NOT test:**
 - External library functionality (e.g., `std::vector::push_back()`)
 - Framework behavior (e.g., Google Test assertions)
-- Mock infrastructure — testing mocks is testing test code, not production code
+- Mock infrastructure -- testing mocks is testing test code, not production code
 - Simple getters/setters with no validation logic
 - Trivial forwarding functions
 
 ```cpp
-// CORRECT — testing YOUR Shader class
+// CORRECT -- testing YOUR Shader class
 TEST(ShaderTest, Constructor_WithValidFiles_InitializesProgram)
 {
     Shader shader("vertex.vs", "fragment.fs");
     EXPECT_NE(shader.Program, 0u);
 }
 
-// WRONG — testing mock infrastructure
+// WRONG -- testing mock infrastructure
 TEST(ShaderTest, MockOpenGL_CanBeInitialized)
 {
     MockOpenGL::reset();
@@ -67,12 +67,12 @@ TEST(ShaderTest, MockOpenGL_CanBeInitialized)
 1. Follow AAA Pattern in every test
 2. One reason to fail per test
 3. Use descriptive names
-4. Use mocks — DO NOT require real OpenGL/GPU
+4. Use mocks -- DO NOT require real OpenGL/GPU
 5. Test edge cases, not just the happy path
-6. Keep tests independent — DO NOT share state between tests
+6. Keep tests independent -- DO NOT share state between tests
 
 ## Related
 
-- [Testing Standards](TESTING_STANDARDS.md) — parent ToC stub
-- [testing-standards-mocking.md](testing-standards-mocking.md) — mock design principles
-- [testing-standards-aaa.md](testing-standards-aaa.md) — AAA structure
+- [Testing Standards](TESTING_STANDARDS.md) -- parent ToC stub
+- [testing-standards-mocking.md](testing-standards-mocking.md) -- mock design principles
+- [testing-standards-aaa.md](testing-standards-aaa.md) -- AAA structure

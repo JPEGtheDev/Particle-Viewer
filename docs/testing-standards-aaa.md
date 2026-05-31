@@ -24,9 +24,9 @@ related:
 
 All tests MUST follow **Arrange-Act-Assert**:
 
-- **Arrange** — set up preconditions: create objects, initialize data, configure mocks, declare expected values
-- **Act** — execute the code under test (one call)
-- **Assert** — verify the outcome: return values, state changes, side effects
+- **Arrange** -- set up preconditions: create objects, initialize data, configure mocks, declare expected values
+- **Act** -- execute the code under test (one call)
+- **Assert** -- verify the outcome: return values, state changes, side effects
 
 ```cpp
 TEST(CameraTest, SetupCam_ReturnsViewMatrix)
@@ -54,11 +54,11 @@ TEST(CameraTest, SetupCam_ReturnsViewMatrix)
 
 - DO NOT combine Arrange and Act into `// Arrange & Act`
 - DO NOT combine Act and Assert into `// Act & Assert`
-- If no meaningful Arrange step exists, omit the `// Arrange` comment — start directly with `// Act`
+- If no meaningful Arrange step exists, omit the `// Arrange` comment -- start directly with `// Act`
 - Put expected values as named variables in Arrange, not inline in Assert
 
 ```cpp
-// CORRECT — no arrange step needed
+// CORRECT -- no arrange step needed
 TEST(ImageTest, DefaultConstructor_CreatesEmptyImage)
 {
     // Act
@@ -68,7 +68,7 @@ TEST(ImageTest, DefaultConstructor_CreatesEmptyImage)
     EXPECT_TRUE(image.empty());
 }
 
-// CORRECT — expected values declared in Arrange
+// CORRECT -- expected values declared in Arrange
 TEST(ImageTest, Constructor_WithDimensions_SetsWidthAndHeight)
 {
     // Arrange
@@ -86,5 +86,5 @@ TEST(ImageTest, Constructor_WithDimensions_SetsWidthAndHeight)
 
 ## Related
 
-- [Testing Standards](TESTING_STANDARDS.md) — parent ToC stub and overview
-- [testing-standards-assertions.md](testing-standards-assertions.md) — single assertion principle and test naming
+- [Testing Standards](TESTING_STANDARDS.md) -- parent ToC stub and overview
+- [testing-standards-assertions.md](testing-standards-assertions.md) -- single assertion principle and test naming

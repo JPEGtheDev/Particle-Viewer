@@ -33,8 +33,8 @@ item are in the reference sections above.
 - [ ] **Iron Law letter/spirit line** -- "Violating the letter of this rule is violating the spirit of this rule." present?
 - [ ] **Announcement** -- explicit exact wording present, not implied?
 - [ ] **Gate Function** -- `## BEFORE PROCEEDING` with numbered conditions and ✓/✗ branches?
-- [ ] **Rationalization Prevention** -- table with ≥5 rows, specific excuses and specific counters?
-- [ ] **Red Flags→STOP** -- section with ≥5 trigger thoughts, each with a concrete action?
+- [ ] **Rationalization Prevention** -- table with >=5 rows, specific excuses and specific counters?
+- [ ] **Red Flags->STOP** -- section with >=5 trigger thoughts, each with a concrete action?
 - [ ] **No weak language** -- run: `grep -n "should\|prefer\|consider\|try to\|might be worth\|could potentially" "{{SKILL_PATH}}"` -- any hit in a rule body is a FAIL?
 - [ ] **Acronym Rule** -- all terms spelled out on first use per VOICE_AUTHORITY_RULES?
 - [ ] **No absolute paths** -- no literal `/home/`, `/usr/`, `/root/` or machine-specific prefixes?
@@ -43,8 +43,8 @@ item are in the reference sections above.
 - [ ] **Related skill cross-reference** -- at least one related skill named?
 - [ ] **Domain language** -- matches skill scope; no wrong-platform commands or terminology?
 
-✓ All pass → proceed to Step 3
-✗ Any unmet → record every failing item; continue through all steps before filing verdict
+✓ All pass -> proceed to Step 3
+✗ Any unmet -> record every failing item; continue through all steps before filing verdict
 
 ---
 
@@ -114,7 +114,7 @@ the verdict if needed before returning.
 
 - "It has most of the required elements" -- count every element. Partial is FAIL.
 - "The Iron Law is present but mild" -- `YOU MUST` and `No exceptions.` must be INSIDE the backtick block.
-- "4 rows is close enough" -- 4 is a FAIL. ≥5 is the rule.
+- "4 rows is close enough" -- 4 is a FAIL. >=5 is the rule.
 - "The announcement is implied" -- implied is a FAIL. Must be an explicit line.
 - "I'll note issues but still give PASS" -- no PASS with open issues.
 - "The path is just an example" -- any machine-specific absolute path is a FAIL.
@@ -147,7 +147,7 @@ Return findings in EXACTLY this structure:
 | Announcement | ✅/❌ | Clear/Vague | file:line |
 | Gate Function | ✅/❌ | Present/Absent | file:line |
 | Rationalization Table | ✅/❌ | N rows | file:line |
-| Red Flags→STOP | ✅/❌ | N items | file:line |
+| Red Flags->STOP | ✅/❌ | N items | file:line |
 
 ### Checklist
 | Item | Result | Evidence |
@@ -158,8 +158,8 @@ Return findings in EXACTLY this structure:
 | Iron Law letter/spirit line | ✅/❌ | file:line |
 | Announcement explicit | ✅/❌ | file:line |
 | Gate Function BEFORE PROCEEDING | ✅/❌ | file:line |
-| Rationalization ≥5 rows | ✅/❌ | file:line |
-| Red Flags ≥5 items | ✅/❌ | file:line |
+| Rationalization >=5 rows | ✅/❌ | file:line |
+| Red Flags >=5 items | ✅/❌ | file:line |
 | No weak language | ✅/❌ | grep output or "no instances found" |
 | Acronym Rule | ✅/❌ | file:line or "no issues found" |
 | No absolute paths | ✅/❌ | grep output or "no issues found" |

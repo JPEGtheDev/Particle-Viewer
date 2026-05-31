@@ -15,7 +15,7 @@ All formatting is enforced by **clang-format** via `.clang-format`. Run it befor
 
 ## Indentation
 
-- 4 spaces per level — NO tabs
+- 4 spaces per level -- NO tabs
 - Indent `case` labels in switch statements
 - Indent preprocessor directives before the hash
 
@@ -26,8 +26,8 @@ All formatting is enforced by **clang-format** via `.clang-format`. Run it befor
 
 ## Brace Style
 
-- **Allman** for functions, classes, structs, and namespaces — opening brace on new line
-- **K&R** for control structures — opening brace on same line
+- **Allman** for functions, classes, structs, and namespaces -- opening brace on new line
+- **K&R** for control structures -- opening brace on same line
 
 ```cpp
 class ParticleSystem
@@ -74,7 +74,7 @@ GLAD MUST come before GLFW. GLAD populates OpenGL function pointers that GLFW he
 #include "glad/glad.h"       // NOLINT(llvm-include-order)
 #include <GLFW/glfw3.h>      // NOLINT(llvm-include-order)
 
-// WRONG — do not put GLFW first
+// WRONG -- do not put GLFW first
 #include <GLFW/glfw3.h>
 #include "glad/glad.h"
 ```
@@ -83,6 +83,6 @@ Use `// NOLINT(llvm-include-order)` to suppress the clang-tidy warning for this 
 
 ## Related
 
-- [Coding Standards](CODING_STANDARDS.md) — parent document and full ToC
-- [coding-standards-naming.md](coding-standards-naming.md) — naming conventions for types, methods, variables
-- [coding-standards-tools.md](coding-standards-tools.md) — clang-format and clang-tidy usage
+- [Coding Standards](CODING_STANDARDS.md) -- parent document and full ToC
+- [coding-standards-naming.md](coding-standards-naming.md) -- naming conventions for types, methods, variables
+- [coding-standards-tools.md](coding-standards-tools.md) -- clang-format and clang-tidy usage

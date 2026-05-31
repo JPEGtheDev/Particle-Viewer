@@ -8,7 +8,7 @@ Load this reference when reviewing tests or noticing patterns that make tests un
 
 Test code requires its own refactoring discipline. Just like production code can have "code smells" that signal deeper design problems, test code has patterns that make tests less trustworthy, harder to understand, or easier to break.
 
-**Key principle:** Test code can tolerate some duplication that production code cannot — because tests serve as documentation of behavior. However, that tolerance has limits. Excessive abstraction in tests obscures what was actually tested. The balance: extract duplication that obscures nothing; keep inline whatever the reader needs to understand the test's intent.
+**Key principle:** Test code can tolerate some duplication that production code cannot -- because tests serve as documentation of behavior. However, that tolerance has limits. Excessive abstraction in tests obscures what was actually tested. The balance: extract duplication that obscures nothing; keep inline whatever the reader needs to understand the test's intent.
 
 **Gate question:** _Does this test help me understand what the code should do, or does it hide the intent?_
 
@@ -26,7 +26,7 @@ Test code requires its own refactoring discipline. Just like production code can
 ```
 
 **Why it hurts:**
-- Test failure is mysterious — you can't understand why it failed without understanding the external dependency
+- Test failure is mysterious -- you can't understand why it failed without understanding the external dependency
 - Test may pass locally but fail in CI (environment differences)
 - When the external resource changes, tests fail silently
 
@@ -71,7 +71,7 @@ Test code requires its own refactoring discipline. Just like production code can
 
 **Why it hurts:**
 - Tests pass in isolation but fail in the full suite
-- Debugging is impossible — failures are non-deterministic
+- Debugging is impossible -- failures are non-deterministic
 - Running tests in parallel (faster CI) reveals the problem
 - Order-dependent tests hide design flaws in the production code
 
@@ -109,7 +109,7 @@ Test code requires its own refactoring discipline. Just like production code can
 ```
 
 **Why it hurts:**
-- Test intent is obscured — hard to understand what the test is actually verifying
+- Test intent is obscured -- hard to understand what the test is actually verifying
 - Tests run slowly due to unnecessary setup
 - Small changes to the fixture affect many unrelated tests
 - When fixture fails to set up, many tests break for the wrong reason
@@ -119,7 +119,7 @@ Test code requires its own refactoring discipline. Just like production code can
 - Extract targeted factory methods that build specific scenarios
 - Use parameterized tests if many tests need similar (but not identical) fixtures
 - Move heavy setup to lazy initialization (only create what a test actually uses)
-- If many tests need the same base state, use inheritance sparingly — favor composition and helper functions
+- If many tests need the same base state, use inheritance sparingly -- favor composition and helper functions
 
 ---
 
@@ -134,7 +134,7 @@ Test code requires its own refactoring discipline. Just like production code can
       assertEq(add(2, 3), 5)
       assertEq(subtract(10, 2), 8)
       assertEq(multiply(3, 4), 12)
-  // If assertion 2 fails, did addition work? Who knows — test did multiple things.
+  // If assertion 2 fails, did addition work? Who knows -- test did multiple things.
 
 ✓ GOOD:
   test "Addition_TwoPositives_ReturnsSum": ...
@@ -144,7 +144,7 @@ Test code requires its own refactoring discipline. Just like production code can
 
 **Why it hurts:**
 - When the test fails, you don't know which behavior broke
-- Test name cannot accurately describe what it tests — names become vague ("Calculation_Works")
+- Test name cannot accurately describe what it tests -- names become vague ("Calculation_Works")
 - Debugging is hard because multiple things can cause failure
 - Refactoring breaks one behavior but the test still passes (the other behaviors still work)
 
@@ -175,7 +175,7 @@ Test code requires its own refactoring discipline. Just like production code can
 ```
 
 **Why it hurts:**
-- Creates false confidence — test passes but the code is broken
+- Creates false confidence -- test passes but the code is broken
 - Doesn't actually verify the behavior; just checks that something happened
 - Easy to pass accidentally (e.g., allocate memory without initializing it correctly)
 
@@ -224,7 +224,7 @@ Test code requires its own refactoring discipline. Just like production code can
 
 **Why it hurts:**
 - When the test fails, you must re-run or trace to identify which assertion triggered
-- Masks the first failure — if assertion 1 and 2 both fail, only the first is reported
+- Masks the first failure -- if assertion 1 and 2 both fail, only the first is reported
 - Slows debugging
 
 **Fix:**
@@ -278,13 +278,13 @@ Test code requires its own refactoring discipline. Just like production code can
 
 **Why it hurts:**
 - Changing the test data requires updating many places
-- Copy errors introduce inconsistencies (test A uses age 25, test B uses age 30 — which was intended?)
+- Copy errors introduce inconsistencies (test A uses age 25, test B uses age 30 -- which was intended?)
 - Tests are harder to maintain
 
 **Fix:**
 - Extract shared setup to helper functions (factories)
 - Extract shared assertions to helper functions
-- BUT preserve enough test detail that reading the test still reveals what it's testing — don't hide the important parts in abstract helpers
+- BUT preserve enough test detail that reading the test still reveals what it's testing -- don't hide the important parts in abstract helpers
 - Use test fixtures or parameterized tests for common setup scenarios
 - **Key balance:** DRY (Don't Repeat Yourself) is good; overly abstract tests are bad. Extract the "what" not the "why". Readers should still understand the test's intent from the test itself.
 
@@ -357,7 +357,7 @@ If a test has always passed:
 
 6. **Weak assertions hide bugs.** "Is not null" is not a valid assertion. Assert specific, observable outcomes.
 
-7. **Messages matter.** When a test fails, the message must immediately explain what went wrong and why — not force re-running or tracing.
+7. **Messages matter.** When a test fails, the message must immediately explain what went wrong and why -- not force re-running or tracing.
 
 8. **Tests document behavior.** If reading the test doesn't clarify what the code should do, the test is not serving its purpose.
 

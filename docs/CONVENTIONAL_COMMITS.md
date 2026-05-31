@@ -26,16 +26,16 @@ This is a quick reference for writing conventional commits that work with our au
 
 | Type | Effect | Version | Example |
 |------|--------|---------|---------|
-| `feat:` | New feature | Minor (0.1.0 → 0.2.0) | `feat: add particle color picker` |
-| `fix:` | Bug fix | Patch (0.1.0 → 0.1.1) | `fix: resolve crash on startup` |
-| `feat!:` | Breaking feature | Major (0.1.0 → 1.0.0) | `feat!: redesign shader API` |
-| `fix!:` | Breaking fix | Major (0.1.0 → 1.0.0) | `fix!: change config format` |
-| `docs:` | Documentation | Patch (0.1.0 → 0.1.1) | `docs: update README` |
-| `style:` | Code style | Patch (0.1.0 → 0.1.1) | `style: format code` |
-| `refactor:` | Code refactoring | Patch (0.1.0 → 0.1.1) | `refactor: simplify renderer` |
-| `test:` | Add/update tests | Patch (0.1.0 → 0.1.1) | `test: add camera tests` |
-| `chore:` | Maintenance | Patch (0.1.0 → 0.1.1) | `chore: update dependencies` |
-| `perf:` | Performance | Patch (0.1.0 → 0.1.1) | `perf: optimize rendering` |
+| `feat:` | New feature | Minor (0.1.0 -> 0.2.0) | `feat: add particle color picker` |
+| `fix:` | Bug fix | Patch (0.1.0 -> 0.1.1) | `fix: resolve crash on startup` |
+| `feat!:` | Breaking feature | Major (0.1.0 -> 1.0.0) | `feat!: redesign shader API` |
+| `fix!:` | Breaking fix | Major (0.1.0 -> 1.0.0) | `fix!: change config format` |
+| `docs:` | Documentation | Patch (0.1.0 -> 0.1.1) | `docs: update README` |
+| `style:` | Code style | Patch (0.1.0 -> 0.1.1) | `style: format code` |
+| `refactor:` | Code refactoring | Patch (0.1.0 -> 0.1.1) | `refactor: simplify renderer` |
+| `test:` | Add/update tests | Patch (0.1.0 -> 0.1.1) | `test: add camera tests` |
+| `chore:` | Maintenance | Patch (0.1.0 -> 0.1.1) | `chore: update dependencies` |
+| `perf:` | Performance | Patch (0.1.0 -> 0.1.1) | `perf: optimize rendering` |
 
 ## Quick Examples
 
@@ -91,4 +91,4 @@ When you push to main:
 
 ## Related
 
-- [RELEASE_PROCESS.md](RELEASE_PROCESS.md) — full automated release pipeline documentation
+- [RELEASE_PROCESS.md](RELEASE_PROCESS.md) -- full automated release pipeline documentation

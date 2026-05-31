@@ -14,21 +14,21 @@ related:
 
 Integration tests verify that multiple components of the Particle-Viewer work correctly together. Unlike unit tests, they test data flow through the viewer pipeline:
 
-- **Data Loading Pipeline**: SettingsIO reads file → Particle receives translations → VBO updated
-- **Shader Pipeline**: Load shader source → compile vertex+fragment → link program
-- **Frame Playback**: Load frame N → render → advance → load frame N+1
+- **Data Loading Pipeline**: SettingsIO reads file -> Particle receives translations -> VBO updated
+- **Shader Pipeline**: Load shader source -> compile vertex+fragment -> link program
+- **Frame Playback**: Load frame N -> render -> advance -> load frame N+1
 
 ### Directory Structure
 
 ```
 tests/
-├── core/          # Unit tests for individual classes
-├── integration/   # Integration tests for pipelines
-│   ├── DataLoadingPipelineTests.cpp
-│   ├── ShaderPipelineTests.cpp
-│   └── FramePlaybackTests.cpp
-├── mocks/         # MockOpenGL.hpp/.cpp
-└── CMakeLists.txt
++-- core/          # Unit tests for individual classes
++-- integration/   # Integration tests for pipelines
+|   +-- DataLoadingPipelineTests.cpp
+|   +-- ShaderPipelineTests.cpp
+|   +-- FramePlaybackTests.cpp
++-- mocks/         # MockOpenGL.hpp/.cpp
++-- CMakeLists.txt
 ```
 
 ### Build and Run All Tests
@@ -48,6 +48,6 @@ cmake --build build
 
 ## Related
 
-- [Testing Standards](../TESTING_STANDARDS.md) — Project-wide test guidelines and AAA pattern
-- [Test Patterns](integration-tests-patterns.md) — How to write and structure integration tests
-- [Mocking & Troubleshooting](integration-tests-mocking.md) — MockOpenGL and debugging guidance
+- [Testing Standards](../TESTING_STANDARDS.md) -- Project-wide test guidelines and AAA pattern
+- [Test Patterns](integration-tests-patterns.md) -- How to write and structure integration tests
+- [Mocking & Troubleshooting](integration-tests-mocking.md) -- MockOpenGL and debugging guidance

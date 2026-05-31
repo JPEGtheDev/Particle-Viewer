@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# ASCII policy enforcement for Particle-Viewer markdown files.
+# Permitted non-ASCII: U+2713 (check mark), U+2717 (ballot x),
+#   U+2705 (green check), U+274C (red X), U+1F4E5 (inbox), U+00B7 (middle dot)
+#
+# Install: cp .github/hooks/pre-push .git/hooks/pre-push && chmod +x .git/hooks/pre-push
+
+set -euo pipefail
+
+REPO=$(git rev-parse --show-toplevel)
+PERMITTED='s/\x{2713}//g; s/\x{2717}//g; s/\x{2705}//g; s/\x{274C}//g; s/\x{1F4E5}//g; s/\x{00B7}//g'
+
+collect_files() {
+    find "$REPO/.github/skills" "$REPO/docs" -name "*.md" -type f 2>/dev/null
+    for f in "$REPO/AGENTS.md" "$REPO/README.md" "$REPO/THIRD_PARTY_NOTICES.md"; do
+        [ -f "$f" ] && printf '%s\n' "$f"
+    done
+}
+
+VIOLATIONS=$(collect_files | sort -u | \
+    xargs grep -Pln '[^\x00-\x7F]' 2>/dev/null | \
+    while IFS= read -r file; do
+        result=$(grep -Pn '[^\x00-\x7F]' "$file" \
+            | perl -pe "$PERMITTED" \
+            | grep -P '[^\x00-\x7F]' || true)
+        if [ -n "$result" ]; then
+            printf '  %s:\n' "$file"
+            printf '%s\n' "$result" | head -3 | sed 's/^/    /'
+        fi
+    done)
+
+if [ -n "$VIOLATIONS" ]; then
+    printf 'ERROR: ASCII policy violation -- non-ASCII characters found:\n%s\n\n' "$VIOLATIONS"
+    printf 'Fix: python3 scratch/ascii_replace.py\n'
+    exit 1
+fi
+
+exit 0
