@@ -173,23 +173,23 @@ Testable:
 
 ## Common Pitfalls
 
-### ❌ Too Large (Not Small + Estimable)
+### [-] Too Large (Not Small + Estimable)
 **Bad:** "Refactor the entire authentication system"
 **Good:** "Extract JWT validation into a reusable service class"
 
-### ❌ Too Vague (Not Testable + Estimable)
+### [-] Too Vague (Not Testable + Estimable)
 **Bad:** "Improve the dashboard"
 **Good:** "Add a real-time activity feed widget showing last 10 actions"
 
-### ❌ Too Prescriptive (Not Negotiable)
+### [-] Too Prescriptive (Not Negotiable)
 **Bad:** "Use React Context API to manage global state"
 **Good:** "Eliminate prop-drilling in the checkout flow"
 
-### ❌ Low Value (Not Valuable)
+### [-] Low Value (Not Valuable)
 **Bad:** "Upgrade Bootstrap from v4 to v5"
 **Good:** "Upgrade Bootstrap to unlock new accessibility features and reduce bundle size by 15%"
 
-### ❌ Dependent (Not Independent)
+### [-] Dependent (Not Independent)
 **Bad:** "Add user dashboard (waiting for API team to finish endpoints)"
 **Good:** "Mock user API endpoints for dashboard development"
 

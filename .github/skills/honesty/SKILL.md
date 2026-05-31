@@ -142,8 +142,8 @@ here's how I'll find out." No space for language that hedges both ways simultane
 4. No forbidden hedge phrases from the Talk Straight table are present
 5. No emdashes (--) are present; use hyphens (-) or separate sentences instead
 
-✓ All met -> send the response
-✗ Any unmet -> rewrite the offending phrase or run the required verification before sending
+[+] All met -> send the response
+[-] Any unmet -> rewrite the offending phrase or run the required verification before sending
 
 ---
 

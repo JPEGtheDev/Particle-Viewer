@@ -30,8 +30,8 @@ Each new round of PR review comments requires a fresh skill invocation. A load f
 4. I am not about to defend rather than understand
 5. If new comments arrived since the last round, I have invoked this skill again before triaging them
 
-✓ All met -> proceed to address comments
-✗ Any unmet -> complete the triage and reload the skill for the current review round before taking action
+[+] All met -> proceed to address comments
+[-] Any unmet -> complete the triage and reload the skill for the current review round before taking action
 
 ---
 

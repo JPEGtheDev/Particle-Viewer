@@ -62,7 +62,7 @@ This reference provides concrete examples of correct and incorrect CI/CD workflo
 
 ## Pipeline Safety -- Correct Examples
 
-### ✅ Upload Artifacts Instead of Committing
+### [+] Upload Artifacts Instead of Committing
 
 ```yaml
 - name: Upload Generated Images
@@ -77,15 +77,15 @@ This reference provides concrete examples of correct and incorrect CI/CD workflo
     if-no-files-found: ignore
 ```
 
-### ✅ Link to Artifacts in PR Comments
+### [+] Link to Artifacts in PR Comments
 
 ```yaml
 const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
 const artifactsUrl = `${runUrl}#artifacts`;
-body += `**📥 [Download images from workflow artifacts](${artifactsUrl})**\n\n`;
+body += `**[in] [Download images from workflow artifacts](${artifactsUrl})**\n\n`;
 ```
 
-### ✅ Minimal Permissions
+### [+] Minimal Permissions
 
 ```yaml
 permissions:
@@ -94,7 +94,7 @@ permissions:
   pull-requests: write  # Comment on PRs
 ```
 
-### ✅ Idempotent PR Comment (Find & Update)
+### [+] Idempotent PR Comment (Find & Update)
 
 ```javascript
 const { data: comments } = await github.rest.issues.listComments({
@@ -118,7 +118,7 @@ if (existing) {
 
 ## Pipeline Safety -- INCORRECT Examples (Do NOT Follow)
 
-### ❌ Committing from CI
+### [-] Committing from CI
 
 ```yaml
 # BAD: Never commit from a pipeline
@@ -131,7 +131,7 @@ if (existing) {
 
 **Why:** Creates infinite loops, race conditions, and audit trail problems.
 
-### ❌ Base64 Data URIs in PR Comments
+### [-] Base64 Data URIs in PR Comments
 
 ```yaml
 # BAD: GitHub strips data: URIs from img tags
@@ -140,7 +140,7 @@ body += `<img src="data:image/png;base64,${base64Data}" />`;
 
 **Why:** GitHub strips `data:image/png;base64,...` from `<img>` tags for security. Images appear broken.
 
-### ❌ Over-Permissive Workflow
+### [-] Over-Permissive Workflow
 
 ```yaml
 # BAD: Don't grant write access to everything
@@ -149,7 +149,7 @@ permissions: write-all
 
 **Why:** Violates principle of least privilege. Only grant what the job actually needs.
 
-### ❌ Duplicate PR Comments (No Idempotency)
+### [-] Duplicate PR Comments (No Idempotency)
 
 ```javascript
 // BAD: Creates a new comment every run

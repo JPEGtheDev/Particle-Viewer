@@ -105,8 +105,8 @@ If unsure, read `code-quality` -- it applies to every code task.
 10. Session hooks checked: if sessionStart or userPromptSubmitted hook failed, all skills MUST be invoked manually this session -- no auto-loading is available
 11. If a hook config fix was committed during this session: that fix is NOT active until the NEXT session. Do NOT claim hooks are working. The CLI reads hooks.json once at session start -- in-session commits to hook files do not take effect until the session is restarted.
 
-✓ All met -> proceed with session work
-✗ Any unmet -> complete the unmet step now before writing code or sending a plan
+[+] All met -> proceed with session work
+[-] Any unmet -> complete the unmet step now before writing code or sending a plan
 
 ---
 

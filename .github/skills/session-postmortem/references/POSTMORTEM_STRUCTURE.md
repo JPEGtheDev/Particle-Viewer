@@ -211,17 +211,17 @@ For every root cause and contributing factor, one concrete action item. Each mus
 
 | Strength | Type | Why |
 |----------|------|-----|
-| ✅ STRONG | Gate/system change -- a structural change that makes the default behavior correct | Changes the system; no willpower required |
-| ✅ STRONG | Rationalization table addition -- explicitly names and counters the excuse used | Counters the specific thought pattern before it fires |
-| ✅ STRONG | Red Flag -> STOP addition -- a new trigger phrase added to the checklist | Mechanical: fires on recognition, not intent |
-| ❌ WEAK | Behavior-change item -- "be more careful about X", "remember to check Y" | Requires willpower on every occurrence; degrades under pressure |
-| ❌ WEAK | Vague skill update -- "improve the planning section" | Cannot be applied mechanically; produces inconsistent results |
+| [+] STRONG | Gate/system change -- a structural change that makes the default behavior correct | Changes the system; no willpower required |
+| [+] STRONG | Rationalization table addition -- explicitly names and counters the excuse used | Counters the specific thought pattern before it fires |
+| [+] STRONG | Red Flag -> STOP addition -- a new trigger phrase added to the checklist | Mechanical: fires on recognition, not intent |
+| [-] WEAK | Behavior-change item -- "be more careful about X", "remember to check Y" | Requires willpower on every occurrence; degrades under pressure |
+| [-] WEAK | Vague skill update -- "improve the planning section" | Cannot be applied mechanically; produces inconsistent results |
 
 **Required:** Every action item must be STRONG classification. If you can only produce a WEAK item, ask: "What structural change would make this mistake impossible to make, rather than just less likely?"
 
 | # | Root Cause / Factor | Action Item | Strength | Target File |
 |---|---------------------|-------------|----------|-------------|
-| 1 | [Root cause] | Add "[specific text]" to [section] | ✅/❌ | [skill file] |
+| 1 | [Root cause] | Add "[specific text]" to [section] | [+]/[-] | [skill file] |
 
 No vague items. "Be more careful" is not an action item. "Add the phrase 'X' to the rationalization table in execution Phase 2 under excuse 'Y'" is.
 
@@ -246,12 +246,12 @@ Run every item before generating the report:
 
 | Law | Followed | Evidence | Notes |
 |-----|----------|----------|-------|
-| TDD (no prod code without test) | ✅/❌/N/A | [what proves this] | |
-| Verification before completion | ✅/❌/N/A | [what proves this] | |
-| Root cause before fixes | ✅/❌/N/A | [what proves this] | |
-| Conventional commits | ✅/❌/N/A | [what proves this] | |
-| Skills loaded before acting | ✅/❌/N/A | [what proves this] | |
-| Commitments kept or acknowledged | ✅/❌/N/A | [what proves this] | |
+| TDD (no prod code without test) | [+]/[-]/N/A | [what proves this] | |
+| Verification before completion | [+]/[-]/N/A | [what proves this] | |
+| Root cause before fixes | [+]/[-]/N/A | [what proves this] | |
+| Conventional commits | [+]/[-]/N/A | [what proves this] | |
+| Skills loaded before acting | [+]/[-]/N/A | [what proves this] | |
+| Commitments kept or acknowledged | [+]/[-]/N/A | [what proves this] | |
 
-✓ All followed -> note compliance in report
-✗ Any violated -> verdict is SYSTEMIC ISSUE for the violated law -- document in action items
+[+] All followed -> note compliance in report
+[-] Any violated -> verdict is SYSTEMIC ISSUE for the violated law -- document in action items

@@ -87,8 +87,8 @@ Before presenting tests, verify:
 12. For functions that return bool/error-code: failure-path tests assert output parameters are unchanged (e.g., `EXPECT_EQ(outValue, initialValue)` after `EXPECT_FALSE(call(..., &outValue))`)
 13. For visual regression tests: see visual-regression-testing skill checklist
 
-✓ All met -> proceed
-✗ Any unmet -> write the test first before touching implementation code
+[+] All met -> proceed
+[-] Any unmet -> write the test first before touching implementation code
 
 ---
 

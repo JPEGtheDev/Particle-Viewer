@@ -106,8 +106,8 @@ Before building or presenting any plan:
 4. Plan has been reviewed by Skeptic Agent (or Three Amigos Refinement if Discovery ran)
 5. No todo touches 3+ files or exceeds 25 tool calls without being split
 
-✓ All met -> present the plan and wait for explicit user approval
-✗ Any unmet -> resolve the unmet item; do not start implementation
+[+] All met -> present the plan and wait for explicit user approval
+[-] Any unmet -> resolve the unmet item; do not start implementation
 
 ---
 
@@ -123,8 +123,8 @@ Answer before finalizing any plan. Dispatch a research subagent if you cannot an
 | 4 | **Do I have the capability?** Any libraries or patterns requiring research before coding? | Wrong assumptions |
 | 5 | **What would a skeptic say?** Strongest argument against this approach | Comfort choices |
 
-✓ All 5 questions answered with no gaps -> proceed to review gate or implementation
-✗ Any unanswered question or revealed gap -> stop, revise the plan, then re-run the gate
+[+] All 5 questions answered with no gaps -> proceed to review gate or implementation
+[-] Any unanswered question or revealed gap -> stop, revise the plan, then re-run the gate
 
 **For features with background threads or async state:** answer a 6th question before finalizing: "How will a developer diagnose this at runtime?" If no debug output path exists, add an observability todo before presenting the plan. A feature with invisible async state has no failure-diagnosis path.
 
@@ -154,7 +154,7 @@ If you genuinely find no gaps after thorough analysis, state that explicitly.
 
 ---
 
-## Heuristics: YAGNI · Simplest Thing · PPP
+## Heuristics: YAGNI - Simplest Thing - PPP
 
 **YAGNI (You Ain't Gonna Need It):** If a todo cannot be traced to a specific acceptance criterion, cut it.
 > Forbidden: "We'll probably need it later."

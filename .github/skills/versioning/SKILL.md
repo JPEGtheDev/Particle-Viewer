@@ -65,8 +65,8 @@ The PR title **MUST** use conventional commits format:
 - `feat!: redesign configuration API`
 
 **Invalid:**
-- ❌ "Add particle color customization" (missing type)
-- ❌ "Update camera rotation" (missing type)
+- [-] "Add particle color customization" (missing type)
+- [-] "Update camera rotation" (missing type)
 
 ### Working on an Existing PR
 
@@ -89,8 +89,8 @@ Before opening or merging a PR:
 5. Unit tests pass
 6. CI formatting checks pass
 
-✓ All met -> PR is ready to merge
-✗ Any unmet -> resolve before opening or merging the PR
+[+] All met -> PR is ready to merge
+[-] Any unmet -> resolve before opening or merging the PR
 
 ---
 

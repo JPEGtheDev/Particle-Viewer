@@ -28,8 +28,8 @@ Before beginning the branch ceremony:
 4. Every commit on the branch uses conventional commit format
 5. No debug-only, Work In Progress (WIP), or dead code remains in the diff
 
-✓ All met -> proceed through Steps 1-5
-✗ Any unmet -> resolve the unmet item before starting the branch ceremony
+[+] All met -> proceed through Steps 1-5
+[-] Any unmet -> resolve the unmet item before starting the branch ceremony
 
 ---
 
@@ -44,8 +44,8 @@ find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i
 git diff  # verify no unintended changes from formatting
 ```
 
-✓ All four pass -> proceed to Step 2
-✗ Any fail -> fix before proceeding; do not open a PR against a red branch
+[+] All four pass -> proceed to Step 2
+[-] Any fail -> fix before proceeding; do not open a PR against a red branch
 
 See `verification-before-completion` skill for the complete gate.
 

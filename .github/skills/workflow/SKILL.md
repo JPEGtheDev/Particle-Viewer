@@ -79,8 +79,8 @@ Before presenting workflow changes, verify:
 7. `if: always()` on artifact upload and PR comment steps where needed
 8. Artifact retention set appropriately (default: 30 days)
 
-✓ All met -> proceed with presenting workflow changes
-✗ Any unmet -> fix before presenting
+[+] All met -> proceed with presenting workflow changes
+[-] Any unmet -> fix before presenting
 
 ---
 

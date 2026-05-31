@@ -44,14 +44,14 @@ The INVEST checklist is maintained inline in `SKILL.md`. See the INVEST Checklis
 If a story violates INVEST, fix it or suggest breaking it down.
 
 ### Avoid Vague Language
-❌ "Code should be clean"  
-✅ "Cyclomatic complexity reduced from 15 to 8"
+[-] "Code should be clean"  
+[+] "Cyclomatic complexity reduced from 15 to 8"
 
-❌ "Performance should improve"  
-✅ "Frame capture completes in <=16ms (60 FPS budget)"
+[-] "Performance should improve"  
+[+] "Frame capture completes in <=16ms (60 FPS budget)"
 
-❌ "UI should look good"  
-✅ "Dashboard displays last 10 activities with <200ms load time"
+[-] "UI should look good"  
+[+] "Dashboard displays last 10 activities with <200ms load time"
 
 ### Include Concrete Details for Your Project
 

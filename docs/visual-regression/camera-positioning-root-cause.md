@@ -34,12 +34,12 @@ Target: (-15.99, 16.02, -8.04)
 
 ## Root Cause
 
-### Debug Output Was Correct ✓
+### Debug Output Was Correct [+]
 
 The debug overlay (`src/debugOverlay.hpp`) accurately reported camera position,
 target (lookat point), and up vector. There were no bugs.
 
-### The Incorrect Assumption ✗
+### The Incorrect Assumption [-]
 
 > "Debug coordinates from the reference image will produce the same visual composition in the test."
 

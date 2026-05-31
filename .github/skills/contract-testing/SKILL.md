@@ -24,8 +24,8 @@ Violating the letter of this rule is violating the spirit of this rule.
 2. Does a contract test fixture exist for it?
 3. Does every concrete implementation pass all contract tests?
 
-✓ All met -> proceed
-✗ Any unmet -> write the contract test fixture before adding any new implementation
+[+] All met -> proceed
+[-] Any unmet -> write the contract test fixture before adding any new implementation
 
 ---
 

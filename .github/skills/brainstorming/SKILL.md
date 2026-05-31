@@ -125,8 +125,8 @@ Every item MUST be checked before handing off to `writing-plans`.
 6. Architecture impact assessed (layer boundaries, dependency direction)
 7. Test strategy stated
 
-✓ All checked -> output Design Decision Record -> hand off to `writing-plans`
-✗ Any unchecked -> STOP. Return to the relevant phase. Do not proceed.
+[+] All checked -> output Design Decision Record -> hand off to `writing-plans`
+[-] Any unchecked -> STOP. Return to the relevant phase. Do not proceed.
 
 ---
 

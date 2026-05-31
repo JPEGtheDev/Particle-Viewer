@@ -73,8 +73,8 @@ BEFORE creating a worktree, verify:
 2. A descriptive name for the branch exists: agent/<purpose>
 3. The subagent prompt includes the worktree path explicitly
 
-✓ All met -> create the worktree and dispatch
-✗ Any unmet -> work in the main context instead
+[+] All met -> create the worktree and dispatch
+[-] Any unmet -> work in the main context instead
 ```
 
 ---

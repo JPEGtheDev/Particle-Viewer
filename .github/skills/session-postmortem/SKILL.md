@@ -27,8 +27,8 @@ Before starting the postmortem analysis:
 3. You are running as an EXTERNAL reviewer -- you have not been the agent in the session being analyzed.
 4. Before writing the self-assessment, read `checkpoints/index.md` to determine the full session scope. Context compaction does not shorten the session. A self-assessment that covers only the final task of a 9-hour session is incomplete.
 
-✓ All 4 met -> proceed through all postmortem parts in order
-✗ Any unmet -> wait for the session to complete, locate the events log, dispatch a separate external reviewer, or read `checkpoints/index.md` before proceeding
+[+] All 4 met -> proceed through all postmortem parts in order
+[-] Any unmet -> wait for the session to complete, locate the events log, dispatch a separate external reviewer, or read `checkpoints/index.md` before proceeding
 
 ---
 

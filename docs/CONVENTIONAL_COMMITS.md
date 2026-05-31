@@ -70,13 +70,13 @@ git commit -m "fix(camera): correct rotation calculations"
 
 ## Rules
 
-✅ **DO:**
+[+] **DO:**
 - Keep description clear and concise
 - Use present tense ("add" not "added")
 - Start description (after colon) with lowercase letter
 - Don't end with period
 
-❌ **DON'T:**
+[-] **DON'T:**
 - Mix multiple types in one commit
 - Forget the colon after type
 - Use past tense

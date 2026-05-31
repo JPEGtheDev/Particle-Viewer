@@ -26,8 +26,8 @@ Agent reports: "Done" / "Complete" / "Fixed" / "Committed"
 4. ONLY THEN claim the subagent's work is complete
 ```
 
-✓ All steps passed -> claim the subagent's work is complete
-✗ Any step failed -> do not relay the completion claim; investigate and fix before claiming done
+[+] All steps passed -> claim the subagent's work is complete
+[-] Any step failed -> do not relay the completion claim; investigate and fix before claiming done
 
 **Gate rule:** An agent's "Done" claim is a hypothesis. Your verification makes it a fact.
 

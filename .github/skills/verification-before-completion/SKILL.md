@@ -50,8 +50,8 @@ BEFORE claiming any status or expressing satisfaction:
    - If YES: State claim WITH evidence inline
 5. ONLY THEN: Make the claim
 
-✓ All met -> proceed
-✗ Any unmet -> return to step 1; do not make the claim
+[+] All met -> proceed
+[-] Any unmet -> return to step 1; do not make the claim
 ```
 
 Skipping any step = lying, not verifying.
@@ -94,8 +94,8 @@ These words and phrases **cannot appear in any response** unless fresh verificat
 
 Evidence must be **inline**, not referenced:
 
-❌ `"I ran the tests and they passed."`  
-✅ `"Ran <project-test-runner>: **247 passed, 0 failures.** [exit 0]"`
+[-] `"I ran the tests and they passed."`  
+[+] `"Ran <project-test-runner>: **247 passed, 0 failures.** [exit 0]"`
 
 See `references/HONESTY_PATTERNS.md` for why "should work" is banned, process language alternatives, and the 4-Cores final integrity check.
 

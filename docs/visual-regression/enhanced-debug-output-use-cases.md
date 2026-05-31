@@ -67,7 +67,7 @@ See [Calculations & Examples](enhanced-debug-output-calculations.md) for the for
 
 ## Key Do's and Don'ts
 
-| ✅ DO | ❌ DON'T |
+| [+] DO | [-] DON'T |
 |-------|---------|
 | Extract viewing direction (Front vector) | Blindly copy Pos/Target coordinates |
 | Calculate distance from coverage goals | Assume current distance is optimal |

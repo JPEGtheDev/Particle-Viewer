@@ -28,8 +28,8 @@ Before reviewing any infrastructure change:
 4. Every checklist item in all three review areas is answered YES or NO -- no items left unanswered
 5. Any item answered NO produces a row in the violations table before the verdict is written
 
-✓ All met -> proceed through the three review areas
-✗ Any unmet -> resolve the unmet item before writing a verdict
+[+] All met -> proceed through the three review areas
+[-] Any unmet -> resolve the unmet item before writing a verdict
 
 ---
 
@@ -47,8 +47,8 @@ Run every item for each changed `.github/workflows/*.yml` file:
 6. Matrix builds cover required platforms (Linux at minimum; Windows/macOS if the project targets them)
 7. `actions/checkout` and other third-party actions pinned to a specific SHA, not a floating tag
 
-✓ All pass -> pipeline is safe to merge
-✗ Any unmet -> verdict: ISSUES FOUND -- document in review report
+[+] All pass -> pipeline is safe to merge
+[-] Any unmet -> verdict: ISSUES FOUND -- document in review report
 
 ### 2. CMake Build Checks
 
@@ -60,8 +60,8 @@ Run every item for each changed `CMakeLists.txt`:
 4. Install rules present for release builds (`install(TARGETS ...)`)
 5. No hardcoded absolute paths -- all paths relative or constructed via CMake variables
 
-✓ All pass -> build is reproducible
-✗ Any unmet -> verdict: ISSUES FOUND -- document in review report
+[+] All pass -> build is reproducible
+[-] Any unmet -> verdict: ISSUES FOUND -- document in review report
 
 ### 3. Flatpak Manifest Checks
 
@@ -73,8 +73,8 @@ Run every item for any changed file under `flatpak/`:
 4. Runtime version pinned to a specific release (not a floating `latest`)
 5. `--share=network` absent from finish-args unless network access is explicitly required and documented
 
-✓ All pass -> Flatpak manifest is compliant
-✗ Any unmet -> verdict: ISSUES FOUND -- document in review report
+[+] All pass -> Flatpak manifest is compliant
+[-] Any unmet -> verdict: ISSUES FOUND -- document in review report
 
 ---
 

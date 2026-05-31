@@ -28,8 +28,8 @@ Before pushing any change:
 4. No new dependency duplicates an existing transitive dependency at a different version
 5. If shader files were changed: build was re-run so `Viewer-Assets/shaders/` is current
 
-✓ All met -> proceed to push
-✗ Any unmet -> fix before pushing
+[+] All met -> proceed to push
+[-] Any unmet -> fix before pushing
 
 ---
 
@@ -103,8 +103,8 @@ cmake --install build
 
 **Gate:** `grep -r "FetchContent_Declare" CMakeLists.txt` -- every `FetchContent_Declare` must have a `GIT_TAG` pinned to a specific version, not a branch name.
 
-✓ All tags pinned to a version tag or commit SHA -> proceed to add or upgrade the dependency
-✗ Any tag references a branch name -> fix the ref before proceeding
+[+] All tags pinned to a version tag or commit SHA -> proceed to add or upgrade the dependency
+[-] Any tag references a branch name -> fix the ref before proceeding
 
 ```cmake
 # CORRECT -- pinned to tag

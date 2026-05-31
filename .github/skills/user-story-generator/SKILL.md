@@ -28,8 +28,8 @@ After you've had the conversation and before generating, mentally verify you hav
 8. Format preference (if they expressed one)
 9. Any specific constraints or requirements
 
-✓ All 9 met -> proceed to generate the story
-✗ Any unclear -> ask one clarifying question before generating
+[+] All 9 met -> proceed to generate the story
+[-] Any unclear -> ask one clarifying question before generating
 
 **RED FLAGS - Stop and ask for clarification:**
 - Story mentions functionality not in project context

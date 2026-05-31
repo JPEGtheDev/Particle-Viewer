@@ -31,8 +31,8 @@ Before modifying the Flatpak manifest, SDL3 window creation code, or GL context 
 4. Is the NVIDIA fallback check gated on both `/dev/nvidia0` AND absence of the mounted GL extension?
 5. Is the MSAA fallback retry present if requesting multisample?
 
-✓ All pass -> proceed
-✗ Any fail -> fix the gate condition first, then proceed
+[+] All pass -> proceed
+[-] Any fail -> fix the gate condition first, then proceed
 
 ---
 

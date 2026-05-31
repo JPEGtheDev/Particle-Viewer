@@ -166,15 +166,15 @@ BAD sequence:
   1. Render scene
   2. Save as baseline.png
   3. Write test comparing against baseline.png
-  4. Test passes ✓
+  4. Test passes [+]
   -> You have tested nothing. You compared output to itself.
 
 GOOD sequence:
   1. Write the test with no baseline (or a deliberately wrong one)
-  2. Run the test -> it FAILS ✗  (this is RED -- required)
+  2. Run the test -> it FAILS [-]  (this is RED -- required)
   3. Inspect the failure: is the rendered output visually correct?
   4. If yes: promote it to baseline.png
-  5. Run the test -> it PASSES ✓  (GREEN)
+  5. Run the test -> it PASSES [+]  (GREEN)
 ```
 
 The visual test **MUST fail before the baseline is correct.** If it never failed, delete the baseline and start over.

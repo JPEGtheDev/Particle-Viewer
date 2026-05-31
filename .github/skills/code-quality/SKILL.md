@@ -35,8 +35,8 @@ Before every commit, verify:
 4. Build passes: `cmake --build build`
 5. All tests pass: `./build/tests/ParticleViewerTests`
 
-✓ All 5 met -> proceed to commit
-✗ Any unmet -> fix the failing step; do not commit
+[+] All 5 met -> proceed to commit
+[-] Any unmet -> fix the failing step; do not commit
 
 **Note:** clang-format is C++ only. Never run it on Markdown, YAML, or documentation files -- it will corrupt them.
 
@@ -47,7 +47,7 @@ See `references/FORMATTING_RULES.md` for formatting rule details.
 
 ## Naming Conventions (clang-tidy enforced)
 
-`PascalCase` classes/enums · `camelCase` methods · `snake_case` vars/params · `snake_case_` private members · `UPPER_CASE` constants · `snake_case` files/namespaces · `<PROJECT>_<PATH>_<FILE>_H` guards
+`PascalCase` classes/enums - `camelCase` methods - `snake_case` vars/params - `snake_case_` private members - `UPPER_CASE` constants - `snake_case` files/namespaces - `<PROJECT>_<PATH>_<FILE>_H` guards
 
 See `references/NAMING_TABLES.md` for full naming examples.
 
@@ -91,8 +91,8 @@ Static analysis catches syntax violations. These structural smells require human
 
 See `references/CODE_SMELLS.md` for the full code smells catalog.
 
-✓ All checked -> no structural smells found
-✗ Any flagged -> log `[BROKEN WINDOW NOTED]` or fix before commit (see `cpp-patterns` skill)
+[+] All checked -> no structural smells found
+[-] Any flagged -> log `[BROKEN WINDOW NOTED]` or fix before commit (see `cpp-patterns` skill)
 
 ---
 
@@ -100,8 +100,8 @@ See `references/CODE_SMELLS.md` for the full code smells catalog.
 
 See `references/REVIEW_CHECKLIST.md` for the full numbered pre-commit checklist.
 
-✓ All 10 met -> proceed to commit
-✗ Any unmet -> complete the failing step before committing
+[+] All 10 met -> proceed to commit
+[-] Any unmet -> complete the failing step before committing
 
 ---
 

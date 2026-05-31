@@ -24,8 +24,8 @@ Violating the letter of this rule is violating the spirit of this rule.
 2. All commits from this session have been pushed or are staged and ready.
 3. You have NOT yet sent the final message to the user.
 
-✓ All met -> proceed through all 7 steps in order
-✗ Any unmet -> complete remaining session work first; once no further work is planned, return here and execute all 7 steps
+[+] All met -> proceed through all 7 steps in order
+[-] Any unmet -> complete remaining session work first; once no further work is planned, return here and execute all 7 steps
 
 ---
 

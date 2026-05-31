@@ -76,8 +76,8 @@ BEFORE [action], verify:
 2. [Condition two]
 3. [Condition three]
 
-✓ All met -> proceed
-✗ Any unmet -> [specific required action before proceeding]
+[+] All met -> proceed
+[-] Any unmet -> [specific required action before proceeding]
 ```
 
 Gates must specify what happens on FAIL -- not just list conditions.

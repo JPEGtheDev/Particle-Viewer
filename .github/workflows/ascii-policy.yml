@@ -29,7 +29,6 @@ jobs:
           cat > /tmp/ascii_check.py << 'PYEOF'
           import sys, re, os
 
-          PERMITTED = re.compile('[\u2713\u2717\u2705\u274c\U0001f4e5\u00b7]')
           NON_ASCII = re.compile('[^\x00-\x7f]')
 
           def collect_files():
@@ -46,8 +45,7 @@ jobs:
           for path in sorted(set(collect_files())):
               with open(path, encoding='utf-8') as f:
                   for n, line in enumerate(f, 1):
-                      clean = PERMITTED.sub('', line)
-                      if NON_ASCII.search(clean):
+                      if NON_ASCII.search(line):
                           violations.append(f'  {path}:{n}: {line.rstrip()[:120]}')
 
           if violations:

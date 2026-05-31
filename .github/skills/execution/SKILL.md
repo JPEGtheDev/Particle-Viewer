@@ -33,8 +33,8 @@ Before writing any code or claiming any task done:
 4. No placeholders in any todo -- every item is concrete and executable
 5. Verification method is identified -- know what command proves success before starting
 
-✓ All met -> begin execution
-✗ Any unmet -> resolve now; do not write a single line of code first
+[+] All met -> begin execution
+[-] Any unmet -> resolve now; do not write a single line of code first
 
 ---
 
@@ -130,9 +130,9 @@ After something works but before you commit: **"Is there a cleaner way to expres
 3. Green after each discrete change
 4. If a test turns red: you changed behavior. Revert and re-examine.
 
-✓ All steps green -> proceed to commit
-✗ Baseline fails -> fix tests before refactoring; do not start structural changes
-✗ Any step turns red -> you changed behavior; revert before proceeding
+[+] All steps green -> proceed to commit
+[-] Baseline fails -> fix tests before refactoring; do not start structural changes
+[-] Any step turns red -> you changed behavior; revert before proceeding
 
 **If you discover a bug while refactoring: stop, record it, finish the refactor, then fix the bug as a separate commit.**
 

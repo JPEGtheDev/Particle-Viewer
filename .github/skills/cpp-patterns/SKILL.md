@@ -26,8 +26,8 @@ Violating the letter of this rule is violating the spirit of this rule.
 4. Has the class or function I am changing been read -- not recalled from memory?
 5. Before declaring a new type: is this part of the public API, or an implementation detail used only in one Translation Unit (TU)? If implementation detail -> declare in `.cpp`, not the header.
 
-✓ All met -> proceed
-✗ Any unmet -> load the code-quality skill, apply RAII, search for existing implementations, read the target code, or move the implementation detail into the `.cpp` before writing any production code
+[+] All met -> proceed
+[-] Any unmet -> load the code-quality skill, apply RAII, search for existing implementations, read the target code, or move the implementation detail into the `.cpp` before writing any production code
 
 ---
 

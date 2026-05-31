@@ -24,7 +24,7 @@ Violating the letter of this rule is violating the spirit of this rule.
 2. Can its destructor fail or throw?
 3. Does its constructor acquire multiple resources?
 
-✓ No owned resources -> skip this skill  ✗ Any owned resource -> apply the rules below
+[+] No owned resources -> skip this skill  [-] Any owned resource -> apply the rules below
 
 ---
 

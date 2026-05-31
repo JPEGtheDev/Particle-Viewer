@@ -27,8 +27,8 @@ A visual regression test proves output **hasn't changed**, not that it was corre
 3. If updating an existing baseline: the old baseline has been deleted and the test is confirmed failing.
 4. Human baseline approval is an explicit, scheduled step in the workflow -- not auto-commit.
 
-✓ All met -> proceed
-✗ Any unmet -> resolve the unmet condition before writing any test code or committing any baseline
+[+] All met -> proceed
+[-] Any unmet -> resolve the unmet condition before writing any test code or committing any baseline
 
 ---
 

@@ -37,8 +37,8 @@ Simple 1-todo, clear AC -> skip; use Skeptic. 1+2 required for Discovery feature
 
 1. Which ceremony? (see When to Invoke)
 2. Did Discovery run? Check plan.md for `## Feature Specification`.
-   ✓ -> Three Amigos for Ceremonies 2, 5, 6
-   ✗ -> Skeptic for Ceremony 2
+   [+] -> Three Amigos for Ceremonies 2, 5, 6
+   [-] -> Skeptic for Ceremony 2
 3. 3 worktrees, one per amigo. Inject `{{PERSONA}}` + `{{READ_FIRST}}` + `{{CEREMONY}}` + `{{AGENDA}}` into amigo.md.
 4. Collect all three verdicts before acting on any.
 5. Any single REJECT blocks. Majority does NOT override.

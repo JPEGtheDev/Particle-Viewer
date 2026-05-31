@@ -45,8 +45,8 @@ CANARY: systematic-debugging loaded. Issue: [name it]. No fix before root cause.
 2. The failure reproduces consistently with identified reproduction steps
 3. I can state: "The root cause is X because Y" with evidence
 
-✓ All met -> proceed
-✗ Any unmet -> continue Phase 1 investigation; do not proceed
+[+] All met -> proceed
+[-] Any unmet -> continue Phase 1 investigation; do not proceed
 
 ---
 
@@ -95,8 +95,8 @@ BEFORE proceeding to Phase 2, verify:
 2. The failure reproduces consistently with identified reproduction steps.
 3. You can state: "The root cause is X because Y."
 
-✓ All 3 met -> proceed to Phase 2
-✗ Any unmet -> continue Phase 1 investigation; do not proceed
+[+] All 3 met -> proceed to Phase 2
+[-] Any unmet -> continue Phase 1 investigation; do not proceed
 
 ### Phase 2: Pattern Analysis
 

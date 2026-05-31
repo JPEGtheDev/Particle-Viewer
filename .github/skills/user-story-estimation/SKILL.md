@@ -109,8 +109,8 @@ For real-world Particle-Viewer estimates (Framebuffer Capture, Global State Elim
 4. All skill dispatches needed have been identified
 5. If the story requires >3 agents, the Wave structure has been accounted for
 
-✓ All met -> commit to the estimate
-✗ Any unmet -> resolve unknowns and recheck INVEST compliance before estimating
+[+] All met -> commit to the estimate
+[-] Any unmet -> resolve unknowns and recheck INVEST compliance before estimating
 
 ---
 

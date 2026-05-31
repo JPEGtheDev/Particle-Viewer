@@ -158,7 +158,7 @@ TEST(VisualHelperTest, ImageLoad_PPM_RoundTrip_PreservesPixels)
 
 ## AAA Pattern -- INCORRECT Examples (Do NOT Follow)
 
-### ❌ Combined Arrange & Act
+### [-] Combined Arrange & Act
 
 ```cpp
 // BAD: "Arrange & Act" combined
@@ -174,7 +174,7 @@ TEST(ImageTest, DefaultConstructor_CreatesEmptyImage)
 
 **Fix:** Omit `// Arrange` entirely, start with `// Act`.
 
-### ❌ Combined Act & Assert
+### [-] Combined Act & Assert
 
 ```cpp
 // BAD: "Act & Assert" combined
@@ -191,7 +191,7 @@ TEST_F(VisualRegressionTest, ExactMatch_IdenticalImages_Passes)
 
 **Fix:** Separate into `// Act` (run comparison) and `// Assert` (check result).
 
-### ❌ Inline Expected Values in Assert
+### [-] Inline Expected Values in Assert
 
 ```cpp
 // BAD: Magic numbers in assert
@@ -208,7 +208,7 @@ TEST(ImageTest, Constructor_SetsSize)
 
 **Fix:** Put expected values as named variables in Arrange.
 
-### ❌ Testing External Library Behavior
+### [-] Testing External Library Behavior
 
 ```cpp
 // BAD: Testing std::vector, not our code
@@ -227,7 +227,7 @@ TEST(ImageTest, PixelVector_Resizes)
 
 **Fix:** Only test YOUR code -- wrapper logic, integration, or behavior you own.
 
-### ❌ EXPECT_LE When the Value Is Deterministic
+### [-] EXPECT_LE When the Value Is Deterministic
 
 ```cpp
 // BAD: LE masks regressions where the code under-enqueues
@@ -241,7 +241,7 @@ EXPECT_LE(callCount, window);  // passes even if callCount is 0 or window-1
 EXPECT_EQ(callCount, window);
 ```
 
-### ❌ Binary File Test Missing Required Record Count
+### [-] Binary File Test Missing Required Record Count
 
 When testing that a binary reader correctly handles a frame-N seek, a file with fewer than N+1 records causes `fseek` to go past EOF, so `fread` returns 0 (EOF/truncated), not a record with the wrong field. This means the test ends up exercising the truncation branch instead of the intended branch (e.g., field mismatch):
 
@@ -268,7 +268,7 @@ fclose(f);
 getCOM(/*frame=*/1, out);  // reads r1; w=99 != frame=1 -> mismatch branch
 ```
 
-### ❌ Vague Test Name
+### [-] Vague Test Name
 
 ```cpp
 // BAD: No clear behavior being tested
@@ -279,7 +279,7 @@ TEST(CameraTest, Update)            // <-- WRONG
 
 **Fix:** Use `UnitName_StateUnderTest_ExpectedResult` format.
 
-### ❌ Duplicating Production Logic in Test Helpers
+### [-] Duplicating Production Logic in Test Helpers
 
 ```cpp
 // BAD: Test helper class recreates Particle's cube generation logic

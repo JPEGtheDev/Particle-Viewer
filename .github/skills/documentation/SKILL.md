@@ -26,8 +26,8 @@ Before writing any documentation:
 2. Confirm the file belongs in `docs/<domain>/<subdomain>/` (not a flat root file unless it's a cross-cutting standard)
 3. Confirm no existing file already covers this concept -- link to it instead of duplicating
 
-✓ All 3 met -> proceed to write
-✗ Any unmet -> resolve before writing a single line
+[+] All 3 met -> proceed to write
+[-] Any unmet -> resolve before writing a single line
 
 ---
 
@@ -67,7 +67,7 @@ All files in `docs/` MUST be **Document Mode** -- readable independently, with n
 3. Use code blocks with language tags for all code examples
 4. Use relative links -- verify they resolve from the file's directory
 5. Keep file <=600 words; split at concept boundaries if longer
-6. Use ASCII-only text -- replace non-ASCII arrows, em/en-dashes, math operators, and box-drawing chars with ASCII equivalents (-> -- - <= >= != | - +); status icons (✓, ✗, ✅, ❌) are permitted
+6. Use ASCII-only text -- replace non-ASCII arrows, em/en-dashes, math operators, and box-drawing chars with ASCII equivalents (-> -- - <= >= != | - +)
 
 ---
 
@@ -96,8 +96,8 @@ Before presenting documentation, verify:
 7. `## Related` section is present at the bottom
 8. Documentation matches current code state
 
-✓ All pass -> documentation is ready to present
-✗ Any unmet -> resolve all failing items before presenting
+[+] All pass -> documentation is ready to present
+[-] Any unmet -> resolve all failing items before presenting
 
 ---
 

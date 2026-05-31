@@ -75,8 +75,8 @@ Run every item for each file under review:
 7. Do any UI files (`ui/`) reach into `graphics/` internals beyond `IOpenGLContext`? (VIOLATION)
 8. Are there circular `#include` dependencies between any two files in the same layer?
 
-✓ All pass -> verdict: CLEAN
-✗ Any fail -> verdict: VIOLATIONS FOUND -- document every failure in the Review Report
+[+] All pass -> verdict: CLEAN
+[-] Any fail -> verdict: VIOLATIONS FOUND -- document every failure in the Review Report
 
 ---
 

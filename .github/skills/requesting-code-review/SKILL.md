@@ -27,8 +27,8 @@ YOU MUST state what to look for in every review request. No exceptions.
 3. PR description is complete (see `finishing-a-development-branch` Step 4)
 4. You have reviewed your own diff and addressed obvious issues
 
-✓ All met -> proceed to request review
-✗ Any unmet -> resolve all unmet items before requesting review
+[+] All met -> proceed to request review
+[-] Any unmet -> resolve all unmet items before requesting review
 
 Requesting review against a red CI or an incomplete PR description wastes the reviewer's time and erodes trust.
 

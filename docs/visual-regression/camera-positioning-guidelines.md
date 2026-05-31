@@ -35,10 +35,10 @@ dist_new = dist_original * scale_factor  # = 51.16 units
 
 ### Outcome
 
-- Cube fills ~40-50% of viewport ✓
-- Balanced blank space around cube ✓
-- Same viewing angle preserved ✓
-- Matches reference image composition ✓
+- Cube fills ~40-50% of viewport [+]
+- Balanced blank space around cube [+]
+- Same viewing angle preserved [+]
+- Matches reference image composition [+]
 
 ## Lessons Learned
 

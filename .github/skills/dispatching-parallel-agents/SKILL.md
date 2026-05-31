@@ -86,8 +86,8 @@ BEFORE DISPATCHING PARALLEL AGENTS, verify:
 3. No more than 4 agents in flight on Standard accounts (or within your confirmed Enterprise limit)
 4. Read-only agents have no shared write targets; write agents each have an isolated worktree
 
-✓ All met -> dispatch agents
-✗ Any unmet -> resolve the dependency, define the return format, or serialize the dispatch before proceeding
+[+] All met -> dispatch agents
+[-] Any unmet -> resolve the dependency, define the return format, or serialize the dispatch before proceeding
 
 ---
 
@@ -98,8 +98,8 @@ BEFORE DISPATCHING PARALLEL AGENTS, verify:
 3. No more than 4 agents in flight on Standard accounts (or within your confirmed Enterprise limit)
 4. Read-only agents have no shared write targets; write agents each have an isolated worktree
 
-✓ All met -> dispatch agents
-✗ Any unmet -> resolve the dependency, define the return format, or serialize the dispatch before proceeding
+[+] All met -> dispatch agents
+[-] Any unmet -> resolve the dependency, define the return format, or serialize the dispatch before proceeding
 
 ---
 

@@ -123,20 +123,20 @@ Rules:
 ### From `docs/testing/visual-regression.md`:
 
 ```markdown
-<!-- ✅ Correct: relative path from docs/testing/ to docs/ -->
+<!-- [+] Correct: relative path from docs/testing/ to docs/ -->
 See [Testing Standards](../TESTING_STANDARDS.md) for AAA pattern details.
 
-<!-- ❌ Incorrect: wrong relative path -->
+<!-- [-] Incorrect: wrong relative path -->
 See [Testing Standards](TESTING_STANDARDS.md) for AAA pattern details.
 ```
 
 ### From `docs/CODING_STANDARDS.md`:
 
 ```markdown
-<!-- ✅ Correct: same directory -->
+<!-- [+] Correct: same directory -->
 See [Testing Standards](TESTING_STANDARDS.md) for test-specific conventions.
 
-<!-- ✅ Correct: subdirectory -->
+<!-- [+] Correct: subdirectory -->
 See [Visual Regression Guide](testing/visual-regression.md) for image comparison.
 ```
 
@@ -173,8 +173,8 @@ YOU MUST [action]. No exceptions.
 1. [Condition]
 2. [Condition]
 
-✓ All met -> proceed
-✗ Any unmet -> [specific required action]
+[+] All met -> proceed
+[-] Any unmet -> [specific required action]
 
 ---
 

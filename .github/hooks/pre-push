@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # ASCII policy enforcement for Particle-Viewer markdown files.
-# Permitted non-ASCII: U+2713 (check mark), U+2717 (ballot x),
-#   U+2705 (green check), U+274C (red X), U+1F4E5 (inbox), U+00B7 (middle dot)
+# Zero non-ASCII permitted -- no exceptions.
 #
 # Install: cp .github/hooks/pre-push .git/hooks/pre-push && chmod +x .git/hooks/pre-push
 
@@ -19,12 +18,10 @@ collect_files() {
 check_file() {
     python3 -c "
 import sys, re
-PERMITTED = re.compile('[\u2713\u2717\u2705\u274c\U0001f4e5\u00b7]')
 NON_ASCII = re.compile('[^\x00-\x7f]')
 with open(sys.argv[1], encoding='utf-8') as f:
     for n, line in enumerate(f, 1):
-        clean = PERMITTED.sub('', line)
-        if NON_ASCII.search(clean):
+        if NON_ASCII.search(line):
             print(str(n) + ':' + line.rstrip()[:120])
 " "$1" 2>/dev/null
 }
