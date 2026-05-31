@@ -67,7 +67,7 @@ All files in `docs/` MUST be **Document Mode** -- readable independently, with n
 3. Use code blocks with language tags for all code examples
 4. Use relative links -- verify they resolve from the file's directory
 5. Keep file <=600 words; split at concept boundaries if longer
-6. Use ASCII-only text -- replace Unicode arrows (->), dashes (--, -), math operators (<=, >=, !=), and box-drawing (|, -, +) with ASCII; status icons (✓, ✗, ✅, ❌) are permitted
+6. Use ASCII-only text -- replace non-ASCII arrows, em/en-dashes, math operators, and box-drawing chars with ASCII equivalents (-> -- - <= >= != | - +); status icons (✓, ✗, ✅, ❌) are permitted
 
 ---
 

@@ -56,7 +56,7 @@ Before creating, editing, or shipping any skill or agent template:
 - No BEFORE PROCEEDING gate -- **STOP. Add a gate with explicit ✓/✗ branches before shipping.**
 - No rationalization table -- **STOP. Add >=5 rows now. A skill without one is a suggestion.**
 - Skill contains "should", "prefer", "consider" -- **STOP. Replace every instance with MUST, DO NOT, or an explicit imperative.**
-- Skill or reference file contains non-ASCII characters except permitted status icons (✓, ✗, ✅, ❌) -- **STOP. Replace Unicode arrows (->), dashes (--), math operators (<=, >=, !=), and box-drawing (|, -, +) with ASCII equivalents before committing.**
+- Skill or reference file contains non-ASCII characters except permitted status icons (✓, ✗, ✅, ❌) -- **STOP. Replace non-ASCII arrows, em/en-dashes, math operators, and box-drawing chars with ASCII equivalents (-> -- - <= >= != | - +) before committing.**
 
 ---
 
