@@ -5,13 +5,17 @@ on:
     paths:
       - '**.md'
       - '.github/skills/**'
+      - '.github/agents/**'
       - '.github/workflows/ascii-policy.yml'
+      - '.claude/hooks/**'
       - 'docs/**'
   pull_request:
     paths:
       - '**.md'
       - '.github/skills/**'
+      - '.github/agents/**'
       - '.github/workflows/ascii-policy.yml'
+      - '.claude/hooks/**'
       - 'docs/**'
 
 permissions:
@@ -32,7 +36,7 @@ jobs:
           NON_ASCII = re.compile('[^\x00-\x7f]')
 
           def collect_files():
-              for root in ['.github/skills', '.github/agents', 'docs']:
+              for root in ['.github/skills', '.github/agents', '.claude/hooks', 'docs']:
                   for dirpath, _, names in os.walk(root):
                       for name in names:
                           if name.endswith('.md'):
