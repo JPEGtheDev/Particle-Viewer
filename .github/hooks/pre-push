@@ -9,7 +9,7 @@ set -euo pipefail
 REPO=$(git rev-parse --show-toplevel)
 
 collect_files() {
-    find "$REPO/.github/skills" "$REPO/docs" -name "*.md" -type f 2>/dev/null
+    find "$REPO/.github/skills" "$REPO/.github/agents" "$REPO/docs" -name "*.md" -type f 2>/dev/null
     for f in "$REPO/AGENTS.md" "$REPO/README.md" "$REPO/THIRD_PARTY_NOTICES.md"; do
         [ -f "$f" ] && printf '%s\n' "$f"
     done

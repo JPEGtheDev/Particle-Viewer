@@ -32,7 +32,7 @@ jobs:
           NON_ASCII = re.compile('[^\x00-\x7f]')
 
           def collect_files():
-              for root in ['.github/skills', 'docs']:
+              for root in ['.github/skills', '.github/agents', 'docs']:
                   for dirpath, _, names in os.walk(root):
                       for name in names:
                           if name.endswith('.md'):

@@ -21,7 +21,7 @@ The PR workflow triggers automatically when a pull request is opened or updated 
 ### Expected Behavior
 
 1. **Workflow Triggers** -- `Build Flatpak (PR)` starts in the Actions tab
-2. **Build Success** -- workflow completes with a green checkmark
+2. **Build Success** -- workflow job shows status [+] (passed) in the Actions tab
 3. **Artifact Upload** -- artifact named `particle-viewer-flatpak-pr-<NUMBER>` is available
 4. **PR Comment** -- bot posts download and installation instructions
 
