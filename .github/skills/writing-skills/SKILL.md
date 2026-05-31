@@ -57,6 +57,7 @@ Before creating, editing, or shipping any skill or agent template:
 - No rationalization table -- **STOP. Add >=5 rows now. A skill without one is a suggestion.**
 - Skill contains "should", "prefer", "consider" -- **STOP. Replace every instance with MUST, DO NOT, or an explicit imperative.**
 - Skill or reference file contains non-ASCII characters -- **STOP. Replace non-ASCII arrows, em/en-dashes, math operators, and box-drawing chars with ASCII equivalents (-> -- - <= >= != | - +) before committing.**
+- After bulk ASCII replacement: manually review files that described the replaced characters in illustrative or exception context (e.g., "these icons (X, Y) are permitted") -- the replacement produces nonsensical output that requires manual correction.
 
 ---
 

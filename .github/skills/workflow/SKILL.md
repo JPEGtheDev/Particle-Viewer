@@ -78,6 +78,7 @@ Before presenting workflow changes, verify:
 6. Job dependencies are correct (`needs:` ordering)
 7. `if: always()` on artifact upload and PR comment steps where needed
 8. Artifact retention set appropriately (default: 30 days)
+9. For scan/lint workflows: `paths:` trigger list and `collect_files()` (or equivalent) cover exactly the same directory set -- list both and compare before pushing
 
 [+] All met -> proceed with presenting workflow changes
 [-] Any unmet -> fix before presenting

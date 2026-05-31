@@ -82,6 +82,10 @@ BEFORE [action], verify:
 
 Gates must specify what happens on FAIL -- not just list conditions.
 
+**Notation note:** `[+]/[-]` are the prescribed branch labels for BEFORE PROCEEDING gates.
+Markdown task list checkboxes `[ ]` are ASCII (0x5B 0x20 0x5D) and are a distinct construct --
+they appear in checklists and review steps and are NOT an ASCII policy violation.
+
 ---
 
 ## Element 5: Rationalization Table

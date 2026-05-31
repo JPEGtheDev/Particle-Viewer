@@ -196,6 +196,31 @@ FAILED=$(grep -E '^\[  FAILED  \] [0-9]+ tests?, listed below:' output.txt \
 
 ---
 
+## Python Inline Scripts -- Unicode Safety
+
+When writing Python inside a `run:` heredoc in a YAML workflow, do NOT embed literal non-ASCII
+characters in string literals or regex patterns. The YAML parser -> bash heredoc -> Python
+source encoding chain on GitHub Actions runners may corrupt multi-byte UTF-8 sequences silently.
+
+**[-] Literal non-ASCII bytes in Python source (unreliable on CI):**
+
+Pasting actual Unicode codepoints (e.g., U+2713 CHECK MARK, U+2717 BALLOT X) directly into
+a Python regex string inside a YAML `run:` block. The bytes may look correct locally but
+fail to match on CI runners after the encoding pipeline.
+
+**[+] Python `\uNNNN` escape sequences (pure ASCII source):**
+
+```python
+# CORRECT: \uNNNN sequences are pure ASCII -- Python decodes them at runtime
+# Matches U+2713 U+2717 U+2705 U+274C without embedding their bytes:
+SPECIFIC = re.compile('[\u2713\u2717\u2705\u274c]')
+```
+
+**Rule:** Python source embedded in YAML `run:` steps MUST use `\uNNNN` for any non-ASCII
+character. Never paste the raw bytes.
+
+---
+
 ## Current Workflow Structure
 
 The project uses `unit-tests.yml` with two jobs:
