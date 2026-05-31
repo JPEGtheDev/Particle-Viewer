@@ -179,7 +179,6 @@ This is the **internal** rule precedence (within the skills system). For meta-le
 1. **Format before committing.** `find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i`
 2. **Conventional commits always.** `<type>[scope]: <description>` -- see `versioning` skill.
 3. **Build and test before pushing.** `cmake --build build && ./build/tests/ParticleViewerTests`
-4. **Install the pre-push hook (one-time).** `cp .github/hooks/pre-push .git/hooks/pre-push && chmod +x .git/hooks/pre-push` -- enforces ASCII-only markdown before every push.
 
 **Session lifecycle (skill loading + self-evaluation) is in the `session-bootstrap` skill.**
 
