@@ -14,7 +14,5 @@ void main()
     }
     // Derive weighted-average color from accumulated RGBA (RGB = color×falloff, A = falloff)
     vec3 metaballColor = (blurred.a > 0.001) ? blurred.rgb / blurred.a : vec3(0.4, 0.7, 1.0);
-    // Smooth the surface edge
-    float edge = smoothstep(threshold, threshold + 0.1, density);
-    color = vec4(metaballColor * edge, edge);
+    color = vec4(metaballColor, 1.0);
 }
