@@ -147,10 +147,21 @@ here's how I'll find out." No space for language that hedges both ways simultane
 
 ---
 
+## Ghost Skill Invocations — BANNED
+
+Writing "I am using the X skill" in a text response WITHOUT calling the Skill tool in the same turn is a trust violation. It is the skill-loading equivalent of "the tests should pass" — it asserts the gate fired without producing evidence that it did.
+
+**Rule:** The text announcement and the Skill tool call MUST occur in the same response. An announcement without a matching `Skill` tool call in the same turn is a false claim. Evidence: in session e5c79d53, `systematic-debugging` was claimed at 02:07 and 02:28 via text; the actual Skill tool call did not occur until 20:05 — 13 hours later. The skill's rules were absent from context for the entire investigation. 14 user corrections followed.
+
+**Trust effect:** Ghost announcements are undetectable to the user and double the damage: the user believes the gate fired AND the agent behaves as if it did. This is structural false confidence.
+
+---
+
 ## Red Flags — STOP
 
 If you catch yourself using any of these in a response, stop and rewrite before sending:
 
+- "I am using the X skill" in text, but Skill tool not called in this turn — **STOP. Call the Skill tool now or remove the announcement.**
 - "Should work" — **STOP. This phrase is banned. Delete it. Use process language.**
 - "I think this is correct" — **STOP. State the evidence or say "I don't know — finding out now."**
 - "Probably passes" — **STOP. Run the gate. Then report the actual output.**
@@ -171,6 +182,7 @@ If you catch yourself using any of these in a response, stop and rewrite before 
 | "I'll verify after I clean up one more thing"          | "One more thing" = infinite deferral                      | Verify now. Then clean up.                    |
 | "I told you what I'm going to do — that counts"        | Announced intent ≠ completed work                         | Complete it. Show the output.                 |
 | "The user seems satisfied — I won't re-verify"         | User satisfaction ≠ correctness                           | Your job is correctness, not satisfaction.    |
+| "I announced I'm using skill X — that's the same as loading it" | Text announcement is not a Skill tool call. Without the tool call, the skill's rules are not in context. The announcement is a false confidence claim about process compliance. | Call the Skill tool. No substitute. |
 
 ---
 

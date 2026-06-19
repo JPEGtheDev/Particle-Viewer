@@ -58,6 +58,16 @@ Use this skill for every one of these situations:
 
 **Use this skill especially** when under time pressure, when "one quick fix" seems obvious, when you've already tried a fix that didn't work, or when you don't fully understand the issue. These are exactly when the iron law is most needed — and most likely to be skipped.
 
+### Visual Bug Reports — Special Rule
+
+**When the user reports a visual artifact (wrong color, bleed-through, transparency, missing geometry), the FIRST action is always: produce a render test that reproduces the complaint.** Not reading source code. Not claiming "the code says it's correct." Not explaining what SSM behavior "should" look like.
+
+The render test IS the investigation for a visual bug. Reading code cannot tell you what the user sees on screen.
+
+**"I'll take the code at face value" is banned vocabulary for visual bugs.** If you have not produced a render, you have not investigated.
+
+**Root cause for a visual bug cannot be declared until a render reproduces the specific artifact the user reported.** A build passing and automated tests passing are NOT evidence that a visual bug is fixed. Show the render.
+
 ---
 
 ## The Four Phases
@@ -163,6 +173,8 @@ If you find yourself thinking any of the following, **STOP and return to Phase 1
 | "I found it — patching it now" | "Debug" means investigate and report. It does not mean fix. Present findings, wait for instruction. |
 | "I already started debugging before loading this skill — I'll use it from here" | Retroactive skill load violates the read-before-act Iron Law. Any investigation performed before loading this skill is tainted by unverified assumptions. **STOP. Restart from Phase 0 with this skill active.** |
 | "The user confirmed this behavior works" | User confirmation is not empirical verification. Exercise the behavior yourself in the target environment and record the output. "It worked for them" is a second-hand report, not evidence. Run the gate. Show the output. |
+| "The code says the output is correct" | For visual bugs, the code cannot tell you what the user sees. "The code says fully opaque" is not evidence the render looks opaque. Produce the render. |
+| "What the user is seeing is correct behavior, not a bug" | If the user says it looks wrong, it looks wrong to them. The question is not whether the behavior is "correct by spec" — it is whether the render matches the user's intent. Produce the render and compare. Never dismiss a visual report as non-bug without a render that shows the expected output. |
 
 ---
 
