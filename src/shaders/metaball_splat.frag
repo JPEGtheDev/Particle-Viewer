@@ -32,11 +32,14 @@ void main()
 
 	vec2 coord = gl_PointCoord - vec2(0.5);
 	float d = length(coord) * 2.0;
-	// Gaussian falloff: non-zero at sprite corners (unlike polynomial max(0,1-d²)).
-	// k=1.4 ≈ ln(2)/0.5 places the threshold=0.5 visual boundary at the same d=0.707
-	// as the old polynomial, but corner density ≈ 0.06 prevents the black-square
-	// artifact where adjacent sprites did not cover each other's corners.
-	float contribution = exp(-1.4 * d * d);
+	// Scaled polynomial falloff: max(0, 1-(d/S)²) with S=1.2.
+	// S > 1.0 means the zero crossing moves beyond d=1.0 (sprite edge midpoints)
+	// into the ring d∈[1.0,1.2], giving non-zero density in that ring for
+	// merging. Corners at d≈1.414 are still exactly zero (1.2 < 1.414) so the
+	// GL_POINTS square never shows as a visible rectangle.
+	// Visual boundary (threshold=0.5) sits at d = 1.2*sqrt(0.5) ≈ 0.849.
+	const float S = 1.2;
+	float contribution = max(0.0, 1.0 - (d / S) * (d / S));
 
 	int cat = int(v_category_id);
 	// Category colors match sphereVertex.vs hardcoded colors for cats 0-3.
