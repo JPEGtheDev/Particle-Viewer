@@ -87,6 +87,8 @@ struct WindowConfig
  */
 struct SSMResources
 {
+    GLuint depth_prepass_fbo = 0;
+    GLuint depth_prepass_texture = 0;
     GLuint density_fbo = 0;
     GLuint density_texture = 0;
     GLuint intermediate_fbo = 0;
@@ -94,6 +96,7 @@ struct SSMResources
     GLuint blurred_fbo = 0;
     GLuint blurred_texture = 0;
     bool float_fbo_supported = false;
+    Shader depth_prepass_shader;
     Shader splat_shader;
     Shader blur_shader;
     Shader composite_shader;
@@ -139,6 +142,7 @@ struct ShaderPaths
     std::string screen_vertex = "/Viewer-Assets/shaders/screenshader.vs";
     std::string screen_fragment = "/Viewer-Assets/shaders/screenshader.frag";
     std::string font;
+    std::string ssm_depth_fragment = "/Viewer-Assets/shaders/metaball_depth.frag";
     std::string ssm_splat_vertex = "/Viewer-Assets/shaders/metaball_splat.vert";
     std::string ssm_splat_fragment = "/Viewer-Assets/shaders/metaball_splat.frag";
     std::string ssm_blur_vertex = "/Viewer-Assets/shaders/metaball_blur.vert";

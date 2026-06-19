@@ -710,6 +710,26 @@ void ViewerApp::initSSMResources()
         return;
     }
 
+    // Depth prepass FBO: depth-only, finds closest particle depth at each pixel
+    glGenFramebuffers(1, &render_.ssm.depth_prepass_fbo);
+    glGenTextures(1, &render_.ssm.depth_prepass_texture);
+    glBindFramebuffer(GL_FRAMEBUFFER, render_.ssm.depth_prepass_fbo);
+    glBindTexture(GL_TEXTURE_2D, render_.ssm.depth_prepass_texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, window_.width, window_.height, 0, GL_DEPTH_COMPONENT,
+                 GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, render_.ssm.depth_prepass_texture, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        std::cerr << "SSM: depth prepass FBO incomplete — SSM mode disabled" << std::endl;
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        render_.ssm.float_fbo_supported = false;
+        return;
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
     // Density FBO: accumulates per-particle color×falloff + falloff (GL_RGBA32F)
     glGenFramebuffers(1, &render_.ssm.density_fbo);
     glGenTextures(1, &render_.ssm.density_texture);
@@ -764,13 +784,15 @@ void ViewerApp::initSSMResources()
     // Load SSM shaders — compile/link failure treated same as unsupported GL_RGBA32F
     render_.ssm.splat_shader =
         Shader((paths_.exe + paths_.ssm_splat_vertex).c_str(), (paths_.exe + paths_.ssm_splat_fragment).c_str());
+    render_.ssm.depth_prepass_shader =
+        Shader((paths_.exe + paths_.ssm_splat_vertex).c_str(), (paths_.exe + paths_.ssm_depth_fragment).c_str());
     render_.ssm.blur_shader =
         Shader((paths_.exe + paths_.ssm_blur_vertex).c_str(), (paths_.exe + paths_.ssm_blur_fragment).c_str());
     render_.ssm.composite_shader =
         Shader(paths_.screen_vertex.c_str(), (paths_.exe + paths_.ssm_composite_fragment).c_str());
 
-    if (render_.ssm.splat_shader.Program == 0 || render_.ssm.blur_shader.Program == 0 ||
-        render_.ssm.composite_shader.Program == 0) {
+    if (render_.ssm.depth_prepass_shader.Program == 0 || render_.ssm.splat_shader.Program == 0 ||
+        render_.ssm.blur_shader.Program == 0 || render_.ssm.composite_shader.Program == 0) {
         std::cerr << "SSM: shader compile/link failed — SSM mode disabled" << std::endl;
         render_.ssm.float_fbo_supported = false;
         return;
@@ -784,16 +806,45 @@ void ViewerApp::drawSSMScene()
     GLint viewport[4] = {0, 0, 0, 0};
     glGetIntegerv(GL_VIEWPORT, viewport);
 
-    // Splat pass: accumulate per-particle density into density_fbo (additive blending)
+    // sphere_.base_radius defaults to 250.0f; falling back to it is never a supported zero state.
+    float ssm_scale = sphere_.radius > 0.0f ? sphere_.radius : sphere_.base_radius;
+
+    // Depth prepass: render all particles depth-only to find the front surface at each pixel.
+    // The splat pass uses this to discard fragments from particles behind the front blob.
+    glBindFramebuffer(GL_FRAMEBUFFER, render_.ssm.depth_prepass_fbo);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+
+    render_.ssm.depth_prepass_shader.Use();
+    part_->pushVBO();
+    glBindVertexArray(render_.circle_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, part_->instanceVBO);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glUniformMatrix4fv(glGetUniformLocation(render_.ssm.depth_prepass_shader.Program, "view"), 1, GL_FALSE,
+                       glm::value_ptr(view_));
+    glUniformMatrix4fv(glGetUniformLocation(render_.ssm.depth_prepass_shader.Program, "projection"), 1, GL_FALSE,
+                       glm::value_ptr(cam_->getProjection()));
+    glUniform1f(glGetUniformLocation(render_.ssm.depth_prepass_shader.Program, "blobRadius"), window_.ssm_blob_radius);
+    glUniform1f(glGetUniformLocation(render_.ssm.depth_prepass_shader.Program, "scale"), ssm_scale);
+    glUniform1f(glGetUniformLocation(render_.ssm.depth_prepass_shader.Program, "transScale"), kSimToDisplayScale);
+    glUniform1f(glGetUniformLocation(render_.ssm.depth_prepass_shader.Program, "viewportHeight"),
+                static_cast<GLfloat>(viewport[3]));
+    glDrawArraysInstanced(GL_POINTS, 0, 1, part_->n);
+    glBindVertexArray(0);
+    glDepthMask(GL_FALSE);
+    glDisable(GL_DEPTH_TEST);
+
+    // Splat pass: accumulate per-particle density into density_fbo (additive blending).
+    // Uses depth prepass to cull fragments from particles behind the front surface.
     glBindFramebuffer(GL_FRAMEBUFFER, render_.ssm.density_fbo);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
-    glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE);
 
     render_.ssm.splat_shader.Use();
-    part_->pushVBO();
     glBindVertexArray(render_.circle_vao);
     glBindBuffer(GL_ARRAY_BUFFER, part_->instanceVBO);
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
@@ -803,15 +854,24 @@ void ViewerApp::drawSSMScene()
     glUniformMatrix4fv(glGetUniformLocation(render_.ssm.splat_shader.Program, "projection"), 1, GL_FALSE,
                        glm::value_ptr(cam_->getProjection()));
     glUniform1f(glGetUniformLocation(render_.ssm.splat_shader.Program, "blobRadius"), window_.ssm_blob_radius);
-    // sphere_.base_radius defaults to 250.0f; falling back to it is never a supported zero state.
-    float ssm_scale = sphere_.radius > 0.0f ? sphere_.radius : sphere_.base_radius;
     glUniform1f(glGetUniformLocation(render_.ssm.splat_shader.Program, "scale"), ssm_scale);
     glUniform1f(glGetUniformLocation(render_.ssm.splat_shader.Program, "transScale"), kSimToDisplayScale);
     glUniform1f(glGetUniformLocation(render_.ssm.splat_shader.Program, "viewportHeight"),
                 static_cast<GLfloat>(viewport[3]));
+    // Depth cull uniforms
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, render_.ssm.depth_prepass_texture);
+    glUniform1i(glGetUniformLocation(render_.ssm.splat_shader.Program, "u_prepass_depth"), 1);
+    glUniform2f(glGetUniformLocation(render_.ssm.splat_shader.Program, "u_viewport_inv"),
+                1.0f / static_cast<float>(viewport[2]), 1.0f / static_cast<float>(viewport[3]));
+    glUniform1f(glGetUniformLocation(render_.ssm.splat_shader.Program, "u_near"), cam_->getNearPlane());
+    glUniform1f(glGetUniformLocation(render_.ssm.splat_shader.Program, "u_far"), cam_->getFarPlane());
+    glUniform1f(glGetUniformLocation(render_.ssm.splat_shader.Program, "u_depth_range"),
+                window_.ssm_blob_radius * 2.0f);
     glDrawArraysInstanced(GL_POINTS, 0, 1, part_->n);
     glBindVertexArray(0);
     glDisable(GL_BLEND);
+    glActiveTexture(GL_TEXTURE0);
 
     // Blur pass: separable box-blur — horizontal into intermediate, vertical into blurred
     {
@@ -1256,6 +1316,14 @@ void ViewerApp::cleanup()
         glDeleteVertexArrays(1, &render_.circle_vao);
         render_.circle_vao = 0;
     }
+    if (render_.ssm.depth_prepass_texture != 0) {
+        glDeleteTextures(1, &render_.ssm.depth_prepass_texture);
+        render_.ssm.depth_prepass_texture = 0;
+    }
+    if (render_.ssm.depth_prepass_fbo != 0) {
+        glDeleteFramebuffers(1, &render_.ssm.depth_prepass_fbo);
+        render_.ssm.depth_prepass_fbo = 0;
+    }
     if (render_.ssm.density_texture != 0) {
         glDeleteTextures(1, &render_.ssm.density_texture);
         render_.ssm.density_texture = 0;
@@ -1373,6 +1441,14 @@ void ViewerApp::resizeFBO(int width, int height)
     // Rebuild SSM FBOs at new size
     if (render_.ssm.float_fbo_supported) {
         // Delete old textures and FBO handles
+        if (render_.ssm.depth_prepass_texture != 0) {
+            glDeleteTextures(1, &render_.ssm.depth_prepass_texture);
+            render_.ssm.depth_prepass_texture = 0;
+        }
+        if (render_.ssm.depth_prepass_fbo != 0) {
+            glDeleteFramebuffers(1, &render_.ssm.depth_prepass_fbo);
+            render_.ssm.depth_prepass_fbo = 0;
+        }
         if (render_.ssm.density_texture != 0) {
             glDeleteTextures(1, &render_.ssm.density_texture);
             render_.ssm.density_texture = 0;
@@ -1396,6 +1472,24 @@ void ViewerApp::resizeFBO(int width, int height)
         if (render_.ssm.blurred_fbo != 0) {
             glDeleteFramebuffers(1, &render_.ssm.blurred_fbo);
             render_.ssm.blurred_fbo = 0;
+        }
+
+        glGenFramebuffers(1, &render_.ssm.depth_prepass_fbo);
+        glBindFramebuffer(GL_FRAMEBUFFER, render_.ssm.depth_prepass_fbo);
+        glGenTextures(1, &render_.ssm.depth_prepass_texture);
+        glBindTexture(GL_TEXTURE_2D, render_.ssm.depth_prepass_texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, render_.ssm.depth_prepass_texture,
+                               0);
+        glDrawBuffer(GL_NONE);
+        glReadBuffer(GL_NONE);
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            std::cerr << "ERROR: SSM depth prepass FBO incomplete after resize\n";
+            render_.ssm.float_fbo_supported = false;
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            return;
         }
 
         glGenFramebuffers(1, &render_.ssm.density_fbo);

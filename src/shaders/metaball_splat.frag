@@ -4,8 +4,28 @@ out vec4 accum;
 flat in float v_category_id;
 flat in int v_instance_id;
 
+uniform sampler2D u_prepass_depth;
+uniform vec2 u_viewport_inv;
+uniform float u_near;
+uniform float u_far;
+uniform float u_depth_range;
+
+float linear_depth(float d)
+{
+	float z = d * 2.0 - 1.0;
+	return 2.0 * u_near * u_far / (u_far + u_near - z * (u_far - u_near));
+}
+
 void main()
 {
+	// Depth cull: discard fragments from particles behind the front surface by
+	// more than u_depth_range world units, preventing far particles from
+	// bleeding through nearer blobs.
+	float prepass_d = texture(u_prepass_depth, gl_FragCoord.xy * u_viewport_inv).r;
+	if (linear_depth(gl_FragCoord.z) > linear_depth(prepass_d) + u_depth_range) {
+		discard;
+	}
+
 	vec2 coord = gl_PointCoord - vec2(0.5);
 	float d = length(coord) * 2.0;
 	float contribution = max(0.0, 1.0 - d * d);
