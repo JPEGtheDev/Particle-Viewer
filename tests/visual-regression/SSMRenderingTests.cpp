@@ -666,6 +666,288 @@ TEST_F(SSMRenderingTest, SSMVisualAssessment_ThreeBlueBlobs_SavesArtifact)
 }
 
 // ============================================================================
+// SSM Camera Rotation Test
+// ============================================================================
+
+/*
+ * Test: SSMRender_RotatedCamera_MatchesBaseline
+ *
+ * Renders the 4×4×4 particle grid through the full SSM pipeline from an
+ * off-axis camera position to validate that rotating the camera does not
+ * produce a blank screen or break the depth prepass.
+ *
+ * Camera configuration (off-axis — rotated 45° around Y, tilted 30° up):
+ *   Position  : (7, 4, 7) — same radius as front camera, off-axis
+ *   Target    : (0, 0, 0)
+ *   Up        : (0, 1, 0)
+ *
+ * Assertion: at least 500 non-black pixels rendered (a blank screen is a failure).
+ * A baseline image is saved for visual regression on subsequent runs.
+ *
+ * Regression check catches the blank-screen-when-moving bug class: if depth
+ * mask state leaks between frames and glClear(GL_DEPTH_BUFFER_BIT) becomes a
+ * no-op, stale depths from the previous orientation cull all fragments.
+ */
+TEST_F(SSMRenderingTest, SSMRender_RotatedCamera_MatchesBaseline)
+{
+    // ---- GL_RGBA32F support gate -----------------------------------------------
+    {
+        GLuint probe_fbo = 0;
+        GLuint probe_tex = 0;
+        glGenFramebuffers(1, &probe_fbo);
+        glGenTextures(1, &probe_tex);
+        glBindFramebuffer(GL_FRAMEBUFFER, probe_fbo);
+        glBindTexture(GL_TEXTURE_2D, probe_tex);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 1, 1, 0, GL_RGBA, GL_FLOAT, nullptr);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, probe_tex, 0);
+        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glDeleteTextures(1, &probe_tex);
+        glDeleteFramebuffers(1, &probe_fbo);
+        if (status != GL_FRAMEBUFFER_COMPLETE) {
+            GTEST_SKIP() << "GL_RGBA32F framebuffer not supported — skipping SSM rotation test";
+        }
+    }
+
+    // ---- Compile shaders -------------------------------------------------------
+    std::string splatVertPath = getShaderPath("metaball_splat.vert");
+    Shader splatShader(splatVertPath.c_str(), getShaderPath("metaball_splat.frag").c_str());
+    ASSERT_NE(splatShader.Program, 0u) << "Failed to compile splat shader";
+
+    Shader blurShader(getShaderPath("metaball_blur.vert").c_str(), getShaderPath("metaball_blur.frag").c_str());
+    ASSERT_NE(blurShader.Program, 0u) << "Failed to compile blur shader";
+
+    Shader compositeShader(getShaderPath("screenshader.vs").c_str(), getShaderPath("metaball_composite.frag").c_str());
+    ASSERT_NE(compositeShader.Program, 0u) << "Failed to compile composite shader";
+
+    // ---- Build 4×4×4 grid (same as baseline test) -----------------------------
+    static constexpr float COORDS[4] = {-1.5f, -0.5f, 0.5f, 1.5f};
+    static constexpr float DISPLAY_SCALE = 2.0f;
+    std::vector<glm::vec4> positions;
+    positions.reserve(64);
+    int category = 0;
+    for (float x : COORDS)
+        for (float y : COORDS)
+            for (float z : COORDS) {
+                positions.push_back(
+                    glm::vec4(x * DISPLAY_SCALE, y * DISPLAY_SCALE, z * DISPLAY_SCALE, static_cast<float>(category)));
+                category = (category + 1) % 4;
+            }
+    Particle particles(64, positions.data());
+
+    // ---- Off-axis camera -------------------------------------------------------
+    // Camera at (7, 4, 7): same ~10-unit distance as front view, rotated 45° around Y
+    // and tilted ~22° up. Tests that depth prepass + splat are orientation-independent.
+    glm::vec3 camPos(7.0f, 4.0f, 7.0f);
+    glm::mat4 view = glm::lookAt(camPos, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    float aspect = static_cast<float>(framebuffer_width_) / static_cast<float>(framebuffer_height_);
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 3000.0f);
+
+    // ---- Allocate FBOs --------------------------------------------------------
+    auto makeFBO_RGBA32F = [&](GLuint& fbo, GLuint& tex) {
+        glGenFramebuffers(1, &fbo);
+        glGenTextures(1, &tex);
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+        glBindTexture(GL_TEXTURE_2D, tex);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, framebuffer_width_, framebuffer_height_, 0, GL_RGBA, GL_FLOAT,
+                     nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
+        ASSERT_EQ(glCheckFramebufferStatus(GL_FRAMEBUFFER), static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE));
+    };
+
+    GLuint density_fbo = 0, density_tex = 0;
+    makeFBO_RGBA32F(density_fbo, density_tex);
+    GLuint intermediate_fbo = 0, intermediate_tex = 0;
+    makeFBO_RGBA32F(intermediate_fbo, intermediate_tex);
+    GLuint blur_fbo = 0, blur_tex = 0;
+    makeFBO_RGBA32F(blur_fbo, blur_tex);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // Depth prepass FBO
+    GLuint depth_fbo = 0, depth_tex = 0;
+    glGenFramebuffers(1, &depth_fbo);
+    glGenTextures(1, &depth_tex);
+    glBindFramebuffer(GL_FRAMEBUFFER, depth_fbo);
+    glBindTexture(GL_TEXTURE_2D, depth_tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, framebuffer_width_, framebuffer_height_, 0,
+                 GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth_tex, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    ASSERT_EQ(glCheckFramebufferStatus(GL_FRAMEBUFFER), static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE))
+        << "Depth prepass FBO incomplete";
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // ---- Fullscreen quad -------------------------------------------------------
+    static constexpr float QUAD_VERTS[] = {
+        -1.0f, 1.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f, 0.0f,
+        -1.0f, 1.0f, 0.0f, 1.0f, 1.0f,  -1.0f, 1.0f, 0.0f, 1.0f, 1.0f,  1.0f, 1.0f,
+    };
+    GLuint quad_vao = 0, quad_vbo = 0;
+    glGenVertexArrays(1, &quad_vao);
+    glGenBuffers(1, &quad_vbo);
+    glBindVertexArray(quad_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, quad_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(QUAD_VERTS), QUAD_VERTS, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (GLvoid*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (GLvoid*)(2 * sizeof(float)));
+    glBindVertexArray(0);
+
+    // ---- Particle VAO ---------------------------------------------------------
+    GLuint circle_vao = 0;
+    glGenVertexArrays(1, &circle_vao);
+    particles.pushVBO();
+
+    // ---- Render pipeline (mirrors SSMDepthOcclusion test) ---------------------
+    auto setPointUniforms = [&](GLuint prog) {
+        glUniformMatrix4fv(glGetUniformLocation(prog, "view"), 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(glGetUniformLocation(prog, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+        glUniform1f(glGetUniformLocation(prog, "blobRadius"), 100.0f);
+        glUniform1f(glGetUniformLocation(prog, "scale"), 5.0f);
+        glUniform1f(glGetUniformLocation(prog, "transScale"), 0.25f);
+        glUniform1f(glGetUniformLocation(prog, "viewportHeight"), static_cast<float>(framebuffer_height_));
+    };
+
+    // Depth prepass
+    glDepthMask(GL_TRUE);
+    glEnable(GL_DEPTH_TEST);
+    glBindFramebuffer(GL_FRAMEBUFFER, depth_fbo);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    {
+        Shader depthShader(splatVertPath.c_str(), getShaderPath("metaball_depth.frag").c_str());
+        ASSERT_NE(depthShader.Program, 0u) << "Failed to compile depth prepass shader";
+        depthShader.Use();
+        glBindVertexArray(circle_vao);
+        particles.setUpInstanceArray();
+        setPointUniforms(depthShader.Program);
+        glDrawArraysInstanced(GL_POINTS, 0, 1, particles.n);
+        glBindVertexArray(0);
+    }
+    glDisable(GL_DEPTH_TEST);
+
+    // Splat pass
+    glBindFramebuffer(GL_FRAMEBUFFER, density_fbo);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE);
+    splatShader.Use();
+    glBindVertexArray(circle_vao);
+    particles.setUpInstanceArray();
+    setPointUniforms(splatShader.Program);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, depth_tex);
+    glUniform1i(glGetUniformLocation(splatShader.Program, "u_prepass_depth"), 1);
+    glUniform2f(glGetUniformLocation(splatShader.Program, "u_viewport_inv"),
+                1.0f / static_cast<float>(framebuffer_width_), 1.0f / static_cast<float>(framebuffer_height_));
+    glUniform1f(glGetUniformLocation(splatShader.Program, "u_near"), 0.1f);
+    glUniform1f(glGetUniformLocation(splatShader.Program, "u_far"), 3000.0f);
+    glDrawArraysInstanced(GL_POINTS, 0, 1, particles.n);
+    glBindVertexArray(0);
+    glDisable(GL_BLEND);
+    glActiveTexture(GL_TEXTURE0);
+
+    // Separable blur
+    blurShader.Use();
+    glBindVertexArray(quad_vao);
+    glUniform1i(glGetUniformLocation(blurShader.Program, "densityTexture"), 0);
+    glUniform1f(glGetUniformLocation(blurShader.Program, "blurAmount"), 3.0f);
+    glUniform2f(glGetUniformLocation(blurShader.Program, "texelSize"), 1.0f / static_cast<float>(framebuffer_width_),
+                1.0f / static_cast<float>(framebuffer_height_));
+
+    glBindFramebuffer(GL_FRAMEBUFFER, intermediate_fbo);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glBindTexture(GL_TEXTURE_2D, density_tex);
+    glUniform2f(glGetUniformLocation(blurShader.Program, "blurDir"), 1.0f, 0.0f);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, blur_fbo);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glBindTexture(GL_TEXTURE_2D, intermediate_tex);
+    glUniform2f(glGetUniformLocation(blurShader.Program, "blurDir"), 0.0f, 1.0f);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+
+    // Composite
+    framebuffer_->bind();
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    compositeShader.Use();
+    glBindVertexArray(quad_vao);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, blur_tex);
+    glUniform1i(glGetUniformLocation(compositeShader.Program, "blurredDensity"), 0);
+    glUniform1f(glGetUniformLocation(compositeShader.Program, "threshold"), 0.5f);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+
+    // ---- Cleanup ---------------------------------------------------------------
+    glDeleteVertexArrays(1, &circle_vao);
+    glDeleteVertexArrays(1, &quad_vao);
+    glDeleteBuffers(1, &quad_vbo);
+    glDeleteTextures(1, &depth_tex);
+    glDeleteFramebuffers(1, &depth_fbo);
+    glDeleteTextures(1, &density_tex);
+    glDeleteFramebuffers(1, &density_fbo);
+    glDeleteTextures(1, &intermediate_tex);
+    glDeleteFramebuffers(1, &intermediate_fbo);
+    glDeleteTextures(1, &blur_tex);
+    glDeleteFramebuffers(1, &blur_fbo);
+
+    // ---- Capture and assert ----------------------------------------------------
+    Image img = framebuffer_->capture();
+    ASSERT_TRUE(img.valid()) << "Failed to capture framebuffer";
+
+    // Primary assertion: not blank. A blank screen means the depth prepass state
+    // leaked or the depth cull discarded everything from the new view angle.
+    int non_black = 0;
+    for (size_t i = 0; i < img.pixels.size(); i += 4) {
+        if (img.pixels[i] > 10 || img.pixels[i + 1] > 10 || img.pixels[i + 2] > 10)
+            ++non_black;
+    }
+    EXPECT_GT(non_black, 500) << "Expected at least 500 non-black pixels from rotated camera — "
+                              << "possible blank-screen regression (depth mask state leak or "
+                              << "depth cull discarding all fragments from new orientation).\n"
+                              << "  non_black=" << non_black << "  artifact: artifacts/ssm_rotation_test.png";
+
+    // Save artifact for visual inspection
+    ASSERT_TRUE(img.save("artifacts/ssm_rotation_test.png", ImageFormat::PNG))
+        << "Failed to save rotation test artifact";
+
+    // Baseline regression
+    std::string baselinePath = getBaselinePath("ssm_rotated_camera.png");
+    Image baseline = Image::load(baselinePath, ImageFormat::PNG);
+    if (baseline.empty()) {
+        std::string candidatePath = VRTestConfig::BASELINES_DIR + "/ssm_rotated_camera.png";
+        img.save(candidatePath, ImageFormat::PNG);
+        FAIL() << "Rotated-camera baseline not found — candidate saved to: " << candidatePath << "\n"
+               << "Review artifacts/ssm_rotation_test.png and commit the candidate as the baseline.";
+    }
+
+    ASSERT_TRUE(img.save("artifacts/ssm_rotation_test_current.png", ImageFormat::PNG));
+    PixelComparator comparator;
+    ComparisonResult result = comparator.compare(baseline, img, VRTestConfig::PARTICLE_TOLERANCE, true);
+    float diff_ratio = result.total_pixels > 0
+                           ? static_cast<float>(result.diff_pixels) / static_cast<float>(result.total_pixels)
+                           : 1.0f;
+    if (diff_ratio > VRTestConfig::MAX_DIFF_RATIO) {
+        result.diff_image.save("artifacts/ssm_rotation_test_diff.png", ImageFormat::PNG);
+        FAIL() << "SSM rotated-camera visual mismatch:\n"
+               << "  Diff: " << result.diff_pixels << " / " << result.total_pixels << " (" << (diff_ratio * 100.0f)
+               << "%)\n"
+               << "  Diff image: artifacts/ssm_rotation_test_diff.png";
+    }
+}
+
+// ============================================================================
 // SSM Depth Occlusion Test
 // ============================================================================
 
