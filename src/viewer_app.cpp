@@ -811,10 +811,11 @@ void ViewerApp::drawSSMScene()
 
     // Depth prepass: render all particles depth-only to find the front surface at each pixel.
     // The splat pass uses this to discard fragments from particles behind the front blob.
+    // glDepthMask must be GL_TRUE BEFORE glClear — with mask false, clear is a no-op.
+    glDepthMask(GL_TRUE);
+    glEnable(GL_DEPTH_TEST);
     glBindFramebuffer(GL_FRAMEBUFFER, render_.ssm.depth_prepass_fbo);
     glClear(GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);
-    glDepthMask(GL_TRUE);
 
     render_.ssm.depth_prepass_shader.Use();
     part_->pushVBO();
@@ -833,7 +834,6 @@ void ViewerApp::drawSSMScene()
                 static_cast<GLfloat>(viewport[3]));
     glDrawArraysInstanced(GL_POINTS, 0, 1, part_->n);
     glBindVertexArray(0);
-    glDepthMask(GL_FALSE);
     glDisable(GL_DEPTH_TEST);
 
     // Splat pass: accumulate per-particle density into density_fbo (additive blending).
