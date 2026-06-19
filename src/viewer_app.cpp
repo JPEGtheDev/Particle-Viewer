@@ -866,8 +866,6 @@ void ViewerApp::drawSSMScene()
                 1.0f / static_cast<float>(viewport[2]), 1.0f / static_cast<float>(viewport[3]));
     glUniform1f(glGetUniformLocation(render_.ssm.splat_shader.Program, "u_near"), cam_->getNearPlane());
     glUniform1f(glGetUniformLocation(render_.ssm.splat_shader.Program, "u_far"), cam_->getFarPlane());
-    glUniform1f(glGetUniformLocation(render_.ssm.splat_shader.Program, "u_depth_range"),
-                window_.ssm_blob_radius * 2.0f);
     glDrawArraysInstanced(GL_POINTS, 0, 1, part_->n);
     glBindVertexArray(0);
     glDisable(GL_BLEND);

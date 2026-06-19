@@ -260,6 +260,21 @@ TEST_F(SSMRenderingTest, SSMRender_4x4x4Grid_MatchesBaseline)
         << "Blur FBO incomplete";
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    // Create intermediate FBO (GL_RGBA32F) — holds H-blur pass output before V pass
+    GLuint intermediate_fbo = 0;
+    GLuint intermediate_tex = 0;
+    glGenFramebuffers(1, &intermediate_fbo);
+    glGenTextures(1, &intermediate_tex);
+    glBindFramebuffer(GL_FRAMEBUFFER, intermediate_fbo);
+    glBindTexture(GL_TEXTURE_2D, intermediate_tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, framebuffer_width_, framebuffer_height_, 0, GL_RGBA, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, intermediate_tex, 0);
+    ASSERT_EQ(glCheckFramebufferStatus(GL_FRAMEBUFFER), static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE))
+        << "Intermediate FBO incomplete";
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
     // Full-screen quad VAO/VBO (matches screenshader.vs layout)
     static constexpr float QUAD_VERTS[] = {
         -1.0f, 1.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f, 0.0f,
@@ -284,6 +299,21 @@ TEST_F(SSMRenderingTest, SSMRender_4x4x4Grid_MatchesBaseline)
 
     particles.pushVBO();
 
+    // Provide a 1×1 depth texture at value 1.0 (= far plane) for u_prepass_depth.
+    // prepass_d=1.0 → the depth-cull branch is skipped → same output as the
+    // pre-prepass shader, so the existing baseline remains valid.
+    GLuint noop_depth_tex = 0;
+    {
+        GLfloat far_depth = 1.0f;
+        glGenTextures(1, &noop_depth_tex);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, noop_depth_tex);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, 1, 1, 0, GL_DEPTH_COMPONENT, GL_FLOAT, &far_depth);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glActiveTexture(GL_TEXTURE0);
+    }
+
     // Splat pass
     glBindFramebuffer(GL_FRAMEBUFFER, density_fbo);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -301,22 +331,40 @@ TEST_F(SSMRenderingTest, SSMRender_4x4x4Grid_MatchesBaseline)
     glUniform1f(glGetUniformLocation(splatShader.Program, "scale"), 5.0f);
     glUniform1f(glGetUniformLocation(splatShader.Program, "transScale"), 0.25f);
     glUniform1f(glGetUniformLocation(splatShader.Program, "viewportHeight"), static_cast<float>(framebuffer_height_));
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, noop_depth_tex);
+    glUniform1i(glGetUniformLocation(splatShader.Program, "u_prepass_depth"), 1);
+    glUniform2f(glGetUniformLocation(splatShader.Program, "u_viewport_inv"), 1.0f, 1.0f); // irrelevant: prepass_d=1.0
+    glUniform1f(glGetUniformLocation(splatShader.Program, "u_near"), 0.1f);
+    glUniform1f(glGetUniformLocation(splatShader.Program, "u_far"), 3000.0f);
+    glActiveTexture(GL_TEXTURE0);
     glDrawArraysInstanced(GL_POINTS, 0, 1, particles.n);
     glBindVertexArray(0);
     glDisable(GL_BLEND);
 
-    // Blur pass
-    glBindFramebuffer(GL_FRAMEBUFFER, blur_fbo);
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    // Blur pass — separable H+V matching production drawSSMScene()
     blurShader.Use();
     glBindVertexArray(quad_vao);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, density_tex);
     glUniform1i(glGetUniformLocation(blurShader.Program, "densityTexture"), 0);
     glUniform1f(glGetUniformLocation(blurShader.Program, "blurAmount"), 3.0f);
     glUniform2f(glGetUniformLocation(blurShader.Program, "texelSize"), 1.0f / static_cast<float>(framebuffer_width_),
                 1.0f / static_cast<float>(framebuffer_height_));
+
+    // H pass: density → intermediate
+    glBindFramebuffer(GL_FRAMEBUFFER, intermediate_fbo);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, density_tex);
+    glUniform2f(glGetUniformLocation(blurShader.Program, "blurDir"), 1.0f, 0.0f);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    // V pass: intermediate → blur_fbo
+    glBindFramebuffer(GL_FRAMEBUFFER, blur_fbo);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glBindTexture(GL_TEXTURE_2D, intermediate_tex);
+    glUniform2f(glGetUniformLocation(blurShader.Program, "blurDir"), 0.0f, 1.0f);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
 
@@ -340,8 +388,11 @@ TEST_F(SSMRenderingTest, SSMRender_4x4x4Grid_MatchesBaseline)
     glDeleteVertexArrays(1, &circle_vao);
     glDeleteVertexArrays(1, &quad_vao);
     glDeleteBuffers(1, &quad_vbo);
+    glDeleteTextures(1, &noop_depth_tex);
     glDeleteTextures(1, &density_tex);
     glDeleteFramebuffers(1, &density_fbo);
+    glDeleteTextures(1, &intermediate_tex);
+    glDeleteFramebuffers(1, &intermediate_fbo);
     glDeleteTextures(1, &blur_tex);
     glDeleteFramebuffers(1, &blur_fbo);
 
@@ -383,4 +434,302 @@ TEST_F(SSMRenderingTest, SSMRender_4x4x4Grid_MatchesBaseline)
                << "  Diff image saved to: artifacts/ssm_4x4x4_grid_diff.png\n"
                << "  Current image saved to: artifacts/ssm_4x4x4_grid_current.png";
     }
+}
+
+// ============================================================================
+// SSM Depth Occlusion Test
+// ============================================================================
+
+/*
+ * Test: SSMDepthOcclusion_BlueClusterFront_OrangeClusterCulled
+ *
+ * Verifies that the depth prepass prevents background particles from bleeding
+ * through foreground SSM blobs.
+ *
+ * Particle layout (in display space, after transScale=0.25):
+ *   Foreground (blue, cat=1): 3×3 grid at display z=0  → linear depth 10 from camera
+ *   Background (orange, cat=3): same x/y grid at display z=-20 → linear depth 30
+ *
+ * Depth cull logic (metaball_splat.frag):
+ *   threshold = front_linear * 2.5 = 10 * 2.5 = 25
+ *   orange depth (30) > 25 → discarded ✓
+ *
+ * Assertion:
+ *   In the center 100×100 px region (where the blob lands), B > R for every
+ *   non-black pixel.  A passing test means the blob is blue.  If the depth
+ *   prepass fails, orange contributes density → R > B → test fails.
+ */
+TEST_F(SSMRenderingTest, SSMDepthOcclusion_BlueClusterFront_OrangeClusterCulled)
+{
+    // ---- GL_RGBA32F support gate -----------------------------------------------
+    {
+        GLuint probe_fbo = 0;
+        GLuint probe_tex = 0;
+        glGenFramebuffers(1, &probe_fbo);
+        glGenTextures(1, &probe_tex);
+        glBindFramebuffer(GL_FRAMEBUFFER, probe_fbo);
+        glBindTexture(GL_TEXTURE_2D, probe_tex);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 1, 1, 0, GL_RGBA, GL_FLOAT, nullptr);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, probe_tex, 0);
+        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glDeleteTextures(1, &probe_tex);
+        glDeleteFramebuffers(1, &probe_fbo);
+        if (status != GL_FRAMEBUFFER_COMPLETE) {
+            GTEST_SKIP() << "GL_RGBA32F framebuffer not supported — skipping SSM occlusion test";
+        }
+    }
+
+    // ---- Compile shaders -------------------------------------------------------
+    std::string depthVertPath = getShaderPath("metaball_splat.vert");
+    std::string depthFragPath = getShaderPath("metaball_depth.frag");
+    Shader depthPrepassShader(depthVertPath.c_str(), depthFragPath.c_str());
+    ASSERT_NE(depthPrepassShader.Program, 0u) << "Failed to compile depth prepass shader";
+
+    std::string splatFragPath = getShaderPath("metaball_splat.frag");
+    Shader splatShader(depthVertPath.c_str(), splatFragPath.c_str());
+    ASSERT_NE(splatShader.Program, 0u) << "Failed to compile SSM splat shader";
+
+    std::string blurVertPath = getShaderPath("metaball_blur.vert");
+    std::string blurFragPath = getShaderPath("metaball_blur.frag");
+    Shader blurShader(blurVertPath.c_str(), blurFragPath.c_str());
+    ASSERT_NE(blurShader.Program, 0u) << "Failed to compile SSM blur shader";
+
+    std::string screenVertPath = getShaderPath("screenshader.vs");
+    std::string compositeFragPath = getShaderPath("metaball_composite.frag");
+    Shader compositeShader(screenVertPath.c_str(), compositeFragPath.c_str());
+    ASSERT_NE(compositeShader.Program, 0u) << "Failed to compile SSM composite shader";
+
+    // ---- Build particles -------------------------------------------------------
+    // transScale = 0.25: display_pos = sim_pos * 0.25
+    //
+    // Both particles are at world x=y=0, so they project to the same screen pixel.
+    // The blue prepass writes depth at the center; the orange fragment samples that
+    // same depth → the cull fires correctly.
+    //
+    //   Blue   (cat=1): sim (0,0,   0) → display (0,0,  0) → camera depth 10
+    //   Orange (cat=3): sim (0,0, -80) → display (0,0,-20) → camera depth 30
+    //
+    //   Shader threshold: front_linear * 2.5 = 10 * 2.5 = 25
+    //     orange 30 > 25 → discarded  ✓
+    //     blue   10 ≤ 25 → kept       ✓
+    std::vector<glm::vec4> positions = {
+        glm::vec4(0.0f, 0.0f, 0.0f, 1.0f),   // blue foreground
+        glm::vec4(0.0f, 0.0f, -80.0f, 3.0f), // orange background
+    };
+    int n = static_cast<int>(positions.size());
+    Particle particles(n, positions.data());
+    ASSERT_EQ(particles.n, n);
+
+    // ---- Camera ----------------------------------------------------------------
+    glm::vec3 camPos(0.0f, 0.0f, 10.0f);
+    glm::vec3 camTarget(0.0f, 0.0f, 0.0f);
+    glm::mat4 view = glm::lookAt(camPos, camTarget, glm::vec3(0.0f, 1.0f, 0.0f));
+    float aspect = static_cast<float>(framebuffer_width_) / static_cast<float>(framebuffer_height_);
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 3000.0f);
+
+    // ---- Allocate FBOs --------------------------------------------------------
+    auto makeFBO_RGBA32F = [&](GLuint& fbo, GLuint& tex) {
+        glGenFramebuffers(1, &fbo);
+        glGenTextures(1, &tex);
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+        glBindTexture(GL_TEXTURE_2D, tex);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, framebuffer_width_, framebuffer_height_, 0, GL_RGBA, GL_FLOAT,
+                     nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
+        ASSERT_EQ(glCheckFramebufferStatus(GL_FRAMEBUFFER), static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE));
+    };
+
+    GLuint density_fbo = 0, density_tex = 0;
+    makeFBO_RGBA32F(density_fbo, density_tex);
+    GLuint intermediate_fbo = 0, intermediate_tex = 0;
+    makeFBO_RGBA32F(intermediate_fbo, intermediate_tex);
+    GLuint blurred_fbo = 0, blurred_tex = 0;
+    makeFBO_RGBA32F(blurred_fbo, blurred_tex);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // Depth prepass FBO (depth-only)
+    GLuint depth_fbo = 0, depth_tex = 0;
+    glGenFramebuffers(1, &depth_fbo);
+    glGenTextures(1, &depth_tex);
+    glBindFramebuffer(GL_FRAMEBUFFER, depth_fbo);
+    glBindTexture(GL_TEXTURE_2D, depth_tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, framebuffer_width_, framebuffer_height_, 0,
+                 GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth_tex, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    ASSERT_EQ(glCheckFramebufferStatus(GL_FRAMEBUFFER), static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE))
+        << "Depth prepass FBO incomplete";
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // ---- Fullscreen quad VAO/VBO -----------------------------------------------
+    static constexpr float QUAD_VERTS[] = {
+        -1.0f, 1.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f, 0.0f,
+        -1.0f, 1.0f, 0.0f, 1.0f, 1.0f,  -1.0f, 1.0f, 0.0f, 1.0f, 1.0f,  1.0f, 1.0f,
+    };
+    GLuint quad_vao = 0, quad_vbo = 0;
+    glGenVertexArrays(1, &quad_vao);
+    glGenBuffers(1, &quad_vbo);
+    glBindVertexArray(quad_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, quad_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(QUAD_VERTS), QUAD_VERTS, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (GLvoid*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (GLvoid*)(2 * sizeof(float)));
+    glBindVertexArray(0);
+
+    // ---- Particle VAO ----------------------------------------------------------
+    GLuint circle_vao = 0;
+    glGenVertexArrays(1, &circle_vao);
+    particles.pushVBO();
+
+    // ---- Render pipeline -------------------------------------------------------
+    // Replicates drawSSMScene() with depth prepass, separable blur, and composite.
+
+    auto setPointUniforms = [&](GLuint prog) {
+        glUniformMatrix4fv(glGetUniformLocation(prog, "view"), 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(glGetUniformLocation(prog, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+        glUniform1f(glGetUniformLocation(prog, "blobRadius"), 100.0f);
+        glUniform1f(glGetUniformLocation(prog, "scale"), 5.0f);
+        glUniform1f(glGetUniformLocation(prog, "transScale"), 0.25f);
+        glUniform1f(glGetUniformLocation(prog, "viewportHeight"), static_cast<float>(framebuffer_height_));
+    };
+
+    // Depth prepass
+    glDepthMask(GL_TRUE);
+    glEnable(GL_DEPTH_TEST);
+    glBindFramebuffer(GL_FRAMEBUFFER, depth_fbo);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    depthPrepassShader.Use();
+    glBindVertexArray(circle_vao);
+    particles.setUpInstanceArray();
+    setPointUniforms(depthPrepassShader.Program);
+    glDrawArraysInstanced(GL_POINTS, 0, 1, particles.n);
+    glBindVertexArray(0);
+    glDisable(GL_DEPTH_TEST);
+
+    // Splat pass (additive blend, depth cull via prepass)
+    glBindFramebuffer(GL_FRAMEBUFFER, density_fbo);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE);
+    splatShader.Use();
+    glBindVertexArray(circle_vao);
+    particles.setUpInstanceArray();
+    setPointUniforms(splatShader.Program);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, depth_tex);
+    glUniform1i(glGetUniformLocation(splatShader.Program, "u_prepass_depth"), 1);
+    glUniform2f(glGetUniformLocation(splatShader.Program, "u_viewport_inv"),
+                1.0f / static_cast<float>(framebuffer_width_), 1.0f / static_cast<float>(framebuffer_height_));
+    glUniform1f(glGetUniformLocation(splatShader.Program, "u_near"), 0.1f);
+    glUniform1f(glGetUniformLocation(splatShader.Program, "u_far"), 3000.0f);
+    glDrawArraysInstanced(GL_POINTS, 0, 1, particles.n);
+    glBindVertexArray(0);
+    glDisable(GL_BLEND);
+    glActiveTexture(GL_TEXTURE0);
+
+    // Separable blur: H pass (density → intermediate), V pass (intermediate → blurred)
+    blurShader.Use();
+    glBindVertexArray(quad_vao);
+    glActiveTexture(GL_TEXTURE0);
+    glUniform1i(glGetUniformLocation(blurShader.Program, "densityTexture"), 0);
+    glUniform1f(glGetUniformLocation(blurShader.Program, "blurAmount"), 3.0f);
+    glUniform2f(glGetUniformLocation(blurShader.Program, "texelSize"), 1.0f / static_cast<float>(framebuffer_width_),
+                1.0f / static_cast<float>(framebuffer_height_));
+
+    glBindFramebuffer(GL_FRAMEBUFFER, intermediate_fbo);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glBindTexture(GL_TEXTURE_2D, density_tex);
+    glUniform2f(glGetUniformLocation(blurShader.Program, "blurDir"), 1.0f, 0.0f);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, blurred_fbo);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glBindTexture(GL_TEXTURE_2D, intermediate_tex);
+    glUniform2f(glGetUniformLocation(blurShader.Program, "blurDir"), 0.0f, 1.0f);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+
+    // Composite pass → output framebuffer
+    framebuffer_->bind();
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    compositeShader.Use();
+    glBindVertexArray(quad_vao);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, blurred_tex);
+    glUniform1i(glGetUniformLocation(compositeShader.Program, "blurredDensity"), 0);
+    glUniform1f(glGetUniformLocation(compositeShader.Program, "threshold"), 0.18f);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+
+    // ---- Cleanup ---------------------------------------------------------------
+    glDeleteVertexArrays(1, &circle_vao);
+    glDeleteVertexArrays(1, &quad_vao);
+    glDeleteBuffers(1, &quad_vbo);
+    glDeleteTextures(1, &depth_tex);
+    glDeleteFramebuffers(1, &depth_fbo);
+    glDeleteTextures(1, &density_tex);
+    glDeleteFramebuffers(1, &density_fbo);
+    glDeleteTextures(1, &intermediate_tex);
+    glDeleteFramebuffers(1, &intermediate_fbo);
+    glDeleteTextures(1, &blurred_tex);
+    glDeleteFramebuffers(1, &blurred_fbo);
+
+    // ---- Capture and assert ----------------------------------------------------
+    Image img = framebuffer_->capture();
+    ASSERT_TRUE(img.valid()) << "Failed to capture framebuffer";
+
+    img.save("artifacts/ssm_occlusion_test.png", ImageFormat::PNG);
+
+    // Inspect the center 100×100 px region — the blue foreground blob should land here.
+    // Blue (cat=1) = vec3(0.2, 0.6, 1.0): B is always > R.
+    // If orange (cat=3 = vec3(0.89, 0.59, 0.0)) bleeds through: R rises, B drops.
+    // Assertion: for every non-black pixel in the center, B > R.
+    const int cx = static_cast<int>(img.width / 2);
+    const int cy = static_cast<int>(img.height / 2);
+    const int half = 50;
+
+    int non_black = 0;
+    int bleed_violations = 0;
+
+    for (int py = cy - half; py <= cy + half; ++py) {
+        for (int px = cx - half; px <= cx + half; ++px) {
+            if (px < 0 || py < 0 || px >= static_cast<int>(img.width) || py >= static_cast<int>(img.height)) {
+                continue;
+            }
+            size_t idx = (static_cast<size_t>(py) * img.width + static_cast<size_t>(px)) * 4;
+            uint8_t r = img.pixels[idx + 0];
+            uint8_t g = img.pixels[idx + 1];
+            uint8_t b = img.pixels[idx + 2];
+            if (r < 10 && g < 10 && b < 10) {
+                continue; // skip background black
+            }
+            ++non_black;
+            if (r > b) {
+                ++bleed_violations;
+            }
+        }
+    }
+
+    EXPECT_GT(non_black, 100) << "Expected at least 100 non-black pixels in blob center region — "
+                              << "blob may not have rendered; check threshold/blobRadius settings";
+    EXPECT_EQ(bleed_violations, 0)
+        << bleed_violations << " pixels in the blob center have R > B.\n"
+        << "This means orange background particles are bleeding through the blue foreground blob.\n"
+        << "Depth prepass is not correctly culling background particles.\n"
+        << "  Center region: [" << (cx - half) << "," << (cx + half) << "] x [" << (cy - half) << "," << (cy + half)
+        << "]\n"
+        << "  Non-black pixels found: " << non_black << "\n"
+        << "  Artifact saved to: artifacts/ssm_occlusion_test.png";
 }

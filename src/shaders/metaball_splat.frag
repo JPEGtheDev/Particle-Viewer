@@ -8,7 +8,6 @@ uniform sampler2D u_prepass_depth;
 uniform vec2 u_viewport_inv;
 uniform float u_near;
 uniform float u_far;
-uniform float u_depth_range;
 
 float linear_depth(float d)
 {
@@ -18,12 +17,16 @@ float linear_depth(float d)
 
 void main()
 {
-	// Depth cull: discard fragments from particles behind the front surface by
-	// more than u_depth_range world units, preventing far particles from
-	// bleeding through nearer blobs.
+	// Depth cull: discard fragments more than 1.5x the front-surface depth behind
+	// the nearest particle at this pixel. The adaptive factor (front * 2.5 threshold)
+	// scales naturally with camera distance — tight near clusters, loose far out.
+	// Skip culling if no particle wrote to the prepass (prepass_d == 1.0 = far).
 	float prepass_d = texture(u_prepass_depth, gl_FragCoord.xy * u_viewport_inv).r;
-	if (linear_depth(gl_FragCoord.z) > linear_depth(prepass_d) + u_depth_range) {
-		discard;
+	if (prepass_d < (1.0 - 1e-5)) {
+		float front_linear = linear_depth(prepass_d);
+		if (linear_depth(gl_FragCoord.z) > front_linear * 2.5) {
+			discard;
+		}
 	}
 
 	vec2 coord = gl_PointCoord - vec2(0.5);
