@@ -447,12 +447,13 @@ TEST_F(SSMRenderingTest, SSMRender_4x4x4Grid_MatchesBaseline)
  * through foreground SSM blobs.
  *
  * Particle layout (in display space, after transScale=0.25):
- *   Foreground (blue, cat=1): 3×3 grid at display z=0  → linear depth 10 from camera
- *   Background (orange, cat=3): same x/y grid at display z=-20 → linear depth 30
+ *   Foreground (blue, cat=1): sim (0,0,0)   → display (0,0,0)   → linear depth 10
+ *   Background (orange, cat=3): sim (0,0,-165) → display (0,0,-41.25) → linear depth 51
  *
  * Depth cull logic (metaball_splat.frag):
- *   threshold = front_linear * 2.5 = 10 * 2.5 = 25
- *   orange depth (30) > 25 → discarded ✓
+ *   threshold = front_linear + 30.0 = 10 + 30 = 40
+ *   orange depth (51) > 40 → discarded ✓
+ *   blue   depth (10) ≤ 40 → kept       ✓
  *
  * Assertion:
  *   In the center 100×100 px region (where the blob lands), B > R for every
@@ -507,15 +508,15 @@ TEST_F(SSMRenderingTest, SSMDepthOcclusion_BlueClusterFront_OrangeClusterCulled)
     // The blue prepass writes depth at the center; the orange fragment samples that
     // same depth → the cull fires correctly.
     //
-    //   Blue   (cat=1): sim (0,0,   0) → display (0,0,  0) → camera depth 10
-    //   Orange (cat=3): sim (0,0, -80) → display (0,0,-20) → camera depth 30
+    //   Blue   (cat=1): sim (0,0,    0) → display (0,0,     0) → camera depth 10
+    //   Orange (cat=3): sim (0,0, -165) → display (0,0,-41.25) → camera depth 51
     //
-    //   Shader threshold: front_linear * 2.5 = 10 * 2.5 = 25
-    //     orange 30 > 25 → discarded  ✓
-    //     blue   10 ≤ 25 → kept       ✓
+    //   Shader threshold: front_linear + 30.0 = 10 + 30 = 40
+    //     orange 51 > 40 → discarded  ✓
+    //     blue   10 ≤ 40 → kept       ✓
     std::vector<glm::vec4> positions = {
-        glm::vec4(0.0f, 0.0f, 0.0f, 1.0f),   // blue foreground
-        glm::vec4(0.0f, 0.0f, -80.0f, 3.0f), // orange background
+        glm::vec4(0.0f, 0.0f, 0.0f, 1.0f),    // blue foreground
+        glm::vec4(0.0f, 0.0f, -165.0f, 3.0f), // orange background (depth 51 > threshold 40)
     };
     int n = static_cast<int>(positions.size());
     Particle particles(n, positions.data());
