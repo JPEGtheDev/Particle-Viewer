@@ -89,6 +89,8 @@ struct SSMResources
 {
     GLuint density_fbo = 0;
     GLuint density_texture = 0;
+    GLuint intermediate_fbo = 0;
+    GLuint intermediate_texture = 0;
     GLuint blurred_fbo = 0;
     GLuint blurred_texture = 0;
     bool float_fbo_supported = false;

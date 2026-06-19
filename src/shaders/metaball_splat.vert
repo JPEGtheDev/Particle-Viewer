@@ -15,7 +15,7 @@ void main()
 {
 	gl_Position = projection * view * vec4(offset.xyz * transScale, 1.0);
 	float dist = max(length(gl_Position), 0.0001);
-	gl_PointSize = blobRadius * (scale / dist) * (viewportHeight / REFERENCE_HEIGHT);
+	gl_PointSize = min(blobRadius * (scale / dist) * (viewportHeight / REFERENCE_HEIGHT), 2048.0);
 	v_instance_id = gl_InstanceID;
 	v_category_id = offset.w;
 }

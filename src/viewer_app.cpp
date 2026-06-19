@@ -727,7 +727,24 @@ void ViewerApp::initSSMResources()
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    // Blur FBO: box-blurred RGBA accumulation field (GL_RGBA32F)
+    // Intermediate FBO: holds horizontal blur pass output (GL_RGBA32F)
+    glGenFramebuffers(1, &render_.ssm.intermediate_fbo);
+    glGenTextures(1, &render_.ssm.intermediate_texture);
+    glBindFramebuffer(GL_FRAMEBUFFER, render_.ssm.intermediate_fbo);
+    glBindTexture(GL_TEXTURE_2D, render_.ssm.intermediate_texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, window_.width, window_.height, 0, GL_RGBA, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, render_.ssm.intermediate_texture, 0);
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        std::cerr << "SSM: intermediate FBO incomplete — SSM mode disabled" << std::endl;
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        render_.ssm.float_fbo_supported = false;
+        return;
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // Blur FBO: vertical blur pass output (GL_RGBA32F)
     glGenFramebuffers(1, &render_.ssm.blurred_fbo);
     glGenTextures(1, &render_.ssm.blurred_texture);
     glBindFramebuffer(GL_FRAMEBUFFER, render_.ssm.blurred_fbo);
@@ -796,26 +813,37 @@ void ViewerApp::drawSSMScene()
     glBindVertexArray(0);
     glDisable(GL_BLEND);
 
-    // Blur pass: box-blur density field into blurred_fbo
-    glBindFramebuffer(GL_FRAMEBUFFER, render_.ssm.blurred_fbo);
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    // Blur pass: separable box-blur — horizontal into intermediate, vertical into blurred
+    {
+        GLuint blur_prog = render_.ssm.blur_shader.Program;
+        render_.ssm.blur_shader.Use();
+        glBindVertexArray(render_.quad_vao);
+        glActiveTexture(GL_TEXTURE0);
+        glUniform1i(glGetUniformLocation(blur_prog, "densityTexture"), 0);
+        glUniform1f(glGetUniformLocation(blur_prog, "blurAmount"), window_.ssm_blur_amount);
+        glUniform2f(glGetUniformLocation(blur_prog, "texelSize"), 1.0f / static_cast<float>(viewport[2]),
+                    1.0f / static_cast<float>(viewport[3]));
 
-    render_.ssm.blur_shader.Use();
-    glBindVertexArray(render_.quad_vao);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, render_.ssm.density_texture);
-    glUniform1i(glGetUniformLocation(render_.ssm.blur_shader.Program, "densityTexture"), 0);
-    glUniform1f(glGetUniformLocation(render_.ssm.blur_shader.Program, "blurAmount"), window_.ssm_blur_amount);
-    glUniform2f(glGetUniformLocation(render_.ssm.blur_shader.Program, "texelSize"),
-                1.0f / static_cast<float>(viewport[2]), 1.0f / static_cast<float>(viewport[3]));
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    glBindVertexArray(0);
+        glBindFramebuffer(GL_FRAMEBUFFER, render_.ssm.intermediate_fbo);
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glBindTexture(GL_TEXTURE_2D, render_.ssm.density_texture);
+        glUniform2f(glGetUniformLocation(blur_prog, "blurDir"), 1.0f, 0.0f);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
-    // Composite pass: threshold + shade into render_.framebuffer (alpha blend over background)
+        glBindFramebuffer(GL_FRAMEBUFFER, render_.ssm.blurred_fbo);
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glBindTexture(GL_TEXTURE_2D, render_.ssm.intermediate_texture);
+        glUniform2f(glGetUniformLocation(blur_prog, "blurDir"), 0.0f, 1.0f);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        glBindVertexArray(0);
+    }
+
+    // Composite pass: threshold + shade into render_.framebuffer
+    // discard handles below-threshold pixels; above-threshold writes directly at full opacity
     glBindFramebuffer(GL_FRAMEBUFFER, render_.framebuffer);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     render_.ssm.composite_shader.Use();
     glBindVertexArray(render_.quad_vao);
@@ -825,7 +853,6 @@ void ViewerApp::drawSSMScene()
     glUniform1f(glGetUniformLocation(render_.ssm.composite_shader.Program, "threshold"), window_.ssm_threshold);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
-    glDisable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
 }
 
@@ -1233,6 +1260,10 @@ void ViewerApp::cleanup()
         glDeleteTextures(1, &render_.ssm.density_texture);
         render_.ssm.density_texture = 0;
     }
+    if (render_.ssm.intermediate_texture != 0) {
+        glDeleteTextures(1, &render_.ssm.intermediate_texture);
+        render_.ssm.intermediate_texture = 0;
+    }
     if (render_.ssm.blurred_texture != 0) {
         glDeleteTextures(1, &render_.ssm.blurred_texture);
         render_.ssm.blurred_texture = 0;
@@ -1240,6 +1271,10 @@ void ViewerApp::cleanup()
     if (render_.ssm.density_fbo != 0) {
         glDeleteFramebuffers(1, &render_.ssm.density_fbo);
         render_.ssm.density_fbo = 0;
+    }
+    if (render_.ssm.intermediate_fbo != 0) {
+        glDeleteFramebuffers(1, &render_.ssm.intermediate_fbo);
+        render_.ssm.intermediate_fbo = 0;
     }
     if (render_.ssm.blurred_fbo != 0) {
         glDeleteFramebuffers(1, &render_.ssm.blurred_fbo);
@@ -1342,6 +1377,10 @@ void ViewerApp::resizeFBO(int width, int height)
             glDeleteTextures(1, &render_.ssm.density_texture);
             render_.ssm.density_texture = 0;
         }
+        if (render_.ssm.intermediate_texture != 0) {
+            glDeleteTextures(1, &render_.ssm.intermediate_texture);
+            render_.ssm.intermediate_texture = 0;
+        }
         if (render_.ssm.blurred_texture != 0) {
             glDeleteTextures(1, &render_.ssm.blurred_texture);
             render_.ssm.blurred_texture = 0;
@@ -1349,6 +1388,10 @@ void ViewerApp::resizeFBO(int width, int height)
         if (render_.ssm.density_fbo != 0) {
             glDeleteFramebuffers(1, &render_.ssm.density_fbo);
             render_.ssm.density_fbo = 0;
+        }
+        if (render_.ssm.intermediate_fbo != 0) {
+            glDeleteFramebuffers(1, &render_.ssm.intermediate_fbo);
+            render_.ssm.intermediate_fbo = 0;
         }
         if (render_.ssm.blurred_fbo != 0) {
             glDeleteFramebuffers(1, &render_.ssm.blurred_fbo);
@@ -1365,6 +1408,22 @@ void ViewerApp::resizeFBO(int width, int height)
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, render_.ssm.density_texture, 0);
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
             std::cerr << "ERROR: SSM density FBO incomplete after resize\n";
+            render_.ssm.float_fbo_supported = false;
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            return;
+        }
+
+        glGenFramebuffers(1, &render_.ssm.intermediate_fbo);
+        glBindFramebuffer(GL_FRAMEBUFFER, render_.ssm.intermediate_fbo);
+        glGenTextures(1, &render_.ssm.intermediate_texture);
+        glBindTexture(GL_TEXTURE_2D, render_.ssm.intermediate_texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, render_.ssm.intermediate_texture,
+                               0);
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            std::cerr << "ERROR: SSM intermediate FBO incomplete after resize\n";
             render_.ssm.float_fbo_supported = false;
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             return;
