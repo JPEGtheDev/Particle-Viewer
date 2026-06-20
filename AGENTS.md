@@ -203,9 +203,9 @@ tests/
 +-- mocks/                # MockOpenGL, MockOpenGLContext
 
 docs/                     # Human-readable guides and standards
-.claude/skills/           # Skills from jpegthedev/story-to-ship plugin (see table above)
-.claude/agents/           # Agent prompt templates from jpegthedev/story-to-ship plugin
-.claude/hooks/            # Claude Code hooks: session-start, pre-message-gates, pre-message
+.claude/settings.json     # Plugin declaration: jpegthedev/story-to-ship (extraKnownMarketplaces + enabledPlugins)
+                          # .claude/skills/, .claude/agents/, .claude/hooks/ are NOT in the repo --
+                          # they are installed at session start by the story-to-ship plugin
 scratch/                  # Session workspace for exploratory/intermediate files
                           # Use for: large text dumps, intermediate analysis, theory-testing artifacts
                           # DO NOT commit scratch/ contents -- it is .gitignored
