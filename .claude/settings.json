@@ -27,14 +27,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/pre-message-gates.sh"
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
             "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/pre-message.sh"
           }
         ]
