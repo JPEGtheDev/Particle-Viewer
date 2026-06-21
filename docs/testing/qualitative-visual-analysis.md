@@ -7,7 +7,7 @@ tags: [testing, visual-regression, debugging, opengl, rendering, agent]
 related:
   - "visual-regression.md"
   - "visual-regression-authoring.md"
-  - "../rendering/ssm-reference.md"
+  - "../rendering/ssm-reference.md"  # SSM attempt/failure post-mortem; real example source
   - "../TESTING_STANDARDS.md"
 ---
 

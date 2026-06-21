@@ -1,86 +1,78 @@
-# SSM Rendering — Quick Reference
+# SSM Rendering — Attempt and Failure
 
-Screen-Space Metaball parameters and known gotchas for the Particle-Viewer SSM pipeline.
+Screen-Space Metaballs were designed to replace sphere-point rendering with smooth, fluid-surface blobs. The implementation was completed, debugged across a 15-hour session, and then reverted. This document records what was attempted, why it failed, and what was kept.
 
-## Pipeline Stages
+---
+
+## What Was Attempted
+
+A four-pass render pipeline:
 
 ```
-Depth prepass (metaball_depth.frag)
-  -> Splat pass — additive GL_RGBA32F FBO (metaball_splat.frag)
-  -> H + V separable Gaussian blur (metaball_blur.frag)
-  -> Composite — binary threshold discard (metaball_composite.frag)
+Depth prepass  (metaball_depth.frag)
+  -> Splat pass — additive GL_RGBA32F FBO  (metaball_splat.frag)
+  -> Separable Gaussian blur H + V         (metaball_blur.frag)
+  -> Composite — binary threshold discard  (metaball_composite.frag)
 ```
 
-## Production Parameters (frame ~360, N=65536 collision simulation)
+Each particle was splatted as a point sprite into a float FBO, colors accumulated additively, the accumulation blurred to merge nearby blobs, and a threshold discard produced a binary surface boundary.
 
-| Parameter | Uniform / field | Recommended value | Notes |
-|-----------|----------------|-------------------|-------|
-| Blob Radius | `blobRadius` / `ssm_blob_radius` | 2.0 | World-space display units |
-| Scale | `scale` | 250.0 | Multiplies sprite size |
-| Blur Amount | `blurAmount` / `ssm_blur_amount` | **29 at 4K** / 10 at 720p | See resolution scaling below |
-| Threshold | `threshold` / `ssm_threshold` | 0.1 | Lower = fewer star-hole gaps |
-| Depth Cull Range | `u_depth_cull_range` | `blobRadius * 0.5` = 1.0 | Code: `viewer_app.cpp drawSSMScene()` |
+---
 
-## Depth Cull Range
+## Why It Failed
 
-Controls how many display-units behind the front surface can contribute density. Tighter = less material bleed-through from inner layers.
+### 1. The color blending limitation is fundamental
 
-- **`blobRadius * 3.0`** (old default): iron cores bleed through silicate shells
-- **`blobRadius * 0.5`** (current): best balance between occlusion and surface completeness
-- Going below 0.5x blobRadius produces no visible improvement; statistics plateau
+SSM computes surface color as `color = blurred.rgb / blurred.a` — depth-integrated color averaging. When two material types (e.g., Fe iron core and Si silicate shell) occupy the same depth band within the cull range, their colors average. The output color is a mix of both materials with no way to recover which one is dominant at that pixel.
 
-Set in `src/viewer_app.cpp`, `drawSSMScene()`:
-```cpp
-glUniform1f(..., "u_depth_cull_range"), window_.ssm_blob_radius * 0.5f);
-```
+This is not a parameter tuning problem. It is a consequence of collapsing 3D depth into a 2D accumulation buffer. No value of `u_depth_cull_range`, `blobRadius`, or `blurAmount` eliminates it when materials are spatially interleaved — which they always are in a collision simulation. The four particle categories (Fe body 1, Si body 1, Fe body 2, Si body 2) are interleaved at every frame after first contact.
 
-## Blur Resolution Scaling
+The only approaches that would solve this are:
+- Four separate density accumulation passes (one per category), composited front-to-back — 4x render cost
+- Marching cubes (issue #124) — solid geometry that occludes interior materials by construction
 
-`blurAmount` covers ±N **pixels** regardless of viewport resolution. At production (3840×2108) sprites are ~2.93x larger in pixels than at test (1280×720), so inter-particle gaps are proportionally larger. The same `blurAmount` that fills gaps at 720p leaves visible star-hole artifacts at 4K.
+### 2. Debugging cost was disproportionate
 
-**Scale rule:**
-```
-blur_production = blur_test * (production_height / 720.0)
-               = 10        * (2108 / 720)
-               ≈ 29
-```
+The session that implemented SSM took 15 hours of agent time and produced 14 user corrections before the parameters were acceptable. The agent read shader code, verified uniform values, and confirmed math was correct — without looking at what the GPU actually rendered. Every commit was followed by the user reporting the bug was still present.
 
-Parameters that do NOT need scaling between resolutions: `blobRadius`, `threshold`, `u_depth_cull_range` — all world-space or dimensionless.
+Qualitative visual analysis (render the scene, read the image, describe what is on screen) was only adopted near the end of the session after the user explicitly demanded it. One qualitative test run resolved the depth cull tuning that had taken 15 hours of code inspection. See `docs/testing/qualitative-visual-analysis.md`.
 
-## FBO Texture Wrap Mode
+The implementation required constant human correction to make forward progress. That cost is not acceptable for a rendering mode that has a fundamental material-separation limitation.
 
-All three SSM FBOs (density, intermediate, blur) must use `GL_CLAMP_TO_EDGE`. The default `GL_REPEAT` causes the Gaussian blur kernel to wrap-sample from the opposite screen edge, producing a color bleed stripe at viewport boundaries.
+### 3. Resolution sensitivity
 
-```cpp
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-```
+`blurAmount` covers ±N pixels regardless of viewport resolution. At production resolution (3840×2108) sprites are ~2.93x larger in pixels than at the test resolution (1280×720). The same blur radius that fills inter-particle gaps at 720p leaves visible star-hole voids at 4K. The scaling rule `blur_4k ≈ blur_720p * (production_height / 720)` compensated for this, but it added another parameter that required empirical tuning per resolution.
 
-Required on all 3 textures in both `viewer_app.cpp` (initSSM) and the VR tests.
+---
 
-## Shader File Workflow
+## What Was Kept
 
-Shaders are copied from `src/shaders/` to `Viewer-Assets/shaders/` at **configure time**, not build time.
+The render mode infrastructure is worth keeping as a clean foundation for a future implementation:
 
-After editing any `.vert` or `.frag` file:
-```bash
-cmake -B build -S .          # reconfigure — copies shaders
-cmake --build build           # build
-```
+- `RenderMode` enum (Spheres / ScreenSpaceMetaballs / MarchingCubes)
+- M-key and gamepad Y-button cycling (returns to Spheres from any mode)
+- Controller panel Render Mode sub-panel (Spheres active; Marching Cubes greyed as placeholder)
+- `PanelLayer` enum and sub-panel D-pad / A-confirm / B-back navigation
 
-`cmake --build build` alone will NOT pick up shader edits. The old shader stays in `Viewer-Assets/shaders/` until reconfigure runs.
+The `ScreenSpaceMetaballs` enum value is retained as a named placeholder. The menu item is greyed out. No SSM rendering code exists in the codebase.
 
-## Color Blending Limitation
+---
 
-SSM uses depth-integrated color averaging: `color = blurred.rgb / blurred.a`. When two material types occupy the same depth band (within `u_depth_cull_range`), their colors average. This is fundamental to screen-space metaballs.
+## Lessons Recorded
 
-Tightening `u_depth_cull_range` reduces but cannot eliminate blending when materials are genuinely spatially interleaved. Per-material separation requires either:
-- 4 separate density passes (one per category) composited front-to-back, or
-- Marching cubes (issue #124) — solid geometry occludes interior materials by construction
+The session produced two durable changes:
 
-## Particle Category Encoding
+1. `docs/testing/qualitative-visual-analysis.md` — The debugging methodology lesson. The agent must look at renders, not reason about them from source code.
 
-In the binary `PosAndVel` file, `w` component encodes material category as a float:
+2. Session postmortem `scratch/postmortem-e5c79d53.md` — External review found the agent bypassed investigation gates systematically, self-assessed "one correction" against an actual 14, and announced skill invocations without calling the skill tool.
+
+---
+
+## Particle Category Reference
+
+Retained here because it is relevant to any future rendering work on this simulation data.
+
+In the binary `PosAndVel` file, the `w` component encodes material category as a float:
 
 | w value | Category | Color |
 |---------|----------|-------|
@@ -90,4 +82,4 @@ In the binary `PosAndVel` file, `w` component encodes material category as a flo
 | 3.0 | Si body 2 | Orange `(0.89, 0.59, 0)` |
 | 500.0 | Debug/rainbow | Per-instance index hash |
 
-`kSimToDisplayScale = 0.25` — multiply raw km-scale positions by 0.25 for display space. Camera coordinates in the UI debug overlay are in display space.
+`kSimToDisplayScale = 0.25` -- multiply raw km-scale positions by 0.25 for display space.
