@@ -41,7 +41,7 @@ GitHub Actions checks every pull request:
 
 - Verifies all files match clang-format style
 - Runs clang-tidy analysis
-- Fails the build on violations — PRs MUST pass before merging
+- Fails the build on violations -- PRs MUST pass before merging
 
 **Local pre-PR check:**
 
@@ -57,9 +57,9 @@ clang-tidy src/*.cpp -- -Isrc/glad/include
 
 The project uses **Google Test** for all tests:
 
-1. **Unit Tests** — test core classes in isolation using mocks (`tests/core/`)
-2. **Integration Tests** — test component interactions (`tests/integration/`)
-3. **Visual Regression Tests** — compare rendered output to baselines (`tests/visual-regression/`)
+1. **Unit Tests** -- test core classes in isolation using mocks (`tests/core/`)
+2. **Integration Tests** -- test component interactions (`tests/integration/`)
+3. **Visual Regression Tests** -- compare rendered output to baselines (`tests/visual-regression/`)
 4. Test naming: `UnitName_StateUnderTest_ExpectedResult`
 5. All tests MUST follow Arrange-Act-Assert structure
 
@@ -73,6 +73,6 @@ For full testing guidelines, see `docs/TESTING_STANDARDS.md`.
 
 ## Related
 
-- [Coding Standards](CODING_STANDARDS.md) — parent document and full ToC
-- [Testing Standards](TESTING_STANDARDS.md) — full testing guidelines and patterns
-- [coding-standards-formatting.md](coding-standards-formatting.md) — formatting rules enforced by clang-format
+- [Coding Standards](CODING_STANDARDS.md) -- parent document and full ToC
+- [Testing Standards](TESTING_STANDARDS.md) -- full testing guidelines and patterns
+- [coding-standards-formatting.md](coding-standards-formatting.md) -- formatting rules enforced by clang-format

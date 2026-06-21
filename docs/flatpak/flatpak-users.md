@@ -104,6 +104,6 @@ flatpak run --command=bash org.particleviewer.ParticleViewer
 
 ## Related
 
-- [FLATPAK.md](FLATPAK.md) — Distribution overview and navigation
-- [flatpak-build.md](flatpak-build.md) — Building the Flatpak from source
-- [flatpak-gotchas.md](flatpak-gotchas.md) — Troubleshooting runtime and permission issues
+- [FLATPAK.md](FLATPAK.md) -- Distribution overview and navigation
+- [flatpak-build.md](flatpak-build.md) -- Building the Flatpak from source
+- [flatpak-gotchas.md](flatpak-gotchas.md) -- Troubleshooting runtime and permission issues

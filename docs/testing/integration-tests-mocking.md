@@ -22,7 +22,7 @@ Always call both `reset()` and `initGLAD()` in `SetUp()`:
 void SetUp() override
 {
     MockOpenGL::reset();
-    MockOpenGL::initGLAD();  // Required — do not omit
+    MockOpenGL::initGLAD();  // Required -- do not omit
 }
 ```
 
@@ -72,11 +72,11 @@ enum { NUM_PARTICLES = 50 };
 
 ### Tests Pass Alone but Fail Together
 
-Each test is modifying shared state. Ensure `MockOpenGL::reset()` is called in `SetUp()` and that test fixtures create fresh data — never share state across tests.
+Each test is modifying shared state. Ensure `MockOpenGL::reset()` is called in `SetUp()` and that test fixtures create fresh data -- never share state across tests.
 
 ### Coverage Report Missing Integration Tests
 
-Integration test **files** do not need coverage — the source under test is in `src/`. Coverage MUST report on `src/*.hpp` and `src/*.cpp`, not the test files themselves.
+Integration test **files** do not need coverage -- the source under test is in `src/`. Coverage MUST report on `src/*.hpp` and `src/*.cpp`, not the test files themselves.
 
 ## Debugging Tips
 
@@ -87,6 +87,6 @@ Integration test **files** do not need coverage — the source under test is in 
 
 ## Related
 
-- [Integration Tests Overview](integration-tests.md) — Running tests and directory structure
-- [Test Patterns](integration-tests-patterns.md) — Fixture, AAA patterns, and adding new tests
-- [Testing Standards](../TESTING_STANDARDS.md) — Project-wide test guidelines
+- [Integration Tests Overview](integration-tests.md) -- Running tests and directory structure
+- [Test Patterns](integration-tests-patterns.md) -- Fixture, AAA patterns, and adding new tests
+- [Testing Standards](../TESTING_STANDARDS.md) -- Project-wide test guidelines

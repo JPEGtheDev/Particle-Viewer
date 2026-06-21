@@ -1,5 +1,5 @@
 ---
-title: Visual Regression Camera Positioning — Lessons Learned
+title: Visual Regression Camera Positioning -- Lessons Learned
 description: Analysis of a camera positioning mistake when creating visual regression baselines, and guidelines for correct camera setup in future tests.
 domain: testing
 subdomain: visual-regression
@@ -20,7 +20,7 @@ guide to the analysis and guidelines.
 
 > **Debug output shows WHERE you're looking, not WHAT you're framing.**
 
-For regression baselines, calculate camera distance based on desired composition —
+For regression baselines, calculate camera distance based on desired composition --
 not debug coordinates from an arbitrary camera state.
 
 ## Contents
@@ -32,13 +32,13 @@ not debug coordinates from an arbitrary camera state.
 
 ## Quick Summary
 
-- Debug coordinates are **accurate** — they report camera state correctly.
+- Debug coordinates are **accurate** -- they report camera state correctly.
 - They represent **current state**, not **optimal framing**.
 - Viewing angle/direction: extract from debug output.
 - Viewing distance: **calculate** from composition goals.
 
 ## Related
 
-- [Root Cause Analysis](camera-positioning-root-cause.md) — what went wrong and why
-- [Guidelines & Prevention](camera-positioning-guidelines.md) — lessons and checklist
-- [Enhanced Debug Output](enhanced-debug-output.md) — full debug overlay reference
+- [Root Cause Analysis](camera-positioning-root-cause.md) -- what went wrong and why
+- [Guidelines & Prevention](camera-positioning-guidelines.md) -- lessons and checklist
+- [Enhanced Debug Output](enhanced-debug-output.md) -- full debug overlay reference

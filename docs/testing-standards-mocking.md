@@ -24,10 +24,10 @@ Mock when the dependency is:
 
 ## Mock Design Rules
 
-1. **Track calls** — record which functions were called and with what parameters
-2. **Return predictable values** — consistent, testable return values
-3. **Provide a reset method** — clear all call counts before each test
-4. **Minimal interface** — only mock what the test needs
+1. **Track calls** -- record which functions were called and with what parameters
+2. **Return predictable values** -- consistent, testable return values
+3. **Provide a reset method** -- clear all call counts before each test
+4. **Minimal interface** -- only mock what the test needs
 
 ```cpp
 class MockOpenGL
@@ -69,7 +69,7 @@ class MockOpenGL
 - System calls and hardware interfaces
 
 **MUST NOT mock:**
-- The class under test — test the real implementation
+- The class under test -- test the real implementation
 - Simple data structures or value objects
 - Pure functions with no side effects
 
@@ -93,6 +93,6 @@ TEST(ShaderTest, Constructor_CallsCompileShader)
 
 ## Related
 
-- [Testing Standards](TESTING_STANDARDS.md) — parent ToC stub
-- [testing-standards-coverage.md](testing-standards-coverage.md) — what to test and coverage targets
-- [testing-standards-organization.md](testing-standards-organization.md) — mock file location in tests/mocks/
+- [Testing Standards](TESTING_STANDARDS.md) -- parent ToC stub
+- [testing-standards-coverage.md](testing-standards-coverage.md) -- what to test and coverage targets
+- [testing-standards-organization.md](testing-standards-organization.md) -- mock file location in tests/mocks/

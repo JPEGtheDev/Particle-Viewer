@@ -14,10 +14,10 @@ related:
 
 Visual regression testing catches unintended rendering changes by comparing images pixel-by-pixel. The infrastructure consists of:
 
-- **Image** (`src/Image.hpp`) — Core RGBA image class with `save()`/`load()` for PPM and PNG formats
-- **PixelComparator** (`src/testing/PixelComparator.hpp`) — RGBA image comparison with configurable tolerance
-- **VisualTestHelpers** (`tests/visual-regression/VisualTestHelpers.hpp`) — Test fixture, macros, and helper functions
-- **GitHub Actions Workflow** (`.github/workflows/unit-tests.yml`) — CI pipeline with artifact uploads
+- **Image** (`src/Image.hpp`) -- Core RGBA image class with `save()`/`load()` for PPM and PNG formats
+- **PixelComparator** (`src/testing/PixelComparator.hpp`) -- RGBA image comparison with configurable tolerance
+- **VisualTestHelpers** (`tests/visual-regression/VisualTestHelpers.hpp`) -- Test fixture, macros, and helper functions
+- **GitHub Actions Workflow** (`.github/workflows/unit-tests.yml`) -- CI pipeline with artifact uploads
 
 ### Data Types
 
@@ -33,15 +33,15 @@ The `Image` class stores RGBA data in row-major order, provides `valid()` and `e
 
 ```text
 src/
-├── Image.hpp/.cpp                   # Core RGBA image class with save/load
-├── testing/
-│   └── PixelComparator.hpp/.cpp    # Image comparison engine
++-- Image.hpp/.cpp                   # Core RGBA image class with save/load
++-- testing/
+|   +-- PixelComparator.hpp/.cpp    # Image comparison engine
 tests/
-└── visual-regression/
-    ├── VisualTestHelpers.hpp        # Fixture + macros + test image helpers
-    └── VisualRegressionTests.cpp    # Visual regression tests
++-- visual-regression/
+    +-- VisualTestHelpers.hpp        # Fixture + macros + test image helpers
+    +-- VisualRegressionTests.cpp    # Visual regression tests
 .github/workflows/
-└── unit-tests.yml                   # CI workflow (visual-regression job)
++-- unit-tests.yml                   # CI workflow (visual-regression job)
 ```
 
 ## Contents
@@ -53,6 +53,6 @@ tests/
 
 ## Related
 
-- [Testing Standards](../TESTING_STANDARDS.md) — Project-wide test guidelines and AAA pattern
-- [Writing Tests](visual-regression-authoring.md) — How to author visual regression tests
-- [Running & CI](visual-regression-ci.md) — Running tests and CI integration
+- [Testing Standards](../TESTING_STANDARDS.md) -- Project-wide test guidelines and AAA pattern
+- [Writing Tests](visual-regression-authoring.md) -- How to author visual regression tests
+- [Running & CI](visual-regression-ci.md) -- Running tests and CI integration

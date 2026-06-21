@@ -18,18 +18,18 @@ related:
 ## Button Layout (Xbox Controller)
 
 ```text
-         ┌──────────────────────────────────────────┐
-         │  LB                                    RB │
-         │  LT ──► rewind ◄──             ──► forward ◄── RT │
-         │                                          │
-         │  ┌──────┐   SELECT  START   ┌──────┐    │
-         │  │ L    │     [◄ ]  [ ►]    │  R   │    │
-         │  │stick │                   │ stick│    │
-         │  └──────┘  D-PAD            └──────┘    │
-         │               ↑             Y(▲)         │
-         │             ← + →       X(◄)   B(►)     │
-         │               ↓             A(▼)         │
-         └──────────────────────────────────────────┘
+         +------------------------------------------+
+         |  LB                                    RB |
+         |  LT --> rewind <--             --> forward <-- RT |
+         |                                          |
+         |  +------+   SELECT  START   +------+    |
+         |  | L    |     [< ]  [ >]    |  R   |    |
+         |  |stick |                   | stick|    |
+         |  +------+  D-PAD            +------+    |
+         |               ^             Y(^)         |
+         |             <- + ->       X(<)   B(>)     |
+         |               v             A(v)         |
+         +------------------------------------------+
 ```
 
 ## Input Mappings
@@ -40,10 +40,10 @@ related:
 
 | Input | Action |
 |-------|--------|
-| **Left stick** — up/down | Move camera forward / backward |
-| **Left stick** — left/right | Strafe camera left / right |
-| **Right stick** — left/right | Rotate camera yaw (look left / right) |
-| **Right stick** — up/down | Rotate camera pitch (look up / down) |
+| **Left stick** -- up/down | Move camera forward / backward |
+| **Left stick** -- left/right | Strafe camera left / right |
+| **Right stick** -- left/right | Rotate camera yaw (look left / right) |
+| **Right stick** -- up/down | Rotate camera pitch (look up / down) |
 
 > In **orbit mode** (activated with **X**), the left stick orbits the focal sphere instead of moving the camera.  The right stick Y-axis zooms in/out (adjusts sphere distance) rather than pitching the camera.
 
@@ -51,21 +51,21 @@ related:
 
 | Input | Action |
 |-------|--------|
-| **B button** | Cycle point lock state: Off → Point visible → Orbit locked |
-| **Y button** | Toggle COM (centre-of-mass) lock — only active in orbit mode |
+| **B button** | Cycle point lock state: Off -> Point visible -> Orbit locked |
+| **Y button** | Toggle COM (centre-of-mass) lock -- only active in orbit mode |
 | **L3** (left stick click) | Move rotation sphere closer (zoom in) |
 | **R3** (right stick click) | Move rotation sphere further (zoom out) |
 
 Point lock states match the **P** key on the keyboard:
-- **Off** — free camera, no sphere displayed
-- **Point visible** (sphere red) — sphere displayed, camera moves freely
-- **Orbit locked** (sphere green) — camera orbits around the sphere
+- **Off** -- free camera, no sphere displayed
+- **Point visible** (sphere red) -- sphere displayed, camera moves freely
+- **Orbit locked** (sphere green) -- camera orbits around the sphere
 
 ### Camera Speed
 
 | Input | Action |
 |-------|--------|
-| **X button** (hold) | Speed boost — 20× movement speed while held (mirrors Shift key) |
+| **X button** (hold) | Speed boost -- 20x movement speed while held (mirrors Shift key) |
 
 ### Frame Playback
 
@@ -93,12 +93,12 @@ Opening the controller panel switches to **Menu Mode**. All **gamepad** camera, 
 | **Start** | Open / close controller panel *(any mode)* |
 | **Esc** *(keyboard)* | Open / close controller panel *(any mode)* |
 | **B button** | Close panel, return to View Mode *(Menu Mode only)* |
-| **D-pad ↑ / ↓** | Navigate panel items |
+| **D-pad ^ / v** | Navigate panel items |
 | **A button** | Select / activate highlighted item |
 
 The controller panel exposes: Fullscreen, Auto-COM, Debug Mode, Quit, Load File, Recording Folder, and Close.
 
-> **Quit** is available only via the controller panel or the File menu. Esc no longer quits the application — it opens the controller panel.
+> **Quit** is available only via the controller panel or the File menu. Esc no longer quits the application -- it opens the controller panel.
 
 ## Keyboard Equivalents
 
@@ -110,7 +110,7 @@ The controller panel exposes: Fullscreen, Auto-COM, Debug Mode, Quit, Load File,
 | Y | O |
 | Select/Back | T |
 | Start | Esc (open / close controller panel) |
-| RB / LB | → / ← |
+| RB / LB | -> / <- |
 | RT / LT | E / Q |
 | L3 / R3 | `[` / `]` |
 | Left stick | W / A / S / D |
@@ -128,5 +128,5 @@ If the controller disconnects, input falls back to keyboard/mouse. Reconnecting 
 
 ## Related
 
-- [WINDOW_MANAGEMENT.md](WINDOW_MANAGEMENT.md) — SDL3 window and resolution management, fullscreen, and config persistence.
-- [IMGUI_INTEGRATION.md](IMGUI_INTEGRATION.md) — ImGui menu system and event handling order.
+- [WINDOW_MANAGEMENT.md](WINDOW_MANAGEMENT.md) -- SDL3 window and resolution management, fullscreen, and config persistence.
+- [IMGUI_INTEGRATION.md](IMGUI_INTEGRATION.md) -- ImGui menu system and event handling order.

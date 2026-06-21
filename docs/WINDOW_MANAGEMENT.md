@@ -15,7 +15,7 @@ related:
 ### Via Menu
 
 1. Press **F1** to show the menu (if hidden)
-2. Navigate to **View → Resolution**
+2. Navigate to **View -> Resolution**
 3. Select your desired resolution:
    - **720p (1280x720)** - Standard HD
    - **1080p (1920x1080)** - Full HD
@@ -44,8 +44,8 @@ You can also manually resize the window by dragging the edges. The viewport and 
 
 Press **Alt+Enter** at any time to toggle between windowed and fullscreen mode.
 
-- **Windowed → Fullscreen**: Switches to your monitor's native resolution
-- **Fullscreen → Windowed**: Restores your previous windowed size
+- **Windowed -> Fullscreen**: Switches to your monitor's native resolution
+- **Fullscreen -> Windowed**: Restores your previous windowed size
 
 ### Behavior
 
@@ -115,7 +115,7 @@ This can help verify resolution settings are applied correctly.
 ### Window Too Small/Large
 
 If the window size is uncomfortable:
-1. Use the **View → Resolution** menu to select a preset
+1. Use the **View -> Resolution** menu to select a preset
 2. Or manually resize by dragging window edges
 3. Your preference will be saved automatically
 
@@ -143,5 +143,5 @@ If particles or the scene appears stretched:
 
 ## Related
 
-- [IMGUI_INTEGRATION.md](IMGUI_INTEGRATION.md) — Dear ImGui integration, menu system, and SDL3 event order.
-- [CONTROLLER_MAPPING.md](CONTROLLER_MAPPING.md) — Gamepad input mappings and keyboard equivalents.
+- [IMGUI_INTEGRATION.md](IMGUI_INTEGRATION.md) -- Dear ImGui integration, menu system, and SDL3 event order.
+- [CONTROLLER_MAPPING.md](CONTROLLER_MAPPING.md) -- Gamepad input mappings and keyboard equivalents.

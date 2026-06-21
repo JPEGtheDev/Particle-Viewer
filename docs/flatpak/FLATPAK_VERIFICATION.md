@@ -20,10 +20,10 @@ The PR workflow triggers automatically when a pull request is opened or updated 
 
 ### Expected Behavior
 
-1. **Workflow Triggers** — `Build Flatpak (PR)` starts in the Actions tab
-2. **Build Success** — workflow completes with a green checkmark
-3. **Artifact Upload** — artifact named `particle-viewer-flatpak-pr-<NUMBER>` is available
-4. **PR Comment** — bot posts download and installation instructions
+1. **Workflow Triggers** -- `Build Flatpak (PR)` starts in the Actions tab
+2. **Build Success** -- workflow job shows status [+] (passed) in the Actions tab
+3. **Artifact Upload** -- artifact named `particle-viewer-flatpak-pr-<NUMBER>` is available
+4. **PR Comment** -- bot posts download and installation instructions
 
 ### Manual Verification
 
@@ -42,10 +42,10 @@ Runs on push to main when version changes are detected, or via manual workflow d
 
 ### Expected Behavior
 
-1. **Version Detection** — workflow detects version bump from commit messages
-2. **Release Created** — GitHub release tagged `v<VERSION>`
-3. **Flatpak Build Job** — separate job builds Flatpak in container
-4. **Asset Upload** — Flatpak bundle attached to the release
+1. **Version Detection** -- workflow detects version bump from commit messages
+2. **Release Created** -- GitHub release tagged `v<VERSION>`
+3. **Flatpak Build Job** -- separate job builds Flatpak in container
+4. **Asset Upload** -- Flatpak bundle attached to the release
 
 ### Manual Verification
 
@@ -109,6 +109,6 @@ After verification: merge the PR, test the PR workflow on a subsequent PR, trigg
 
 ## Related
 
-- [FLATPAK.md](FLATPAK.md) — Distribution overview and navigation
-- [flatpak-build.md](flatpak-build.md) — Local build guide and manifest reference
-- [flatpak-gotchas.md](flatpak-gotchas.md) — Runtime troubleshooting and CI/CD details
+- [FLATPAK.md](FLATPAK.md) -- Distribution overview and navigation
+- [flatpak-build.md](flatpak-build.md) -- Local build guide and manifest reference
+- [flatpak-gotchas.md](flatpak-gotchas.md) -- Runtime troubleshooting and CI/CD details

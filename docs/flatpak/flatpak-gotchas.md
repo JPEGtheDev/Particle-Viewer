@@ -74,7 +74,7 @@ sudo flatpak install flathub org.freedesktop.Platform.GL.nvidia-580-126-18//1.4
 
 If the exact version isn't on Flathub yet, the software fallback keeps the app usable.
 
-> **Note:** Three env vars are required together for Mesa software rendering on an NVIDIA X11 session: `LIBGL_ALWAYS_SOFTWARE=1`, `GALLIUM_DRIVER=llvmpipe`, and `__GLX_VENDOR_LIBRARY_NAME=mesa`. Setting only `LIBGL_ALWAYS_SOFTWARE=1` is insufficient — GLVND still queries the X server extension and tries to load `libGLX_nvidia.so`. The application sets all three automatically.
+> **Note:** Three env vars are required together for Mesa software rendering on an NVIDIA X11 session: `LIBGL_ALWAYS_SOFTWARE=1`, `GALLIUM_DRIVER=llvmpipe`, and `__GLX_VENDOR_LIBRARY_NAME=mesa`. Setting only `LIBGL_ALWAYS_SOFTWARE=1` is insufficient -- GLVND still queries the X server extension and tries to load `libGLX_nvidia.so`. The application sets all three automatically.
 
 **Can't access certain files**
 - Ensure files are in home or XDG directories
@@ -91,6 +91,6 @@ flatpak override --user --filesystem=/path/to/directory org.particleviewer.Parti
 
 ## Related
 
-- [FLATPAK.md](FLATPAK.md) — Distribution overview and navigation
-- [flatpak-build.md](flatpak-build.md) — Building locally and manifest configuration
-- [FLATPAK_VERIFICATION.md](FLATPAK_VERIFICATION.md) — Verification checklist for CI and releases
+- [FLATPAK.md](FLATPAK.md) -- Distribution overview and navigation
+- [flatpak-build.md](flatpak-build.md) -- Building locally and manifest configuration
+- [FLATPAK_VERIFICATION.md](FLATPAK_VERIFICATION.md) -- Verification checklist for CI and releases

@@ -1,5 +1,5 @@
 ---
-title: Enhanced Debug Output — Calculations & Examples
+title: Enhanced Debug Output -- Calculations & Examples
 description: Coverage formulas, recommended distance calculations, and worked examples for the --debug-camera composition analysis fields.
 domain: testing
 subdomain: visual-regression
@@ -38,7 +38,7 @@ Assumptions:
 distance = subject_size / (coverage_percent * tan(FOV/2))
 ```
 
-For 45° FOV and a 12-unit subject:
+For 45 degrees FOV and a 12-unit subject:
 
 | Target Coverage | Distance |
 |-----------------|----------|
@@ -74,7 +74,7 @@ Est. Coverage: ~43% of viewport
 For 50% coverage: dist=51.43 units
 ```
 
-Good framing — close to ideal for a regression baseline.
+Good framing -- close to ideal for a regression baseline.
 
 ### Example 3: Default Particle Cube (Without COM)
 
@@ -100,6 +100,6 @@ Subject is small with too much blank space. Move closer to ~51 units.
 
 ## Related
 
-- [Enhanced Debug Output (overview)](enhanced-debug-output.md) — navigation and quick reference
-- [Overlay Fields](enhanced-debug-output-overlay-fields.md) — field definitions
-- [Camera Positioning Lessons Learned](camera-positioning-lessons-learned.md) — pitfalls when using debug output for baselines
+- [Enhanced Debug Output (overview)](enhanced-debug-output.md) -- navigation and quick reference
+- [Overlay Fields](enhanced-debug-output-overlay-fields.md) -- field definitions
+- [Camera Positioning Lessons Learned](camera-positioning-lessons-learned.md) -- pitfalls when using debug output for baselines

@@ -1,0 +1,84 @@
+name: ASCII Policy
+
+on:
+  push:
+    paths:
+      - '**.md'
+      - '.github/skills/**'
+      - '.github/agents/**'
+      - '.github/workflows/ascii-policy.yml'
+      - '.claude/hooks/**'
+      - 'docs/**'
+  pull_request:
+    paths:
+      - '**.md'
+      - '.github/skills/**'
+      - '.github/agents/**'
+      - '.github/workflows/ascii-policy.yml'
+      - '.claude/hooks/**'
+      - 'docs/**'
+
+permissions:
+  contents: read
+
+jobs:
+  ascii-check:
+    name: Check ASCII-only markdown
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan for non-ASCII violations
+        run: |
+          cat > /tmp/ascii_check.py << 'PYEOF'
+          import sys, re, os
+
+          NON_ASCII = re.compile('[^\x00-\x7f]')
+
+          def collect_files():
+              for root in ['.github/skills', '.github/agents', '.claude/hooks', 'docs']:
+                  for dirpath, _, names in os.walk(root):
+                      for name in names:
+                          if name.endswith('.md'):
+                              yield os.path.join(dirpath, name)
+              for f in ['AGENTS.md', 'README.md', 'THIRD_PARTY_NOTICES.md']:
+                  if os.path.isfile(f):
+                      yield f
+
+          violations = []
+          for path in sorted(set(collect_files())):
+              with open(path, encoding='utf-8') as f:
+                  for n, line in enumerate(f, 1):
+                      if NON_ASCII.search(line):
+                          violations.append(f'  {path}:{n}: {line.rstrip()[:120]}')
+
+          if violations:
+              print('ASCII policy violations found:')
+              for v in violations[:20]:
+                  print(v)
+              if len(violations) > 20:
+                  print(f'  ... and {len(violations) - 20} more')
+              sys.exit(1)
+
+          print('ASCII policy check passed.')
+          PYEOF
+
+          python3 /tmp/ascii_check.py 2>&1 | tee /tmp/ascii_result.txt
+          STATUS=${PIPESTATUS[0]}
+
+          if [ "$STATUS" -ne 0 ]; then
+            {
+              echo "## ASCII Policy Violation"
+              echo ""
+              echo "Non-ASCII characters found in markdown files:"
+              echo ""
+              echo '```'
+              cat /tmp/ascii_result.txt
+              echo '```'
+              echo ""
+              echo "Run \`python3 scratch/ascii_replace.py\` to fix."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+          echo "ASCII policy check passed." >> "$GITHUB_STEP_SUMMARY"

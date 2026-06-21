@@ -17,10 +17,10 @@ flatpak run org.particleviewer.ParticleViewer
 ```
 
 **Benefits:**
-- ✅ No dependency installation required
-- ✅ Sandboxed and secure
-- ✅ Works on any Linux distribution
-- ✅ Single-file distribution
+- [+] No dependency installation required
+- [+] Sandboxed and secure
+- [+] Works on any Linux distribution
+- [+] Single-file distribution
 
 See [FLATPAK.md](docs/flatpak/FLATPAK.md) for detailed installation and building instructions.
 
@@ -85,7 +85,7 @@ Particle-Viewer supports runtime resolution changes and fullscreen mode:
 
 - **Resolution Selection**: Choose from 720p, 1080p, 1440p, or 4K via the View menu
 - **Fullscreen Toggle**: Press **Alt+Enter** to toggle fullscreen mode
-- **Manual Resizing**: Drag window edges to resize — the viewport adjusts automatically
+- **Manual Resizing**: Drag window edges to resize -- the viewport adjusts automatically
 - **Persistent Settings**: Window size and fullscreen state are saved between sessions
 - **Monitor Constraints**: Automatically clamps resolution to your monitor's capabilities
 
