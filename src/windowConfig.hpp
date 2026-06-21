@@ -34,16 +34,9 @@
  * the pointed-to string is updated with the stored value. If the key is
  * absent, the caller-supplied default is preserved unchanged.
  *
- * ssm_threshold (optional): if non-null, loaded and clamped to [0.0, 1.0].
- * ssm_blob_radius (optional): if non-null, loaded and clamped to [0.1, 10.0].
- * ssm_blur_amount (optional): if non-null, loaded and clamped to [0.0, 20.0].
- * For all three, if the key is absent or unparseable the caller's default is
- * preserved unchanged.
  */
 inline bool loadWindowConfig(const std::string& filepath, int& width, int& height, bool& fullscreen,
-                             float* ui_scale = nullptr, std::string* last_confirmed_folder = nullptr,
-                             float* ssm_threshold = nullptr, float* ssm_blob_radius = nullptr,
-                             float* ssm_blur_amount = nullptr)
+                             float* ui_scale = nullptr, std::string* last_confirmed_folder = nullptr)
 {
     std::ifstream file(filepath);
     if (!file.is_open()) {
@@ -94,27 +87,6 @@ inline bool loadWindowConfig(const std::string& filepath, int& width, int& heigh
             }
         } else if (key == "last_confirmed_folder" && last_confirmed_folder != nullptr) {
             *last_confirmed_folder = value;
-        } else if (key == "ssm_threshold" && ssm_threshold != nullptr) {
-            try {
-                float parsed = std::stof(value);
-                *ssm_threshold = std::clamp(parsed, 0.0f, 1.0f);
-            } catch (...) {
-                // Unparseable: leave caller's default unchanged
-            }
-        } else if (key == "ssm_blob_radius" && ssm_blob_radius != nullptr) {
-            try {
-                float parsed = std::stof(value);
-                *ssm_blob_radius = std::clamp(parsed, 0.1f, 10.0f);
-            } catch (...) {
-                // Unparseable: leave caller's default unchanged
-            }
-        } else if (key == "ssm_blur_amount" && ssm_blur_amount != nullptr) {
-            try {
-                float parsed = std::stof(value);
-                *ssm_blur_amount = std::clamp(parsed, 0.0f, 20.0f);
-            } catch (...) {
-                // Unparseable: leave caller's default unchanged
-            }
         }
     }
 
@@ -135,12 +107,9 @@ inline bool loadWindowConfig(const std::string& filepath, int& width, int& heigh
  * the file under the key last_confirmed_folder. If null or empty, the key
  * is omitted entirely.
  *
- * ssm_threshold, ssm_blob_radius, ssm_blur_amount: use -1.0f sentinel
- * (default) to omit the key. Pass a non-negative value to write it.
  */
 inline bool saveWindowConfig(const std::string& filepath, int width, int height, bool fullscreen, float ui_scale = 0.0f,
-                             const std::string* last_confirmed_folder = nullptr, float ssm_threshold = -1.0f,
-                             float ssm_blob_radius = -1.0f, float ssm_blur_amount = -1.0f)
+                             const std::string* last_confirmed_folder = nullptr)
 {
     std::ofstream file(filepath);
     if (!file.is_open()) {
@@ -164,15 +133,6 @@ inline bool saveWindowConfig(const std::string& filepath, int width, int height,
         if (!sanitized.empty()) {
             file << "last_confirmed_folder=" << sanitized << "\n";
         }
-    }
-    if (ssm_threshold >= 0.0f) {
-        file << "ssm_threshold=" << ssm_threshold << "\n";
-    }
-    if (ssm_blob_radius >= 0.1f) {
-        file << "ssm_blob_radius=" << ssm_blob_radius << "\n";
-    }
-    if (ssm_blur_amount >= 0.0f) {
-        file << "ssm_blur_amount=" << ssm_blur_amount << "\n";
     }
 
     file.close();

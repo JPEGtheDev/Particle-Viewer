@@ -47,7 +47,7 @@ struct MenuActions
 /*
  * Tracks which layer of the controller panel is active.
  * Main: the standard panel item list.
- * RenderMode: the Render Mode sub-panel (mode selector + parameter sliders).
+ * RenderMode: the Render Mode sub-panel (mode selector).
  */
 enum class PanelLayer
 {
@@ -79,12 +79,6 @@ struct MenuState
 
     // Sub-panel state — set by ViewerApp each frame before renderControllerPanel()
     int current_render_mode = 0; // 0=Spheres, 1=SSM, 2=MarchingCubes
-    bool ssm_available = false;  // set by ViewerApp from render_.ssm.float_fbo_supported
-
-    // SSM parameter sliders — read+written by renderControllerPanel(); changes visible to ViewerApp next frame
-    float ssm_threshold = 0.5f;   // valid range [0.0, 1.0]
-    float ssm_blob_radius = 2.0f; // valid range [0.1, 10.0]
-    float ssm_blur_amount = 3.0f; // valid range [0.0, 20.0]
 };
 
 /*

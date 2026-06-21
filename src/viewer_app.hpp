@@ -72,40 +72,11 @@ struct WindowConfig
     GLint windowed_y = 0;
     // UI scale factor (0.0f = sentinel meaning "no saved preference")
     float ui_scale = 0.0f;
-    // Screen-Space Metaballs parameters (persisted to window.cfg)
-    float ssm_threshold = 0.5f;   // valid range [0.0, 1.0]
-    float ssm_blob_radius = 2.0f; // valid range [0.1, 10.0]
-    float ssm_blur_amount = 3.0f; // valid range [0.0, 20.0]
-};
-
-/*
- * GL object handles for the Screen-Space Metaballs rendering pipeline.
- * density_fbo accumulates per-particle falloff contributions into a float texture.
- * blurred_fbo holds the optional box-blurred density field.
- * float_fbo_supported is false if GL_RGBA32F framebuffers are unavailable at runtime;
- * when false, SSM mode is greyed out with tooltip "Mode not supported".
- */
-struct SSMResources
-{
-    GLuint depth_prepass_fbo = 0;
-    GLuint depth_prepass_texture = 0;
-    GLuint density_fbo = 0;
-    GLuint density_texture = 0;
-    GLuint intermediate_fbo = 0;
-    GLuint intermediate_texture = 0;
-    GLuint blurred_fbo = 0;
-    GLuint blurred_texture = 0;
-    bool float_fbo_supported = false;
-    Shader depth_prepass_shader;
-    Shader splat_shader;
-    Shader blur_shader;
-    Shader composite_shader;
 };
 
 /*
  * GL object handles for the framebuffer-based rendering pipeline.
- * Includes the offscreen FBO, fullscreen quad, particle circle VAO/VBO,
- * and SSM resources for the Screen-Space Metaballs pass.
+ * Includes the offscreen FBO, fullscreen quad, and particle circle VAO/VBO.
  */
 struct RenderResources
 {
@@ -118,7 +89,6 @@ struct RenderResources
     GLuint circle_vbo = 0;
     Shader sphere_shader;
     Shader screen_shader;
-    SSMResources ssm;
 };
 
 /*
@@ -142,12 +112,6 @@ struct ShaderPaths
     std::string screen_vertex = "/Viewer-Assets/shaders/screenshader.vs";
     std::string screen_fragment = "/Viewer-Assets/shaders/screenshader.frag";
     std::string font;
-    std::string ssm_depth_fragment = "/Viewer-Assets/shaders/metaball_depth.frag";
-    std::string ssm_splat_vertex = "/Viewer-Assets/shaders/metaball_splat.vert";
-    std::string ssm_splat_fragment = "/Viewer-Assets/shaders/metaball_splat.frag";
-    std::string ssm_blur_vertex = "/Viewer-Assets/shaders/metaball_blur.vert";
-    std::string ssm_blur_fragment = "/Viewer-Assets/shaders/metaball_blur.frag";
-    std::string ssm_composite_fragment = "/Viewer-Assets/shaders/metaball_composite.frag";
 };
 
 /*
@@ -226,13 +190,13 @@ class ViewerApp
     static constexpr float NAV_STICK_THRESHOLD = 0.5f;
     static_assert(NAV_STICK_THRESHOLD > 0.0f && NAV_STICK_THRESHOLD < 1.0f, "Stick threshold must be in (0, 1)");
 
-    // Cycles through available (non-greyed) render modes: Spheres → SSM → Spheres.
-    // MarchingCubes is always skipped (always greyed — placeholder for Story 2).
+    // Cycles through available render modes. Currently only Spheres is implemented;
+    // all other modes return to Spheres (placeholders for future work).
     static constexpr RenderMode cycleRenderMode(RenderMode current)
     {
         switch (current) {
             case RenderMode::Spheres:
-                return RenderMode::ScreenSpaceMetaballs;
+                return RenderMode::Spheres;
             case RenderMode::ScreenSpaceMetaballs:
                 return RenderMode::Spheres;
             case RenderMode::MarchingCubes:
@@ -367,8 +331,6 @@ class ViewerApp
     // ============================================
     void setupGLStuff();
     void setupScreenFBO();
-    void initSSMResources();
-    void drawSSMScene();
     GLuint generateAttachmentTexture(GLboolean depth, GLboolean stencil);
     void beforeDraw();
     void drawScene();

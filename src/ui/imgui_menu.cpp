@@ -301,11 +301,6 @@ MenuActions renderControllerPanel(MenuState& state)
             actions.render_mode_changed = true;
             actions.new_render_mode = 0;
         };
-        auto selectSSM = [&] {
-            state.panel_layer = PanelLayer::Main;
-            actions.render_mode_changed = true;
-            actions.new_render_mode = 1;
-        };
         auto goBack = [&] { state.panel_layer = PanelLayer::Main; };
 
         item("Spheres", true, selectSpheres);
@@ -314,29 +309,15 @@ MenuActions renderControllerPanel(MenuState& state)
             ImGui::Text("[active]");
         }
 
-        item("Screen-Space Metaballs", state.ssm_available, selectSSM);
-        if (!state.ssm_available) {
-            ImGui::SetItemTooltip("Mode not supported");
-        }
-        if (state.current_render_mode == 1) {
-            ImGui::SameLine();
-            ImGui::Text("[active]");
-        }
+        item("Screen-Space Metaballs", false, [&] {});
+        ImGui::SetItemTooltip("Mode not supported");
 
         item("Marching Cubes", false, [&] {});
         ImGui::SetItemTooltip("Mode not supported");
-        if (state.current_render_mode == 2) {
-            ImGui::SameLine();
-            ImGui::Text("[active]");
-        }
 
         item("Back", true, goBack);
 
         state.panel_item_count = item_count; // 4
-
-        ImGui::SliderFloat("Threshold", &state.ssm_threshold, 0.0f, 1.0f);
-        ImGui::SliderFloat("Blob Radius", &state.ssm_blob_radius, 0.1f, 10.0f);
-        ImGui::SliderFloat("Blur Amount", &state.ssm_blur_amount, 0.0f, 20.0f);
 
         if (state.confirm_panel_item) {
             state.confirm_panel_item = false;
@@ -346,10 +327,7 @@ MenuActions renderControllerPanel(MenuState& state)
                         selectSpheres();
                         break;
                     case 1:
-                        if (state.ssm_available) {
-                            selectSSM();
-                        }
-                        break;
+                        break; // greyed, no-op
                     case 2:
                         break; // greyed, no-op
                     case 3:
