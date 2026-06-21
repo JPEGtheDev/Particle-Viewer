@@ -49,7 +49,7 @@
 #include "testing/PixelComparator.hpp"
 #include "ui/imgui_menu.hpp"
 
-// Test configuration — GUI-exclusion-specific constants.
+// Test configuration -- GUI-exclusion-specific constants.
 // Shared constants (RENDER_WIDTH, RENDER_HEIGHT, etc.) live in VRTestCommon.hpp.
 namespace RenderingTestConfig
 {

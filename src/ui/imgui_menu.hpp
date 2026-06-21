@@ -77,7 +77,7 @@ struct MenuState
         false; // B-button back signal; read+reset by renderControllerPanel to navigate sub-panel back to Main
     bool is_recording = false; // mirrors recording_.is_active; set by ViewerApp each frame
 
-    // Sub-panel state — set by ViewerApp each frame before renderControllerPanel()
+    // Sub-panel state -- set by ViewerApp each frame before renderControllerPanel()
     int current_render_mode = 0; // 0=Spheres, 1=SSM, 2=MarchingCubes
 };
 

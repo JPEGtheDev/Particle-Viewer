@@ -287,7 +287,7 @@ MenuActions renderControllerPanel(MenuState& state)
         ImGui::Text("D-pad: Navigate | A: Select | B: Back");
         ImGui::Separator();
 
-        // Handle B-button FIRST — navigate back without closing the panel
+        // Handle B-button FIRST -- navigate back without closing the panel
         if (state.panel_back_pressed) {
             state.panel_back_pressed = false;
             state.panel_layer = PanelLayer::Main;
@@ -295,7 +295,7 @@ MenuActions renderControllerPanel(MenuState& state)
             return actions;
         }
 
-        // Named actions — single source of truth for both click and A-button confirm paths
+        // Named actions -- single source of truth for both click and A-button confirm paths
         auto selectSpheres = [&] {
             state.panel_layer = PanelLayer::Main;
             actions.render_mode_changed = true;
@@ -407,7 +407,7 @@ MenuActions renderControllerPanel(MenuState& state)
                         actions.close_panel = true;
                         break;
                     default:
-                        assert(false && "selected_panel_item in-range but no PanelItem case — enum out of sync");
+                        assert(false && "selected_panel_item in-range but no PanelItem case -- enum out of sync");
                         break;
                 }
             }

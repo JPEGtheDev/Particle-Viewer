@@ -943,7 +943,7 @@ void ViewerApp::processGamepadInput()
             cam_->cycleRotateState();
         }
 
-        // Y (North) — toggle COM lock when rotation is locked; cycle render mode when free camera
+        // Y (North) -- toggle COM lock when rotation is locked; cycle render mode when free camera
         if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_NORTH)) {
             if (cam_->isRotLocked()) {
                 cam_->toggleComLock();
@@ -957,7 +957,7 @@ void ViewerApp::processGamepadInput()
     if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_START)) {
         toggleControllerPanel();
     }
-    // B (East) in MenuMode — go back in sub-panel, or close panel from main layer
+    // B (East) in MenuMode -- go back in sub-panel, or close panel from main layer
     if (current_mode_ == InputMode::MenuMode && gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_EAST)) {
         if (menu_state_.panel_layer == PanelLayer::RenderMode) {
             menu_state_.panel_back_pressed = true;

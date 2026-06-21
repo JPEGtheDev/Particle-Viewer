@@ -30,7 +30,7 @@ class RenderModeSubPanelTest : public ::testing::Test
         ctx_ = ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO();
         io.DisplaySize = ImVec2(1280, 720);
-        // Provide a minimal font atlas (1×1 white pixel) so NewFrame doesn't assert.
+        // Provide a minimal font atlas (1x1 white pixel) so NewFrame doesn't assert.
         unsigned char* pixels = nullptr;
         int width = 0;
         int height = 0;
@@ -57,7 +57,7 @@ class RenderModeSubPanelTest : public ::testing::Test
 };
 
 // ---------------------------------------------------------------------------
-// Test 1 — item count in sub-panel is 3 (Spheres / Marching Cubes / Back)
+// Test 1 --item count in sub-panel is 3 (Spheres / Marching Cubes / Back)
 // ---------------------------------------------------------------------------
 
 TEST_F(RenderModeSubPanelTest, SubPanel_ItemCount_IsThree)
@@ -70,7 +70,7 @@ TEST_F(RenderModeSubPanelTest, SubPanel_ItemCount_IsThree)
 }
 
 // ---------------------------------------------------------------------------
-// Test 2 — confirming "Back" (item 2) transitions to PanelLayer::Main
+// Test 2 -- confirming "Back" (item 2) transitions to PanelLayer::Main
 // ---------------------------------------------------------------------------
 
 TEST_F(RenderModeSubPanelTest, SubPanel_ConfirmBack_ReturnsToPanelLayerMain)
@@ -85,7 +85,7 @@ TEST_F(RenderModeSubPanelTest, SubPanel_ConfirmBack_ReturnsToPanelLayerMain)
 }
 
 // ---------------------------------------------------------------------------
-// Test 3 — confirming "Spheres" (item 0) transitions to PanelLayer::Main
+// Test 3 -- confirming "Spheres" (item 0) transitions to PanelLayer::Main
 // ---------------------------------------------------------------------------
 
 TEST_F(RenderModeSubPanelTest, SubPanel_ConfirmSpheres_ReturnsToPanelLayerMain)
@@ -100,7 +100,7 @@ TEST_F(RenderModeSubPanelTest, SubPanel_ConfirmSpheres_ReturnsToPanelLayerMain)
 }
 
 // ---------------------------------------------------------------------------
-// Test 4 — B-button / back navigation does NOT close the panel
+// Test 4 -- B-button / back navigation does NOT close the panel
 // ---------------------------------------------------------------------------
 // When the user presses B while in the sub-panel, the expected behaviour is:
 //   - panel_layer resets to PanelLayer::Main  (go back, not close)
