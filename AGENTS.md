@@ -24,7 +24,7 @@ These apply in every session, every task, every model. No exceptions unless the 
 
 **Violating the letter of any Iron Law is violating the spirit of it.**
 
-**`honesty` is always active and applies on every turn. Full mechanics in `.github/skills/honesty/SKILL.md`.**
+**`honesty` is always active and applies on every turn. Full mechanics in `.claude/skills/honesty/SKILL.md`.**
 
 ## Before Every Response -- Non-Negotiable Gates
 
@@ -62,6 +62,8 @@ Particle-Viewer is a C++ OpenGL-based viewer for N-Body simulations -- viewing 3
 
 ## Skills Directory
 
+Skills are provided by the **`jpegthedev/story-to-ship`** plugin marketplace. Install: `/plugin marketplace add jpegthedev/story-to-ship` then `/plugin install story-to-ship@story-to-ship`. Installed skills land in `.claude/skills/`; agents in `.claude/agents/`.
+
 Each skill owns one domain. Read the skill before working in that domain. **Never duplicate skill content in this file.**
 
 Skills are organized into **DDD bounded contexts**. Sub-domain skills (e.g., `visual-regression-testing` under QUALITY) have their own iron law and are invoked independently -- but the parent skill routes to them. The full DDD map lives in `writing-skills`. New skills require >=1% session invocation frequency to justify creation; use reference docs otherwise.
@@ -70,79 +72,79 @@ Skills are organized into **DDD bounded contexts**. Sub-domain skills (e.g., `vi
 
 | Skill | Path | Domain |
 |-------|------|--------|
-| `execution` | `.github/skills/execution/` | Work loop, commit rhythm, mode declaration, behavior preservation |
-| `writing-plans` | `.github/skills/writing-plans/` | Plan building, scope gates, Skeptic Agent, YAGNI/PPP/STTCPW |
-| `brainstorming` | `.github/skills/brainstorming/` | HARD-GATE design exploration before any implementation begins |
-| `three-amigos` | `.github/skills/three-amigos/` | BDD Discovery, Refinement, Progress Check, Pivot Assessment, Signoff, and Retrospective ceremonies |
-| `subagent-driven-development` | `.github/skills/subagent-driven-development/` | Subagent dispatch, 2-stage review, empirical evidence, worktrees |
-| `dispatching-parallel-agents` | `.github/skills/dispatching-parallel-agents/` | Parallel agent dispatch, isolation, result aggregation |
-| `using-git-worktrees` | `.github/skills/using-git-worktrees/` | Parallel agent isolation, A/B testing, branch safety for subagents |
+| `execution` | `.claude/skills/execution/` | Work loop, commit rhythm, mode declaration, behavior preservation |
+| `writing-plans` | `.claude/skills/writing-plans/` | Plan building, scope gates, Skeptic Agent, YAGNI/PPP/STTCPW |
+| `brainstorming` | `.claude/skills/brainstorming/` | HARD-GATE design exploration before any implementation begins |
+| `three-amigos` | `.claude/skills/three-amigos/` | BDD Discovery, Refinement, Progress Check, Pivot Assessment, Signoff, and Retrospective ceremonies |
+| `subagent-driven-development` | `.claude/skills/subagent-driven-development/` | Subagent dispatch, 2-stage review, empirical evidence, worktrees |
+| `dispatching-parallel-agents` | `.claude/skills/dispatching-parallel-agents/` | Parallel agent dispatch, isolation, result aggregation |
+| `using-git-worktrees` | `.claude/skills/using-git-worktrees/` | Parallel agent isolation, A/B testing, branch safety for subagents |
 
 ### QUALITY context
 
 | Skill | Path | Domain |
 |-------|------|--------|
-| `testing` | `.github/skills/testing/` | AAA pattern, naming, mocks, test taxonomy -- routes to sub-domains |
-| `visual-regression-testing` | `.github/skills/visual-regression-testing/` | -> OpenGL visual testing boundary, baseline approval, tolerance, camera framing |
-| `code-quality` | `.github/skills/code-quality/` | clang-format, clang-tidy, naming conventions, pre-commit -- routes to cpp-patterns |
-| `cpp-patterns` | `.github/skills/cpp-patterns/` | -> GL resource management, SDL3 gotchas, DRY, Broken Window, Deprecation, Docs-Same-Commit |
-| `contract-testing` | `.github/skills/contract-testing/` | -> Contract verification for every abstract type and interface |
-| `cpp-safety` | `.github/skills/cpp-safety/` | -> Scope-bound resource ownership, exception safety, destructor rules |
-| `oop-principles` | `.github/skills/oop-principles/` | -> Is-A/Has-A gate, SOLID check before any class hierarchy |
-| `verification-before-completion` | `.github/skills/verification-before-completion/` | Evidence-first verification before every completion claim or commit |
-| `systematic-debugging` | `.github/skills/systematic-debugging/` | Root cause investigation protocol for bugs, failures, and errors |
+| `testing` | `.claude/skills/testing/` | AAA pattern, naming, mocks, test taxonomy -- routes to sub-domains |
+| `visual-regression-testing` | `.claude/skills/visual-regression-testing/` | -> OpenGL visual testing boundary, baseline approval, tolerance, camera framing |
+| `code-quality` | `.claude/skills/code-quality/` | clang-format, clang-tidy, naming conventions, pre-commit -- routes to cpp-patterns |
+| `cpp-patterns` | `.claude/skills/cpp-patterns/` | -> GL resource management, SDL3 gotchas, DRY, Broken Window, Deprecation, Docs-Same-Commit |
+| `contract-testing` | `.claude/skills/contract-testing/` | -> Contract verification for every abstract type and interface |
+| `cpp-safety` | `.claude/skills/cpp-safety/` | -> Scope-bound resource ownership, exception safety, destructor rules |
+| `oop-principles` | `.claude/skills/oop-principles/` | -> Is-A/Has-A gate, SOLID check before any class hierarchy |
+| `verification-before-completion` | `.claude/skills/verification-before-completion/` | Evidence-first verification before every completion claim or commit |
+| `systematic-debugging` | `.claude/skills/systematic-debugging/` | Root cause investigation protocol for bugs, failures, and errors |
 
 ### DELIVERY context
 
 | Skill | Path | Domain |
 |-------|------|--------|
-| `versioning` | `.github/skills/versioning/` | Conventional commits, PR titles, semantic versioning, releases |
-| `build` | `.github/skills/build/` | CMake build, dependencies, Flatpak packaging, troubleshooting |
-| `workflow` | `.github/skills/workflow/` | CI/CD pipelines, artifacts, permissions |
-| `flatpak` | `.github/skills/flatpak/` | Flatpak packaging, OpenGL/SDL3 runtime, NVIDIA GL workarounds |
-| `finishing-a-development-branch` | `.github/skills/finishing-a-development-branch/` | Branch ceremony, squash strategy, PR creation, post-merge cleanup |
+| `versioning` | `.claude/skills/versioning/` | Conventional commits, PR titles, semantic versioning, releases |
+| `build` | `.claude/skills/build/` | CMake build, dependencies, Flatpak packaging, troubleshooting |
+| `workflow` | `.claude/skills/workflow/` | CI/CD pipelines, artifacts, permissions |
+| `flatpak` | `.claude/skills/flatpak/` | Flatpak packaging, OpenGL/SDL3 runtime, NVIDIA GL workarounds |
+| `finishing-a-development-branch` | `.claude/skills/finishing-a-development-branch/` | Branch ceremony, squash strategy, PR creation, post-merge cleanup |
 
 ### REVIEW context
 
 | Skill | Path | Domain |
 |-------|------|--------|
-| `architecture-review` | `.github/skills/architecture-review/` | Layer boundary, dependency direction, and IOpenGLContext compliance |
-| `infrastructure-review` | `.github/skills/infrastructure-review/` | CI/CD pipelines, CMake reproducibility, Flatpak manifest compliance |
-| `requesting-code-review` | `.github/skills/requesting-code-review/` | Targeted review requests, SHA-based dispatch, agent pre-review |
-| `receiving-code-review` | `.github/skills/receiving-code-review/` | Processing review feedback without performative agreement |
+| `architecture-review` | `.claude/skills/architecture-review/` | Layer boundary, dependency direction, and IOpenGLContext compliance |
+| `infrastructure-review` | `.claude/skills/infrastructure-review/` | CI/CD pipelines, CMake reproducibility, Flatpak manifest compliance |
+| `requesting-code-review` | `.claude/skills/requesting-code-review/` | Targeted review requests, SHA-based dispatch, agent pre-review |
+| `receiving-code-review` | `.claude/skills/receiving-code-review/` | Processing review feedback without performative agreement |
 
 ### REFLECTION context
 
 | Skill | Path | Domain |
 |-------|------|--------|
-| `self-evaluation` | `.github/skills/self-evaluation/` | End-of-session review, lessons learned |
-| `session-postmortem` | `.github/skills/session-postmortem/` | Retrospective behavioral analysis of a completed agent session |
+| `self-evaluation` | `.claude/skills/self-evaluation/` | End-of-session review, lessons learned |
+| `session-postmortem` | `.claude/skills/session-postmortem/` | Retrospective behavioral analysis of a completed agent session |
 
 ### KNOWLEDGE context
 
 | Skill | Path | Domain |
 |-------|------|--------|
-| `documentation` | `.github/skills/documentation/` | Docs conventions, linking, formatting, skill authoring |
-| `writing-skills` | `.github/skills/writing-skills/` | Skill authoring standard, DDD map, anatomy gate |
-| `summarization` | `.github/skills/summarization/` | 5-agent knowledge-extraction pipeline: Abstractive + Extractive + SAAC -> Synthesizer -> Quality |
+| `documentation` | `.claude/skills/documentation/` | Docs conventions, linking, formatting, skill authoring |
+| `writing-skills` | `.claude/skills/writing-skills/` | Skill authoring standard, DDD map, anatomy gate |
+| `summarization` | `.claude/skills/summarization/` | 5-agent knowledge-extraction pipeline: Abstractive + Extractive + SAAC -> Synthesizer -> Quality |
 
 ### PRODUCT context
 
 | Skill | Path | Domain |
 |-------|------|--------|
-| `user-story-generator` | `.github/skills/user-story-generator/` | INVEST-aligned story creation -- routes to user-story-estimation |
-| `user-story-estimation` | `.github/skills/user-story-estimation/` | -> Effort estimation, premium request counts, model tier selection |
+| `user-story-generator` | `.claude/skills/user-story-generator/` | INVEST-aligned story creation -- routes to user-story-estimation |
+| `user-story-estimation` | `.claude/skills/user-story-estimation/` | -> Effort estimation, premium request counts, model tier selection |
 
 ### BEHAVIOR context
 
 | Skill | Path | Domain |
 |-------|------|--------|
-| `honesty` | `.github/skills/honesty/` | **Always active.** Trust mechanics, confidence vocabulary, process language, talk-straight. Hardcoded into session-start hook. Load the full skill for postmortems or communication audits. |
-| `session-bootstrap` | `.github/skills/session-bootstrap/` | Session lifecycle: On Start skill routing + On Finish self-evaluation |
+| `honesty` | `.claude/skills/honesty/` | **Always active.** Trust mechanics, confidence vocabulary, process language, talk-straight. Hardcoded into session-start hook. Load the full skill for postmortems or communication audits. |
+| `session-bootstrap` | `.claude/skills/session-bootstrap/` | Session lifecycle: On Start skill routing + On Finish self-evaluation |
 
 ### Agent Prompt Templates
 
-Reusable agent prompts live in `.github/agents/`. Use these when dispatching subagents via the `task` tool:
+Reusable agent prompts live in `.claude/agents/`. Use these when dispatching subagents via the `task` tool:
 
 | Template | Use when |
 |----------|----------|
@@ -201,8 +203,9 @@ tests/
 +-- mocks/                # MockOpenGL, MockOpenGLContext
 
 docs/                     # Human-readable guides and standards
-.github/skills/           # Copilot agent skills (see table above)
-.claude/hooks/            # Claude Code hooks: session-start.sh/md, pre-message.sh/md
+.claude/settings.json     # Plugin declaration: jpegthedev/story-to-ship (extraKnownMarketplaces + enabledPlugins)
+                          # .claude/skills/, .claude/agents/, .claude/hooks/ are NOT in the repo --
+                          # they are installed at session start by the story-to-ship plugin
 scratch/                  # Session workspace for exploratory/intermediate files
                           # Use for: large text dumps, intermediate analysis, theory-testing artifacts
                           # DO NOT commit scratch/ contents -- it is .gitignored
@@ -237,7 +240,7 @@ scratch/                  # Session workspace for exploratory/intermediate files
 | ImGui integration | `docs/IMGUI_INTEGRATION.md` |
 | Window management | `docs/WINDOW_MANAGEMENT.md` |
 | Camera positioning lessons | `docs/visual-regression/camera-positioning-lessons-learned.md` |
-| Flatpak GL/SDL3 gotchas | `.github/skills/flatpak/SKILL.md` |
+| Flatpak GL/SDL3 gotchas | `.claude/skills/flatpak/SKILL.md` |
 | Microsoft C++ Core Guidelines | https://isocpp.github.io/CppCoreGuidelines/ |
 | Google Test docs | https://google.github.io/googletest/ |
 
