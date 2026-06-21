@@ -29,6 +29,7 @@
 #include "IFileDialog.hpp"
 #include "ThreadedExecutor.hpp"
 #include "camera.hpp"
+#include "constants.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
@@ -42,6 +43,18 @@
 #include "ui/imgui_file_dialog.hpp"
 #include "ui/imgui_menu.hpp"
 #include "viewerConfig.hpp"
+
+/*
+ * Render mode controls which particle rendering algorithm is used.
+ * The app always starts in Spheres mode.
+ * MarchingCubes is a placeholder for Story 2 (always greyed out for now).
+ */
+enum class RenderMode
+{
+    Spheres,
+    ScreenSpaceMetaballs,
+    MarchingCubes,
+};
 
 /*
  * Window configuration.
@@ -177,6 +190,21 @@ class ViewerApp
     static constexpr float NAV_STICK_THRESHOLD = 0.5f;
     static_assert(NAV_STICK_THRESHOLD > 0.0f && NAV_STICK_THRESHOLD < 1.0f, "Stick threshold must be in (0, 1)");
 
+    // Cycles through available render modes. Currently only Spheres is implemented;
+    // all other modes return to Spheres (placeholders for future work).
+    static constexpr RenderMode cycleRenderMode(RenderMode current)
+    {
+        switch (current) {
+            case RenderMode::Spheres:
+                return RenderMode::Spheres;
+            case RenderMode::ScreenSpaceMetaballs:
+                return RenderMode::Spheres;
+            case RenderMode::MarchingCubes:
+                return RenderMode::Spheres;
+        }
+        return RenderMode::Spheres;
+    }
+
     // visible for testing — pure clamping helper used by processMenuNavigation()
     static int applyNavMove(int selected, int count, int delta)
     {
@@ -203,6 +231,7 @@ class ViewerApp
     RecordingState recording_;
     ShaderPaths paths_;
     MenuState menu_state_;
+    RenderMode render_mode_ = RenderMode::Spheres;
     bool imgui_initialized_;
 
     // ============================================

@@ -339,14 +339,31 @@ void ViewerApp::run()
 
         beforeDraw();
         drawScene();
-        cam_->RenderSphere();
+        if (render_mode_ == RenderMode::Spheres) {
+            cam_->RenderSphere();
+        }
         drawFBO();
+
+        if (set_->isPlaying && recording_.is_active) {
+            glReadPixels(0, 0, (int)window_.width, (int)window_.height, GL_RGB, GL_UNSIGNED_BYTE, pixels_);
+            if (!stbi_write_tga(std::string(recording_.folder + "/" + std::to_string(cur_frame_) + ".tga").c_str(),
+                                (int)window_.width, (int)window_.height, 3, pixels_)) {
+                if (recording_.error_count < recording_.error_max) {
+                    recording_.error_count++;
+                    std::cout << "Unable to save image: Error " << recording_.error_count << std::endl;
+                } else {
+                    std::cout << "Max Image Error Count Reached! Ending Recording!" << std::endl;
+                    recording_.is_active = false;
+                }
+            }
+        }
 
         // Update menu state with current cache status — must happen before
         // renderMainMenu so the UI reflects values from the current frame.
         menu_state_.auto_com_compute = auto_com_compute_;
         menu_state_.ui_scale = window_.ui_scale;
         menu_state_.is_recording = recording_.is_active;
+        menu_state_.current_render_mode = static_cast<int>(render_mode_);
         const std::size_t cached_frames = frame_cache_ ? frame_cache_->cachedCount() : 0;
         menu_state_.cache_status.frames_cached = static_cast<int>(cached_frames);
         menu_state_.cache_status.bytes_used = frame_cache_ ? cached_frames * frame_cache_->frameSizeBytes() : 0;
@@ -375,6 +392,15 @@ void ViewerApp::run()
                 if (panel_actions.stop_recording) {
                     recording_.is_active = false;
                     recording_.folder = "";
+                }
+                if (panel_actions.render_mode_changed) {
+                    switch (panel_actions.new_render_mode) {
+                        case 0:
+                            render_mode_ = RenderMode::Spheres;
+                            break;
+                        default:
+                            break;
+                    }
                 }
                 // Defensive sync: if panel was closed via a path that bypassed
                 // toggleControllerPanel() (e.g. direct ImGui close), exit MenuMode.
@@ -619,7 +645,9 @@ void ViewerApp::drawScene()
                 static_cast<double>(com_.y), static_cast<double>(com_.z), static_cast<int>(auto_com_compute_),
                 static_cast<int>(cam_->isComLocked()));
     }
+
     cam_->setSphereCenter(com_);
+
     render_.sphere_shader.Use();
     part_->pushVBO();
     glBindVertexArray(render_.circle_vao);
@@ -637,20 +665,6 @@ void ViewerApp::drawScene()
                 static_cast<GLfloat>(viewport[3]));
     glDrawArraysInstanced(GL_POINTS, 0, 1, part_->n);
     glBindVertexArray(0);
-
-    if (set_->isPlaying && recording_.is_active) {
-        glReadPixels(0, 0, (int)window_.width, (int)window_.height, GL_RGB, GL_UNSIGNED_BYTE, pixels_);
-        if (!stbi_write_tga(std::string(recording_.folder + "/" + std::to_string(cur_frame_) + ".tga").c_str(),
-                            (int)window_.width, (int)window_.height, 3, pixels_)) {
-            if (recording_.error_count < recording_.error_max) {
-                recording_.error_count++;
-                std::cout << "Unable to save image: Error " << recording_.error_count << std::endl;
-            } else {
-                std::cout << "Max Image Error Count Reached! Ending Recording!" << std::endl;
-                recording_.is_active = false;
-            }
-        }
-    }
 }
 
 void ViewerApp::drawFBO()
@@ -728,6 +742,9 @@ void ViewerApp::handleLoadFromFolder(const std::string& folder)
 void ViewerApp::openRecordingFolderDialog()
 {
     if (recording_.is_active || recording_dialog_open_)
+        return;
+    // Guard: recording dialog conflicts with the render mode sub-panel; user must navigate back first.
+    if (menu_state_.panel_layer == PanelLayer::RenderMode)
         return;
     recording_.error_count = 0;
     pauseIfPlaying();
@@ -824,6 +841,9 @@ void ViewerApp::handleKeyEvent(unsigned int scancode, bool is_pressed, unsigned 
             recording_.folder = "";
             recording_.is_active = false;
         }
+    }
+    if (scancode == SDL_SCANCODE_M && is_pressed && current_mode_ == InputMode::ViewMode && !recording_.is_active) {
+        render_mode_ = cycleRenderMode(render_mode_);
     }
 }
 
@@ -923,9 +943,13 @@ void ViewerApp::processGamepadInput()
             cam_->cycleRotateState();
         }
 
-        // Y (North) — toggle COM lock (mirrors O key, only active when rotation is locked)
+        // Y (North) -- toggle COM lock when rotation is locked; cycle render mode when free camera
         if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_NORTH)) {
-            cam_->toggleComLock();
+            if (cam_->isRotLocked()) {
+                cam_->toggleComLock();
+            } else if (!recording_.is_active) {
+                render_mode_ = cycleRenderMode(render_mode_);
+            }
         }
     }
 
@@ -933,9 +957,13 @@ void ViewerApp::processGamepadInput()
     if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_START)) {
         toggleControllerPanel();
     }
-    // B (East) in MenuMode — close controller panel
+    // B (East) in MenuMode -- go back in sub-panel, or close panel from main layer
     if (current_mode_ == InputMode::MenuMode && gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_EAST)) {
-        toggleControllerPanel();
+        if (menu_state_.panel_layer == PanelLayer::RenderMode) {
+            menu_state_.panel_back_pressed = true;
+        } else {
+            toggleControllerPanel();
+        }
     }
     // MenuMode navigation — D-pad repeat + A-confirm
     if (current_mode_ == InputMode::MenuMode) {
@@ -1054,7 +1082,6 @@ void ViewerApp::cleanup()
         glDeleteVertexArrays(1, &render_.circle_vao);
         render_.circle_vao = 0;
     }
-
     // Cache teardown: drain executors FIRST so no in-flight tasks reference
     // the caches or SettingsIO after they are deleted.
     teardownCacheInfrastructure();

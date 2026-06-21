@@ -33,6 +33,7 @@
  * last_confirmed_folder (optional): if non-null and the key is present,
  * the pointed-to string is updated with the stored value. If the key is
  * absent, the caller-supplied default is preserved unchanged.
+ *
  */
 inline bool loadWindowConfig(const std::string& filepath, int& width, int& height, bool& fullscreen,
                              float* ui_scale = nullptr, std::string* last_confirmed_folder = nullptr)
@@ -105,6 +106,7 @@ inline bool loadWindowConfig(const std::string& filepath, int& width, int& heigh
  * last_confirmed_folder (optional): if non-null and non-empty, written to
  * the file under the key last_confirmed_folder. If null or empty, the key
  * is omitted entirely.
+ *
  */
 inline bool saveWindowConfig(const std::string& filepath, int width, int height, bool fullscreen, float ui_scale = 0.0f,
                              const std::string* last_confirmed_folder = nullptr)

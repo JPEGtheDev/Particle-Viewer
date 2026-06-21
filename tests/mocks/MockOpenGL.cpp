@@ -326,6 +326,36 @@ static void APIENTRY mock_glUseProgram(GLuint program)
     MockOpenGL::mockUseProgram(program);
 }
 
+// ============================================
+// Mock GL Framebuffer Functions
+// ============================================
+
+static void APIENTRY mock_glGenFramebuffers(GLsizei n, GLuint* framebuffers)
+{
+    static GLuint nextId = 1;
+    for (GLsizei i = 0; i < n; i++) {
+        framebuffers[i] = nextId++;
+    }
+}
+
+static void APIENTRY mock_glBindFramebuffer(GLenum /*target*/, GLuint /*framebuffer*/)
+{
+}
+
+static void APIENTRY mock_glFramebufferTexture2D(GLenum /*target*/, GLenum /*attachment*/, GLenum /*textarget*/,
+                                                 GLuint /*texture*/, GLint /*level*/)
+{
+}
+
+static GLenum APIENTRY mock_glCheckFramebufferStatus(GLenum /*target*/)
+{
+    return GL_FRAMEBUFFER_COMPLETE;
+}
+
+static void APIENTRY mock_glDeleteFramebuffers(GLsizei /*n*/, const GLuint* /*framebuffers*/)
+{
+}
+
 void MockOpenGL::initGLAD()
 {
     // Initialize GLAD function pointers with mock implementations
@@ -352,4 +382,11 @@ void MockOpenGL::initGLAD()
     glGetProgramInfoLog = mock_glGetProgramInfoLog;
     glDeleteShader = mock_glDeleteShader;
     glUseProgram = mock_glUseProgram;
+
+    // Framebuffer functions
+    glGenFramebuffers = mock_glGenFramebuffers;
+    glBindFramebuffer = mock_glBindFramebuffer;
+    glFramebufferTexture2D = mock_glFramebufferTexture2D;
+    glCheckFramebufferStatus = mock_glCheckFramebufferStatus;
+    glDeleteFramebuffers = mock_glDeleteFramebuffers;
 }

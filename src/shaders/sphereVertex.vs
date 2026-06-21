@@ -16,7 +16,7 @@ void main()
 	int colVal = int(offset.w);
     gl_Position = projection * view * vec4(offset.xyz * transScale,1.0f);
     float dist = length(gl_Position);
-	gl_PointSize = radius * (scale / dist) * (viewportHeight / REFERENCE_HEIGHT);
+	gl_PointSize = min(radius * (scale / dist) * (viewportHeight / REFERENCE_HEIGHT), 2048.0);
 	if(colVal == 0)
 	{
 		fColor = vec3(1.0,0,0); //core1
