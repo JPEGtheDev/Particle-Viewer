@@ -4,17 +4,12 @@
  * Unit tests for window configuration save/load functionality.
  */
 
-// clang-format off
-#include <glad/glad.h>  // NOLINT(llvm-include-order) — must precede GL headers
-// clang-format on
-
 #include <cstdio>
 #include <fstream>
 #include <string>
 
 #include <gtest/gtest.h>
 
-#include "viewer_app.hpp"
 #include "windowConfig.hpp"
 
 // Test fixture for WindowConfig tests

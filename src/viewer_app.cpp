@@ -394,7 +394,13 @@ void ViewerApp::run()
                     recording_.folder = "";
                 }
                 if (panel_actions.render_mode_changed) {
-                    render_mode_ = static_cast<RenderMode>(panel_actions.new_render_mode);
+                    switch (panel_actions.new_render_mode) {
+                        case 0:
+                            render_mode_ = RenderMode::Spheres;
+                            break;
+                        default:
+                            break;
+                    }
                 }
                 // Defensive sync: if panel was closed via a path that bypassed
                 // toggleControllerPanel() (e.g. direct ImGui close), exit MenuMode.
@@ -737,9 +743,7 @@ void ViewerApp::openRecordingFolderDialog()
 {
     if (recording_.is_active || recording_dialog_open_)
         return;
-    // RenderMode panel is open — recording dialog conflicts; user must navigate away first
-    // [UNTESTABLE_WITHOUT_FULL_CONTEXT] — openRecordingFolderDialog() and recording_dialog_open_
-    // are private with no getter; exercising this guard requires a full app context.
+    // Guard: recording dialog conflicts with the render mode sub-panel; user must navigate back first.
     if (menu_state_.panel_layer == PanelLayer::RenderMode)
         return;
     recording_.error_count = 0;
@@ -953,9 +957,13 @@ void ViewerApp::processGamepadInput()
     if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_START)) {
         toggleControllerPanel();
     }
-    // B (East) in MenuMode — close controller panel
+    // B (East) in MenuMode — go back in sub-panel, or close panel from main layer
     if (current_mode_ == InputMode::MenuMode && gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_EAST)) {
-        toggleControllerPanel();
+        if (menu_state_.panel_layer == PanelLayer::RenderMode) {
+            menu_state_.panel_back_pressed = true;
+        } else {
+            toggleControllerPanel();
+        }
     }
     // MenuMode navigation — D-pad repeat + A-confirm
     if (current_mode_ == InputMode::MenuMode) {

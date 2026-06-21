@@ -87,8 +87,6 @@ TEST_F(RenderModeSubPanelTest, SubPanel_ConfirmBack_ReturnsToPanelLayerMain)
 // ---------------------------------------------------------------------------
 // Test 3 — confirming "Spheres" (item 0) transitions to PanelLayer::Main
 // ---------------------------------------------------------------------------
-// RED: no sub-panel branching exists yet; item 0 is PanelItem::FULLSCREEN in
-// the current main list, so panel_layer stays RenderMode.
 
 TEST_F(RenderModeSubPanelTest, SubPanel_ConfirmSpheres_ReturnsToPanelLayerMain)
 {
@@ -107,9 +105,6 @@ TEST_F(RenderModeSubPanelTest, SubPanel_ConfirmSpheres_ReturnsToPanelLayerMain)
 // When the user presses B while in the sub-panel, the expected behaviour is:
 //   - panel_layer resets to PanelLayer::Main  (go back, not close)
 //   - actions.close_panel remains false       (panel stays open)
-//
-// RED: currently panel_layer stays RenderMode because there is no sub-panel
-// branching, so the panel_layer assertion already fails.
 
 TEST_F(RenderModeSubPanelTest, SubPanel_BButton_ReturnsToPanelLayerMain_WithoutClosingPanel)
 {

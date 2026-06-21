@@ -358,7 +358,10 @@ MenuActions renderControllerPanel(MenuState& state)
             }
         });
 
-        item("Render Mode", !state.is_recording, [&] { state.panel_layer = PanelLayer::RenderMode; });
+        item("Render Mode", !state.is_recording, [&] {
+            state.panel_layer = PanelLayer::RenderMode;
+            state.selected_panel_item = -1;
+        });
 
         item("Close", true, [&] { actions.close_panel = true; });
 
@@ -397,6 +400,7 @@ MenuActions renderControllerPanel(MenuState& state)
                     case PanelItem::RENDER_MODE:
                         if (!state.is_recording) {
                             state.panel_layer = PanelLayer::RenderMode;
+                            state.selected_panel_item = -1;
                         }
                         break;
                     case PanelItem::CLOSE:
