@@ -48,6 +48,7 @@ tests/
 
 | Guide | What it covers |
 |-------|----------------|
+| [Qualitative Visual Analysis](qualitative-visual-analysis.md) | Render-and-inspect pattern for debugging -- produce a render first, diagnose second |
 | [Writing Tests](visual-regression-authoring.md) | Fixture, macros, helpers, best practices, updating baselines |
 | [Running & CI](visual-regression-ci.md) | Running tests locally, CI integration, interpreting failures |
 
