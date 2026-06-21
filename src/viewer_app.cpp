@@ -738,6 +738,8 @@ void ViewerApp::initSSMResources()
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, window_.width, window_.height, 0, GL_RGBA, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, render_.ssm.density_texture, 0);
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         std::cerr << "SSM: density FBO incomplete — SSM mode disabled" << std::endl;
@@ -755,6 +757,8 @@ void ViewerApp::initSSMResources()
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, window_.width, window_.height, 0, GL_RGBA, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, render_.ssm.intermediate_texture, 0);
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         std::cerr << "SSM: intermediate FBO incomplete — SSM mode disabled" << std::endl;
@@ -772,6 +776,8 @@ void ViewerApp::initSSMResources()
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, window_.width, window_.height, 0, GL_RGBA, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, render_.ssm.blurred_texture, 0);
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         std::cerr << "SSM: blur FBO incomplete — SSM mode disabled" << std::endl;
@@ -866,6 +872,8 @@ void ViewerApp::drawSSMScene()
                 1.0f / static_cast<float>(viewport[2]), 1.0f / static_cast<float>(viewport[3]));
     glUniform1f(glGetUniformLocation(render_.ssm.splat_shader.Program, "u_near"), cam_->getNearPlane());
     glUniform1f(glGetUniformLocation(render_.ssm.splat_shader.Program, "u_far"), cam_->getFarPlane());
+    glUniform1f(glGetUniformLocation(render_.ssm.splat_shader.Program, "u_depth_cull_range"),
+                window_.ssm_blob_radius * 0.5f);
     glDrawArraysInstanced(GL_POINTS, 0, 1, part_->n);
     glBindVertexArray(0);
     glDisable(GL_BLEND);

@@ -9,7 +9,7 @@ void main()
 {
     vec4 blurred = texture(blurredDensity, TexCoords);
     float density = blurred.a;
-    if (density <= threshold) {
+    if (density < threshold) {
         discard;
     }
     // Derive weighted-average color from accumulated RGBA (RGB = color×falloff, A = falloff)

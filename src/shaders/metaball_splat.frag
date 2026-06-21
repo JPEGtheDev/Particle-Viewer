@@ -8,6 +8,7 @@ uniform sampler2D u_prepass_depth;
 uniform vec2 u_viewport_inv;
 uniform float u_near;
 uniform float u_far;
+uniform float u_depth_cull_range;
 
 float linear_depth(float d)
 {
@@ -25,7 +26,7 @@ void main()
 	float prepass_d = texture(u_prepass_depth, gl_FragCoord.xy * u_viewport_inv).r;
 	if (prepass_d < (1.0 - 1e-5)) {
 		float front_linear = linear_depth(prepass_d);
-		if (linear_depth(gl_FragCoord.z) > front_linear + 30.0) {
+		if (linear_depth(gl_FragCoord.z) > front_linear + u_depth_cull_range) {
 			discard;
 		}
 	}
