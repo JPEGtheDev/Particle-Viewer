@@ -309,15 +309,12 @@ MenuActions renderControllerPanel(MenuState& state)
             ImGui::Text("[active]");
         }
 
-        item("Screen-Space Metaballs", false, [&] {});
-        ImGui::SetItemTooltip("Mode not supported");
-
         item("Marching Cubes", false, [&] {});
         ImGui::SetItemTooltip("Mode not supported");
 
         item("Back", true, goBack);
 
-        state.panel_item_count = item_count; // 4
+        state.panel_item_count = item_count; // 3
 
         if (state.confirm_panel_item) {
             state.confirm_panel_item = false;
@@ -329,8 +326,6 @@ MenuActions renderControllerPanel(MenuState& state)
                     case 1:
                         break; // greyed, no-op
                     case 2:
-                        break; // greyed, no-op
-                    case 3:
                         goBack();
                         break;
                     default:
