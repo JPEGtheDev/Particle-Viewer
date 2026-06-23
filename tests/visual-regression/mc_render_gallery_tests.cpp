@@ -208,8 +208,8 @@ TEST(MCRenderGallery, TwoParticlesMerging)
     const float iso = 0.5f;
     const int grid_res = 32;
 
-    glm::vec3 bmin = bboxMin(particles) - glm::vec3(ir);
-    glm::vec3 bmax = bboxMax(particles) + glm::vec3(ir);
+    glm::vec3 bmin = bboxMin(particles) - glm::vec3(ir * 2.0f);
+    glm::vec3 bmax = bboxMax(particles) + glm::vec3(ir * 2.0f);
     glm::vec3 ext = bmax - bmin;
     float voxel_size = glm::max(ext.x, glm::max(ext.y, ext.z)) / static_cast<float>(grid_res);
 
@@ -288,9 +288,12 @@ TEST(MCRenderGallery, BridgingEffectSweep)
             {s.d * 0.5f, 0.0f, 0.0f, 1.0f},  // blue
         };
 
-        // Pad by ir to ensure the surface fits inside the grid.
-        glm::vec3 bmin = bboxMin(particles) - glm::vec3(ir);
-        glm::vec3 bmax = bboxMax(particles) + glm::vec3(ir);
+        // Pad by ir*2 so the surface (at ~ir from each particle) is at least
+        // ir inside the grid boundary.  ir*1 puts the surface at the grid edge;
+        // the incomplete density neighbourhood at the boundary causes flat-cap
+        // triangles and lighting artifacts.
+        glm::vec3 bmin = bboxMin(particles) - glm::vec3(ir * 2.0f);
+        glm::vec3 bmax = bboxMax(particles) + glm::vec3(ir * 2.0f);
         glm::vec3 ext = bmax - bmin;
         float voxel_size = glm::max(ext.x, glm::max(ext.y, ext.z)) / static_cast<float>(grid_res);
 
