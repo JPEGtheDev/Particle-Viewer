@@ -5,10 +5,14 @@
  * particle category, not grey fallback.
  *
  * Root cause caught here: computeColor() in marching_cubes.comp had a hard
- * cutoff at `if (dist > influence_radius) continue;`.  The isosurface radius
- * is ~1.18 * ir, which EXCEEDS ir, so every surface vertex landed outside the
- * cutoff and was coloured grey.  The fix removes the cutoff and lets the
- * Gaussian weight decay smoothly, consistent with computeNormal().
+ * cutoff at `if (dist > influence_radius) continue;`.  The density field is a
+ * TRUNCATED Gaussian (also cut off at ir), so the isosurface sits at ~ir from
+ * each particle.  MC interpolates surface vertices along voxel edges that cross
+ * from inside the surface (dist < ir) to just outside (dist > ir, density=0).
+ * Those interpolated vertices land at dist = ir + epsilon -- just outside the
+ * color cutoff -- and receive grey (0.5, 0.5, 0.5), producing visible splotches.
+ * The fix removes the hard cutoff from computeColor() and lets the Gaussian
+ * weight decay smoothly, consistent with computeNormal() which has no cutoff.
  */
 
 #include <algorithm>
@@ -33,11 +37,11 @@
 #ifndef __APPLE__
 
 // A single red particle (category 0) should colour its entire surface red.
-// The average surface colour must have R > 0.6 and G, B < 0.25.
-// Before the fix: returns grey (0.5, 0.5, 0.5) on all surface vertices
-//   because the isosurface radius (~1.18*ir) exceeds the hard cutoff at ir.
-// After the fix: Gaussian weight gives ~0.5 weight at the surface, resulting
-//   in red-dominant colour on the full surface.
+// Tests both average colour (R > 0.6) and grey-patch fraction (< 5%).
+// Before the fix: ~39% of vertices land at dist = ir + epsilon from MC
+//   interpolation and receive grey (0.5, 0.5, 0.5) due to the hard cutoff.
+// After the fix: Gaussian weight decays smoothly past ir, giving red-dominant
+//   colour across the full surface.
 TEST(MCColorQualityTest, SingleRedParticle_SurfaceIsRed)
 {
     SDL3Context ctx(320, 240, "MC Color Quality Test", /*visible=*/false);
@@ -117,12 +121,35 @@ TEST(MCColorQualityTest, SingleRedParticle_SurfaceIsRed)
                            << "Fix: remove the hard cutoff from computeColor().";
     EXPECT_LT(g_avg, 0.25f) << "Green channel too high (G=" << g_avg << "), expected near 0 for red particle";
     EXPECT_LT(b_avg, 0.25f) << "Blue channel too high (B=" << b_avg << "), expected near 0 for red particle";
+
+    // Grey-patch check: MC interpolation places some surface vertices at dist slightly
+    // beyond ir from the particle (interpolating from a corner at dist=ir to one just
+    // outside ir with density=0). Those vertices fall outside computeColor()'s hard
+    // cutoff and receive grey (0.5, 0.5, 0.5).  A red sphere must have < 5% grey verts.
+    //
+    // A vertex is "grey" when all three channels are mid-range and approximately equal.
+    int grey_count = 0;
+    for (GLuint i = 0; i < vertex_count; ++i) {
+        const size_t base = static_cast<size_t>(i) * 9;
+        const float r = ssbo[base + 6];
+        const float g = ssbo[base + 7];
+        const float b = ssbo[base + 8];
+        if (r > 0.30f && std::abs(r - g) < 0.08f && std::abs(r - b) < 0.08f) {
+            ++grey_count;
+        }
+    }
+    const float grey_fraction = static_cast<float>(grey_count) / static_cast<float>(vertex_count);
+    EXPECT_LT(grey_fraction, 0.05f)
+        << "Grey patch fraction too high (" << (grey_fraction * 100.0f) << "% of " << vertex_count << " vertices). "
+        << "Root cause: computeColor() hard cutoff at ir -- MC interpolation places some surface "
+        << "vertices at dist = ir + epsilon, just outside the cutoff, producing visible grey splotches. "
+        << "Fix: remove 'if (dist > influence_radius) continue;' from computeColor() in marching_cubes.comp.";
 }
 
 // Two-particle blend: red (left) + blue (right), separated so they are just
-// merged (d < merge threshold 1.664*ir).  The average surface colour must
-// have roughly equal R and B with low G, indicating a red-blue blend rather
-// than grey.
+// merged (d < merge threshold 2*ir with truncated Gaussian).  The average
+// surface colour must have roughly equal R and B with low G, indicating a
+// red-blue blend rather than grey.
 TEST(MCColorQualityTest, TwoParticles_SurfaceBlend_IsRedBlue)
 {
     SDL3Context ctx(320, 240, "MC Color Blend Test", /*visible=*/false);
@@ -149,7 +176,7 @@ TEST(MCColorQualityTest, TwoParticles_SurfaceBlend_IsRedBlue)
         GTEST_SKIP() << "mesh shader failed to compile";
     }
 
-    // Particles separated by 0.8 (< merge threshold 0.832 at ir=0.5).
+    // Particles separated by 0.8 (< merge threshold 2*ir=1.0 for truncated Gaussian).
     // Midpoint density = 2*exp(-0.5*(0.4/0.5)^2) = 1.45 >> iso=0.5 -> merged.
     std::vector<glm::vec4> particles = {
         {-0.4f, 0.0f, 0.0f, 0.0f}, // red

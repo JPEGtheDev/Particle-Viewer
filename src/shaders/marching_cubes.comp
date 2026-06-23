@@ -96,11 +96,6 @@ vec3 computeColor(vec3 world_pos)
     for (int i = 0; i < particle_count; ++i) {
         vec3  ppos = particles[i].xyz;
         float dist = length(ppos - world_pos);
-
-        if (dist > influence_radius) {
-            continue;
-        }
-
         float ratio  = dist / influence_radius;
         float weight = exp(-0.5 * ratio * ratio);
 
