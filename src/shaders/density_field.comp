@@ -1,0 +1,50 @@
+#version 430 core
+
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
+
+// Output: 3D density field (single-channel float)
+layout(r32f, binding = 0) uniform image3D density_field;
+
+// Input: particle positions and categories
+layout(std430, binding = 1) readonly buffer ParticleBuffer {
+    vec4 particles[]; // xyz = position, w = category
+};
+
+// Uniforms
+uniform int grid_size;          // number of voxels per axis (64, 128, or 256)
+uniform vec3 grid_origin;       // world-space origin of the grid
+uniform float voxel_size;       // world-space size of one voxel
+uniform float influence_radius; // gaussian sigma and hard cutoff radius
+uniform int particle_count;     // number of particles in buffer
+
+void main() {
+    if (influence_radius <= 0.0) {
+        return;
+    }
+
+    ivec3 gid = ivec3(gl_GlobalInvocationID);
+
+    // Bounds check: discard invocations beyond the grid
+    if (gid.x >= grid_size || gid.y >= grid_size || gid.z >= grid_size) {
+        return;
+    }
+
+    // Compute this voxel's world-space center
+    vec3 voxel_center = grid_origin + (vec3(gid) + 0.5) * voxel_size;
+
+    float density = 0.0;
+
+    for (int i = 0; i < particle_count; ++i) {
+        vec3 pos = particles[i].xyz;
+        float dist = length(pos - voxel_center);
+
+        if (dist > influence_radius) {
+            continue;
+        }
+
+        float ratio = dist / influence_radius;
+        density += exp(-0.5 * ratio * ratio);
+    }
+
+    imageStore(density_field, gid, vec4(density, 0.0, 0.0, 0.0));
+}

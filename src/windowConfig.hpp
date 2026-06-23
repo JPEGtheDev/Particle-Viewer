@@ -34,13 +34,41 @@
  * the pointed-to string is updated with the stored value. If the key is
  * absent, the caller-supplied default is preserved unchanged.
  *
+ * mc_grid_resolution (optional): if non-null, updated from the key when
+ * present; otherwise the default 128 is written to the pointed-to int.
+ *
+ * mc_iso_value (optional): if non-null, updated from the key when present;
+ * otherwise the default 0.5f is written to the pointed-to float.
+ *
+ * mc_influence_radius (optional): if non-null, updated from the key when
+ * present; otherwise the default 2.0f is written to the pointed-to float.
+ *
+ * mc_live_freeze (optional): if non-null, updated from the key when present;
+ * otherwise the default 0 is written to the pointed-to int.
+ *
  */
 inline bool loadWindowConfig(const std::string& filepath, int& width, int& height, bool& fullscreen,
-                             float* ui_scale = nullptr, std::string* last_confirmed_folder = nullptr)
+                             float* ui_scale = nullptr, std::string* last_confirmed_folder = nullptr,
+                             int* mc_grid_resolution = nullptr, float* mc_iso_value = nullptr,
+                             float* mc_influence_radius = nullptr, int* mc_live_freeze = nullptr)
 {
     std::ifstream file(filepath);
     if (!file.is_open()) {
         return false; // File doesn't exist, use defaults
+    }
+
+    // Apply MC defaults before parsing; if keys are absent the defaults remain.
+    if (mc_grid_resolution != nullptr) {
+        *mc_grid_resolution = 128;
+    }
+    if (mc_iso_value != nullptr) {
+        *mc_iso_value = 0.5f;
+    }
+    if (mc_influence_radius != nullptr) {
+        *mc_influence_radius = 2.0f;
+    }
+    if (mc_live_freeze != nullptr) {
+        *mc_live_freeze = 0;
     }
 
     std::string line;
@@ -87,6 +115,30 @@ inline bool loadWindowConfig(const std::string& filepath, int& width, int& heigh
             }
         } else if (key == "last_confirmed_folder" && last_confirmed_folder != nullptr) {
             *last_confirmed_folder = value;
+        } else if (key == "mc_grid_resolution" && mc_grid_resolution != nullptr) {
+            try {
+                *mc_grid_resolution = std::stoi(value);
+            } catch (...) {
+                // Unparseable: leave default unchanged
+            }
+        } else if (key == "mc_iso_value" && mc_iso_value != nullptr) {
+            try {
+                *mc_iso_value = std::stof(value);
+            } catch (...) {
+                // Unparseable: leave default unchanged
+            }
+        } else if (key == "mc_influence_radius" && mc_influence_radius != nullptr) {
+            try {
+                *mc_influence_radius = std::stof(value);
+            } catch (...) {
+                // Unparseable: leave default unchanged
+            }
+        } else if (key == "mc_live_freeze" && mc_live_freeze != nullptr) {
+            try {
+                *mc_live_freeze = std::stoi(value);
+            } catch (...) {
+                // Unparseable: leave default unchanged
+            }
         }
     }
 
@@ -107,9 +159,15 @@ inline bool loadWindowConfig(const std::string& filepath, int& width, int& heigh
  * the file under the key last_confirmed_folder. If null or empty, the key
  * is omitted entirely.
  *
+ * mc_grid_resolution: marching cubes grid resolution (default 128).
+ * mc_iso_value: marching cubes iso surface threshold (default 0.5f).
+ * mc_influence_radius: marching cubes particle influence radius (default 2.0f).
+ * mc_live_freeze: marching cubes live/freeze state (0=Live, 1=Freeze; default 0).
+ *
  */
 inline bool saveWindowConfig(const std::string& filepath, int width, int height, bool fullscreen, float ui_scale = 0.0f,
-                             const std::string* last_confirmed_folder = nullptr)
+                             const std::string* last_confirmed_folder = nullptr, int mc_grid_resolution = 128,
+                             float mc_iso_value = 0.5f, float mc_influence_radius = 2.0f, int mc_live_freeze = 0)
 {
     std::ofstream file(filepath);
     if (!file.is_open()) {
@@ -134,6 +192,10 @@ inline bool saveWindowConfig(const std::string& filepath, int width, int height,
             file << "last_confirmed_folder=" << sanitized << "\n";
         }
     }
+    file << "mc_grid_resolution=" << mc_grid_resolution << "\n";
+    file << "mc_iso_value=" << mc_iso_value << "\n";
+    file << "mc_influence_radius=" << mc_influence_radius << "\n";
+    file << "mc_live_freeze=" << mc_live_freeze << "\n";
 
     file.close();
     return true;

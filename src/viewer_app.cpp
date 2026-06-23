@@ -9,15 +9,18 @@
 
 #include <array>
 #include <cassert>
+#include <cfloat>
 #include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <string>
+#include <vector>
 
 // clang-format off
 #include <SDL3/SDL.h>          // NOLINT(llvm-include-order)
 // clang-format on
 
+#include "GladVramQuery.hpp"
 #include "MassParams.hpp"
 #include "debugOverlay.hpp"
 #include "file_dialog_helpers.hpp"
@@ -341,6 +344,39 @@ void ViewerApp::run()
         drawScene();
         if (render_mode_ == RenderMode::Spheres) {
             cam_->RenderSphere();
+        } else if (render_mode_ == RenderMode::MarchingCubes && mc_renderer_) {
+            if (part_ && part_->n > 0) {
+                if (mc_renderer_->isDirty()) {
+                    // Recompute grid parameters and particle cache
+                    glm::vec3 bbox_max(-FLT_MAX);
+                    mc_bbox_min_ = glm::vec3(FLT_MAX);
+                    mc_scaled_ir_ = menu_state_.influence_radius * kSimToDisplayScale;
+
+                    for (const auto& p : part_->translations) {
+                        const glm::vec3 pos(p.x * kSimToDisplayScale, p.y * kSimToDisplayScale,
+                                            p.z * kSimToDisplayScale);
+                        mc_bbox_min_ = glm::min(mc_bbox_min_, pos);
+                        bbox_max = glm::max(bbox_max, pos);
+                    }
+                    mc_bbox_min_ -= glm::vec3(mc_scaled_ir_);
+                    bbox_max += glm::vec3(mc_scaled_ir_);
+
+                    const glm::vec3 extent = bbox_max - mc_bbox_min_;
+                    const float grid_f = static_cast<float>(mc_renderer_->gridRes());
+                    mc_voxel_size_ = glm::max(extent.x, glm::max(extent.y, extent.z)) / grid_f;
+
+                    mc_display_particles_.clear();
+                    mc_display_particles_.reserve(part_->translations.size());
+                    for (const auto& p : part_->translations) {
+                        mc_display_particles_.emplace_back(p.x * kSimToDisplayScale, p.y * kSimToDisplayScale,
+                                                           p.z * kSimToDisplayScale, p.w);
+                    }
+                }
+
+                mc_renderer_->render(mc_display_particles_, mc_bbox_min_, mc_voxel_size_, mc_scaled_ir_,
+                                     menu_state_.iso_value, density_shader_->program(), mc_shader_->program(),
+                                     mesh_shader_->Program, cam_->getProjection(), view_);
+            }
         }
         drawFBO();
 
@@ -394,13 +430,42 @@ void ViewerApp::run()
                     recording_.folder = "";
                 }
                 if (panel_actions.render_mode_changed) {
+                    static_assert(static_cast<int>(RenderMode::MarchingCubes) == 2,
+                                  "new_render_mode=2 encoding in imgui_menu.cpp must match "
+                                  "RenderMode enum");
                     switch (panel_actions.new_render_mode) {
                         case 0:
                             render_mode_ = RenderMode::Spheres;
                             break;
+                        case 2:
+                            render_mode_ = RenderMode::MarchingCubes;
+                            break;
                         default:
                             break;
                     }
+                    // Switch to MC: mark dirty so first render computes the mesh
+                    if (render_mode_ == RenderMode::MarchingCubes && mc_renderer_) {
+                        mc_renderer_->markDirty();
+                    }
+                }
+                if (panel_actions.mc_params_changed && mc_renderer_) {
+                    // If grid resolution changed, resize GPU buffers before marking dirty.
+                    const int requested = static_cast<int>(menu_state_.grid_resolution);
+                    if (requested != mc_renderer_->gridRes()) {
+                        GladVramQuery vram;
+                        bool was_downgraded = false;
+                        const int clamped = resolveGridResolution(requested, vram, was_downgraded);
+                        if (was_downgraded) {
+                            menu_state_.mc_vram_downgrade_notification = true;
+                            menu_state_.grid_resolution = static_cast<GridResolution>(clamped);
+                        }
+                        mc_renderer_->resize(clamped);
+                    }
+                    mc_renderer_->markDirty();
+                }
+                if (menu_state_.mc_refresh_requested && mc_renderer_) {
+                    mc_renderer_->markDirty();
+                    menu_state_.mc_refresh_requested = false;
                 }
                 // Defensive sync: if panel was closed via a path that bypassed
                 // toggleControllerPanel() (e.g. direct ImGui close), exit MenuMode.
@@ -498,6 +563,10 @@ void ViewerApp::run()
             if (!loaded) {
                 set_->readPosVelFile(cur_frame_, part_, false);
             }
+            // Mark MC mesh dirty on new timestep — Live mode only
+            if (mc_renderer_ && menu_state_.live_freeze == LiveFreezeMode::Live && part_ && part_->n > 0) {
+                mc_renderer_->markDirty();
+            }
         }
         // COM prefetch — only when COM lock is active, auto-compute is enabled,
         // and no COMFile is present (COMFile takes precedence over auto-compute).
@@ -546,6 +615,27 @@ void ViewerApp::setupGLStuff()
     glEnableVertexAttribArray(0);
     part_->setUpInstanceArray();
     glBindVertexArray(0);
+
+    // MC pipeline: only when GL 4.3 compute shaders are available
+    compute_shaders_available_ = (GLAD_GL_VERSION_4_3 != 0);
+    menu_state_.compute_shaders_available = compute_shaders_available_;
+    if (compute_shaders_available_) {
+        density_shader_ = std::make_unique<ComputeShader>((paths_.exe + paths_.density_comp).c_str());
+        mc_shader_ = std::make_unique<ComputeShader>((paths_.exe + paths_.mc_comp).c_str());
+        mesh_shader_ = std::make_unique<Shader>((paths_.exe + paths_.mesh_vertex).c_str(),
+                                                (paths_.exe + paths_.mesh_fragment).c_str());
+
+        GladVramQuery vram;
+        bool was_downgraded = false;
+        const int initial_grid_res =
+            resolveGridResolution(static_cast<int>(menu_state_.grid_resolution), vram, was_downgraded);
+        if (was_downgraded) {
+            menu_state_.mc_vram_downgrade_notification = true;
+            // Mark 256^3 permanently unavailable so the button stays greyed out.
+            menu_state_.mc_256_available = false;
+        }
+        mc_renderer_ = std::make_unique<MCRenderer>(initial_grid_res);
+    }
 }
 
 void ViewerApp::setupScreenFBO()
@@ -648,23 +738,26 @@ void ViewerApp::drawScene()
 
     cam_->setSphereCenter(com_);
 
-    render_.sphere_shader.Use();
-    part_->pushVBO();
-    glBindVertexArray(render_.circle_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, part_->instanceVBO);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glUniformMatrix4fv(glGetUniformLocation(render_.sphere_shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view_));
-    glUniformMatrix4fv(glGetUniformLocation(render_.sphere_shader.Program, "projection"), 1, GL_FALSE,
-                       glm::value_ptr(cam_->getProjection()));
-    glUniform1f(glGetUniformLocation(render_.sphere_shader.Program, "radius"), sphere_.radius);
-    glUniform1f(glGetUniformLocation(render_.sphere_shader.Program, "scale"), sphere_.scale);
-    GLint viewport[4] = {0, 0, 0, 0};
-    glGetIntegerv(GL_VIEWPORT, viewport);
-    glUniform1f(glGetUniformLocation(render_.sphere_shader.Program, "viewportHeight"),
-                static_cast<GLfloat>(viewport[3]));
-    glDrawArraysInstanced(GL_POINTS, 0, 1, part_->n);
-    glBindVertexArray(0);
+    if (shouldRenderSpheres(render_mode_)) {
+        render_.sphere_shader.Use();
+        part_->pushVBO();
+        glBindVertexArray(render_.circle_vao);
+        glBindBuffer(GL_ARRAY_BUFFER, part_->instanceVBO);
+        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glUniformMatrix4fv(glGetUniformLocation(render_.sphere_shader.Program, "view"), 1, GL_FALSE,
+                           glm::value_ptr(view_));
+        glUniformMatrix4fv(glGetUniformLocation(render_.sphere_shader.Program, "projection"), 1, GL_FALSE,
+                           glm::value_ptr(cam_->getProjection()));
+        glUniform1f(glGetUniformLocation(render_.sphere_shader.Program, "radius"), sphere_.radius);
+        glUniform1f(glGetUniformLocation(render_.sphere_shader.Program, "scale"), sphere_.scale);
+        GLint viewport[4] = {0, 0, 0, 0};
+        glGetIntegerv(GL_VIEWPORT, viewport);
+        glUniform1f(glGetUniformLocation(render_.sphere_shader.Program, "viewportHeight"),
+                    static_cast<GLfloat>(viewport[3]));
+        glDrawArraysInstanced(GL_POINTS, 0, 1, part_->n);
+        glBindVertexArray(0);
+    }
 }
 
 void ViewerApp::drawFBO()
@@ -842,8 +935,16 @@ void ViewerApp::handleKeyEvent(unsigned int scancode, bool is_pressed, unsigned 
             recording_.is_active = false;
         }
     }
-    if (scancode == SDL_SCANCODE_M && is_pressed && current_mode_ == InputMode::ViewMode && !recording_.is_active) {
-        render_mode_ = cycleRenderMode(render_mode_);
+    if (scancode == SDL_SCANCODE_M && is_pressed && current_mode_ == InputMode::ViewMode) {
+        if (!recording_.is_active) {
+            render_mode_ = cycleRenderMode(render_mode_, compute_shaders_available_);
+            // Switch to MC: mark dirty so first render computes the mesh
+            if (render_mode_ == RenderMode::MarchingCubes && mc_renderer_) {
+                mc_renderer_->markDirty();
+            }
+        } else {
+            menu_state_.m_key_recording_notification = true;
+        }
     }
 }
 
@@ -948,7 +1049,11 @@ void ViewerApp::processGamepadInput()
             if (cam_->isRotLocked()) {
                 cam_->toggleComLock();
             } else if (!recording_.is_active) {
-                render_mode_ = cycleRenderMode(render_mode_);
+                render_mode_ = cycleRenderMode(render_mode_, compute_shaders_available_);
+                // Switch to MC: mark dirty so first render computes the mesh
+                if (render_mode_ == RenderMode::MarchingCubes && mc_renderer_) {
+                    mc_renderer_->markDirty();
+                }
             }
         }
     }
@@ -1210,8 +1315,10 @@ void ViewerApp::saveWindowSettings()
 
     // Save windowed size (not fullscreen size)
     bool fullscreen = (window_.fullscreen != 0);
-    bool success = saveWindowConfig(config_path, window_.windowed_width, window_.windowed_height, fullscreen,
-                                    window_.ui_scale, &last_confirmed_folder_);
+    bool success =
+        saveWindowConfig(config_path, window_.windowed_width, window_.windowed_height, fullscreen, window_.ui_scale,
+                         &last_confirmed_folder_, static_cast<int>(menu_state_.grid_resolution), menu_state_.iso_value,
+                         menu_state_.influence_radius, static_cast<int>(menu_state_.live_freeze));
 
     if (!success) {
         std::cerr << "Warning: Failed to save window configuration" << std::endl;
@@ -1225,7 +1332,18 @@ void ViewerApp::loadWindowSettings()
     int height = 0;
     bool fullscreen = false;
 
-    if (loadWindowConfig(config_path, width, height, fullscreen, &window_.ui_scale, &last_confirmed_folder_)) {
+    int mc_grid_resolution = static_cast<int>(menu_state_.grid_resolution);
+    float mc_iso_value = menu_state_.iso_value;
+    float mc_influence_radius = menu_state_.influence_radius;
+    int mc_live_freeze = static_cast<int>(menu_state_.live_freeze);
+
+    if (loadWindowConfig(config_path, width, height, fullscreen, &window_.ui_scale, &last_confirmed_folder_,
+                         &mc_grid_resolution, &mc_iso_value, &mc_influence_radius, &mc_live_freeze)) {
+        // Write loaded MC values back into menu_state_.
+        menu_state_.grid_resolution = static_cast<GridResolution>(mc_grid_resolution);
+        menu_state_.iso_value = mc_iso_value;
+        menu_state_.influence_radius = mc_influence_radius;
+        menu_state_.live_freeze = static_cast<LiveFreezeMode>(mc_live_freeze);
         // Merge the OS-detected content scale with the persisted preference.
         // selectUiScale returns the persisted value if it is a real preference
         // (>= 1.0), or falls back to the OS-detected scale (min 1.5).

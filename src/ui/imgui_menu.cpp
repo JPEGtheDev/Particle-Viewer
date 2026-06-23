@@ -16,8 +16,18 @@
 
 /*
  * Named indices for selectable items in the controller panel, in registration order.
- * Each enumerator's integer value must equal the zero-based index of its corresponding
- * item() call in renderControllerPanel(). Must stay in sync with those item() calls.
+ *
+ * Non-conditional items (FULLSCREEN through CLOSE): enumerator integer value equals the
+ * zero-based visual index of its item() call. The invariant holds unconditionally for
+ * these entries.
+ *
+ * Conditional items (VRAM_NOTIFICATION, M_KEY_RECORDING_NOTIFICATION): the enumerator
+ * value represents the slot index when ALL preceding conditional items are also present.
+ * When a preceding conditional item is absent, a later conditional item occupies an
+ * earlier slot. The switch dispatch in renderControllerPanel() accounts for this by
+ * checking the active flags before acting -- see comments in those cases.
+ *
+ * Must stay in sync with the item() calls in renderControllerPanel().
  */
 enum class PanelItem : int
 {
@@ -28,7 +38,9 @@ enum class PanelItem : int
     LOAD_FILE,
     RECORDING_FOLDER,
     RENDER_MODE,
-    CLOSE
+    CLOSE,
+    VRAM_NOTIFICATION,           // conditional: only present when mc_vram_downgrade_notification is true
+    M_KEY_RECORDING_NOTIFICATION // conditional: only present when m_key_recording_notification is true
 };
 
 /*
@@ -301,7 +313,44 @@ MenuActions renderControllerPanel(MenuState& state)
             actions.render_mode_changed = true;
             actions.new_render_mode = 0;
         };
+        auto selectMarchingCubes = [&] {
+            state.panel_layer = PanelLayer::Main;
+            actions.render_mode_changed = true;
+            actions.new_render_mode = kRenderModeMC;
+        };
         auto goBack = [&] { state.panel_layer = PanelLayer::Main; };
+        auto setGrid64 = [&] {
+            state.grid_resolution = GridResolution::Grid64;
+            actions.mc_params_changed = true;
+        };
+        auto setGrid128 = [&] {
+            state.grid_resolution = GridResolution::Grid128;
+            actions.mc_params_changed = true;
+        };
+        auto setGrid256 = [&] {
+            state.grid_resolution = GridResolution::Grid256;
+            actions.mc_params_changed = true;
+        };
+        auto incrementIso = [&] {
+            state.iso_value += 0.01f;
+            if (state.iso_value > 2.0f) {
+                state.iso_value = 0.0f;
+            }
+            actions.mc_params_changed = true;
+        };
+        auto incrementRadius = [&] {
+            state.influence_radius += 0.1f;
+            if (state.influence_radius > 10.0f) {
+                state.influence_radius = 0.1f;
+            }
+            actions.mc_params_changed = true;
+        };
+        auto toggleLiveFreeze = [&] {
+            state.live_freeze =
+                (state.live_freeze == LiveFreezeMode::Live) ? LiveFreezeMode::Freeze : LiveFreezeMode::Live;
+            actions.mc_params_changed = true;
+        };
+        auto refreshMesh = [&] { state.mc_refresh_requested = true; };
 
         item("Spheres", true, selectSpheres);
         if (state.current_render_mode == 0) {
@@ -309,12 +358,59 @@ MenuActions renderControllerPanel(MenuState& state)
             ImGui::Text("[active]");
         }
 
-        item("Marching Cubes", false, [&] {});
-        ImGui::SetItemTooltip("Mode not supported");
+        item("Marching Cubes", state.compute_shaders_available, selectMarchingCubes);
+        if (!state.compute_shaders_available) {
+            ImGui::SetItemTooltip("Requires OpenGL 4.3 compute shaders");
+        }
 
         item("Back", true, goBack);
 
-        state.panel_item_count = item_count; // 3
+        // When MC is the active render mode, show parameter controls below the mode items.
+        // Each item() call adds a navigable row; item indices 3-8 cover the MC parameters;
+        // index 9 (Refresh Mesh) shown in Freeze mode only.
+        if (state.current_render_mode == kRenderModeMC) {
+            ImGui::Separator();
+            ImGui::Text("Grid Resolution:");
+            item("Grid: 64", true, setGrid64);
+            if (state.grid_resolution == GridResolution::Grid64) {
+                ImGui::SameLine();
+                ImGui::Text("[active]");
+            }
+            item("Grid: 128", true, setGrid128);
+            if (state.grid_resolution == GridResolution::Grid128) {
+                ImGui::SameLine();
+                ImGui::Text("[active]");
+            }
+            item("Grid: 256", state.mc_256_available, setGrid256);
+            if (!state.mc_256_available) {
+                ImGui::SetItemTooltip("Requires more VRAM than available on this hardware");
+            }
+            if (state.grid_resolution == GridResolution::Grid256) {
+                ImGui::SameLine();
+                ImGui::Text("[active]");
+            }
+
+            // Iso-value: displayed as a button showing current value; D-pad confirm increments by step.
+            // Left/right navigation not supported in this panel; use as a single selectable row.
+            char iso_label[32];
+            SDL_snprintf(iso_label, sizeof(iso_label), "Iso: %.2f", state.iso_value);
+            item(iso_label, true, incrementIso);
+
+            char ir_label[32];
+            SDL_snprintf(ir_label, sizeof(ir_label), "Radius: %.1f", state.influence_radius);
+            item(ir_label, true, incrementRadius);
+
+            // Live/Freeze toggle (index 8): always shown when MC is active
+            const char* lf_label = (state.live_freeze == LiveFreezeMode::Live) ? "Live" : "Freeze";
+            item(lf_label, true, toggleLiveFreeze);
+
+            // Refresh Mesh button (index 9): only shown in Freeze mode
+            if (state.live_freeze == LiveFreezeMode::Freeze) {
+                item("Refresh Mesh", true, refreshMesh);
+            }
+        }
+
+        state.panel_item_count = item_count;
 
         if (state.confirm_panel_item) {
             state.confirm_panel_item = false;
@@ -324,9 +420,47 @@ MenuActions renderControllerPanel(MenuState& state)
                         selectSpheres();
                         break;
                     case 1:
-                        break; // greyed, no-op
+                        if (state.compute_shaders_available) {
+                            selectMarchingCubes();
+                        }
+                        break;
                     case 2:
                         goBack();
+                        break;
+                    case 3:
+                        if (state.current_render_mode == kRenderModeMC) {
+                            setGrid64();
+                        }
+                        break;
+                    case 4:
+                        if (state.current_render_mode == kRenderModeMC) {
+                            setGrid128();
+                        }
+                        break;
+                    case 5:
+                        if (state.current_render_mode == kRenderModeMC && state.mc_256_available) {
+                            setGrid256();
+                        }
+                        break;
+                    case 6:
+                        if (state.current_render_mode == kRenderModeMC) {
+                            incrementIso();
+                        }
+                        break;
+                    case 7:
+                        if (state.current_render_mode == kRenderModeMC) {
+                            incrementRadius();
+                        }
+                        break;
+                    case 8:
+                        if (state.current_render_mode == kRenderModeMC) {
+                            toggleLiveFreeze();
+                        }
+                        break;
+                    case 9:
+                        if (state.current_render_mode == kRenderModeMC && state.live_freeze == LiveFreezeMode::Freeze) {
+                            refreshMesh();
+                        }
                         break;
                     default:
                         break;
@@ -364,6 +498,14 @@ MenuActions renderControllerPanel(MenuState& state)
         });
 
         item("Close", true, [&] { actions.close_panel = true; });
+
+        if (state.mc_vram_downgrade_notification) {
+            item("VRAM: 256^3 unavailable, using 128^3", true, [&] { state.mc_vram_downgrade_notification = false; });
+        }
+
+        if (state.m_key_recording_notification) {
+            item("M: mode locked (recording)", true, [&] { state.m_key_recording_notification = false; });
+        }
 
         state.panel_item_count = item_count;
         if (state.confirm_panel_item) {
@@ -405,6 +547,22 @@ MenuActions renderControllerPanel(MenuState& state)
                         break;
                     case PanelItem::CLOSE:
                         actions.close_panel = true;
+                        break;
+                    case PanelItem::VRAM_NOTIFICATION:
+                        // This slot is VRAM when mc_vram_downgrade_notification is true,
+                        // or M_KEY when only m_key_recording_notification is true.
+                        if (state.mc_vram_downgrade_notification) {
+                            state.mc_vram_downgrade_notification = false;
+                        } else if (state.m_key_recording_notification) {
+                            state.m_key_recording_notification = false;
+                        }
+                        break;
+                    case PanelItem::M_KEY_RECORDING_NOTIFICATION:
+                        // This slot is only reached when both VRAM and M_KEY notifications are active.
+                        // The inner guard is defensive (matches the pattern in VRAM_NOTIFICATION above).
+                        if (state.m_key_recording_notification) {
+                            state.m_key_recording_notification = false;
+                        }
                         break;
                     default:
                         assert(false && "selected_panel_item in-range but no PanelItem case -- enum out of sync");
