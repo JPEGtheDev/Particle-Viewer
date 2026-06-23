@@ -358,7 +358,8 @@ MenuActions renderControllerPanel(MenuState& state)
             ImGui::Text("[active]");
         }
 
-        item("Marching Cubes", state.compute_shaders_available, selectMarchingCubes);
+        item(getMarchingCubesLabel(state.compute_shaders_available), state.compute_shaders_available,
+             selectMarchingCubes);
         if (!state.compute_shaders_available) {
             ImGui::SetItemTooltip("Requires OpenGL 4.3 compute shaders");
         }

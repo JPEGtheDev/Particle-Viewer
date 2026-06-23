@@ -240,3 +240,21 @@ TEST_F(RenderModeSubPanelTest, SubPanel_RefreshMeshButton_SetsMcRefreshRequested
 
     EXPECT_TRUE(state.mc_refresh_requested);
 }
+
+// ---------------------------------------------------------------------------
+// Test 12 -- getMarchingCubesLabel returns standard label when compute available
+// ---------------------------------------------------------------------------
+
+TEST(MarchingCubesLabelTest, GetMarchingCubesLabel_ComputeAvailable_ReturnsStandardLabel)
+{
+    EXPECT_STREQ(getMarchingCubesLabel(true), "Marching Cubes");
+}
+
+// ---------------------------------------------------------------------------
+// Test 13 -- getMarchingCubesLabel returns unavailable label when compute absent
+// ---------------------------------------------------------------------------
+
+TEST(MarchingCubesLabelTest, GetMarchingCubesLabel_ComputeUnavailable_ShowsUnavailable)
+{
+    EXPECT_STREQ(getMarchingCubesLabel(false), "Marching Cubes (unavailable)");
+}

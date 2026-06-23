@@ -150,4 +150,9 @@ MenuActions renderMainMenu(MenuState& state);
  */
 MenuActions renderControllerPanel(MenuState& state);
 
+inline const char* getMarchingCubesLabel(bool compute_available)
+{
+    return compute_available ? "Marching Cubes" : "Marching Cubes (unavailable)";
+}
+
 #endif // PARTICLE_VIEWER_IMGUI_MENU_H
