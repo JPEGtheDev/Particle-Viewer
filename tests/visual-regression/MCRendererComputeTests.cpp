@@ -92,9 +92,9 @@ TEST(MCRendererComputeTest, MCPipeline_GeneratesNonZeroVertexCount_With8Particle
     // Read the atomic counter -- it holds the vertex count written by marching_cubes.comp.
     // render() reads it internally but does not reset it afterwards.
     GLuint vertex_count = 0;
-    glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, mc_renderer.atomicCounter());
-    glGetBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), &vertex_count);
-    glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, mc_renderer.atomicCounter());
+    glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(GLuint), &vertex_count);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
     EXPECT_GT(vertex_count, 0u)
         << "MC pipeline generated 0 vertices for an 8-particle 2x2x2 cube.\n"
