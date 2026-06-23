@@ -241,7 +241,20 @@ SDL3Context::SDL3Context(int width, int height, const char* title, bool visible)
         return;
     }
 
+    // On non-Apple platforms, try GL 4.3 first so GLAD_GL_VERSION_4_3 is set
+    // and compute shaders are available. macOS Core Profile caps at 4.1.
+    // Fall back to 4.1 on hardware that cannot provide 4.3.
+#ifndef __APPLE__
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     gl_context_ = SDL_GL_CreateContext(window_);
+    if (gl_context_ == nullptr) {
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+        gl_context_ = SDL_GL_CreateContext(window_);
+    }
+#else
+    gl_context_ = SDL_GL_CreateContext(window_);
+#endif
     if (gl_context_ == nullptr) {
         std::cerr << "SDL_GL_CreateContext failed: " << SDL_GetError() << '\n';
         SDL_DestroyWindow(window_);

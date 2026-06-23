@@ -20,10 +20,13 @@ layout(std430, binding = 3) readonly buffer ParticleBuffer {
     vec4 particles[]; // xyz = position, w = category
 };
 
-// MC lookup tables (uploaded once as UBO by MCRenderer)
-layout(std140, binding = 4) uniform MCTables {
+// MC lookup tables (uploaded once as SSBO by MCRenderer).
+// std430 packs ints at 4-byte stride, matching the CPU upload.
+// std140 would pad each int to 16 bytes (69,632 bytes total),
+// exceeding GL_MAX_UNIFORM_BLOCK_SIZE (65,536 on NVIDIA) and causing link failure.
+layout(std430, binding = 4) readonly buffer MCTables {
     int edge_table[256];
-    int tri_table[256 * 16]; // std140 requires flattening the 2D array
+    int tri_table[256 * 16]; // flattened from constexpr int tri_table[256][16]
 };
 
 // Uniforms (same as density_field.comp plus MC-specific)

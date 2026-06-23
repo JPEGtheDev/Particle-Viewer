@@ -45,9 +45,11 @@ ComputeShader::ComputeShader(const char* path)
 
     glGetProgramiv(program_, GL_LINK_STATUS, &ok);
     if (!ok) {
-        char log[512];
-        glGetProgramInfoLog(program_, 512, nullptr, log);
+        char log[2048];
+        glGetProgramInfoLog(program_, 2048, nullptr, log);
         std::cerr << "ComputeShader link error (" << path << "):\n" << log << '\n';
+        glDeleteProgram(program_);
+        program_ = 0; // zero out so program() == 0 signals failure to callers
     }
 
     glDeleteShader(shader);
@@ -201,8 +203,8 @@ void MCRenderer::render(const std::vector<glm::vec4>& particles, const glm::vec3
         glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 2, atomic_counter_);
         // marching_cubes.comp binding 3: ParticleBuffer SSBO (read, for color blending)
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, particle_ssbo);
-        // marching_cubes.comp binding 4: MCTables UBO (read)
-        glBindBufferBase(GL_UNIFORM_BUFFER, 4, table_ubo_);
+        // marching_cubes.comp binding 4: MCTables SSBO (read, std430)
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, table_ubo_);
 
         glUniform1i(glGetUniformLocation(mc_prog, "grid_size"), grid_res_);
         glUniform3fv(glGetUniformLocation(mc_prog, "grid_origin"), 1, glm::value_ptr(grid_origin));
@@ -281,9 +283,12 @@ void MCRenderer::uploadMCTables()
     const GLsizeiptr edge_size = 256 * sizeof(int);
     const GLsizeiptr tri_size = 256 * 16 * sizeof(int);
 
-    glBindBuffer(GL_UNIFORM_BUFFER, table_ubo_);
-    glBufferData(GL_UNIFORM_BUFFER, edge_size + tri_size, nullptr, GL_STATIC_DRAW);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, edge_size, mc_tables::edge_table);
-    glBufferSubData(GL_UNIFORM_BUFFER, edge_size, tri_size, flat_tri);
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    // MCTables is an SSBO (std430, binding 4). std430 packs ints at 4-byte stride,
+    // matching this CPU upload. std140 would require 16-byte stride (69,632 bytes
+    // total), exceeding GL_MAX_UNIFORM_BLOCK_SIZE on NVIDIA and corrupting table reads.
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, table_ubo_);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, edge_size + tri_size, nullptr, GL_STATIC_DRAW);
+    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, edge_size, mc_tables::edge_table);
+    glBufferSubData(GL_SHADER_STORAGE_BUFFER, edge_size, tri_size, flat_tri);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
