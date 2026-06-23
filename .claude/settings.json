@@ -1,13 +1,14 @@
 {
+  "enabledPlugins": {
+    "story-to-ship@story-to-ship": true
+  },
   "extraKnownMarketplaces": {
     "story-to-ship": {
       "source": {
         "source": "github",
         "repo": "jpegthedev/story-to-ship"
-      }
+      },
+      "autoUpdate": true
     }
-  },
-  "enabledPlugins": {
-    "story-to-ship@story-to-ship": true
   }
 }
