@@ -224,6 +224,82 @@ TEST(MCRenderGallery, TwoParticlesMerging)
         << "Failed to render/save two-particle merge";
 
     std::cout << "Two particles merging saved: " << out << "\n";
+
+    // Side view: camera along +Z looking at origin.
+    // Particles are separated in X, so this angle shows them side-by-side with the
+    // red-to-blue gradient and merge bridge clearly visible in the centre.
+    glm::mat4 view_side = glm::lookAt(glm::vec3(0.0f, 0.5f, 4.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    const std::string out_side = "artifacts/gallery_two_particles_side.png";
+    ASSERT_TRUE(renderAndSave(gc, particles, bmin, voxel_size, ir, iso, grid_res, proj, view_side, out_side))
+        << "Failed to render/save two-particle merge side view";
+
+    std::cout << "Two particles side view saved: " << out_side << "\n";
+}
+
+// ---------------------------------------------------------------------------
+// Bridging effect sweep -- red (category 0) + blue (category 1), 9 separation
+// steps from clearly separate down to fully merged.  Matches the reference
+// montage showing: separate spheres -> bridge formation -> color mix.
+//
+// With a truncated-Gaussian density field (hard cutoff at ir), the merge
+// threshold is d = 2*ir = 1.0.  Steps below 1.0 show the bridge forming.
+// Camera is a side view (along Z) so left=red and right=blue are clear.
+// ---------------------------------------------------------------------------
+TEST(MCRenderGallery, BridgingEffectSweep)
+{
+    GalleryContext gc;
+    if (!gc.init("Gallery: Bridging Effect Sweep")) {
+        GTEST_SKIP() << "No GL 4.3 context";
+    }
+
+    const float ir = 0.5f;
+    const float iso = 0.5f;
+    const int grid_res = 64;
+
+    // Side view: camera along +Z, particles separated in X.
+    // Framed for the widest case (d=2.0, surface extends to ~+-1.5 in X).
+    glm::mat4 proj = glm::perspective(
+        glm::radians(45.0f),
+        static_cast<float>(VRTestConfig::RENDER_WIDTH) / static_cast<float>(VRTestConfig::RENDER_HEIGHT), 0.1f, 100.0f);
+    glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.3f, 4.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+    // Merge threshold with truncated Gaussian = 2*ir = 1.0.
+    // Steps straddle the threshold to show: separate -> touching -> bridge -> merged.
+    struct Step
+    {
+        float d;
+        const char* label;
+    };
+    const Step steps[] = {
+        {2.0f, "start"}, // separate, large gap
+        {1.5f, "step1"}, // separate, narrowing gap
+        {1.1f, "step2"}, // just barely separate
+        {1.0f, "step3"}, // surfaces touching (threshold)
+        {0.8f, "step4"}, // bridge just formed
+        {0.6f, "step5"}, // clear bridge
+        {0.4f, "step6"}, // wide bridge, colour mixing
+        {0.2f, "step7"}, // nearly round
+        {0.0f, "end"},   // fully merged
+    };
+
+    for (const auto& s : steps) {
+        std::vector<glm::vec4> particles = {
+            {-s.d * 0.5f, 0.0f, 0.0f, 0.0f}, // red
+            {s.d * 0.5f, 0.0f, 0.0f, 1.0f},  // blue
+        };
+
+        // Pad by ir to ensure the surface fits inside the grid.
+        glm::vec3 bmin = bboxMin(particles) - glm::vec3(ir);
+        glm::vec3 bmax = bboxMax(particles) + glm::vec3(ir);
+        glm::vec3 ext = bmax - bmin;
+        float voxel_size = glm::max(ext.x, glm::max(ext.y, ext.z)) / static_cast<float>(grid_res);
+
+        const std::string out = std::string("artifacts/gallery_bridge_") + s.label + ".png";
+        ASSERT_TRUE(renderAndSave(gc, particles, bmin, voxel_size, ir, iso, grid_res, proj, view, out))
+            << "Failed to render bridge step: " << s.label;
+
+        std::cout << "Bridge sweep [" << s.label << "] sep=" << s.d << " saved: " << out << "\n";
+    }
 }
 
 #endif // !__APPLE__

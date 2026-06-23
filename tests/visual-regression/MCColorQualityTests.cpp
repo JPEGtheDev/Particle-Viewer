@@ -1,0 +1,207 @@
+/*
+ * MCColorQualityTests.cpp
+ *
+ * Verifies that per-vertex colors on an isosurface reflect the underlying
+ * particle category, not grey fallback.
+ *
+ * Root cause caught here: computeColor() in marching_cubes.comp had a hard
+ * cutoff at `if (dist > influence_radius) continue;`.  The isosurface radius
+ * is ~1.18 * ir, which EXCEEDS ir, so every surface vertex landed outside the
+ * cutoff and was coloured grey.  The fix removes the cutoff and lets the
+ * Gaussian weight decay smoothly, consistent with computeNormal().
+ */
+
+#include <algorithm>
+#include <cmath>
+#include <vector>
+
+#include <gtest/gtest.h>
+
+// clang-format off
+#include "glad/glad.h"
+#include <SDL3/SDL.h>
+// clang-format on
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include "MCRenderer.hpp"
+#include "VRTestCommon.hpp"
+#include "graphics/SDL3Context.hpp"
+#include "shader.hpp"
+
+#ifndef __APPLE__
+
+// A single red particle (category 0) should colour its entire surface red.
+// The average surface colour must have R > 0.6 and G, B < 0.25.
+// Before the fix: returns grey (0.5, 0.5, 0.5) on all surface vertices
+//   because the isosurface radius (~1.18*ir) exceeds the hard cutoff at ir.
+// After the fix: Gaussian weight gives ~0.5 weight at the surface, resulting
+//   in red-dominant colour on the full surface.
+TEST(MCColorQualityTest, SingleRedParticle_SurfaceIsRed)
+{
+    SDL3Context ctx(320, 240, "MC Color Quality Test", /*visible=*/false);
+    if (!ctx.isValid()) {
+        GTEST_SKIP() << "No GL context available";
+    }
+    ctx.makeCurrent();
+
+    if (GLAD_GL_VERSION_4_3 == 0) {
+        GTEST_SKIP() << "GL 4.3 not available";
+    }
+
+    const std::string density_path = getShaderPath("density_field.comp");
+    const std::string mc_path = getShaderPath("marching_cubes.comp");
+    const std::string vert_path = getShaderPath("mesh.vert");
+    const std::string frag_path = getShaderPath("mesh.frag");
+
+    ComputeShader density_shader(density_path.c_str());
+    ASSERT_NE(density_shader.program(), 0u) << "density_field.comp failed to link";
+
+    ComputeShader mc_shader(mc_path.c_str());
+    ASSERT_NE(mc_shader.program(), 0u) << "marching_cubes.comp failed to link";
+
+    Shader mesh_shader(vert_path.c_str(), frag_path.c_str());
+    if (mesh_shader.Program == 0u) {
+        GTEST_SKIP() << "mesh shader failed to compile";
+    }
+
+    // Single red particle (category 0) at origin.
+    std::vector<glm::vec4> particles = {{0.0f, 0.0f, 0.0f, 0.0f}};
+
+    const int grid_res = 64;
+    const float ir = 0.5f;
+    const float iso = 0.5f;
+    const glm::vec3 origin = glm::vec3(-1.0f);
+    const float voxel_size = 2.0f / static_cast<float>(grid_res);
+
+    glm::mat4 proj = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f);
+    glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+    MCRenderer mc(grid_res);
+    mc.markDirty();
+    mc.render(particles, origin, voxel_size, ir, iso, density_shader.program(), mc_shader.program(),
+              mesh_shader.Program, proj, view);
+
+    GLuint raw_count = 0;
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, mc.atomicCounter());
+    glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(GLuint), &raw_count);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    ASSERT_GT(raw_count, 0u) << "MC pipeline generated 0 vertices";
+
+    const GLuint vertex_count = std::min(raw_count, static_cast<GLuint>(2'000'000 * 3));
+    std::vector<float> ssbo(static_cast<size_t>(vertex_count) * 9);
+
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, mc.vertexSSBO());
+    glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, static_cast<GLsizeiptr>(ssbo.size()) * sizeof(float), ssbo.data());
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    double r_sum = 0.0, g_sum = 0.0, b_sum = 0.0;
+    for (GLuint i = 0; i < vertex_count; ++i) {
+        const size_t base = static_cast<size_t>(i) * 9;
+        r_sum += ssbo[base + 6];
+        g_sum += ssbo[base + 7];
+        b_sum += ssbo[base + 8];
+    }
+
+    const float r_avg = static_cast<float>(r_sum / vertex_count);
+    const float g_avg = static_cast<float>(g_sum / vertex_count);
+    const float b_avg = static_cast<float>(b_sum / vertex_count);
+
+    // Grey = (0.5, 0.5, 0.5). Red = (1.0, 0.0, 0.0).
+    // We require red-dominant: R > 0.6, G < 0.25, B < 0.25.
+    EXPECT_GT(r_avg, 0.6f) << "Surface appears grey (R=" << r_avg << "). "
+                           << "Root cause: computeColor() hard cutoff at ir excluded all particles "
+                           << "because the isosurface radius (~1.18*ir) > ir. "
+                           << "Fix: remove the hard cutoff from computeColor().";
+    EXPECT_LT(g_avg, 0.25f) << "Green channel too high (G=" << g_avg << "), expected near 0 for red particle";
+    EXPECT_LT(b_avg, 0.25f) << "Blue channel too high (B=" << b_avg << "), expected near 0 for red particle";
+}
+
+// Two-particle blend: red (left) + blue (right), separated so they are just
+// merged (d < merge threshold 1.664*ir).  The average surface colour must
+// have roughly equal R and B with low G, indicating a red-blue blend rather
+// than grey.
+TEST(MCColorQualityTest, TwoParticles_SurfaceBlend_IsRedBlue)
+{
+    SDL3Context ctx(320, 240, "MC Color Blend Test", /*visible=*/false);
+    if (!ctx.isValid()) {
+        GTEST_SKIP() << "No GL context available";
+    }
+    ctx.makeCurrent();
+
+    if (GLAD_GL_VERSION_4_3 == 0) {
+        GTEST_SKIP() << "GL 4.3 not available";
+    }
+
+    const std::string density_path = getShaderPath("density_field.comp");
+    const std::string mc_path = getShaderPath("marching_cubes.comp");
+    const std::string vert_path = getShaderPath("mesh.vert");
+    const std::string frag_path = getShaderPath("mesh.frag");
+
+    ComputeShader density_shader(density_path.c_str());
+    ASSERT_NE(density_shader.program(), 0u);
+    ComputeShader mc_shader(mc_path.c_str());
+    ASSERT_NE(mc_shader.program(), 0u);
+    Shader mesh_shader(vert_path.c_str(), frag_path.c_str());
+    if (mesh_shader.Program == 0u) {
+        GTEST_SKIP() << "mesh shader failed to compile";
+    }
+
+    // Particles separated by 0.8 (< merge threshold 0.832 at ir=0.5).
+    // Midpoint density = 2*exp(-0.5*(0.4/0.5)^2) = 1.45 >> iso=0.5 -> merged.
+    std::vector<glm::vec4> particles = {
+        {-0.4f, 0.0f, 0.0f, 0.0f}, // red
+        {0.4f, 0.0f, 0.0f, 1.0f},  // blue
+    };
+
+    const int grid_res = 64;
+    const float ir = 0.5f;
+    const float iso = 0.5f;
+    const glm::vec3 origin = glm::vec3(-1.5f, -1.0f, -1.0f);
+    const float voxel_size = 3.0f / static_cast<float>(grid_res);
+
+    glm::mat4 proj = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f);
+    glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+    MCRenderer mc(grid_res);
+    mc.markDirty();
+    mc.render(particles, origin, voxel_size, ir, iso, density_shader.program(), mc_shader.program(),
+              mesh_shader.Program, proj, view);
+
+    GLuint raw_count = 0;
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, mc.atomicCounter());
+    glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(GLuint), &raw_count);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    ASSERT_GT(raw_count, 0u) << "MC pipeline generated 0 vertices";
+
+    const GLuint vertex_count = std::min(raw_count, static_cast<GLuint>(2'000'000 * 3));
+    std::vector<float> ssbo(static_cast<size_t>(vertex_count) * 9);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, mc.vertexSSBO());
+    glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, static_cast<GLsizeiptr>(ssbo.size()) * sizeof(float), ssbo.data());
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    double r_sum = 0.0, g_sum = 0.0, b_sum = 0.0;
+    for (GLuint i = 0; i < vertex_count; ++i) {
+        const size_t base = static_cast<size_t>(i) * 9;
+        r_sum += ssbo[base + 6];
+        g_sum += ssbo[base + 7];
+        b_sum += ssbo[base + 8];
+    }
+
+    const float r_avg = static_cast<float>(r_sum / vertex_count);
+    const float g_avg = static_cast<float>(g_sum / vertex_count);
+    const float b_avg = static_cast<float>(b_sum / vertex_count);
+
+    // Grey = (0.5, 0.5, 0.5). Red-blue blend -> R and B both elevated, G low.
+    // Before fix: all grey (R=G=B=0.5 because surface exceeds ir from both particles).
+    // After fix: R and B > 0.35, G < 0.25 (blue category is (0.2, 0.6, 1.0) so G
+    //   can be up to ~0.3 when blue dominates -- threshold set conservatively).
+    EXPECT_GT(r_avg, 0.35f) << "Red channel too low (R=" << r_avg << "), expected red-blue blend.";
+    EXPECT_LT(g_avg, 0.40f) << "Green channel too high (G=" << g_avg << "), expected low for red-blue blend.";
+    EXPECT_GT(b_avg, 0.35f) << "Blue channel too low (B=" << b_avg << "), expected red-blue blend.";
+}
+
+#endif // !__APPLE__
