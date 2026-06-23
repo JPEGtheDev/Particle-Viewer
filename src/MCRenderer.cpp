@@ -107,12 +107,15 @@ void MCRenderer::allocate(int grid_res)
                  GL_DYNAMIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-    // --- Atomic counter buffer (vertex count written by marching_cubes.comp) ---
+    // --- Vertex counter buffer (vertex count written by marching_cubes.comp) ---
+    // Bound as GL_SHADER_STORAGE_BUFFER (binding 2) so the shader can use
+    // atomicAdd(vertex_counter, 3u), which is available from GLSL 4.30.
+    // (atomicCounterAdd on atomic_uint requires GLSL 4.60.)
     glGenBuffers(1, &atomic_counter_);
-    glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomic_counter_);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, atomic_counter_);
     GLuint zero = 0;
-    glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(GLuint), &zero, GL_DYNAMIC_DRAW);
-    glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(GLuint), &zero, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
     // --- MC lookup table UBO ---
     glGenBuffers(1, &table_ubo_);
@@ -186,11 +189,11 @@ void MCRenderer::render(const std::vector<glm::vec4>& particles, const glm::vec3
         glDispatchCompute(groups, groups, groups);
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
-        // --- Step 3: Reset atomic counter to 0 before MC dispatch ---
+        // --- Step 3: Reset vertex counter to 0 before MC dispatch ---
         const GLuint zero = 0;
-        glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomic_counter_);
-        glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), &zero);
-        glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, atomic_counter_);
+        glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(GLuint), &zero);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
         // --- Step 4: Dispatch marching_cubes.comp ---
         glUseProgram(mc_prog);
@@ -199,8 +202,8 @@ void MCRenderer::render(const std::vector<glm::vec4>& particles, const glm::vec3
         glBindImageTexture(0, density_tex_, 0, GL_TRUE, 0, GL_READ_ONLY, GL_R32F);
         // marching_cubes.comp binding 1: VertexBuffer SSBO (write)
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, vertex_ssbo_);
-        // marching_cubes.comp binding 2: atomic_uint vertex_counter
-        glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 2, atomic_counter_);
+        // marching_cubes.comp binding 2: VertexCounterBuffer SSBO (uint vertex_counter)
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, atomic_counter_);
         // marching_cubes.comp binding 3: ParticleBuffer SSBO (read, for color blending)
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, particle_ssbo);
         // marching_cubes.comp binding 4: MCTables SSBO (read, std430)
@@ -217,11 +220,11 @@ void MCRenderer::render(const std::vector<glm::vec4>& particles, const glm::vec3
         glDispatchCompute(groups, groups, groups);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-        // --- Step 5: Read vertex count from atomic counter ---
-        glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomic_counter_);
+        // --- Step 5: Read vertex count from counter SSBO ---
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, atomic_counter_);
         GLuint count = 0;
-        glGetBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), &count);
-        glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);
+        glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(GLuint), &count);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
         vertex_count_ = std::min(count, static_cast<GLuint>(kMaxVertices));
 
@@ -248,15 +251,14 @@ void MCRenderer::render(const std::vector<glm::vec4>& particles, const glm::vec3
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, vertex_ssbo_);
 
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
+    // No back-face culling: MC tri_table winding is inconsistent across cube
+    // configurations; mesh.frag uses abs(dot(N,L)) to shade both sides correctly.
 
     // VAO-less draw: mesh.vert uses gl_VertexID to index into the SSBO
     glBindVertexArray(vao_);
     glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertex_count_));
     glBindVertexArray(0);
 
-    glDisable(GL_CULL_FACE);  // restore for subsequent passes
     glDisable(GL_DEPTH_TEST); // restore: MCRenderer enables depth test only during mesh draw
 }
 

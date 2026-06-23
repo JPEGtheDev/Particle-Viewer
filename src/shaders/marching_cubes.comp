@@ -12,8 +12,13 @@ layout(std430, binding = 1) writeonly buffer VertexBuffer {
     float vertices[]; // packed: [px py pz nx ny nz cr cg cb] * vertex_count
 };
 
-// Atomic counter: tracks how many vertices have been written
-layout(binding = 2) uniform atomic_uint vertex_counter;
+// Vertex counter: tracks how many vertices have been written.
+// Declared as a plain SSBO uint so atomicAdd(counter, 3u) can claim all 3 slots
+// for a triangle atomically (atomicCounterAdd requires GLSL 4.60; atomicAdd on
+// SSBO members is available from GLSL 4.30).
+layout(std430, binding = 2) buffer VertexCounterBuffer {
+    uint vertex_counter;
+};
 
 // Particle data for color blending (same particles as density computation)
 layout(std430, binding = 3) readonly buffer ParticleBuffer {
@@ -48,28 +53,29 @@ vec3 interpEdge(vec3 p1, vec3 p2, float v1, float v2)
     return p1 + t * (p2 - p1);
 }
 
-// Compute outward-pointing world-space normal via central finite differences on the density field.
-// The density gradient points INWARD (toward higher density), so we negate it.
+// Compute outward-pointing world-space normal analytically from particle positions.
+//
+// The density field is rho(pos) = sum_i exp(-0.5 * |pos - p_i|^2 / ir^2).
+// Its gradient is grad_rho = sum_i -(pos - p_i)/ir^2 * rho_i.
+// The gradient points INWARD (toward the nearest particles); negate for outward.
+//
+// This gives exact normals for the underlying Gaussian field regardless of grid
+// resolution -- no discrete central-difference error.  The particle SSBO is
+// already bound for color blending, so re-using it has no extra memory cost.
 vec3 computeNormal(vec3 world_pos)
 {
-    vec3 fgrid = (world_pos - grid_origin) / voxel_size;
-    ivec3 tc   = ivec3(fgrid);
-    int gs     = grid_size - 1;
-
-    ivec3 tc_x0 = clamp(tc + ivec3(-1, 0, 0), ivec3(0), ivec3(gs));
-    ivec3 tc_x1 = clamp(tc + ivec3(1, 0, 0), ivec3(0), ivec3(gs));
-    ivec3 tc_y0 = clamp(tc + ivec3(0, -1, 0), ivec3(0), ivec3(gs));
-    ivec3 tc_y1 = clamp(tc + ivec3(0, 1, 0), ivec3(0), ivec3(gs));
-    ivec3 tc_z0 = clamp(tc + ivec3(0, 0, -1), ivec3(0), ivec3(gs));
-    ivec3 tc_z1 = clamp(tc + ivec3(0, 0, 1), ivec3(0), ivec3(gs));
-
-    float grad_x = imageLoad(density_field, tc_x1).r - imageLoad(density_field, tc_x0).r;
-    float grad_y = imageLoad(density_field, tc_y1).r - imageLoad(density_field, tc_y0).r;
-    float grad_z = imageLoad(density_field, tc_z1).r - imageLoad(density_field, tc_z0).r;
-
-    vec3 grad = vec3(grad_x, grad_y, grad_z);
+    if (influence_radius <= 0.0) {
+        return vec3(0.0, 1.0, 0.0);
+    }
+    float ir2 = influence_radius * influence_radius;
+    vec3 grad = vec3(0.0);
+    for (int i = 0; i < particle_count; ++i) {
+        vec3  diff = world_pos - particles[i].xyz;
+        float rho  = exp(-0.5 * dot(diff, diff) / ir2);
+        grad += -(diff / ir2) * rho;
+    }
     if (length(grad) < 1e-6) {
-        return vec3(0.0, 1.0, 0.0); // arbitrary up-vector to avoid degenerate lighting when gradient magnitude is near-zero
+        return vec3(0.0, 1.0, 0.0);
     }
     // Negate: gradient points inward (toward high density), we want outward
     return normalize(-grad);
@@ -211,18 +217,25 @@ void main()
         // For each of the 3 vertices of this triangle
         vec3 verts[3] = vec3[](edge_verts[idx0], edge_verts[idx1], edge_verts[idx2]);
 
-        for (int v = 0; v < 3; ++v) {
-            // Atomically claim a vertex slot
-            uint slot = atomicCounterIncrement(vertex_counter);
-            if (slot >= uint(max_vertices)) {
-                return; // SSBO overflow: clamp, do not crash
-            }
+        // Claim all 3 vertex slots for this triangle in one atomic operation.
+        // Using 3 separate atomicCounterIncrement calls would allow other invocations
+        // to interleave their writes between slot 0 and slot 1 of this triangle.
+        // glDrawArrays(GL_TRIANGLES) then forms triangles from consecutive SSBO entries
+        // that came from entirely different cubes -- producing the crumpled/spiky look.
+        uint base_slot = atomicAdd(vertex_counter, 3u);
+        if (base_slot + 3u > uint(max_vertices)) {
+            return; // SSBO overflow: clamp, do not crash
+        }
 
+        for (int v = 0; v < 3; ++v) {
             vec3 pos    = verts[v];
             vec3 normal = computeNormal(pos);
             vec3 color  = computeColor(pos);
 
-            uint base          = slot * 9u;
+            // Reverse write order (2-v) to produce CCW winding for OpenGL GL_CULL_FACE(GL_BACK).
+            // The MC tri_table winds triangles CW when viewed from outside the isosurface,
+            // so we reverse here to correct the front-face convention.
+            uint base          = (base_slot + uint(2 - v)) * 9u;
             vertices[base + 0u] = pos.x;
             vertices[base + 1u] = pos.y;
             vertices[base + 2u] = pos.z;
