@@ -401,8 +401,10 @@ MenuActions renderControllerPanel(MenuState& state)
             SDL_snprintf(ir_label, sizeof(ir_label), "Radius: %.1f", state.influence_radius);
             item(ir_label, true, incrementRadius);
 
-            // Live/Freeze toggle (index 8): always shown when MC is active
-            const char* lf_label = (state.live_freeze == LiveFreezeMode::Live) ? "Live" : "Freeze";
+            // Sync/Freeze toggle (index 8):
+            //   "Sync: ON"  = mesh recomputes when the simulation frame changes.
+            //   "Sync: OFF" = mesh is frozen; use "Refresh Mesh" to force a recompute.
+            const char* lf_label = (state.live_freeze == LiveFreezeMode::Live) ? "Sync: ON" : "Sync: OFF";
             item(lf_label, true, toggleLiveFreeze);
 
             // Refresh Mesh button (index 9): only shown in Freeze mode
@@ -575,4 +577,36 @@ MenuActions renderControllerPanel(MenuState& state)
 
     ImGui::End();
     return actions;
+}
+
+bool adjustMcParam(MenuState& state, bool left)
+{
+    if (state.panel_layer != PanelLayer::RenderMode || state.current_render_mode != kRenderModeMC) {
+        return false;
+    }
+
+    constexpr int kIsoItem = 6;
+    constexpr int kRadiusItem = 7;
+
+    if (state.selected_panel_item == kIsoItem) {
+        constexpr float kStep = 0.01f;
+        if (left) {
+            state.iso_value = std::max(0.0f, state.iso_value - kStep);
+        } else {
+            state.iso_value = std::min(2.0f, state.iso_value + kStep);
+        }
+        return true;
+    }
+
+    if (state.selected_panel_item == kRadiusItem) {
+        constexpr float kStep = 0.1f;
+        if (left) {
+            state.influence_radius = std::max(0.1f, state.influence_radius - kStep);
+        } else {
+            state.influence_radius = std::min(10.0f, state.influence_radius + kStep);
+        }
+        return true;
+    }
+
+    return false;
 }

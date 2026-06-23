@@ -563,9 +563,15 @@ void ViewerApp::run()
             if (!loaded) {
                 set_->readPosVelFile(cur_frame_, part_, false);
             }
-            // Mark MC mesh dirty on new timestep — Live mode only
+            // Mark MC mesh dirty only when the simulation frame has actually changed.
+            // Sync mode (Live) tracks frame changes; Freeze mode never auto-updates.
+            // Checking cur_frame_ != mc_last_synced_frame_ prevents re-running the
+            // expensive compute pipeline every render frame for the same data.
             if (mc_renderer_ && menu_state_.live_freeze == LiveFreezeMode::Live && part_ && part_->n > 0) {
-                mc_renderer_->markDirty();
+                if (cur_frame_ != mc_last_synced_frame_) {
+                    mc_renderer_->markDirty();
+                    mc_last_synced_frame_ = cur_frame_;
+                }
             }
         }
         // COM prefetch — only when COM lock is active, auto-compute is enabled,
@@ -1070,11 +1076,20 @@ void ViewerApp::processGamepadInput()
             toggleControllerPanel();
         }
     }
-    // MenuMode navigation — D-pad repeat + A-confirm
+    // MenuMode navigation -- D-pad repeat + A-confirm
     if (current_mode_ == InputMode::MenuMode) {
         processMenuNavigation();
         if (gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_SOUTH) && menu_state_.selected_panel_item >= 0) {
             menu_state_.confirm_panel_item = true;
+        }
+        // D-pad left/right: adjust the currently selected MC parameter (Iso or Radius).
+        // Returns true when a value changed; caller then marks renderer dirty.
+        bool dpad_left = gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_DPAD_LEFT);
+        bool dpad_right = gamepad_.isButtonJustPressed(SDL_GAMEPAD_BUTTON_DPAD_RIGHT);
+        if ((dpad_left || dpad_right) && adjustMcParam(menu_state_, dpad_left)) {
+            if (mc_renderer_) {
+                mc_renderer_->markDirty();
+            }
         }
     }
 }

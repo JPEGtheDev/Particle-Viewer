@@ -269,6 +269,9 @@ class ViewerApp
     glm::vec3 mc_bbox_min_ = glm::vec3(0.0f);
     float mc_voxel_size_ = 0.0f;
     float mc_scaled_ir_ = 0.0f;
+    // Tracks which simulation frame the MC mesh was last computed for.
+    // Live/Sync mode marks dirty only when cur_frame_ differs from this value.
+    long mc_last_synced_frame_ = -1;
 
     // ============================================
     // Timing

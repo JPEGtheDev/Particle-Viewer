@@ -150,6 +150,20 @@ MenuActions renderMainMenu(MenuState& state);
  */
 MenuActions renderControllerPanel(MenuState& state);
 
+/*
+ * Adjusts the currently selected MC parameter (iso_value or influence_radius)
+ * by one step in the specified direction based on D-pad left/right input.
+ *
+ * Returns true when a parameter value was changed (caller should then set
+ * mc_params_changed = true in MenuActions and markDirty on the renderer).
+ * Returns false when the selected item is not an adjustable parameter.
+ *
+ * Only acts when panel_layer == RenderMode and current_render_mode == kRenderModeMC.
+ * Item 6 = Iso (step 0.01, clamped [0.0, 2.0]).
+ * Item 7 = Radius (step 0.1, clamped [0.1, 10.0]).
+ */
+bool adjustMcParam(MenuState& state, bool left);
+
 inline const char* getMarchingCubesLabel(bool compute_available)
 {
     return compute_available ? "Marching Cubes" : "Marching Cubes (unavailable)";
