@@ -358,8 +358,8 @@ void ViewerApp::run()
                         mc_bbox_min_ = glm::min(mc_bbox_min_, pos);
                         bbox_max = glm::max(bbox_max, pos);
                     }
-                    mc_bbox_min_ -= glm::vec3(mc_scaled_ir_);
-                    bbox_max += glm::vec3(mc_scaled_ir_);
+                    mc_bbox_min_ -= glm::vec3(mc_scaled_ir_ * 2.0f);
+                    bbox_max += glm::vec3(mc_scaled_ir_ * 2.0f);
 
                     const glm::vec3 extent = bbox_max - mc_bbox_min_;
                     const float grid_f = static_cast<float>(mc_renderer_->gridRes());

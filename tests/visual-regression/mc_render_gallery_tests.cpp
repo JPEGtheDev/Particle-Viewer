@@ -186,6 +186,78 @@ TEST(MCRenderGallery, RainbowCube_64kParticles)
 }
 
 // ---------------------------------------------------------------------------
+// Rainbow cube -- all 6 orthogonal sides + 2 diagonals.
+// Same particle lattice as RainbowCube_64kParticles; rendered from 8 camera
+// positions to expose any side-specific surface artifacts.
+// Camera distance 5.5, FOV 45 deg -> coverage = 5.5*tan(22.5) = 2.28 > cube
+// half-extent 1.96 (39*0.075/2 + ir=0.5), so the full cube fits in frame.
+// ---------------------------------------------------------------------------
+TEST(MCRenderGallery, RainbowCube_AllSides)
+{
+    GalleryContext gc;
+    if (!gc.init("Gallery: Rainbow Cube All Sides")) {
+        GTEST_SKIP() << "No GL 4.3 context";
+    }
+
+    std::vector<glm::vec4> particles;
+    particles.reserve(64000);
+    constexpr int DIM = 40;
+    constexpr float SCALE = 0.075f;
+    constexpr float HALF = (DIM - 1) / 2.0f;
+    for (int i = 0; i < DIM; ++i) {
+        for (int j = 0; j < DIM; ++j) {
+            for (int k = 0; k < DIM; ++k) {
+                float x = (static_cast<float>(i) - HALF) * SCALE;
+                float y = (static_cast<float>(j) - HALF) * SCALE;
+                float z = (static_cast<float>(k) - HALF) * SCALE;
+                particles.emplace_back(x, y, z, 500.0f);
+            }
+        }
+    }
+
+    const float ir = 0.5f;
+    const float iso = 0.58f;
+    const int grid_res = 64;
+
+    glm::vec3 bmin = bboxMin(particles) - glm::vec3(ir * 2.0f);
+    glm::vec3 bmax = bboxMax(particles) + glm::vec3(ir * 2.0f);
+    glm::vec3 ext = bmax - bmin;
+    float voxel_size = glm::max(ext.x, glm::max(ext.y, ext.z)) / static_cast<float>(grid_res);
+
+    glm::mat4 proj = glm::perspective(
+        glm::radians(45.0f),
+        static_cast<float>(VRTestConfig::RENDER_WIDTH) / static_cast<float>(VRTestConfig::RENDER_HEIGHT), 0.1f, 100.0f);
+
+    const glm::vec3 target(0.0f);
+    constexpr float D = 5.5f;
+
+    struct View
+    {
+        const char* label;
+        glm::vec3 eye;
+        glm::vec3 up;
+    };
+    const View views[] = {
+        {"front", glm::vec3(0, 0, D), glm::vec3(0, 1, 0)},
+        {"back", glm::vec3(0, 0, -D), glm::vec3(0, 1, 0)},
+        {"left", glm::vec3(-D, 0, 0), glm::vec3(0, 1, 0)},
+        {"right", glm::vec3(D, 0, 0), glm::vec3(0, 1, 0)},
+        {"top", glm::vec3(0, D, 0), glm::vec3(0, 0, -1)},
+        {"bottom", glm::vec3(0, -D, 0), glm::vec3(0, 0, 1)},
+        {"diag_a", glm::vec3(4.7f, 6.1f, 5.4f), glm::vec3(0, 1, 0)},
+        {"diag_b", glm::vec3(-4.7f, 6.1f, -5.4f), glm::vec3(0, 1, 0)},
+    };
+
+    for (const auto& v : views) {
+        glm::mat4 view = glm::lookAt(v.eye, target, v.up);
+        const std::string out = std::string("artifacts/gallery_cube_") + v.label + ".png";
+        ASSERT_TRUE(renderAndSave(gc, particles, bmin, voxel_size, ir, iso, grid_res, proj, view, out))
+            << "Failed to render cube side: " << v.label;
+        std::cout << "Cube side [" << v.label << "] saved: " << out << "\n";
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Two particles merging -- red (category 0) left, blue (category 1) right.
 // influence_radius chosen so their density fields overlap at the midpoint,
 // producing a merged isosurface with a color gradient from red to blue.
