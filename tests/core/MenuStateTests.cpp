@@ -11,10 +11,10 @@ TEST(MenuStateTest, DefaultConstructed_GridResolutionIsGrid128)
     EXPECT_EQ(state.grid_resolution, GridResolution::Grid128);
 }
 
-TEST(MenuStateTest, DefaultConstructed_IsoValueIs0Point5)
+TEST(MenuStateTest, DefaultConstructed_IsoValueIs0Point1)
 {
     MenuState state;
-    EXPECT_FLOAT_EQ(state.iso_value, 0.5f);
+    EXPECT_FLOAT_EQ(state.iso_value, 0.1f);
 }
 
 TEST(MenuStateTest, DefaultConstructed_InfluenceRadiusIs2Point0)

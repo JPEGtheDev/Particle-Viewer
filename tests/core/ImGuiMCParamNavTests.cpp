@@ -127,3 +127,13 @@ TEST(MCParamNav, NonAdjustableItem_ReturnsFalse)
     MenuState s = mcState(3);
     EXPECT_FALSE(adjustMcParam(s, false));
 }
+
+// ---------------------------------------------------------------------------
+// Default state
+// ---------------------------------------------------------------------------
+
+TEST(MCParamNav, DefaultIsoValue_IsGradual)
+{
+    MenuState s;
+    EXPECT_NEAR(s.iso_value, 0.1f, 1e-4f);
+}

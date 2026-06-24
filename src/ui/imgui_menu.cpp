@@ -367,8 +367,8 @@ MenuActions renderControllerPanel(MenuState& state)
         item("Back", true, goBack);
 
         // When MC is the active render mode, show parameter controls below the mode items.
-        // Each item() call adds a navigable row; item indices 3-8 cover the MC parameters;
-        // index 9 (Refresh Mesh) shown in Freeze mode only.
+        // D-pad navigable indices: 3=Grid64, 4=Grid128, 5=Grid256, 6=Iso, 7=Radius, 8=Sync.
+        // Index 9 (Refresh Mesh) is shown in Freeze mode only.
         if (state.current_render_mode == kRenderModeMC) {
             ImGui::Separator();
             ImGui::Text("Grid Resolution:");
@@ -391,15 +391,42 @@ MenuActions renderControllerPanel(MenuState& state)
                 ImGui::Text("[active]");
             }
 
-            // Iso-value: displayed as a button showing current value; D-pad confirm increments by step.
-            // Left/right navigation not supported in this panel; use as a single selectable row.
-            char iso_label[32];
-            SDL_snprintf(iso_label, sizeof(iso_label), "Iso: %.2f", state.iso_value);
-            item(iso_label, true, incrementIso);
+            // Iso-value: slider for mouse, D-pad left/right for fine tune, A-button confirm increments.
+            // item_count is incremented manually to keep D-pad navigation at indices 6 and 7.
+            ImGui::Text("Iso:");
+            ImGui::SameLine();
+            {
+                bool hi = (state.selected_panel_item == item_count);
+                if (hi) {
+                    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered]);
+                }
+                ImGui::SetNextItemWidth(180.0f);
+                if (ImGui::SliderFloat("##iso", &state.iso_value, 0.0f, 2.0f, "%.3f")) {
+                    actions.mc_params_changed = true;
+                }
+                if (hi) {
+                    ImGui::PopStyleColor();
+                }
+            }
+            ++item_count;
 
-            char ir_label[32];
-            SDL_snprintf(ir_label, sizeof(ir_label), "Radius: %.1f", state.influence_radius);
-            item(ir_label, true, incrementRadius);
+            // Influence radius: slider for mouse, D-pad left/right for fine tune, A-button confirm increments.
+            ImGui::Text("Radius:");
+            ImGui::SameLine();
+            {
+                bool hi = (state.selected_panel_item == item_count);
+                if (hi) {
+                    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered]);
+                }
+                ImGui::SetNextItemWidth(180.0f);
+                if (ImGui::SliderFloat("##radius", &state.influence_radius, 0.1f, 10.0f, "%.1f")) {
+                    actions.mc_params_changed = true;
+                }
+                if (hi) {
+                    ImGui::PopStyleColor();
+                }
+            }
+            ++item_count;
 
             // Sync/Freeze toggle (index 8):
             //   "Sync: ON"  = mesh recomputes when the simulation frame changes.
