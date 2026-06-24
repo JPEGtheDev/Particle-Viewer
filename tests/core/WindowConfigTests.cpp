@@ -542,9 +542,9 @@ TEST_F(WindowConfigTest, LoadWindowConfig_MissingMCKeys_UsesDefaults)
     bool fullscreen = false;
     loadWindowConfig(test_config_path, width, height, fullscreen, nullptr, nullptr, &grid_res, &iso, &radius, &freeze);
 
-    // Assert — defaults when keys absent: 128, 0.1f, 2.0f, 0
+    // Assert — defaults when keys absent: 128, 0.3f, 2.0f, 0
     EXPECT_EQ(grid_res, 128);
-    EXPECT_FLOAT_EQ(iso, 0.1f);
+    EXPECT_FLOAT_EQ(iso, 0.3f);
     EXPECT_FLOAT_EQ(radius, 2.0f);
     EXPECT_EQ(freeze, 0);
 }

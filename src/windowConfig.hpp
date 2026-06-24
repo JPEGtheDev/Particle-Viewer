@@ -62,7 +62,7 @@ inline bool loadWindowConfig(const std::string& filepath, int& width, int& heigh
         *mc_grid_resolution = 128;
     }
     if (mc_iso_value != nullptr) {
-        *mc_iso_value = 0.1f;
+        *mc_iso_value = 0.3f;
     }
     if (mc_influence_radius != nullptr) {
         *mc_influence_radius = 2.0f;

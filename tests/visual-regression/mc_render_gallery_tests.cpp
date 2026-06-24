@@ -324,7 +324,7 @@ TEST(MCRenderGallery, BridgingEffectSweep)
     }
 
     const float ir = 0.5f;
-    const float iso = 0.1f; // matches app default; spheres at 0.73*ir, bridge threshold at 1.59*ir=0.795
+    const float iso = 0.3f; // matches app default; spheres at 0.575*ir, bridge threshold at 1.37*ir=0.685
     const int grid_res = 64;
 
     // Side view: camera along +Z, particles separated in X.
@@ -334,9 +334,8 @@ TEST(MCRenderGallery, BridgingEffectSweep)
         static_cast<float>(VRTestConfig::RENDER_WIDTH) / static_cast<float>(VRTestConfig::RENDER_HEIGHT), 0.1f, 100.0f);
     glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.3f, 4.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-    // Polynomial kernel (1-ratio^2)^3, iso=0.1: bridge threshold d = 1.59*ir = 0.795.
-    // At iso=0.1 spheres are larger (0.73*ir radius) so the approach looks gradual
-    // before the bridge snaps in.
+    // Polynomial kernel (1-ratio^2)^3, iso=0.3: bridge threshold d = 1.37*ir = 0.685.
+    // Sphere radius 0.575*ir gives a 5-voxel gap at step4 (sep=0.8) at 64^3 -- no false bridge.
     struct Step
     {
         float d;
@@ -346,10 +345,10 @@ TEST(MCRenderGallery, BridgingEffectSweep)
         {2.0f, "start"}, // separate, large gap
         {1.5f, "step1"}, // separate, narrowing gap
         {1.1f, "step2"}, // separate
-        {1.0f, "step3"}, // separate, approaching threshold (0.795)
-        {0.8f, "step4"}, // bridge just formed (sep=0.8 > threshold=0.795, barely separate)
-        {0.6f, "step5"}, // clear bridge + colour mixing
-        {0.4f, "step6"}, // wide bridge
+        {1.0f, "step3"}, // separate, approaching threshold (0.685)
+        {0.8f, "step4"}, // separate, near threshold (gap=5 voxels at 64^3)
+        {0.6f, "step5"}, // bridge just formed (sep=0.6 < threshold=0.685)
+        {0.4f, "step6"}, // bridge + colour mixing
         {0.2f, "step7"}, // nearly round
         {0.0f, "end"},   // fully merged
     };

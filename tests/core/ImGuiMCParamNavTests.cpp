@@ -135,5 +135,5 @@ TEST(MCParamNav, NonAdjustableItem_ReturnsFalse)
 TEST(MCParamNav, DefaultIsoValue_IsGradual)
 {
     MenuState s;
-    EXPECT_NEAR(s.iso_value, 0.1f, 1e-4f);
+    EXPECT_NEAR(s.iso_value, 0.3f, 1e-4f);
 }

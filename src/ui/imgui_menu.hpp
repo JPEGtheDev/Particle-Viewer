@@ -120,7 +120,7 @@ struct MenuState
 
     // Marching cubes parameters
     GridResolution grid_resolution = GridResolution::Grid128;
-    float iso_value = 0.1f;
+    float iso_value = 0.3f;
     float influence_radius = 2.0f;
     LiveFreezeMode live_freeze = LiveFreezeMode::Live;
     bool mc_refresh_requested = false;
