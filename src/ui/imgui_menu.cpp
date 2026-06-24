@@ -345,13 +345,6 @@ MenuActions renderControllerPanel(MenuState& state)
             }
             actions.mc_params_changed = true;
         };
-        auto toggleLiveFreeze = [&] {
-            state.live_freeze =
-                (state.live_freeze == LiveFreezeMode::Live) ? LiveFreezeMode::Freeze : LiveFreezeMode::Live;
-            actions.mc_params_changed = true;
-        };
-        auto refreshMesh = [&] { state.mc_refresh_requested = true; };
-
         item("Spheres", true, selectSpheres);
         if (state.current_render_mode == 0) {
             ImGui::SameLine();
@@ -367,8 +360,7 @@ MenuActions renderControllerPanel(MenuState& state)
         item("Back", true, goBack);
 
         // When MC is the active render mode, show parameter controls below the mode items.
-        // D-pad navigable indices: 3=Grid64, 4=Grid128, 5=Grid256, 6=Iso, 7=Radius, 8=Sync.
-        // Index 9 (Refresh Mesh) is shown in Freeze mode only.
+        // D-pad navigable indices: 3=Grid64, 4=Grid128, 5=Grid256, 6=Iso, 7=Radius.
         if (state.current_render_mode == kRenderModeMC) {
             ImGui::Separator();
             ImGui::Text("Grid Resolution:");
@@ -427,17 +419,6 @@ MenuActions renderControllerPanel(MenuState& state)
                 }
             }
             ++item_count;
-
-            // Sync/Freeze toggle (index 8):
-            //   "Sync: ON"  = mesh recomputes when the simulation frame changes.
-            //   "Sync: OFF" = mesh is frozen; use "Refresh Mesh" to force a recompute.
-            const char* lf_label = (state.live_freeze == LiveFreezeMode::Live) ? "Sync: ON" : "Sync: OFF";
-            item(lf_label, true, toggleLiveFreeze);
-
-            // Refresh Mesh button (index 9): only shown in Freeze mode
-            if (state.live_freeze == LiveFreezeMode::Freeze) {
-                item("Refresh Mesh", true, refreshMesh);
-            }
         }
 
         state.panel_item_count = item_count;
@@ -480,16 +461,6 @@ MenuActions renderControllerPanel(MenuState& state)
                     case 7:
                         if (state.current_render_mode == kRenderModeMC) {
                             incrementRadius();
-                        }
-                        break;
-                    case 8:
-                        if (state.current_render_mode == kRenderModeMC) {
-                            toggleLiveFreeze();
-                        }
-                        break;
-                    case 9:
-                        if (state.current_render_mode == kRenderModeMC && state.live_freeze == LiveFreezeMode::Freeze) {
-                            refreshMesh();
                         }
                         break;
                     default:

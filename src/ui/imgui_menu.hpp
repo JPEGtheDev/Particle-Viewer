@@ -79,7 +79,7 @@ enum class GridResolution : int
 enum class SubPanelItemCount : int
 {
     kBaseRenderMode = 3,    // Spheres + MC + Back
-    kMarchingCubesMode = 9, // Spheres + MC + Back + Grid64 + Grid128 + Grid256 + Iso + Radius + LiveFreeze
+    kMarchingCubesMode = 8, // Spheres + MC + Back + Grid64 + Grid128 + Grid256 + Iso + Radius
 };
 
 /*

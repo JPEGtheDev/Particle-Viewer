@@ -105,13 +105,6 @@ TEST(MCParamNav, GridItem_ReturnsFalse)
     EXPECT_FALSE(changed);
 }
 
-TEST(MCParamNav, LiveItem_ReturnsFalse)
-{
-    MenuState s = mcState(8); // Sync/Freeze toggle -- not adjustable by D-pad L/R
-    bool changed = adjustMcParam(s, false);
-    EXPECT_FALSE(changed);
-}
-
 // ---------------------------------------------------------------------------
 // Return value signals whether caller should mark mc_params_changed
 // ---------------------------------------------------------------------------

@@ -1350,15 +1350,13 @@ void ViewerApp::loadWindowSettings()
     int mc_grid_resolution = static_cast<int>(menu_state_.grid_resolution);
     float mc_iso_value = menu_state_.iso_value;
     float mc_influence_radius = menu_state_.influence_radius;
-    int mc_live_freeze = static_cast<int>(menu_state_.live_freeze);
 
     if (loadWindowConfig(config_path, width, height, fullscreen, &window_.ui_scale, &last_confirmed_folder_,
-                         &mc_grid_resolution, &mc_iso_value, &mc_influence_radius, &mc_live_freeze)) {
+                         &mc_grid_resolution, &mc_iso_value, &mc_influence_radius, nullptr)) {
         // Write loaded MC values back into menu_state_.
         menu_state_.grid_resolution = static_cast<GridResolution>(mc_grid_resolution);
         menu_state_.iso_value = mc_iso_value;
         menu_state_.influence_radius = mc_influence_radius;
-        menu_state_.live_freeze = static_cast<LiveFreezeMode>(mc_live_freeze);
         // Merge the OS-detected content scale with the persisted preference.
         // selectUiScale returns the persisted value if it is a real preference
         // (>= 1.0), or falls back to the OS-detected scale (min 1.5).

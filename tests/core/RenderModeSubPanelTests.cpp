@@ -159,86 +159,17 @@ TEST_F(RenderModeSubPanelTest, SubPanel_MarchingCubes_EnabledWhenComputeShadersA
 }
 
 // ---------------------------------------------------------------------------
-// Test 7 -- Live/Freeze toggle: confirming item 8 in MC mode toggles Live->Freeze
+// Test 7 -- item count in MC mode = kMarchingCubesMode (8)
 // ---------------------------------------------------------------------------
 
-TEST_F(RenderModeSubPanelTest, SubPanel_LiveFreezeToggle_TogglesFromLiveToFreeze)
+TEST_F(RenderModeSubPanelTest, SubPanel_ItemCount_IsMarchingCubesMode)
 {
     MenuState state = makeSubPanelState();
     state.current_render_mode = kRenderModeMC;
-    state.live_freeze = LiveFreezeMode::Live;
-    state.selected_panel_item = 8;
-    state.confirm_panel_item = true;
-
-    MenuActions actions = renderControllerPanel(state);
-
-    EXPECT_EQ(state.live_freeze, LiveFreezeMode::Freeze);
-    EXPECT_TRUE(actions.mc_params_changed);
-}
-
-// ---------------------------------------------------------------------------
-// Test 8 -- Live/Freeze toggle: confirming item 8 in Freeze mode toggles back to Live
-// ---------------------------------------------------------------------------
-
-TEST_F(RenderModeSubPanelTest, SubPanel_LiveFreezeToggle_TogglesFromFreezeToLive)
-{
-    MenuState state = makeSubPanelState();
-    state.current_render_mode = kRenderModeMC;
-    state.live_freeze = LiveFreezeMode::Freeze;
-    state.selected_panel_item = 8;
-    state.confirm_panel_item = true;
-
-    MenuActions actions = renderControllerPanel(state);
-
-    EXPECT_EQ(state.live_freeze, LiveFreezeMode::Live);
-    EXPECT_TRUE(actions.mc_params_changed);
-}
-
-// ---------------------------------------------------------------------------
-// Test 9 -- item count in MC Live mode = kMarchingCubesMode (9)
-// ---------------------------------------------------------------------------
-
-TEST_F(RenderModeSubPanelTest, SubPanel_ItemCount_IsMarchingCubesMode_LiveMode)
-{
-    MenuState state = makeSubPanelState();
-    state.current_render_mode = kRenderModeMC;
-    state.live_freeze = LiveFreezeMode::Live;
 
     renderControllerPanel(state);
 
     EXPECT_EQ(state.panel_item_count, static_cast<int>(SubPanelItemCount::kMarchingCubesMode));
-}
-
-// ---------------------------------------------------------------------------
-// Test 10 -- item count in MC Freeze mode = kMarchingCubesMode + 1 (10)
-// ---------------------------------------------------------------------------
-
-TEST_F(RenderModeSubPanelTest, SubPanel_ItemCount_IsMarchingCubesModeWithRefresh_FreezeMode)
-{
-    MenuState state = makeSubPanelState();
-    state.current_render_mode = kRenderModeMC;
-    state.live_freeze = LiveFreezeMode::Freeze;
-
-    renderControllerPanel(state);
-
-    EXPECT_EQ(state.panel_item_count, static_cast<int>(SubPanelItemCount::kMarchingCubesMode) + 1);
-}
-
-// ---------------------------------------------------------------------------
-// Test 11 -- Refresh Mesh button sets mc_refresh_requested when in Freeze mode
-// ---------------------------------------------------------------------------
-
-TEST_F(RenderModeSubPanelTest, SubPanel_RefreshMeshButton_SetsMcRefreshRequested)
-{
-    MenuState state = makeSubPanelState();
-    state.current_render_mode = kRenderModeMC;
-    state.live_freeze = LiveFreezeMode::Freeze;
-    state.selected_panel_item = 9; // index 9 = Refresh Mesh (only in Freeze mode)
-    state.confirm_panel_item = true;
-
-    renderControllerPanel(state);
-
-    EXPECT_TRUE(state.mc_refresh_requested);
 }
 
 // ---------------------------------------------------------------------------
