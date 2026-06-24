@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 
+#include <glm/glm.hpp>
+
 #include "SpatialGrid.hpp"
 
 // ---------------------------------------------------------------------------
@@ -71,7 +73,9 @@ TEST(SpatialGridTest, EmptyParticleList_NoCrash)
 
     EXPECT_TRUE(grid.sorted_particles.empty());
 
-    // Either cell_starts is empty or every entry is 0
+    // Both "empty cell_starts" and "all-zero cell_starts" are valid contracts for
+    // build(nullptr, 0, ...). The implementation may allocate the sentinel array
+    // (num_cells+1 entries all zero) or return an empty vector -- both are correct.
     bool all_zero = true;
     for (auto v : grid.cell_starts) {
         if (v != 0u) {
@@ -141,4 +145,23 @@ TEST(SpatialGridTest, NumCells_CappedAtMaxCellsPerAxis)
     EXPECT_LE(grid.num_cells_x, 64);
     EXPECT_LE(grid.num_cells_y, 64);
     EXPECT_LE(grid.num_cells_z, 64);
+}
+
+// ---------------------------------------------------------------------------
+// Test 8: Particle outside grid bounds -- clamped to nearest valid cell
+// ---------------------------------------------------------------------------
+// Particles outside [origin, origin+extent) must not cause out-of-bounds
+// access. The implementation should clamp cell coordinates to [0, num_cells-1].
+TEST(SpatialGridTest, ParticleOutsideBounds_ClampsToNearestCell)
+{
+    // particle at x=-1.0 is outside origin=0.0 -- should clamp to cell_x=0
+    glm::vec4 p{-1.0f, 0.5f, 0.5f, 1.0f};
+
+    SpatialGrid grid;
+    // This must not crash or invoke undefined behavior
+    EXPECT_NO_FATAL_FAILURE(grid.build(&p, 1, /*influence_radius=*/1.0f, glm::vec3(0.0f), glm::vec3(10.0f),
+                                       /*max_cells_per_axis=*/64));
+
+    // Particle should have been placed somewhere (clamped to a valid cell)
+    EXPECT_EQ(grid.sorted_particles.size(), 1u);
 }
