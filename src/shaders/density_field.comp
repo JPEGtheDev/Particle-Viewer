@@ -14,7 +14,7 @@ layout(std430, binding = 1) readonly buffer ParticleBuffer {
 uniform int grid_size;          // number of voxels per axis (64, 128, or 256)
 uniform vec3 grid_origin;       // world-space origin of the grid
 uniform float voxel_size;       // world-space size of one voxel
-uniform float influence_radius; // gaussian sigma and hard cutoff radius
+uniform float influence_radius; // hard cutoff radius for the density kernel
 uniform int particle_count;     // number of particles in buffer
 
 void main() {
@@ -32,18 +32,19 @@ void main() {
     // Compute this voxel's world-space center
     vec3 voxel_center = grid_origin + (vec3(gid) + 0.5) * voxel_size;
 
-    float density = 0.0;
+    float density   = 0.0;
+    float ir_sq     = influence_radius * influence_radius;
+    float inv_ir_sq = 1.0 / ir_sq;
 
     for (int i = 0; i < particle_count; ++i) {
-        vec3 pos = particles[i].xyz;
-        float dist = length(pos - voxel_center);
+        vec3  delta   = particles[i].xyz - voxel_center;
+        float dist_sq = dot(delta, delta);
 
-        if (dist > influence_radius) {
+        if (dist_sq > ir_sq) {
             continue;
         }
 
-        float ratio = dist / influence_radius;
-        float w     = 1.0 - ratio * ratio;
+        float w = 1.0 - dist_sq * inv_ir_sq;
         density += w * w * w;
     }
 
