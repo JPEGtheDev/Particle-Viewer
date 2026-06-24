@@ -43,7 +43,8 @@ void main() {
         }
 
         float ratio = dist / influence_radius;
-        density += exp(-0.5 * ratio * ratio);
+        float w     = 1.0 - ratio * ratio;
+        density += w * w * w;
     }
 
     imageStore(density_field, gid, vec4(density, 0.0, 0.0, 0.0));

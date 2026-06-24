@@ -134,8 +134,7 @@ glm::vec3 bboxMax(const std::vector<glm::vec4>& pts)
 // Rainbow cube -- 40x40x40 = 64000-particle lattice, category 500 (debug coloring).
 // Parameters match live app behavior: radius=2.0 in UI -> ir=0.5 in shader space
 // (kSimToDisplayScale=0.25), iso=0.58 (user-confirmed working value).
-// Bounding box padded by ir*2 to ensure the isosurface (at ~1.18*ir from particle
-// centers) fits inside the grid.
+// Bounding box padded by ir*2 so the isosurface sits at least ir inside the grid boundary.
 // ---------------------------------------------------------------------------
 TEST(MCRenderGallery, RainbowCube_64kParticles)
 {
@@ -269,11 +268,12 @@ TEST(MCRenderGallery, TwoParticlesMerging)
         GTEST_SKIP() << "No GL 4.3 context";
     }
 
-    // Two particles 0.8 apart; ir=0.5 -> midpoint density = 2*exp(-0.5*(0.4/0.5)^2) ~= 1.45
-    // Well above iso=0.5 -> clearly merged with visible bridge
+    // Two particles 0.5 apart; ir=0.5, polynomial kernel -> midpoint density =
+    // 2*(1-(0.25/0.5)^2)^3 = 2*0.42 = 0.84 >> iso=0.5 -> clearly merged.
+    // (Polynomial merge threshold is d = 1.216*ir = 0.608 for ir=0.5.)
     std::vector<glm::vec4> particles = {
-        {-0.4f, 0.0f, 0.0f, 0.0f}, // red
-        {0.4f, 0.0f, 0.0f, 1.0f},  // blue
+        {-0.25f, 0.0f, 0.0f, 0.0f}, // red
+        {0.25f, 0.0f, 0.0f, 1.0f},  // blue
     };
 
     const float ir = 0.5f;
@@ -310,11 +310,10 @@ TEST(MCRenderGallery, TwoParticlesMerging)
 
 // ---------------------------------------------------------------------------
 // Bridging effect sweep -- red (category 0) + blue (category 1), 9 separation
-// steps from clearly separate down to fully merged.  Matches the reference
-// montage showing: separate spheres -> bridge formation -> color mix.
+// steps from clearly separate down to fully merged.
 //
-// With a truncated-Gaussian density field (hard cutoff at ir), the merge
-// threshold is d = 2*ir = 1.0.  Steps below 1.0 show the bridge forming.
+// With the polynomial kernel (1-ratio^2)^3, the merge threshold is d = 1.216*ir = 0.608.
+// Steps below 0.608 show the bridge forming.
 // Camera is a side view (along Z) so left=red and right=blue are clear.
 // ---------------------------------------------------------------------------
 TEST(MCRenderGallery, BridgingEffectSweep)
@@ -335,8 +334,8 @@ TEST(MCRenderGallery, BridgingEffectSweep)
         static_cast<float>(VRTestConfig::RENDER_WIDTH) / static_cast<float>(VRTestConfig::RENDER_HEIGHT), 0.1f, 100.0f);
     glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.3f, 4.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-    // Merge threshold with truncated Gaussian = 2*ir = 1.0.
-    // Steps straddle the threshold to show: separate -> touching -> bridge -> merged.
+    // Merge threshold with polynomial kernel (1-ratio^2)^3 = 1.216*ir = 0.608.
+    // Steps straddle the threshold to show: separate -> bridge formation -> merged.
     struct Step
     {
         float d;
@@ -345,11 +344,11 @@ TEST(MCRenderGallery, BridgingEffectSweep)
     const Step steps[] = {
         {2.0f, "start"}, // separate, large gap
         {1.5f, "step1"}, // separate, narrowing gap
-        {1.1f, "step2"}, // just barely separate
-        {1.0f, "step3"}, // surfaces touching (threshold)
-        {0.8f, "step4"}, // bridge just formed
-        {0.6f, "step5"}, // clear bridge
-        {0.4f, "step6"}, // wide bridge, colour mixing
+        {1.1f, "step2"}, // separate
+        {1.0f, "step3"}, // separate, approaching threshold (0.608)
+        {0.8f, "step4"}, // separate, near threshold
+        {0.6f, "step5"}, // bridge just formed (sep=0.6 < threshold=0.608)
+        {0.4f, "step6"}, // bridge + colour mixing
         {0.2f, "step7"}, // nearly round
         {0.0f, "end"},   // fully merged
     };

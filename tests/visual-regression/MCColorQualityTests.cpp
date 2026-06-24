@@ -146,6 +146,84 @@ TEST(MCColorQualityTest, SingleRedParticle_SurfaceIsRed)
         << "Fix: remove 'if (dist > influence_radius) continue;' from computeColor() in marching_cubes.comp.";
 }
 
+// Verifies that the density kernel places the isosurface well inside ir.
+//
+// With a Gaussian kernel truncated at ir, the density at r=ir is exp(-0.5)=0.607.
+// For iso=0.5, that puts the surface AT ir (the truncation boundary).
+// With the polynomial kernel (1 - ratio^2)^3, the density at r=ir is 0.0 and the
+// iso=0.5 crossover sits at r = 0.454*ir -- well inside ir.
+//
+// RED with Gaussian  : max vertex dist from particle center is ~ir (>= 0.8*ir threshold).
+// GREEN with polynomial: max vertex dist is ~0.454*ir (< 0.8*ir threshold).
+TEST(MCColorQualityTest, SingleRedParticle_SurfaceRadiusIsInsideIR)
+{
+    SDL3Context ctx(320, 240, "MC Kernel Radius Test", /*visible=*/false);
+    if (!ctx.isValid()) {
+        GTEST_SKIP() << "No GL context available";
+    }
+    ctx.makeCurrent();
+
+    if (GLAD_GL_VERSION_4_3 == 0) {
+        GTEST_SKIP() << "GL 4.3 not available";
+    }
+
+    ComputeShader density_shader(getShaderPath("density_field.comp").c_str());
+    ASSERT_NE(density_shader.program(), 0u) << "density_field.comp failed to link";
+    ComputeShader mc_shader(getShaderPath("marching_cubes.comp").c_str());
+    ASSERT_NE(mc_shader.program(), 0u) << "marching_cubes.comp failed to link";
+    Shader mesh_shader(getShaderPath("mesh.vert").c_str(), getShaderPath("mesh.frag").c_str());
+    if (mesh_shader.Program == 0u) {
+        GTEST_SKIP() << "mesh shader failed to compile";
+    }
+
+    std::vector<glm::vec4> particles = {{0.0f, 0.0f, 0.0f, 0.0f}};
+    const int grid_res = 64;
+    const float ir = 0.5f;
+    const float iso = 0.5f;
+    const glm::vec3 origin = glm::vec3(-1.0f);
+    const float voxel_size = 2.0f / static_cast<float>(grid_res);
+
+    glm::mat4 proj = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f);
+    glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+    MCRenderer mc(grid_res);
+    mc.markDirty();
+    mc.render(particles, origin, voxel_size, ir, iso, density_shader.program(), mc_shader.program(),
+              mesh_shader.Program, proj, view);
+
+    GLuint raw_count = 0;
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, mc.atomicCounter());
+    glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(GLuint), &raw_count);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    ASSERT_GT(raw_count, 0u) << "MC pipeline generated 0 vertices -- isosurface did not form";
+
+    const GLuint vertex_count = std::min(raw_count, static_cast<GLuint>(2'000'000 * 3));
+    std::vector<float> ssbo(static_cast<size_t>(vertex_count) * 9);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, mc.vertexSSBO());
+    glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, static_cast<GLsizeiptr>(ssbo.size()) * sizeof(float), ssbo.data());
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    // Particle is at origin. Each vertex position (first 3 floats of 9-float stride)
+    // must be closer than 0.8*ir to the particle center.
+    //
+    // Gaussian kernel puts surface at r=ir (truncation boundary) -- max_dist ≈ 0.5 > 0.4 FAILS.
+    // Polynomial kernel puts surface at r=0.454*ir -- max_dist ≈ 0.23 < 0.4 PASSES.
+    float max_dist = 0.0f;
+    for (GLuint i = 0; i < vertex_count; ++i) {
+        const size_t base = static_cast<size_t>(i) * 9;
+        const glm::vec3 vp(ssbo[base + 0], ssbo[base + 1], ssbo[base + 2]);
+        max_dist = std::max(max_dist, glm::length(vp));
+    }
+
+    const float threshold = 0.8f * ir;
+    EXPECT_LT(max_dist, threshold)
+        << "Isosurface extends to " << max_dist << " from particle center (ir=" << ir << "). "
+        << "Gaussian kernel places the surface at the truncation boundary (r=ir). "
+        << "Polynomial kernel (1-ratio^2)^3 naturally goes to 0 at r=ir, placing "
+        << "the iso=0.5 surface at r=0.454*ir (" << (0.454f * ir) << "). "
+        << "Fix: replace exp(-0.5*ratio*ratio) with (1-ratio*ratio)^3 in density_field.comp.";
+}
+
 // Two-particle blend: red (left) + blue (right), separated so they are just
 // merged (d < merge threshold 2*ir with truncated Gaussian).  The average
 // surface colour must have roughly equal R and B with low G, indicating a
