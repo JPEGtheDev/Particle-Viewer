@@ -82,10 +82,15 @@ TEST(MCColorQualityTest, SingleRedParticle_SurfaceIsRed)
     glm::mat4 proj = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f);
     glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
+    const glm::vec3 extent(voxel_size * static_cast<float>(grid_res));
+    SpatialGridSSBOs sg;
+    sg.build(particles, origin, extent, ir);
+
     MCRenderer mc(grid_res);
     mc.markDirty();
     mc.render(particles, origin, voxel_size, ir, iso, density_shader.program(), mc_shader.program(),
-              mesh_shader.Program, proj, view);
+              mesh_shader.Program, proj, view, sg.cell_starts_ssbo, sg.sorted_particles_ssbo, sg.grid.cell_size,
+              sg.grid.cell_origin, sg.grid.num_cells_x, sg.grid.num_cells_y, sg.grid.num_cells_z);
 
     GLuint raw_count = 0;
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, mc.atomicCounter());
@@ -186,10 +191,15 @@ TEST(MCColorQualityTest, SingleRedParticle_SurfaceRadiusIsInsideIR)
     glm::mat4 proj = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f);
     glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
+    const glm::vec3 extent2(voxel_size * static_cast<float>(grid_res));
+    SpatialGridSSBOs sg2;
+    sg2.build(particles, origin, extent2, ir);
+
     MCRenderer mc(grid_res);
     mc.markDirty();
     mc.render(particles, origin, voxel_size, ir, iso, density_shader.program(), mc_shader.program(),
-              mesh_shader.Program, proj, view);
+              mesh_shader.Program, proj, view, sg2.cell_starts_ssbo, sg2.sorted_particles_ssbo, sg2.grid.cell_size,
+              sg2.grid.cell_origin, sg2.grid.num_cells_x, sg2.grid.num_cells_y, sg2.grid.num_cells_z);
 
     GLuint raw_count = 0;
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, mc.atomicCounter());
@@ -270,10 +280,15 @@ TEST(MCColorQualityTest, TwoParticles_SurfaceBlend_IsRedBlue)
     glm::mat4 proj = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f);
     glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
+    const glm::vec3 extent3(voxel_size * static_cast<float>(grid_res));
+    SpatialGridSSBOs sg3;
+    sg3.build(particles, origin, extent3, ir);
+
     MCRenderer mc(grid_res);
     mc.markDirty();
     mc.render(particles, origin, voxel_size, ir, iso, density_shader.program(), mc_shader.program(),
-              mesh_shader.Program, proj, view);
+              mesh_shader.Program, proj, view, sg3.cell_starts_ssbo, sg3.sorted_particles_ssbo, sg3.grid.cell_size,
+              sg3.grid.cell_origin, sg3.grid.num_cells_x, sg3.grid.num_cells_y, sg3.grid.num_cells_z);
 
     GLuint raw_count = 0;
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, mc.atomicCounter());

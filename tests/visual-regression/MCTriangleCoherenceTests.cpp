@@ -85,10 +85,16 @@ TEST(MCTriangleCoherenceTest, TriangleVertices_AreFromSameMCCube)
     glm::mat4 proj = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f);
     glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
+    const glm::vec3 extent_tc(voxel_size * 16.0f);
+    SpatialGridSSBOs sg_tc;
+    sg_tc.build(particles, grid_origin, extent_tc, ir);
+
     MCRenderer mc(16);
     mc.markDirty();
     mc.render(particles, grid_origin, voxel_size, ir, iso, density_shader.program(), mc_shader.program(),
-              mesh_shader.Program, proj, view);
+              mesh_shader.Program, proj, view, sg_tc.cell_starts_ssbo, sg_tc.sorted_particles_ssbo,
+              sg_tc.grid.cell_size, sg_tc.grid.cell_origin, sg_tc.grid.num_cells_x, sg_tc.grid.num_cells_y,
+              sg_tc.grid.num_cells_z);
 
     // Read the raw vertex count from the atomic counter buffer.
     GLuint raw_count = 0;

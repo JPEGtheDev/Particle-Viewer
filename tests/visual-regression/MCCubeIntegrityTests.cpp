@@ -173,6 +173,9 @@ TEST(MCCubeIntegrityTest, AllSixFacesHaveCoverage)
     // Background (black) pixels indicate missing surface triangles.
     constexpr float MIN_COVERAGE = 0.30f;
 
+    SpatialGridSSBOs sg_ci;
+    sg_ci.build(particles, bmin, ext, ir);
+
     for (const auto& v : views) {
         MCRenderer mc(grid_res);
         mc.markDirty();
@@ -184,7 +187,8 @@ TEST(MCCubeIntegrityTest, AllSixFacesHaveCoverage)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         mc.render(particles, bmin, voxel_sz, ir, iso, density_sh.program(), mc_sh.program(), mesh_sh.Program, proj,
-                  view);
+                  view, sg_ci.cell_starts_ssbo, sg_ci.sorted_particles_ssbo, sg_ci.grid.cell_size,
+                  sg_ci.grid.cell_origin, sg_ci.grid.num_cells_x, sg_ci.grid.num_cells_y, sg_ci.grid.num_cells_z);
 
         Image img = fb.capture();
         ASSERT_TRUE(img.valid()) << "Framebuffer capture failed for face: " << v.label;
