@@ -5,47 +5,63 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 // Output: 3D density field (single-channel float)
 layout(r32f, binding = 0) uniform image3D density_field;
 
-// Input: particle positions and categories
-layout(std430, binding = 1) readonly buffer ParticleBuffer {
-    vec4 particles[]; // xyz = position, w = category
-};
+// Spatial grid: cell_starts[c]..cell_starts[c+1] indexes sorted_particles for cell c
+layout(std430, binding = 2) readonly buffer CellStarts     { uint cell_starts[];      };
+layout(std430, binding = 3) readonly buffer SortedParticles { vec4 sorted_particles[]; };
 
-// Uniforms
-uniform int grid_size;          // number of voxels per axis (64, 128, or 256)
-uniform vec3 grid_origin;       // world-space origin of the grid
-uniform float voxel_size;       // world-space size of one voxel
-uniform float influence_radius; // hard cutoff radius for the density kernel
-uniform int particle_count;     // number of particles in buffer
+// Uniforms carried over from the original shader
+uniform int   grid_size;          // voxels per axis (64, 128, or 256)
+uniform vec3  grid_origin;        // world-space origin of the density grid
+uniform float voxel_size;         // world-space size of one voxel
+uniform float influence_radius;   // density kernel radius
+
+// Spatial grid dimensions uploaded by ViewerApp
+uniform float cell_size;          // must equal influence_radius
+uniform vec3  cell_origin;        // origin of the spatial grid (same as grid_origin)
+uniform int   num_cells_x;
+uniform int   num_cells_y;
+uniform int   num_cells_z;
 
 void main() {
-    if (influence_radius <= 0.0) {
-        return;
-    }
+    if (influence_radius <= 0.0 || cell_size <= 0.0) { return; }
+    if (num_cells_x <= 0 || num_cells_y <= 0 || num_cells_z <= 0) { return; }
 
     ivec3 gid = ivec3(gl_GlobalInvocationID);
+    if (gid.x >= grid_size || gid.y >= grid_size || gid.z >= grid_size) { return; }
 
-    // Bounds check: discard invocations beyond the grid
-    if (gid.x >= grid_size || gid.y >= grid_size || gid.z >= grid_size) {
-        return;
-    }
-
-    // Compute this voxel's world-space center
+    // World-space center of this voxel
     vec3 voxel_center = grid_origin + (vec3(gid) + 0.5) * voxel_size;
+
+    // This voxel's spatial-grid cell (clamped to valid range)
+    ivec3 base_cell = ivec3(floor((voxel_center - cell_origin) / cell_size));
 
     float density   = 0.0;
     float ir_sq     = influence_radius * influence_radius;
     float inv_ir_sq = 1.0 / ir_sq;
 
-    for (int i = 0; i < particle_count; ++i) {
-        vec3  delta   = particles[i].xyz - voxel_center;
-        float dist_sq = dot(delta, delta);
+    // 3x3x3 neighborhood lookup
+    for (int dz = -1; dz <= 1; ++dz) {
+        for (int dy = -1; dy <= 1; ++dy) {
+            for (int dx = -1; dx <= 1; ++dx) {
+                ivec3 nc = ivec3(
+                    clamp(base_cell.x + dx, 0, num_cells_x - 1),
+                    clamp(base_cell.y + dy, 0, num_cells_y - 1),
+                    clamp(base_cell.z + dz, 0, num_cells_z - 1)
+                );
+                int cell_id = nc.x + nc.y * num_cells_x + nc.z * num_cells_x * num_cells_y;
 
-        if (dist_sq > ir_sq) {
-            continue;
+                uint start = cell_starts[cell_id];
+                uint end   = cell_starts[cell_id + 1];
+
+                for (uint i = start; i < end; ++i) {
+                    vec3  delta   = sorted_particles[i].xyz - voxel_center;
+                    float dist_sq = dot(delta, delta);
+                    if (dist_sq > ir_sq) { continue; }
+                    float w = 1.0 - dist_sq * inv_ir_sq;
+                    density += w * w * w;
+                }
+            }
         }
-
-        float w = 1.0 - dist_sq * inv_ir_sq;
-        density += w * w * w;
     }
 
     imageStore(density_field, gid, vec4(density, 0.0, 0.0, 0.0));
