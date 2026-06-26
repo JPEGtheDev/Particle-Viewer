@@ -80,6 +80,10 @@ TEST(MCRendererComputeTest, MCPipeline_GeneratesNonZeroVertexCount_With8Particle
         GTEST_SKIP() << "mesh shader failed to compile/link";
     }
 
+    const glm::vec3 extent_cr(voxel_size * 16.0f);
+    SpatialGridSSBOs sg_cr;
+    sg_cr.build(particles, grid_origin, extent_cr, influence_radius);
+
     MCRenderer mc_renderer(16);
     mc_renderer.markDirty();
 
@@ -87,7 +91,9 @@ TEST(MCRendererComputeTest, MCPipeline_GeneratesNonZeroVertexCount_With8Particle
     glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
     mc_renderer.render(particles, grid_origin, voxel_size, influence_radius, iso_value, density_shader.program(),
-                       mc_shader.program(), mesh_shader.Program, projection, view);
+                       mc_shader.program(), mesh_shader.Program, projection, view, sg_cr.cell_starts_ssbo,
+                       sg_cr.sorted_particles_ssbo, sg_cr.grid.cell_size, sg_cr.grid.cell_origin,
+                       sg_cr.grid.num_cells_x, sg_cr.grid.num_cells_y, sg_cr.grid.num_cells_z);
 
     // Read the atomic counter -- it holds the vertex count written by marching_cubes.comp.
     // render() reads it internally but does not reset it afterwards.

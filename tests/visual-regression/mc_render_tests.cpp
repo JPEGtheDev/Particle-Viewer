@@ -197,6 +197,9 @@ TEST_F(MarchingCubesVRTest, MarchingCubesRenders_64ParticleGrid_MatchesBaseline)
                                             cam.near_clip, cam.far_clip);
 
     // Act -- construct MCRenderer and render one frame
+    SpatialGridSSBOs sg_rt;
+    sg_rt.build(particles, grid_origin, extent, mc_scaled_ir);
+
     MCRenderer mc_renderer(grid_res);
     mc_renderer.markDirty();
 
@@ -205,7 +208,9 @@ TEST_F(MarchingCubesVRTest, MarchingCubesRenders_64ParticleGrid_MatchesBaseline)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     mc_renderer.render(particles, grid_origin, voxel_size, mc_scaled_ir, iso_value, density_shader.program(),
-                       mc_shader.program(), mesh_shader_.Program, projection, view);
+                       mc_shader.program(), mesh_shader_.Program, projection, view, sg_rt.cell_starts_ssbo,
+                       sg_rt.sorted_particles_ssbo, sg_rt.grid.cell_size, sg_rt.grid.cell_origin,
+                       sg_rt.grid.num_cells_x, sg_rt.grid.num_cells_y, sg_rt.grid.num_cells_z);
 
     Image current_image = framebuffer_->capture();
 

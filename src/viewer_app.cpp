@@ -348,7 +348,7 @@ void ViewerApp::run()
             if (part_ && part_->n > 0) {
                 if (mc_renderer_->isDirty()) {
                     // Recompute grid parameters and particle cache
-                    glm::vec3 bbox_max(-FLT_MAX);
+                    mc_bbox_max_ = glm::vec3(-FLT_MAX);
                     mc_bbox_min_ = glm::vec3(FLT_MAX);
                     mc_scaled_ir_ = menu_state_.influence_radius * kSimToDisplayScale;
 
@@ -356,12 +356,12 @@ void ViewerApp::run()
                         const glm::vec3 pos(p.x * kSimToDisplayScale, p.y * kSimToDisplayScale,
                                             p.z * kSimToDisplayScale);
                         mc_bbox_min_ = glm::min(mc_bbox_min_, pos);
-                        bbox_max = glm::max(bbox_max, pos);
+                        mc_bbox_max_ = glm::max(mc_bbox_max_, pos);
                     }
                     mc_bbox_min_ -= glm::vec3(mc_scaled_ir_ * 2.0f);
-                    bbox_max += glm::vec3(mc_scaled_ir_ * 2.0f);
+                    mc_bbox_max_ += glm::vec3(mc_scaled_ir_ * 2.0f);
 
-                    const glm::vec3 extent = bbox_max - mc_bbox_min_;
+                    const glm::vec3 extent = mc_bbox_max_ - mc_bbox_min_;
                     const float grid_f = static_cast<float>(mc_renderer_->gridRes());
                     mc_voxel_size_ = glm::max(extent.x, glm::max(extent.y, extent.z)) / grid_f;
 
@@ -371,11 +371,20 @@ void ViewerApp::run()
                         mc_display_particles_.emplace_back(p.x * kSimToDisplayScale, p.y * kSimToDisplayScale,
                                                            p.z * kSimToDisplayScale, p.w);
                     }
+
+                    // Rebuild the spatial grid now that mc_display_particles_ is fresh.
+                    rebuildSpatialGrid(mc_scaled_ir_);
+                } else if (mc_scaled_ir_ != last_spatial_grid_ir_) {
+                    // influence_radius changed but the mesh is not dirty -- rebuild spatial
+                    // grid so density_field.comp uses the updated cell layout next frame.
+                    rebuildSpatialGrid(mc_scaled_ir_);
                 }
 
                 mc_renderer_->render(mc_display_particles_, mc_bbox_min_, mc_voxel_size_, mc_scaled_ir_,
                                      menu_state_.iso_value, density_shader_->program(), mc_shader_->program(),
-                                     mesh_shader_->Program, cam_->getProjection(), view_);
+                                     mesh_shader_->Program, cam_->getProjection(), view_, cell_starts_ssbo_,
+                                     sorted_particles_ssbo_, spatial_grid_.cell_size, spatial_grid_.cell_origin,
+                                     spatial_grid_.num_cells_x, spatial_grid_.num_cells_y, spatial_grid_.num_cells_z);
             }
         }
         drawFBO();
@@ -1202,6 +1211,16 @@ void ViewerApp::cleanup()
         glDeleteVertexArrays(1, &render_.circle_vao);
         render_.circle_vao = 0;
     }
+    // Spatial grid SSBOs (created lazily in rebuildSpatialGrid())
+    if (cell_starts_ssbo_ != 0) {
+        glDeleteBuffers(1, &cell_starts_ssbo_);
+        cell_starts_ssbo_ = 0;
+    }
+    if (sorted_particles_ssbo_ != 0) {
+        glDeleteBuffers(1, &sorted_particles_ssbo_);
+        sorted_particles_ssbo_ = 0;
+    }
+
     // Cache teardown: drain executors FIRST so no in-flight tasks reference
     // the caches or SettingsIO after they are deleted.
     teardownCacheInfrastructure();
@@ -1454,4 +1473,33 @@ void ViewerApp::teardownCacheInfrastructure()
     delete com_file_provider_;
     com_file_provider_ = nullptr;
     com_file_present_ = false;
+}
+
+void ViewerApp::rebuildSpatialGrid(float influence_radius)
+{
+    // Build CPU-side spatial grid from current display particles.
+    const auto* data = mc_display_particles_.empty() ? nullptr : mc_display_particles_.data();
+    const glm::vec3 extent = mc_bbox_max_ - mc_bbox_min_;
+    spatial_grid_.build(data, static_cast<int>(mc_display_particles_.size()), influence_radius, mc_bbox_min_, extent,
+                        /*max_cells_per_axis=*/256);
+
+    // Create SSBOs on first call.
+    if (cell_starts_ssbo_ == 0)
+        glGenBuffers(1, &cell_starts_ssbo_);
+    if (sorted_particles_ssbo_ == 0)
+        glGenBuffers(1, &sorted_particles_ssbo_);
+
+    // Upload cell_starts array.
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, cell_starts_ssbo_);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, static_cast<GLsizeiptr>(spatial_grid_.cell_starts.size() * sizeof(uint32_t)),
+                 spatial_grid_.cell_starts.data(), GL_DYNAMIC_DRAW);
+
+    // Upload sorted_particles array.
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, sorted_particles_ssbo_);
+    glBufferData(GL_SHADER_STORAGE_BUFFER,
+                 static_cast<GLsizeiptr>(spatial_grid_.sorted_particles.size() * sizeof(glm::vec4)),
+                 spatial_grid_.sorted_particles.data(), GL_DYNAMIC_DRAW);
+
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    last_spatial_grid_ir_ = influence_radius;
 }

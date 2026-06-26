@@ -152,7 +152,9 @@ void MCRenderer::deallocate()
 
 void MCRenderer::render(const std::vector<glm::vec4>& particles, const glm::vec3& grid_origin, float voxel_size,
                         float influence_radius, float iso_value, GLuint density_prog, GLuint mc_prog, GLuint mesh_prog,
-                        const glm::mat4& projection, const glm::mat4& view)
+                        const glm::mat4& projection, const glm::mat4& view, GLuint cell_starts_ssbo,
+                        GLuint sorted_particles_ssbo, float cell_size, const glm::vec3& cell_origin, int num_cells_x,
+                        int num_cells_y, int num_cells_z)
 {
     // Zero-particle guard: nothing to render
     if (particles.empty()) {
@@ -161,9 +163,10 @@ void MCRenderer::render(const std::vector<glm::vec4>& particles, const glm::vec3
     }
 
     if (dirty_flag_) {
-        // --- Step 1: Upload particle data to a temporary SSBO ---
-        // density_field.comp reads particles from binding 1.
-        // marching_cubes.comp reads particles from binding 3.
+        // --- Step 1: Upload particle data to a temporary SSBO for marching_cubes.comp ---
+        // marching_cubes.comp reads particles from binding 3 for color blending.
+        // density_field.comp no longer uses ParticleBuffer; it reads from the
+        // SpatialGrid SSBOs (cell_starts_ssbo at binding 2, sorted_particles_ssbo at binding 3).
         GLuint particle_ssbo = 0;
         glGenBuffers(1, &particle_ssbo);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, particle_ssbo);
@@ -176,14 +179,20 @@ void MCRenderer::render(const std::vector<glm::vec4>& particles, const glm::vec3
 
         // density_field.comp binding 0: image3D density_field (write)
         glBindImageTexture(0, density_tex_, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_R32F);
-        // density_field.comp binding 1: ParticleBuffer SSBO (read)
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, particle_ssbo);
+        // density_field.comp binding 2: CellStarts SSBO (SpatialGrid cell_starts, read)
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, cell_starts_ssbo);
+        // density_field.comp binding 3: SortedParticles SSBO (SpatialGrid sorted_particles, read)
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, sorted_particles_ssbo);
 
         glUniform1i(glGetUniformLocation(density_prog, "grid_size"), grid_res_);
         glUniform3fv(glGetUniformLocation(density_prog, "grid_origin"), 1, glm::value_ptr(grid_origin));
         glUniform1f(glGetUniformLocation(density_prog, "voxel_size"), voxel_size);
         glUniform1f(glGetUniformLocation(density_prog, "influence_radius"), influence_radius);
-        glUniform1i(glGetUniformLocation(density_prog, "particle_count"), static_cast<GLint>(particles.size()));
+        glUniform1f(glGetUniformLocation(density_prog, "cell_size"), cell_size);
+        glUniform3fv(glGetUniformLocation(density_prog, "cell_origin"), 1, glm::value_ptr(cell_origin));
+        glUniform1i(glGetUniformLocation(density_prog, "num_cells_x"), num_cells_x);
+        glUniform1i(glGetUniformLocation(density_prog, "num_cells_y"), num_cells_y);
+        glUniform1i(glGetUniformLocation(density_prog, "num_cells_z"), num_cells_z);
 
         const int groups = (grid_res_ + 7) / 8;
         glDispatchCompute(groups, groups, groups);

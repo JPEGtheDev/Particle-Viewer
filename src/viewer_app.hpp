@@ -29,6 +29,7 @@
 #include "FrameCache.hpp"
 #include "IFileDialog.hpp"
 #include "MCRenderer.hpp"
+#include "SpatialGrid.hpp"
 #include "ThreadedExecutor.hpp"
 #include "camera.hpp"
 #include "constants.hpp"
@@ -267,11 +268,18 @@ class ViewerApp
     // Cached MC grid parameters -- recomputed only when mc_renderer_ is dirty
     std::vector<glm::vec4> mc_display_particles_;
     glm::vec3 mc_bbox_min_ = glm::vec3(0.0f);
+    glm::vec3 mc_bbox_max_ = glm::vec3(0.0f);
     float mc_voxel_size_ = 0.0f;
     float mc_scaled_ir_ = 0.0f;
     // Tracks which simulation frame the MC mesh was last computed for.
     // Live/Sync mode marks dirty only when cur_frame_ differs from this value.
     long mc_last_synced_frame_ = -1;
+
+    // Spatial grid acceleration structure for density_field.comp
+    SpatialGrid spatial_grid_;
+    GLuint cell_starts_ssbo_ = 0;
+    GLuint sorted_particles_ssbo_ = 0;
+    float last_spatial_grid_ir_ = -1.0f;
 
     // ============================================
     // Timing
@@ -408,6 +416,12 @@ class ViewerApp
     void teardownCacheInfrastructure();
     void createCOMInfrastructure();
     void teardownCOMInfrastructure();
+
+    /// Builds the CPU-side SpatialGrid from mc_display_particles_ and uploads
+    /// the resulting cell_starts and sorted_particles to their SSBOs.
+    /// Creates the SSBOs on the first call. Called whenever mc_display_particles_
+    /// is repopulated or mc_scaled_ir_ changes.
+    void rebuildSpatialGrid(float influence_radius);
 
     static constexpr std::size_t FRAME_CACHE_CAPACITY_BYTES = 256ULL * 1024 * 1024;
     static constexpr long PREFETCH_LOOKAHEAD_FRAMES = 64;

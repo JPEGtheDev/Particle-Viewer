@@ -82,7 +82,7 @@ struct GalleryContext
 
 bool renderAndSave(GalleryContext& gc, const std::vector<glm::vec4>& particles, const glm::vec3& grid_origin,
                    float voxel_size, float ir, float iso, int grid_res, const glm::mat4& proj, const glm::mat4& view,
-                   const std::string& out_path)
+                   const std::string& out_path, const glm::vec3& extent)
 {
     const std::string density_path = getShaderPath("density_field.comp");
     const std::string mc_path = getShaderPath("marching_cubes.comp");
@@ -93,6 +93,9 @@ bool renderAndSave(GalleryContext& gc, const std::vector<glm::vec4>& particles, 
         return false;
     }
 
+    SpatialGridSSBOs sg_gs;
+    sg_gs.build(particles, grid_origin, extent, ir);
+
     MCRenderer renderer(grid_res);
     renderer.markDirty();
 
@@ -101,7 +104,9 @@ bool renderAndSave(GalleryContext& gc, const std::vector<glm::vec4>& particles, 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     renderer.render(particles, grid_origin, voxel_size, ir, iso, density_sh.program(), mc_sh.program(),
-                    gc.mesh_shader.Program, proj, view);
+                    gc.mesh_shader.Program, proj, view, sg_gs.cell_starts_ssbo, sg_gs.sorted_particles_ssbo,
+                    sg_gs.grid.cell_size, sg_gs.grid.cell_origin, sg_gs.grid.num_cells_x, sg_gs.grid.num_cells_y,
+                    sg_gs.grid.num_cells_z);
 
     Image img = gc.fb->capture();
     if (!img.valid()) {
@@ -178,7 +183,7 @@ TEST(MCRenderGallery, RainbowCube_64kParticles)
     glm::mat4 view = glm::lookAt(glm::vec3(4.7f, 6.1f, 5.4f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
     const std::string out = "artifacts/gallery_rainbow_cube.png";
-    ASSERT_TRUE(renderAndSave(gc, particles, bmin, voxel_size, ir, iso, grid_res, proj, view, out))
+    ASSERT_TRUE(renderAndSave(gc, particles, bmin, voxel_size, ir, iso, grid_res, proj, view, out, ext))
         << "Failed to render/save rainbow cube 64k";
 
     std::cout << "Rainbow cube (64k particles) saved: " << out << "\n";
@@ -250,7 +255,7 @@ TEST(MCRenderGallery, RainbowCube_AllSides)
     for (const auto& v : views) {
         glm::mat4 view = glm::lookAt(v.eye, target, v.up);
         const std::string out = std::string("artifacts/gallery_cube_") + v.label + ".png";
-        ASSERT_TRUE(renderAndSave(gc, particles, bmin, voxel_size, ir, iso, grid_res, proj, view, out))
+        ASSERT_TRUE(renderAndSave(gc, particles, bmin, voxel_size, ir, iso, grid_res, proj, view, out, ext))
             << "Failed to render cube side: " << v.label;
         std::cout << "Cube side [" << v.label << "] saved: " << out << "\n";
     }
@@ -292,7 +297,7 @@ TEST(MCRenderGallery, TwoParticlesMerging)
     glm::mat4 view = glm::lookAt(glm::vec3(3.0f, 1.5f, 3.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
     const std::string out = "artifacts/gallery_two_particles_merging.png";
-    ASSERT_TRUE(renderAndSave(gc, particles, bmin, voxel_size, ir, iso, grid_res, proj, view, out))
+    ASSERT_TRUE(renderAndSave(gc, particles, bmin, voxel_size, ir, iso, grid_res, proj, view, out, ext))
         << "Failed to render/save two-particle merge";
 
     std::cout << "Two particles merging saved: " << out << "\n";
@@ -302,7 +307,7 @@ TEST(MCRenderGallery, TwoParticlesMerging)
     // red-to-blue gradient and merge bridge clearly visible in the centre.
     glm::mat4 view_side = glm::lookAt(glm::vec3(0.0f, 0.5f, 4.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     const std::string out_side = "artifacts/gallery_two_particles_side.png";
-    ASSERT_TRUE(renderAndSave(gc, particles, bmin, voxel_size, ir, iso, grid_res, proj, view_side, out_side))
+    ASSERT_TRUE(renderAndSave(gc, particles, bmin, voxel_size, ir, iso, grid_res, proj, view_side, out_side, ext))
         << "Failed to render/save two-particle merge side view";
 
     std::cout << "Two particles side view saved: " << out_side << "\n";
@@ -369,7 +374,7 @@ TEST(MCRenderGallery, BridgingEffectSweep)
         float voxel_size = glm::max(ext.x, glm::max(ext.y, ext.z)) / static_cast<float>(grid_res);
 
         const std::string out = std::string("artifacts/gallery_bridge_") + s.label + ".png";
-        ASSERT_TRUE(renderAndSave(gc, particles, bmin, voxel_size, ir, iso, grid_res, proj, view, out))
+        ASSERT_TRUE(renderAndSave(gc, particles, bmin, voxel_size, ir, iso, grid_res, proj, view, out, ext))
             << "Failed to render bridge step: " << s.label;
 
         std::cout << "Bridge sweep [" << s.label << "] sep=" << s.d << " saved: " << out << "\n";

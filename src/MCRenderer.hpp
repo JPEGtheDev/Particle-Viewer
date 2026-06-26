@@ -69,19 +69,29 @@ class MCRenderer
     /// When dirty_flag_ is set, dispatches density_field.comp then marching_cubes.comp
     /// to (re)generate the isosurface mesh in vertex_ssbo_. Then draws it with mesh_prog.
     ///
-    /// @param particles      Particle positions (xyz) and category (w).
-    /// @param grid_origin    World-space origin of the density grid.
-    /// @param voxel_size     World-space size of one voxel.
-    /// @param influence_radius Gaussian sigma and hard cutoff for particle contribution.
-    /// @param iso_value      Density threshold for isosurface extraction.
-    /// @param density_prog   GL program for density_field.comp.
-    /// @param mc_prog        GL program for marching_cubes.comp.
-    /// @param mesh_prog      GL program for mesh.vert / mesh.frag.
-    /// @param projection     Camera projection matrix.
-    /// @param view           Camera view matrix.
+    /// @param particles            Particle positions (xyz) and category (w); used for
+    ///                             marching_cubes.comp color-blending (binding 3).
+    /// @param grid_origin          World-space origin of the density grid.
+    /// @param voxel_size           World-space size of one voxel.
+    /// @param influence_radius     Gaussian sigma and hard cutoff for particle contribution.
+    /// @param iso_value            Density threshold for isosurface extraction.
+    /// @param density_prog         GL program for density_field.comp.
+    /// @param mc_prog              GL program for marching_cubes.comp.
+    /// @param mesh_prog            GL program for mesh.vert / mesh.frag.
+    /// @param projection           Camera projection matrix.
+    /// @param view                 Camera view matrix.
+    /// @param cell_starts_ssbo     SSBO containing SpatialGrid::cell_starts (binding 2 in density_field.comp).
+    /// @param sorted_particles_ssbo SSBO containing SpatialGrid::sorted_particles (binding 3 in density_field.comp).
+    /// @param cell_size            SpatialGrid cell size (== influence_radius used during build).
+    /// @param cell_origin          SpatialGrid world-space origin.
+    /// @param num_cells_x          SpatialGrid cell count along X.
+    /// @param num_cells_y          SpatialGrid cell count along Y.
+    /// @param num_cells_z          SpatialGrid cell count along Z.
     void render(const std::vector<glm::vec4>& particles, const glm::vec3& grid_origin, float voxel_size,
                 float influence_radius, float iso_value, GLuint density_prog, GLuint mc_prog, GLuint mesh_prog,
-                const glm::mat4& projection, const glm::mat4& view);
+                const glm::mat4& projection, const glm::mat4& view, GLuint cell_starts_ssbo,
+                GLuint sorted_particles_ssbo, float cell_size, const glm::vec3& cell_origin, int num_cells_x,
+                int num_cells_y, int num_cells_z);
 
     // GL resource accessors (for use by render() in Todo 10, and for testing)
     GLuint densityTexture() const

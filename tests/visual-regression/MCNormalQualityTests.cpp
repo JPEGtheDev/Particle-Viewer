@@ -79,10 +79,16 @@ TEST(MCNormalQualityTest, SingleSphere_VertexNormals_AreRadial)
     glm::mat4 proj = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f);
     glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
+    const glm::vec3 extent_nq(voxel_size * static_cast<float>(grid_res));
+    SpatialGridSSBOs sg_nq;
+    sg_nq.build(particles, grid_origin, extent_nq, ir);
+
     MCRenderer mc(grid_res);
     mc.markDirty();
     mc.render(particles, grid_origin, voxel_size, ir, iso, density_shader.program(), mc_shader.program(),
-              mesh_shader.Program, proj, view);
+              mesh_shader.Program, proj, view, sg_nq.cell_starts_ssbo, sg_nq.sorted_particles_ssbo,
+              sg_nq.grid.cell_size, sg_nq.grid.cell_origin, sg_nq.grid.num_cells_x, sg_nq.grid.num_cells_y,
+              sg_nq.grid.num_cells_z);
 
     GLuint raw_count = 0;
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, mc.atomicCounter());
