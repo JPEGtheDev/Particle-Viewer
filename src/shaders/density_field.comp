@@ -13,7 +13,7 @@ layout(std430, binding = 3) readonly buffer SortedParticles { vec4 sorted_partic
 uniform int   grid_size;          // voxels per axis (64, 128, or 256)
 uniform vec3  grid_origin;        // world-space origin of the density grid
 uniform float voxel_size;         // world-space size of one voxel
-uniform float influence_radius;   // density kernel radius (also equals cell_size)
+uniform float influence_radius;   // density kernel radius
 
 // Spatial grid dimensions uploaded by ViewerApp
 uniform float cell_size;          // must equal influence_radius
@@ -24,6 +24,7 @@ uniform int   num_cells_z;
 
 void main() {
     if (influence_radius <= 0.0 || cell_size <= 0.0) { return; }
+    if (num_cells_x <= 0 || num_cells_y <= 0 || num_cells_z <= 0) { return; }
 
     ivec3 gid = ivec3(gl_GlobalInvocationID);
     if (gid.x >= grid_size || gid.y >= grid_size || gid.z >= grid_size) { return; }
