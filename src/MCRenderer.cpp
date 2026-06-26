@@ -153,7 +153,7 @@ void MCRenderer::deallocate()
 void MCRenderer::render(const std::vector<glm::vec4>& particles, const glm::vec3& grid_origin, float voxel_size,
                         float influence_radius, float iso_value, GLuint density_prog, GLuint mc_prog, GLuint mesh_prog,
                         const glm::mat4& projection, const glm::mat4& view, GLuint cell_starts_ssbo,
-                        GLuint sorted_particles_ssbo, float cell_size, glm::vec3 cell_origin, int num_cells_x,
+                        GLuint sorted_particles_ssbo, float cell_size, const glm::vec3& cell_origin, int num_cells_x,
                         int num_cells_y, int num_cells_z)
 {
     // Zero-particle guard: nothing to render

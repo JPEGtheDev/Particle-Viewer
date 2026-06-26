@@ -12,7 +12,6 @@
 // clang-format on
 
 #include <type_traits>
-#include <utility>
 #include <vector>
 
 #include <gtest/gtest.h>
@@ -54,7 +53,7 @@
 
 using RenderFnPtr17 = void (MCRenderer::*)(const std::vector<glm::vec4>&, const glm::vec3&, float, float, float, GLuint,
                                            GLuint, GLuint, const glm::mat4&, const glm::mat4&, GLuint, GLuint, float,
-                                           glm::vec3, int, int, int);
+                                           const glm::vec3&, int, int, int);
 
 // RED phase: this static_assert will fail before the signature is extended.
 // After implementation it becomes GREEN.
