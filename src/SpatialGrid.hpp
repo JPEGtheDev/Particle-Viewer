@@ -1,5 +1,6 @@
 #pragma once
 #include <algorithm>
+#include <cassert>
 #include <cmath>
 #include <cstdint>
 #include <vector>
@@ -25,7 +26,7 @@ struct SpatialGrid
                int max_cells_per_axis)
     {
         // Guard: invalid inputs -> clear and return.
-        if (influence_radius <= 0.0f || count <= 0) {
+        if (!particles || influence_radius <= 0.0f || count <= 0) {
             sorted_particles.clear();
             cell_starts.clear();
             num_cells_x = 0;
@@ -43,6 +44,9 @@ struct SpatialGrid
         num_cells_x = std::min(static_cast<int>(std::ceil(extent.x / cell_size)), max_cells_per_axis);
         num_cells_y = std::min(static_cast<int>(std::ceil(extent.y / cell_size)), max_cells_per_axis);
         num_cells_z = std::min(static_cast<int>(std::ceil(extent.z / cell_size)), max_cells_per_axis);
+
+        assert(max_cells_per_axis <= 256 &&
+               "SpatialGrid: max_cells_per_axis > 256 risks int32 overflow in total_cells");
 
         // Ensure at least 1 cell per axis so clamping is well-defined.
         if (num_cells_x < 1)

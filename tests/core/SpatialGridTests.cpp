@@ -165,3 +165,17 @@ TEST(SpatialGridTest, ParticleOutsideBounds_ClampsToNearestCell)
     // Particle should have been placed somewhere (clamped to a valid cell)
     EXPECT_EQ(grid.sorted_particles.size(), 1u);
 }
+
+// ---------------------------------------------------------------------------
+// Test 9: Non-positive influence radius -- treated same as empty input
+// ---------------------------------------------------------------------------
+TEST(SpatialGridTest, NonPositiveRadius_NoCrash)
+{
+    glm::vec4 p{0.5f, 0.5f, 0.5f, 1.0f};
+
+    SpatialGrid grid;
+    EXPECT_NO_FATAL_FAILURE(grid.build(&p, 1, /*influence_radius=*/0.0f, glm::vec3(0.0f), glm::vec3(10.0f),
+                                       /*max_cells_per_axis=*/64));
+
+    EXPECT_TRUE(grid.sorted_particles.empty());
+}
