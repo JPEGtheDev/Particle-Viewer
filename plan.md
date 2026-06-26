@@ -556,3 +556,168 @@ Pre-PR Checklist (AC10):
   (e.g., the default simulation) and record frame-time (e.g., ImGui fps overlay or
   external tool). Document the measurement in the PR description. No automated gate --
   this is a manual verification step required by AC10.
+
+---
+
+## Phase 8: Spatial Grid Density Acceleration
+
+Replaces the O(N) per-voxel particle loop in `density_field.comp` with a uniform spatial grid.
+Each voxel checks only particles in its 3x3x3 neighboring cells instead of all N.
+
+Expected speedup: 10-20x at 64^3 with 65536 particles (density pass: ~1s -> ~50ms).
+Thermal benefit: reduces sustained 100% GPU utilization during playback.
+
+### Skeptic Findings (addressed below in todo design)
+
+1. Rebuild trigger incomplete: The grid cell size equals influence_radius. If the user
+   changes influence_radius via slider (without loading new particles), the existing grid
+   is stale. Rebuild must fire on influence_radius change, not only on particle upload.
+
+2. "Numerically identical" is not achievable: Floating point addition is not associative.
+   The spatial grid processes particles in cell-sorted order; the original shader uses
+   particle-buffer order. Different summation order -> different mantissa rounding.
+   Acceptance criterion: within 2/255 pixel tolerance on the VR test baseline (same as
+   existing VR tests), NOT bit-for-bit identical.
+
+3. Architecture coupling: If ViewerApp binds SSBOs to GL slots 2/3 before calling
+   MCRenderer::render(), any future code added inside MCRenderer before the density
+   dispatch that also uses slots 2/3 silently breaks the spatial grid. Fix: MCRenderer
+   accepts the SSBO handles as parameters to render() and binds them itself, right
+   before the density dispatch.
+
+4. Pathological cell count: influence_radius=0.01 over a 100-unit extent -> 10000^3 cells.
+   Cap num_cells per axis at grid_size (max 256) to prevent memory blowup.
+
+### Todo 21: SpatialGrid unit tests (RED)
+
+Files: tests/core/SpatialGridTests.cpp (new)
+
+Tests:
+- Single particle at (0,0,0) with ir=1.0: maps to cell (0,0,0)
+- Particle at exact cell boundary: maps to expected cell (not off-by-one)
+- cell_starts[c] to cell_starts[c+1] contains exactly the particles whose positions
+  map to cell c (iterate and verify for a 3-particle case spanning 2 cells)
+- Empty particle list: cell_starts all zero, sorted_particles empty, no crash
+- All particles in same cell: cell_starts[cell+1] - cell_starts[cell] == particle_count
+- When influence_radius is halved and build() is called again: cell assignments update
+  correctly (verifies rebuild-on-ir-change behavior)
+- num_cells per axis capped at max_cells_per_axis (4 particles with ir=0.001 over a
+  100-unit extent, max=64: num_cells_x <= 64)
+
+RED: write all tests; verify they fail (SpatialGrid.hpp does not exist); COMMIT test file
+
+### Todo 22: SpatialGrid class (GREEN)
+
+Files: src/SpatialGrid.hpp (new)
+
+```
+struct SpatialGrid {
+    void build(const glm::vec4* particles, int count,
+               float influence_radius, glm::vec3 origin, glm::vec3 extent,
+               int max_cells_per_axis);
+
+    std::vector<glm::vec4> sorted_particles; // particles reordered by cell
+    std::vector<uint32_t>  cell_starts;      // [c]..[c+1] = particle range in cell c
+    int   num_cells_x = 0, num_cells_y = 0, num_cells_z = 0;
+    float cell_size   = 0.0f;
+    glm::vec3 cell_origin{};
+};
+```
+
+- build() steps: compute cell for each particle, counting-sort by cell ID, fill
+  cell_starts via prefix sum, copy particles in sorted order to sorted_particles
+- Clamp num_cells per axis to max_cells_per_axis before allocating
+
+GREEN: implement; run SpatialGridTests -- all pass; COMMIT
+
+### Todo 23: Update density_field.comp to use spatial grid
+
+Files: src/shaders/density_field.comp (modify)
+
+Add SSBOs and uniforms:
+```glsl
+layout(std430, binding = 2) readonly buffer CellStarts    { uint cell_starts[];     };
+layout(std430, binding = 3) readonly buffer SortedParticles { vec4 sorted_particles[]; };
+uniform float cell_size;
+uniform vec3  cell_origin;
+uniform int   num_cells_x, num_cells_y, num_cells_z;
+```
+
+Replace the O(N) for loop with a 3x3x3 neighbor cell loop:
+```glsl
+ivec3 vcell = clamp(ivec3(floor((voxel_center - cell_origin) / cell_size)),
+                    ivec3(0), ivec3(num_cells_x-1, num_cells_y-1, num_cells_z-1));
+float density = 0.0;
+for (int dx = -1; dx <= 1; ++dx) {
+  for (int dy = -1; dy <= 1; ++dy) {
+    for (int dz = -1; dz <= 1; ++dz) {
+      ivec3 nc = vcell + ivec3(dx, dy, dz);
+      if (any(lessThan(nc, ivec3(0)))) continue;
+      if (any(greaterThanEqual(nc, ivec3(num_cells_x, num_cells_y, num_cells_z)))) continue;
+      int cid = nc.x + nc.y * num_cells_x + nc.z * num_cells_x * num_cells_y;
+      for (uint i = cell_starts[cid]; i < cell_starts[cid + 1]; ++i) {
+          vec3  delta   = sorted_particles[i].xyz - voxel_center;
+          float dist_sq = dot(delta, delta);
+          if (dist_sq > ir_sq) continue;
+          float w = 1.0 - dist_sq * inv_ir_sq;
+          density += w * w * w;
+      }
+    }
+  }
+}
+```
+
+IMPORTANT: after editing src/shaders/density_field.comp, manually copy to
+build/Viewer-Assets/shaders/density_field.comp -- CMake only copies at configure time.
+
+COMMIT
+
+### Todo 24: ViewerApp spatial grid SSBO management
+
+Files: src/viewer_app.hpp (members), src/viewer_app.cpp (build + upload + pass to render)
+
+Add to ViewerApp:
+```
+SpatialGrid  spatial_grid_;
+GLuint       cell_starts_ssbo_     = 0;
+GLuint       sorted_particles_ssbo_ = 0;
+float        last_spatial_grid_ir_ = -1.0f;
+```
+
+Add rebuildSpatialGrid(influence_radius):
+1. Compute particle bounding box (or use grid_origin + grid_extent from MCRenderer)
+2. Call spatial_grid_.build(particles, count, ir, origin, extent, grid_size)
+3. Upload spatial_grid_.cell_starts to cell_starts_ssbo_ (glBufferData)
+4. Upload spatial_grid_.sorted_particles to sorted_particles_ssbo_ (glBufferData)
+5. Set last_spatial_grid_ir_ = influence_radius
+
+Call rebuildSpatialGrid() at:
+- (a) Particle load/frame advance (existing markDirty location in viewer_app.cpp)
+- (b) influence_radius change: in the mc_params_changed handler, check if
+  influence_radius != last_spatial_grid_ir_; if so, call rebuildSpatialGrid()
+
+Pass cell_starts_ssbo_ and sorted_particles_ssbo_ to MCRenderer::render() as parameters.
+MCRenderer binds them to slots 2 and 3 immediately before glDispatchCompute for density.
+Do NOT bind them in ViewerApp -- MCRenderer owns the bind timing (Skeptic gap 3 fix).
+
+Also set corresponding uniforms in the density shader:
+cell_size, cell_origin, num_cells_x, num_cells_y, num_cells_z
+
+COMMIT
+
+### Todo 25: Integration verification via existing VR test
+
+Files: none (run existing test)
+
+Run: cd build && ./tests/ParticleViewerTests --gtest_filter="MarchingCubesVRTest*"
+
+The existing MarchingCubesRenders_64ParticleGrid_MatchesBaseline test uses the 4x4x4
+64-particle fixture. If it passes within 2/255 pixel tolerance against the committed
+baseline, the spatial grid produces visually correct density output.
+
+Acceptance: test PASSES (exit 0).
+
+If the test fails: density is wrong. Diagnose before declaring the feature done.
+Do NOT update the baseline -- a baseline update means the rendering changed.
+
+COMMIT: only after the test passes.
