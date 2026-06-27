@@ -16,6 +16,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 // clang-format off
 // GLAD must come before other OpenGL-related headers
@@ -27,6 +28,8 @@
 #include "COMFileProvider.hpp"
 #include "FrameCache.hpp"
 #include "IFileDialog.hpp"
+#include "MCRenderer.hpp"
+#include "SpatialGrid.hpp"
 #include "ThreadedExecutor.hpp"
 #include "camera.hpp"
 #include "constants.hpp"
@@ -111,6 +114,10 @@ struct ShaderPaths
     std::string sphere_fragment = "/Viewer-Assets/shaders/sphereFragment.frag";
     std::string screen_vertex = "/Viewer-Assets/shaders/screenshader.vs";
     std::string screen_fragment = "/Viewer-Assets/shaders/screenshader.frag";
+    std::string density_comp = "/Viewer-Assets/shaders/density_field.comp";
+    std::string mc_comp = "/Viewer-Assets/shaders/marching_cubes.comp";
+    std::string mesh_vertex = "/Viewer-Assets/shaders/mesh.vert";
+    std::string mesh_fragment = "/Viewer-Assets/shaders/mesh.frag";
     std::string font;
 };
 
@@ -182,6 +189,13 @@ class ViewerApp
         recording_dialog_ = d;
     }
 
+    // Returns true when GL 4.3 compute shaders are available on this hardware.
+    // False until initialize() runs; remains false when GLAD_GL_VERSION_4_3 == 0.
+    bool computeShadersAvailable() const
+    {
+        return compute_shaders_available_;
+    }
+
     // Nav timer delays (milliseconds) — public so tests can assert on them
     static constexpr Uint64 NAV_INITIAL_DELAY_MS = 300; // delay before first D-pad repeat
     static constexpr Uint64 NAV_REPEAT_DELAY_MS = 150;  // interval between subsequent repeats
@@ -190,19 +204,29 @@ class ViewerApp
     static constexpr float NAV_STICK_THRESHOLD = 0.5f;
     static_assert(NAV_STICK_THRESHOLD > 0.0f && NAV_STICK_THRESHOLD < 1.0f, "Stick threshold must be in (0, 1)");
 
-    // Cycles through available render modes. Currently only Spheres is implemented;
-    // all other modes return to Spheres (placeholders for future work).
-    static constexpr RenderMode cycleRenderMode(RenderMode current)
+    // Cycles through available render modes. When compute_available is true the cycle
+    // includes MarchingCubes (requires GL 4.3 compute shaders). When compute_available
+    // is false only Spheres is reachable and the function always returns Spheres.
+    static RenderMode cycleRenderMode(RenderMode current, bool compute_available)
     {
-        switch (current) {
-            case RenderMode::Spheres:
-                return RenderMode::Spheres;
-            case RenderMode::ScreenSpaceMetaballs:
-                return RenderMode::Spheres;
-            case RenderMode::MarchingCubes:
-                return RenderMode::Spheres;
+        if (compute_available) {
+            switch (current) {
+                case RenderMode::Spheres:
+                    return RenderMode::MarchingCubes;
+                case RenderMode::MarchingCubes:
+                    return RenderMode::Spheres;
+                case RenderMode::ScreenSpaceMetaballs:
+                    return RenderMode::Spheres;
+            }
         }
         return RenderMode::Spheres;
+    }
+
+    // Returns true when the sphere pass should run in drawScene().
+    // Spheres are only rendered in Spheres mode; all other modes suppress the pass.
+    static bool shouldRenderSpheres(RenderMode mode)
+    {
+        return mode == RenderMode::Spheres;
     }
 
     // visible for testing — pure clamping helper used by processMenuNavigation()
@@ -232,7 +256,30 @@ class ViewerApp
     ShaderPaths paths_;
     MenuState menu_state_;
     RenderMode render_mode_ = RenderMode::Spheres;
+    bool compute_shaders_available_ = false;
     bool imgui_initialized_;
+
+    // Marching Cubes pipeline (null when GL 4.3 compute is unavailable)
+    std::unique_ptr<MCRenderer> mc_renderer_;
+    std::unique_ptr<ComputeShader> density_shader_;
+    std::unique_ptr<ComputeShader> mc_shader_;
+    std::unique_ptr<Shader> mesh_shader_;
+
+    // Cached MC grid parameters -- recomputed only when mc_renderer_ is dirty
+    std::vector<glm::vec4> mc_display_particles_;
+    glm::vec3 mc_bbox_min_ = glm::vec3(0.0f);
+    glm::vec3 mc_bbox_max_ = glm::vec3(0.0f);
+    float mc_voxel_size_ = 0.0f;
+    float mc_scaled_ir_ = 0.0f;
+    // Tracks which simulation frame the MC mesh was last computed for.
+    // Live/Sync mode marks dirty only when cur_frame_ differs from this value.
+    long mc_last_synced_frame_ = -1;
+
+    // Spatial grid acceleration structure for density_field.comp
+    SpatialGrid spatial_grid_;
+    GLuint cell_starts_ssbo_ = 0;
+    GLuint sorted_particles_ssbo_ = 0;
+    float last_spatial_grid_ir_ = -1.0f;
 
     // ============================================
     // Timing
@@ -369,6 +416,12 @@ class ViewerApp
     void teardownCacheInfrastructure();
     void createCOMInfrastructure();
     void teardownCOMInfrastructure();
+
+    /// Builds the CPU-side SpatialGrid from mc_display_particles_ and uploads
+    /// the resulting cell_starts and sorted_particles to their SSBOs.
+    /// Creates the SSBOs on the first call. Called whenever mc_display_particles_
+    /// is repopulated or mc_scaled_ir_ changes.
+    void rebuildSpatialGrid(float influence_radius);
 
     static constexpr std::size_t FRAME_CACHE_CAPACITY_BYTES = 256ULL * 1024 * 1024;
     static constexpr long PREFETCH_LOOKAHEAD_FRAMES = 64;

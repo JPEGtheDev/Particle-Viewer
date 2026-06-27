@@ -42,7 +42,12 @@ struct MenuActions
     bool stop_recording = false;      // stop an active recording
     bool render_mode_changed = false; // user selected a render mode from sub-panel
     int new_render_mode = 0;          // 0=Spheres, 1=SSM, 2=MarchingCubes (valid only when render_mode_changed)
+    bool mc_params_changed = false;   // MC parameter (iso_value, influence_radius, grid_resolution) changed
 };
+
+// Named integer value for the MarchingCubes render mode, matching RenderMode::MarchingCubes
+// in viewer_app.hpp. Used in MenuState::current_render_mode and MenuActions::new_render_mode.
+static constexpr int kRenderModeMC = 2;
 
 /*
  * Tracks which layer of the controller panel is active.
@@ -53,6 +58,38 @@ enum class PanelLayer
 {
     Main,
     RenderMode,
+};
+
+/*
+ * Grid resolution for the marching cubes density field.
+ * Higher values produce finer meshes at the cost of more VRAM and compute.
+ */
+enum class GridResolution : int
+{
+    Grid64 = 64,
+    Grid128 = 128,
+    Grid256 = 256,
+};
+
+/*
+ * Named item counts for controller panel sub-panels.
+ * Each enumerator's integer value equals the number of selectable items
+ * rendered in that sub-panel configuration.
+ */
+enum class SubPanelItemCount : int
+{
+    kBaseRenderMode = 3,    // Spheres + MC + Back
+    kMarchingCubesMode = 8, // Spheres + MC + Back + Grid64 + Grid128 + Grid256 + Iso + Radius
+};
+
+/*
+ * Controls whether the marching cubes mesh updates every frame (Live)
+ * or is frozen at its last computed state (Freeze).
+ */
+enum class LiveFreezeMode
+{
+    Live,
+    Freeze,
 };
 
 /*
@@ -78,7 +115,21 @@ struct MenuState
     bool is_recording = false; // mirrors recording_.is_active; set by ViewerApp each frame
 
     // Sub-panel state -- set by ViewerApp each frame before renderControllerPanel()
-    int current_render_mode = 0; // 0=Spheres, 1=SSM, 2=MarchingCubes
+    int current_render_mode = 0;            // 0=Spheres, 1=SSM, 2=MarchingCubes
+    bool compute_shaders_available = false; // true when OpenGL 4.3 compute shaders are available
+
+    // Marching cubes parameters
+    GridResolution grid_resolution = GridResolution::Grid128;
+    float iso_value = 0.3f;
+    float influence_radius = 2.0f;
+    LiveFreezeMode live_freeze = LiveFreezeMode::Live;
+    bool mc_refresh_requested = false;
+    bool mc_vram_downgrade_notification = false;
+    bool m_key_recording_notification = false;
+    // True when the hardware can support 256^3 grid resolution.
+    // Set once at startup by ViewerApp after resolveGridResolution().
+    // When false, the 256^3 radio button is disabled in the MC sub-panel.
+    bool mc_256_available = true;
 };
 
 /*
@@ -98,5 +149,24 @@ MenuActions renderMainMenu(MenuState& state);
  * Call after renderMainMenu() each frame.
  */
 MenuActions renderControllerPanel(MenuState& state);
+
+/*
+ * Adjusts the currently selected MC parameter (iso_value or influence_radius)
+ * by one step in the specified direction based on D-pad left/right input.
+ *
+ * Returns true when a parameter value was changed (caller should then set
+ * mc_params_changed = true in MenuActions and markDirty on the renderer).
+ * Returns false when the selected item is not an adjustable parameter.
+ *
+ * Only acts when panel_layer == RenderMode and current_render_mode == kRenderModeMC.
+ * Item 6 = Iso (step 0.01, clamped [0.0, 2.0]).
+ * Item 7 = Radius (step 0.1, clamped [0.1, 10.0]).
+ */
+bool adjustMcParam(MenuState& state, bool left);
+
+inline const char* getMarchingCubesLabel(bool compute_available)
+{
+    return compute_available ? "Marching Cubes" : "Marching Cubes (unavailable)";
+}
 
 #endif // PARTICLE_VIEWER_IMGUI_MENU_H

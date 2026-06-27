@@ -87,7 +87,9 @@ jobs:
 
     - name: Run Tests
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
-      run: ctest --build-config Debug --output-on-failure --verbose
+      run: |
+        ctest --build-config Debug --output-on-failure --verbose \
+          -E "MCRenderGallery|MarchingCubesVRTest|VisualRegressionTest|RenderingRegressionTest"
 
     - name: Verify Coverage Data Files
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
@@ -320,7 +322,7 @@ jobs:
       run: |
         # Run visual regression and rendering regression tests under Xvfb
         xvfb-run -a ./ParticleViewerTests \
-          --gtest_filter="VisualRegressionTest.*:RenderingRegressionTest.*" \
+          --gtest_filter="VisualRegressionTest.*:RenderingRegressionTest.*:MCRenderGallery.*:MarchingCubesVRTest.*" \
           --gtest_output=xml:visual-test-results.xml \
           2>&1 | tee visual-test-output.txt
 

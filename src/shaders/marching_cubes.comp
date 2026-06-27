@@ -1,0 +1,245 @@
+#version 430 core
+
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
+
+// Density field (written by density_field.comp, read here)
+layout(r32f, binding = 0) readonly uniform image3D density_field;
+
+// Output SSBO: triangles as flat vertex list
+// Each vertex: 3 floats for position, 3 for world-space normal, 3 for color
+// Total: 9 floats per vertex = 36 bytes
+layout(std430, binding = 1) writeonly buffer VertexBuffer {
+    float vertices[]; // packed: [px py pz nx ny nz cr cg cb] * vertex_count
+};
+
+// Vertex counter: tracks how many vertices have been written.
+// Declared as a plain SSBO uint so atomicAdd(counter, 3u) can claim all 3 slots
+// for a triangle atomically (atomicCounterAdd requires GLSL 4.60; atomicAdd on
+// SSBO members is available from GLSL 4.30).
+layout(std430, binding = 2) buffer VertexCounterBuffer {
+    uint vertex_counter;
+};
+
+// Particle data for color blending (same particles as density computation)
+layout(std430, binding = 3) readonly buffer ParticleBuffer {
+    vec4 particles[]; // xyz = position, w = category
+};
+
+// MC lookup tables (uploaded once as SSBO by MCRenderer).
+// std430 packs ints at 4-byte stride, matching the CPU upload.
+// std140 would pad each int to 16 bytes (69,632 bytes total),
+// exceeding GL_MAX_UNIFORM_BLOCK_SIZE (65,536 on NVIDIA) and causing link failure.
+layout(std430, binding = 4) readonly buffer MCTables {
+    int edge_table[256];
+    int tri_table[256 * 16]; // flattened from constexpr int tri_table[256][16]
+};
+
+// Uniforms (same as density_field.comp plus MC-specific)
+uniform int grid_size;
+uniform vec3 grid_origin;
+uniform float voxel_size;
+uniform float influence_radius;
+uniform int particle_count;
+uniform float iso_value;
+uniform int max_vertices; // SSBO capacity cap (2M triangles * 3 = 6M vertices)
+
+// Linear interpolation is valid: MC assumes density varies linearly across a voxel edge.
+vec3 interpEdge(vec3 p1, vec3 p2, float v1, float v2)
+{
+    if (abs(v2 - v1) < 1e-7) {
+        return mix(p1, p2, 0.5); // equal densities -- midpoint avoids NaN/Inf
+    }
+    float t = (iso_value - v1) / (v2 - v1);
+    return p1 + t * (p2 - p1);
+}
+
+// Compute outward-pointing world-space normal analytically from particle positions.
+//
+// The density field is rho(pos) = sum_i exp(-0.5 * |pos - p_i|^2 / ir^2).
+// Its gradient is grad_rho = sum_i -(pos - p_i)/ir^2 * rho_i.
+// The gradient points INWARD (toward the nearest particles); negate for outward.
+//
+// This gives exact normals for the underlying Gaussian field regardless of grid
+// resolution -- no discrete central-difference error.  The particle SSBO is
+// already bound for color blending, so re-using it has no extra memory cost.
+vec3 computeNormal(vec3 world_pos)
+{
+    if (influence_radius <= 0.0) {
+        return vec3(0.0, 1.0, 0.0);
+    }
+    float ir2 = influence_radius * influence_radius;
+    vec3 grad = vec3(0.0);
+    for (int i = 0; i < particle_count; ++i) {
+        vec3  diff = world_pos - particles[i].xyz;
+        float rho  = exp(-0.5 * dot(diff, diff) / ir2);
+        grad += -(diff / ir2) * rho;
+    }
+    if (length(grad) < 1e-6) {
+        return vec3(0.0, 1.0, 0.0);
+    }
+    // Negate: gradient points inward (toward high density), we want outward
+    return normalize(-grad);
+}
+
+// Replicate blendColors from marching_cubes_color.hpp in GLSL.
+// Returns grey (0.5, 0.5, 0.5) when no particle contributes (matches task spec).
+// Returns vec3(0.0) when influence_radius <= 0.0 (guard matching density shader pattern).
+vec3 computeColor(vec3 world_pos)
+{
+    if (influence_radius <= 0.0) {
+        return vec3(0.0);
+    }
+
+    vec3  color_sum  = vec3(0.0);
+    float weight_sum = 0.0;
+
+    for (int i = 0; i < particle_count; ++i) {
+        vec3  ppos = particles[i].xyz;
+        float dist = length(ppos - world_pos);
+        float ratio  = dist / influence_radius;
+        float weight = exp(-0.5 * ratio * ratio);
+
+        int  category  = int(particles[i].w);
+        vec3 cat_color;
+
+        if (category == 0) {
+            cat_color = vec3(1.0, 0.0, 0.0); // red
+        } else if (category == 1) {
+            cat_color = vec3(0.2, 0.6, 1.0); // blue
+        } else if (category == 2) {
+            cat_color = vec3(1.0, 0.0, 1.0); // magenta
+        } else if (category == 3) {
+            cat_color = vec3(0.89, 0.59, 0.0); // orange
+        } else if (category == 500) { // debug/rainbow mode -- per-particle unique color
+            cat_color = vec3(float(i % 40) / 40.0,
+                             float(i % 1600) / 1600.0,
+                             float(i % 64000) / 64000.0);
+        } else {
+            cat_color = vec3(0.5, 0.5, 0.5); // grey (default)
+        }
+
+        color_sum += weight * cat_color;
+        weight_sum += weight;
+    }
+
+    if (weight_sum == 0.0) {
+        return vec3(0.5, 0.5, 0.5); // grey when no particle contributes
+    }
+    return color_sum / weight_sum;
+}
+
+void main()
+{
+    // Each invocation handles one cube at grid position (gx, gy, gz)
+    int gx = int(gl_GlobalInvocationID.x);
+    int gy = int(gl_GlobalInvocationID.y);
+    int gz = int(gl_GlobalInvocationID.z);
+
+    // Step 1: Bounds check -- a cube at gx requires corners gx and gx+1
+    if (gx >= grid_size - 1 || gy >= grid_size - 1 || gz >= grid_size - 1) {
+        return;
+    }
+
+    // Step 2: Sample 8 density corners
+    float d[8];
+    d[0] = imageLoad(density_field, ivec3(gx,     gy,     gz    )).r;
+    d[1] = imageLoad(density_field, ivec3(gx + 1, gy,     gz    )).r;
+    d[2] = imageLoad(density_field, ivec3(gx + 1, gy,     gz + 1)).r;
+    d[3] = imageLoad(density_field, ivec3(gx,     gy,     gz + 1)).r;
+    d[4] = imageLoad(density_field, ivec3(gx,     gy + 1, gz    )).r;
+    d[5] = imageLoad(density_field, ivec3(gx + 1, gy + 1, gz    )).r;
+    d[6] = imageLoad(density_field, ivec3(gx + 1, gy + 1, gz + 1)).r;
+    d[7] = imageLoad(density_field, ivec3(gx,     gy + 1, gz + 1)).r;
+
+    // Step 3: Compute cube index
+    int cube_index = 0;
+    if (d[0] < iso_value) cube_index |= 1;
+    if (d[1] < iso_value) cube_index |= 2;
+    if (d[2] < iso_value) cube_index |= 4;
+    if (d[3] < iso_value) cube_index |= 8;
+    if (d[4] < iso_value) cube_index |= 16;
+    if (d[5] < iso_value) cube_index |= 32;
+    if (d[6] < iso_value) cube_index |= 64;
+    if (d[7] < iso_value) cube_index |= 128;
+
+    // Step 4: Early exit if no surface
+    if (edge_table[cube_index] == 0) {
+        return;
+    }
+
+    // Step 5: Compute world positions for the 8 corners
+    vec3 p[8];
+    p[0] = grid_origin + vec3(gx,     gy,     gz    ) * voxel_size;
+    p[1] = grid_origin + vec3(gx + 1, gy,     gz    ) * voxel_size;
+    p[2] = grid_origin + vec3(gx + 1, gy,     gz + 1) * voxel_size;
+    p[3] = grid_origin + vec3(gx,     gy,     gz + 1) * voxel_size;
+    p[4] = grid_origin + vec3(gx,     gy + 1, gz    ) * voxel_size;
+    p[5] = grid_origin + vec3(gx + 1, gy + 1, gz    ) * voxel_size;
+    p[6] = grid_origin + vec3(gx + 1, gy + 1, gz + 1) * voxel_size;
+    p[7] = grid_origin + vec3(gx,     gy + 1, gz + 1) * voxel_size;
+
+    // Step 6: Interpolate edge vertices (12 possible edges)
+    // Only compute vertices for edges flagged in edge_table[cube_index]
+    vec3 edge_verts[12];
+    int  et = edge_table[cube_index];
+    if ((et & 1)    != 0) edge_verts[0]  = interpEdge(p[0], p[1], d[0], d[1]);
+    if ((et & 2)    != 0) edge_verts[1]  = interpEdge(p[1], p[2], d[1], d[2]);
+    if ((et & 4)    != 0) edge_verts[2]  = interpEdge(p[2], p[3], d[2], d[3]);
+    if ((et & 8)    != 0) edge_verts[3]  = interpEdge(p[3], p[0], d[3], d[0]);
+    if ((et & 16)   != 0) edge_verts[4]  = interpEdge(p[4], p[5], d[4], d[5]);
+    if ((et & 32)   != 0) edge_verts[5]  = interpEdge(p[5], p[6], d[5], d[6]);
+    if ((et & 64)   != 0) edge_verts[6]  = interpEdge(p[6], p[7], d[6], d[7]);
+    if ((et & 128)  != 0) edge_verts[7]  = interpEdge(p[7], p[4], d[7], d[4]);
+    if ((et & 256)  != 0) edge_verts[8]  = interpEdge(p[0], p[4], d[0], d[4]);
+    if ((et & 512)  != 0) edge_verts[9]  = interpEdge(p[1], p[5], d[1], d[5]);
+    if ((et & 1024) != 0) edge_verts[10] = interpEdge(p[2], p[6], d[2], d[6]);
+    if ((et & 2048) != 0) edge_verts[11] = interpEdge(p[3], p[7], d[3], d[7]);
+
+    // edge_verts[] elements are written above only for edges flagged in edge_table.
+    // Standard MC tables guarantee tri_table only references edges set in edge_table,
+    // so idx0/idx1/idx2 always index written elements. Safety depends on correct table data.
+
+    // Step 7-9: Emit triangles from tri_table
+    for (int tri = 0; tri < 5; ++tri) { // max 5 triangles per cube
+        int idx0 = tri_table[cube_index * 16 + tri * 3 + 0];
+        int idx1 = tri_table[cube_index * 16 + tri * 3 + 1];
+        int idx2 = tri_table[cube_index * 16 + tri * 3 + 2];
+
+        if (idx0 == -1) {
+            break;
+        }
+
+        // For each of the 3 vertices of this triangle
+        vec3 verts[3] = vec3[](edge_verts[idx0], edge_verts[idx1], edge_verts[idx2]);
+
+        // Claim all 3 vertex slots for this triangle in one atomic operation.
+        // Using 3 separate atomicCounterIncrement calls would allow other invocations
+        // to interleave their writes between slot 0 and slot 1 of this triangle.
+        // glDrawArrays(GL_TRIANGLES) then forms triangles from consecutive SSBO entries
+        // that came from entirely different cubes -- producing the crumpled/spiky look.
+        uint base_slot = atomicAdd(vertex_counter, 3u);
+        if (base_slot + 3u > uint(max_vertices)) {
+            return; // SSBO overflow: clamp, do not crash
+        }
+
+        for (int v = 0; v < 3; ++v) {
+            vec3 pos    = verts[v];
+            vec3 normal = computeNormal(pos);
+            vec3 color  = computeColor(pos);
+
+            // Reverse write order (2-v) to produce CCW winding for OpenGL GL_CULL_FACE(GL_BACK).
+            // The MC tri_table winds triangles CW when viewed from outside the isosurface,
+            // so we reverse here to correct the front-face convention.
+            uint base          = (base_slot + uint(2 - v)) * 9u;
+            vertices[base + 0u] = pos.x;
+            vertices[base + 1u] = pos.y;
+            vertices[base + 2u] = pos.z;
+            vertices[base + 3u] = normal.x;
+            vertices[base + 4u] = normal.y;
+            vertices[base + 5u] = normal.z;
+            vertices[base + 6u] = color.r;
+            vertices[base + 7u] = color.g;
+            vertices[base + 8u] = color.b;
+        }
+    }
+}

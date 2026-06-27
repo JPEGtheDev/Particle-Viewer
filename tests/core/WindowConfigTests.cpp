@@ -493,3 +493,58 @@ TEST_F(WindowConfigTest, SaveWindowConfig_FolderWithNewline_NewlineStripped)
     // The folder key itself must still be written (non-empty sanitized path)
     EXPECT_NE(contents.find("last_confirmed_folder="), std::string::npos);
 }
+
+// ============================================
+// Marching Cubes Configuration Tests
+// ============================================
+
+TEST_F(WindowConfigTest, SaveAndLoad_MarchingCubesParams_RoundTripsAllFourKeys)
+{
+    // Arrange
+    int save_grid_res = 64;
+    float save_iso = 0.3f;
+    float save_radius = 3.5f;
+    int save_freeze = 1;
+    saveWindowConfig(test_config_path, 1920, 1080, false, 0.0f, nullptr, save_grid_res, save_iso, save_radius,
+                     save_freeze);
+
+    // Act
+    int width = 0, height = 0;
+    bool fullscreen = false;
+    int load_grid_res = 0;
+    float load_iso = 0.0f;
+    float load_radius = 0.0f;
+    int load_freeze = 0;
+    loadWindowConfig(test_config_path, width, height, fullscreen, nullptr, nullptr, &load_grid_res, &load_iso,
+                     &load_radius, &load_freeze);
+
+    // Assert
+    EXPECT_EQ(load_grid_res, save_grid_res);
+    EXPECT_FLOAT_EQ(load_iso, save_iso);
+    EXPECT_FLOAT_EQ(load_radius, save_radius);
+    EXPECT_EQ(load_freeze, save_freeze);
+}
+
+TEST_F(WindowConfigTest, LoadWindowConfig_MissingMCKeys_UsesDefaults)
+{
+    // Arrange — file has only the required window keys, no MC keys
+    std::ofstream file(test_config_path);
+    file << "width=1920\nheight=1080\nfullscreen=0\n";
+    file.close();
+
+    int grid_res = 999;
+    float iso = 9.9f;
+    float radius = 9.9f;
+    int freeze = 9;
+
+    // Act
+    int width = 0, height = 0;
+    bool fullscreen = false;
+    loadWindowConfig(test_config_path, width, height, fullscreen, nullptr, nullptr, &grid_res, &iso, &radius, &freeze);
+
+    // Assert — defaults when keys absent: 128, 0.3f, 2.0f, 0
+    EXPECT_EQ(grid_res, 128);
+    EXPECT_FLOAT_EQ(iso, 0.3f);
+    EXPECT_FLOAT_EQ(radius, 2.0f);
+    EXPECT_EQ(freeze, 0);
+}

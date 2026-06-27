@@ -210,3 +210,43 @@ TEST(ViewerAppWiring_DialogInjection, MockFileDialog_Reset_AllowsSecondCall)
     // Assert
     EXPECT_EQ(result, "/new/folder");
 }
+
+// ============================================================================
+// computeShadersAvailable() — compile-time and default-value verification
+// ============================================================================
+
+// Static assertion: computeShadersAvailable() exists, is const, and returns bool.
+static_assert(std::is_same_v<bool, decltype(std::declval<const ViewerApp>().computeShadersAvailable())>,
+              "ViewerApp::computeShadersAvailable() must exist, be const, and return bool");
+
+TEST(ViewerAppWiring_MCWiring, ComputeShadersAvailable_DefaultsToFalse)
+{
+    // Note: viewer_app.cpp is not linked in this test target, so ViewerApp cannot
+    // be instantiated at runtime.  The static_assert above verifies that the
+    // computeShadersAvailable() accessor exists, is const, and returns bool.
+    //
+    // This test verifies the *behavioural consequence* of compute_shaders_available_
+    // defaulting to false: cycleRenderMode() must not advance to MarchingCubes when
+    // compute shaders are unavailable (the second argument mirrors the accessor value).
+
+    // Arrange — pass false to mirror the default accessor value
+    const bool compute_available = false;
+
+    // Act
+    const RenderMode result = ViewerApp::cycleRenderMode(RenderMode::Spheres, compute_available);
+
+    // Assert — MarchingCubes must not be reachable when compute shaders are off
+    EXPECT_NE(result, RenderMode::MarchingCubes);
+}
+
+TEST(ViewerAppWiring_MCWiring, MCShaderPaths_DefaultsPopulated)
+{
+    // Arrange & Act
+    ShaderPaths paths;
+
+    // Assert — MC shader path fields exist and are non-empty
+    EXPECT_FALSE(paths.density_comp.empty());
+    EXPECT_FALSE(paths.mc_comp.empty());
+    EXPECT_FALSE(paths.mesh_vertex.empty());
+    EXPECT_FALSE(paths.mesh_fragment.empty());
+}

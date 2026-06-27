@@ -16,8 +16,18 @@
 
 /*
  * Named indices for selectable items in the controller panel, in registration order.
- * Each enumerator's integer value must equal the zero-based index of its corresponding
- * item() call in renderControllerPanel(). Must stay in sync with those item() calls.
+ *
+ * Non-conditional items (FULLSCREEN through CLOSE): enumerator integer value equals the
+ * zero-based visual index of its item() call. The invariant holds unconditionally for
+ * these entries.
+ *
+ * Conditional items (VRAM_NOTIFICATION, M_KEY_RECORDING_NOTIFICATION): the enumerator
+ * value represents the slot index when ALL preceding conditional items are also present.
+ * When a preceding conditional item is absent, a later conditional item occupies an
+ * earlier slot. The switch dispatch in renderControllerPanel() accounts for this by
+ * checking the active flags before acting -- see comments in those cases.
+ *
+ * Must stay in sync with the item() calls in renderControllerPanel().
  */
 enum class PanelItem : int
 {
@@ -28,7 +38,9 @@ enum class PanelItem : int
     LOAD_FILE,
     RECORDING_FOLDER,
     RENDER_MODE,
-    CLOSE
+    CLOSE,
+    VRAM_NOTIFICATION,           // conditional: only present when mc_vram_downgrade_notification is true
+    M_KEY_RECORDING_NOTIFICATION // conditional: only present when m_key_recording_notification is true
 };
 
 /*
@@ -301,20 +313,115 @@ MenuActions renderControllerPanel(MenuState& state)
             actions.render_mode_changed = true;
             actions.new_render_mode = 0;
         };
+        auto selectMarchingCubes = [&] {
+            state.panel_layer = PanelLayer::Main;
+            actions.render_mode_changed = true;
+            actions.new_render_mode = kRenderModeMC;
+        };
         auto goBack = [&] { state.panel_layer = PanelLayer::Main; };
-
+        auto setGrid64 = [&] {
+            state.grid_resolution = GridResolution::Grid64;
+            actions.mc_params_changed = true;
+        };
+        auto setGrid128 = [&] {
+            state.grid_resolution = GridResolution::Grid128;
+            actions.mc_params_changed = true;
+        };
+        auto setGrid256 = [&] {
+            state.grid_resolution = GridResolution::Grid256;
+            actions.mc_params_changed = true;
+        };
+        auto incrementIso = [&] {
+            state.iso_value += 0.01f;
+            if (state.iso_value > 2.0f) {
+                state.iso_value = 0.0f;
+            }
+            actions.mc_params_changed = true;
+        };
+        auto incrementRadius = [&] {
+            state.influence_radius += 0.1f;
+            if (state.influence_radius > 10.0f) {
+                state.influence_radius = 0.1f;
+            }
+            actions.mc_params_changed = true;
+        };
         item("Spheres", true, selectSpheres);
         if (state.current_render_mode == 0) {
             ImGui::SameLine();
             ImGui::Text("[active]");
         }
 
-        item("Marching Cubes", false, [&] {});
-        ImGui::SetItemTooltip("Mode not supported");
+        item(getMarchingCubesLabel(state.compute_shaders_available), state.compute_shaders_available,
+             selectMarchingCubes);
+        if (!state.compute_shaders_available) {
+            ImGui::SetItemTooltip("Requires OpenGL 4.3 compute shaders");
+        }
 
         item("Back", true, goBack);
 
-        state.panel_item_count = item_count; // 3
+        // When MC is the active render mode, show parameter controls below the mode items.
+        // D-pad navigable indices: 3=Grid64, 4=Grid128, 5=Grid256, 6=Iso, 7=Radius.
+        if (state.current_render_mode == kRenderModeMC) {
+            ImGui::Separator();
+            ImGui::Text("Grid Resolution:");
+            item("Grid: 64", true, setGrid64);
+            if (state.grid_resolution == GridResolution::Grid64) {
+                ImGui::SameLine();
+                ImGui::Text("[active]");
+            }
+            item("Grid: 128", true, setGrid128);
+            if (state.grid_resolution == GridResolution::Grid128) {
+                ImGui::SameLine();
+                ImGui::Text("[active]");
+            }
+            item("Grid: 256", state.mc_256_available, setGrid256);
+            if (!state.mc_256_available) {
+                ImGui::SetItemTooltip("Requires more VRAM than available on this hardware");
+            }
+            if (state.grid_resolution == GridResolution::Grid256) {
+                ImGui::SameLine();
+                ImGui::Text("[active]");
+            }
+
+            // Iso-value: slider for mouse, D-pad left/right for fine tune, A-button confirm increments.
+            // item_count is incremented manually to keep D-pad navigation at indices 6 and 7.
+            ImGui::Text("Iso:");
+            ImGui::SameLine();
+            {
+                bool hi = (state.selected_panel_item == item_count);
+                if (hi) {
+                    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered]);
+                }
+                ImGui::SetNextItemWidth(180.0f);
+                if (ImGui::SliderFloat("##iso", &state.iso_value, 0.0f, 2.0f, "%.3f")) {
+                    actions.mc_params_changed = true;
+                }
+                if (hi) {
+                    ImGui::PopStyleColor();
+                }
+            }
+            ++item_count;
+
+            // Influence radius: slider for mouse, D-pad left/right for fine tune, A-button confirm increments.
+            ImGui::Text("Radius:");
+            ImGui::SameLine();
+            {
+                bool hi = (state.selected_panel_item == item_count);
+                if (hi) {
+                    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered]);
+                }
+                ImGui::SetNextItemWidth(180.0f);
+                if (ImGui::SliderFloat("##radius", &state.influence_radius, 0.1f, 10.0f, "%.1f")) {
+                    actions.mc_params_changed = true;
+                }
+                if (hi) {
+                    ImGui::PopStyleColor();
+                }
+            }
+            ++item_count;
+        }
+
+        state.panel_item_count = item_count;
 
         if (state.confirm_panel_item) {
             state.confirm_panel_item = false;
@@ -324,9 +431,37 @@ MenuActions renderControllerPanel(MenuState& state)
                         selectSpheres();
                         break;
                     case 1:
-                        break; // greyed, no-op
+                        if (state.compute_shaders_available) {
+                            selectMarchingCubes();
+                        }
+                        break;
                     case 2:
                         goBack();
+                        break;
+                    case 3:
+                        if (state.current_render_mode == kRenderModeMC) {
+                            setGrid64();
+                        }
+                        break;
+                    case 4:
+                        if (state.current_render_mode == kRenderModeMC) {
+                            setGrid128();
+                        }
+                        break;
+                    case 5:
+                        if (state.current_render_mode == kRenderModeMC && state.mc_256_available) {
+                            setGrid256();
+                        }
+                        break;
+                    case 6:
+                        if (state.current_render_mode == kRenderModeMC) {
+                            incrementIso();
+                        }
+                        break;
+                    case 7:
+                        if (state.current_render_mode == kRenderModeMC) {
+                            incrementRadius();
+                        }
                         break;
                     default:
                         break;
@@ -364,6 +499,14 @@ MenuActions renderControllerPanel(MenuState& state)
         });
 
         item("Close", true, [&] { actions.close_panel = true; });
+
+        if (state.mc_vram_downgrade_notification) {
+            item("VRAM: 256^3 unavailable, using 128^3", true, [&] { state.mc_vram_downgrade_notification = false; });
+        }
+
+        if (state.m_key_recording_notification) {
+            item("M: mode locked (recording)", true, [&] { state.m_key_recording_notification = false; });
+        }
 
         state.panel_item_count = item_count;
         if (state.confirm_panel_item) {
@@ -406,6 +549,22 @@ MenuActions renderControllerPanel(MenuState& state)
                     case PanelItem::CLOSE:
                         actions.close_panel = true;
                         break;
+                    case PanelItem::VRAM_NOTIFICATION:
+                        // This slot is VRAM when mc_vram_downgrade_notification is true,
+                        // or M_KEY when only m_key_recording_notification is true.
+                        if (state.mc_vram_downgrade_notification) {
+                            state.mc_vram_downgrade_notification = false;
+                        } else if (state.m_key_recording_notification) {
+                            state.m_key_recording_notification = false;
+                        }
+                        break;
+                    case PanelItem::M_KEY_RECORDING_NOTIFICATION:
+                        // This slot is only reached when both VRAM and M_KEY notifications are active.
+                        // The inner guard is defensive (matches the pattern in VRAM_NOTIFICATION above).
+                        if (state.m_key_recording_notification) {
+                            state.m_key_recording_notification = false;
+                        }
+                        break;
                     default:
                         assert(false && "selected_panel_item in-range but no PanelItem case -- enum out of sync");
                         break;
@@ -416,4 +575,36 @@ MenuActions renderControllerPanel(MenuState& state)
 
     ImGui::End();
     return actions;
+}
+
+bool adjustMcParam(MenuState& state, bool left)
+{
+    if (state.panel_layer != PanelLayer::RenderMode || state.current_render_mode != kRenderModeMC) {
+        return false;
+    }
+
+    constexpr int kIsoItem = 6;
+    constexpr int kRadiusItem = 7;
+
+    if (state.selected_panel_item == kIsoItem) {
+        constexpr float kStep = 0.01f;
+        if (left) {
+            state.iso_value = std::max(0.0f, state.iso_value - kStep);
+        } else {
+            state.iso_value = std::min(2.0f, state.iso_value + kStep);
+        }
+        return true;
+    }
+
+    if (state.selected_panel_item == kRadiusItem) {
+        constexpr float kStep = 0.1f;
+        if (left) {
+            state.influence_radius = std::max(0.1f, state.influence_radius - kStep);
+        } else {
+            state.influence_radius = std::min(10.0f, state.influence_radius + kStep);
+        }
+        return true;
+    }
+
+    return false;
 }

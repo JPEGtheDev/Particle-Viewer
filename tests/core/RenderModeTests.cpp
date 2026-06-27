@@ -30,22 +30,25 @@ TEST(RenderModeTest, AllEnumerators_WhenCompared_AreDistinct)
     EXPECT_NE(RenderMode::Spheres, RenderMode::MarchingCubes);
 }
 
-// cycleRenderMode always returns Spheres; SSM and MarchingCubes are not yet implemented.
-
-TEST(RenderModeTest, CycleRenderMode_FromSpheres_ReturnsSpheres)
+TEST(RenderModeTest, CycleRenderMode_FromSpheres_ComputeAvailable_ReturnsMarchingCubes)
 {
-    RenderMode next = ViewerApp::cycleRenderMode(RenderMode::Spheres);
+    RenderMode next = ViewerApp::cycleRenderMode(RenderMode::Spheres, true);
+    EXPECT_EQ(next, RenderMode::MarchingCubes);
+}
+
+TEST(RenderModeTest, CycleRenderMode_FromMC_ComputeAvailable_ReturnsSpheres)
+{
+    RenderMode next = ViewerApp::cycleRenderMode(RenderMode::MarchingCubes, true);
     EXPECT_EQ(next, RenderMode::Spheres);
 }
 
-TEST(RenderModeTest, CycleRenderMode_FromSSM_ReturnsSpheres)
+TEST(RenderModeTest, CycleRenderMode_FromSpheres_ComputeUnavailable_ReturnsSpheres)
 {
-    RenderMode next = ViewerApp::cycleRenderMode(RenderMode::ScreenSpaceMetaballs);
+    RenderMode next = ViewerApp::cycleRenderMode(RenderMode::Spheres, false);
     EXPECT_EQ(next, RenderMode::Spheres);
 }
 
-TEST(RenderModeTest, CycleRenderMode_FromMarchingCubes_ReturnsSpheres)
+TEST(RenderModeTest, CycleRenderMode_FromScreenSpaceMetaballs_ComputeAvailable_ReturnsSpheres)
 {
-    RenderMode next = ViewerApp::cycleRenderMode(RenderMode::MarchingCubes);
-    EXPECT_EQ(next, RenderMode::Spheres);
+    EXPECT_EQ(ViewerApp::cycleRenderMode(RenderMode::ScreenSpaceMetaballs, true), RenderMode::Spheres);
 }
