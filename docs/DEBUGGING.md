@@ -41,7 +41,7 @@ UI (User Interface) layer (ImGui menu -- imgui_menu.hpp/cpp)
     v
 Graphics layer (IOpenGLContext, SDL3Context)
     v
-OpenGL driver (via GLAD (OpenGL Loader-Generator library))
+OpenGL driver (via GLAD (an OpenGL function loader generator))
     v
 Shader (GLSL (OpenGL Shading Language) -- Viewer-Assets/shaders/)
     v
