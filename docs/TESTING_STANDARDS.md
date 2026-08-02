@@ -11,6 +11,9 @@ related:
   - "testing-standards-organization.md"
   - "testing-standards-mocking.md"
   - "testing-standards-coverage.md"
+  - "DEBUGGING.md"
+  - "testing/testing-examples.md"
+  - "testing/test-conventions.md"
 ---
 
 # Particle-Viewer Testing Standards
@@ -48,3 +51,6 @@ Standards and best practices for all tests in this project, using **Google Test*
 - [Coding Standards](CODING_STANDARDS.md) -- formatting and naming conventions
 - [testing-standards-aaa.md](testing-standards-aaa.md) -- Arrange-Act-Assert structure and rules
 - [testing-standards-coverage.md](testing-standards-coverage.md) -- coverage targets and priorities
+- [Debugging Reference](DEBUGGING.md) -- debug commands for build, test filtering, and visual regression diffs
+- [testing/testing-examples.md](testing/testing-examples.md) -- concrete correct/incorrect test examples applying these standards
+- [testing/test-conventions.md](testing/test-conventions.md) -- naming, file organization, and test double taxonomy conventions

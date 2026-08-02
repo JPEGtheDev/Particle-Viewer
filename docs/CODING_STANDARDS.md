@@ -11,6 +11,7 @@ related:
   - "coding-standards-organization.md"
   - "coding-standards-modern-cpp.md"
   - "coding-standards-tools.md"
+  - "ARCHITECTURE.md"
 ---
 
 # Particle-Viewer Coding Standards
@@ -49,3 +50,4 @@ This project follows the [Microsoft C++ Core Guidelines](https://isocpp.github.i
 - [Testing Standards](TESTING_STANDARDS.md) -- testing expectations and patterns
 - [coding-standards-formatting.md](coding-standards-formatting.md) -- indentation, braces, spacing, include order
 - [coding-standards-naming.md](coding-standards-naming.md) -- PascalCase, camelCase, snake_case conventions
+- [Layer Architecture](ARCHITECTURE.md) -- layered dependency model these coding standards apply within
