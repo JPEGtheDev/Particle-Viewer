@@ -1,9 +1,9 @@
 ---
-title: "Project Scope Verification"
+title: "Project Scope Gate"
 description: "Scope gate for Particle Viewer work: what the project is (viewer) and is not (simulator), and the project-context loading guide."
 domain: cross-cutting
 subdomain: ""
-tags: [context, scope, planning]
+tags: [cross-cutting, context, scope, planning]
 related:
   - "PROJECT_CONTEXT.md"
 ---
@@ -14,7 +14,7 @@ related:
 
 **CRITICAL: Verify Project Scope First**
 
-Before asking any other questions, **load and review** `references/PARTICLE_VIEWER_CONTEXT.md` to understand:
+Before asking any other questions, **load and review** [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md) to understand:
 - **What this project actually does** (it's a VIEWER for pre-computed simulations, NOT a simulator)
 - What components exist vs don't exist
 - Current architecture and pain points
@@ -34,7 +34,7 @@ Before asking any other questions, **load and review** `references/PARTICLE_VIEW
 Throughout the conversation, Load project-specific references **when needed**:
 
 ### For Particle-Viewer stories:
-**Load `references/PARTICLE_VIEWER_CONTEXT.md` IMMEDIATELY when:**
+**Load [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md) IMMEDIATELY when:**
 - User requests ANY story for this project
 - Before asking clarifying questions (so you ask the RIGHT questions)
 - Need to understand what actually exists vs assumptions
@@ -45,15 +45,19 @@ Throughout the conversation, Load project-specific references **when needed**:
 - Are we focusing on real value (rendering, I/O, visualization) or imagined features (physics simulation)?
 
 ### For INVEST validation:
-Load `references/INVEST_FRAMEWORK.md` when:
+Apply the INVEST (Independent, Negotiable, Valuable, Estimable, Small, Testable) framework when:
 - User asks "what makes a good story?"
 - Story seems to violate INVEST principles
 - Need to explain why you're suggesting certain changes
 
 ### For story examples:
-Load `references/STORY_TEMPLATES.md` when:
+Draw on story format examples when:
 - User is new to story writing
-- Need to show format variations (BDD vs bullets)
+- Need to show format variations (BDD (Behavior-Driven Development) vs bullets)
 - Asked for examples of features, refactors, spikes, or bugs
 
-**Don't load all references upfront.** Use progressive disclosure--load only what you need when you need it.
+**Don't load project context speculatively.** Use progressive disclosure--load `PROJECT_CONTEXT.md` only when you need it, not upfront for every conversation.
+
+## Related
+
+- [Project Context](PROJECT_CONTEXT.md) -- component inventory, architecture overview, and what this project is/is not
