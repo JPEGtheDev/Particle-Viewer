@@ -24,7 +24,7 @@ Before pushing any change:
 
 1. `cmake --build build` exits 0 - no build errors
 2. `./build/tests/ParticleViewerTests` exits 0 - all tests pass
-3. Every `FetchContent_Declare` has a `GIT_TAG` pinned to a tag or commit SHA, not a branch name
+3. Every `FetchContent_Declare` has a `GIT_TAG` pinned to a tag or commit SHA (commit hash), not a branch name
 4. No new dependency duplicates an existing transitive dependency at a different version
 5. If shader files were changed: build was re-run so `Viewer-Assets/shaders/` is current
 
@@ -93,7 +93,7 @@ cmake --install build
 
 ### One Version Rule
 
-**Iron Gate:** One version of each dependency in the build. No version aliases, no parallel installations, no `if(FOUND v1) else(use v2)` chains.
+**Iron Gate** (this skill's non-negotiable checkpoint before any dependency change is allowed): One version of each dependency in the build. No version aliases, no parallel installations, no `if(FOUND v1) else(use v2)` chains.
 
 **Rule:** Before adding or upgrading any dependency:
 1. Check if that library is already a transitive dependency of another component
@@ -138,7 +138,7 @@ Install OpenGL development packages. Ensure `OpenGL::GL` CMake target is availab
 Run from the build directory, or ensure `Viewer-Assets/shaders/` exists alongside the binary.
 
 **Flatpak build issues:**
-See the `flatpak` skill for MSAA fallback, SDL3 module setup, NVIDIA GL workarounds, and setenv gotchas.
+See the `flatpak` skill for Multisample Anti-Aliasing (MSAA) fallback, SDL3 module setup, NVIDIA GL workarounds, and setenv gotchas.
 
 ---
 
