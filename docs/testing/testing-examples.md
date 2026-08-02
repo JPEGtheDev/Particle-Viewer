@@ -50,7 +50,7 @@ TEST_F(CameraTest, MoveForward_IncreasesPositionAlongFrontVector)
 
 ### Unit Test: Constructor with Named Expected Values
 
-From the `ImageStructTest` suite in `tests/testing/ImageTests.cpp`:
+Quoted from the `ImageStructTest` suite in `tests/testing/ImageTests.cpp`:
 
 ```cpp
 TEST(ImageStructTest, Constructor_WithDimensions_SetsWidthAndHeight)
@@ -70,7 +70,7 @@ TEST(ImageStructTest, Constructor_WithDimensions_SetsWidthAndHeight)
 
 ### Unit Test: No Arrange Needed (Omit It)
 
-From the `ImageTest` suite in `tests/testing/PixelComparatorTests.cpp` (an equivalent test also exists as `ImageStructTest.DefaultConstructor_CreatesEmptyImage` in `tests/testing/ImageTests.cpp`):
+Quoted from the `ImageTest` suite in `tests/testing/PixelComparatorTests.cpp` (an equivalent test also exists as `ImageStructTest.DefaultConstructor_CreatesEmptyImage` in `tests/testing/ImageTests.cpp`):
 
 ```cpp
 TEST(ImageTest, DefaultConstructor_CreatesEmptyImage)
@@ -85,7 +85,7 @@ TEST(ImageTest, DefaultConstructor_CreatesEmptyImage)
 
 ### Unit Test: PixelComparator Exact Match
 
-From the `PixelComparatorTest` suite in `tests/testing/PixelComparatorTests.cpp`. `createSolidImage()` is a file-local helper (not a shared header) -- see [Visual Regression Test Helpers](#visual-regression-test-helpers) below:
+Quoted from the `PixelComparatorTest` suite in `tests/testing/PixelComparatorTests.cpp`. `createSolidImage()` is a file-local helper (not a shared header) -- see [Visual Regression Test Helpers](#visual-regression-test-helpers) below:
 
 ```cpp
 TEST(PixelComparatorTest, Compare_IdenticalImages_Matches)
@@ -104,6 +104,8 @@ TEST(PixelComparatorTest, Compare_IdenticalImages_Matches)
 ```
 
 ### Unit Test: PixelComparator Tolerance Match
+
+Adapted from the same suite in `tests/testing/PixelComparatorTests.cpp` (source uses a unicode plus-minus sign; rewritten as `+/-1` to keep this document ASCII-only):
 
 ```cpp
 TEST(PixelComparatorTest, Compare_SmallDiffWithinTolerance_Matches)
@@ -151,7 +153,7 @@ TEST_F(RenderingRegressionTest, RenderSingleParticle_CenteredView_MatchesBaselin
 
 ### Image Save/Load: Round-Trip (RGB preserved, alpha discarded)
 
-Adapted from `Save_PPM_RoundTrip_PreservesPixelData` in the `ImageIOTest` fixture (`tests/testing/ImageTests.cpp`; `test_dir_` is created in `SetUp()` and removed in `TearDown()`):
+Quoted from `Save_PPM_RoundTrip_PreservesPixelData` in the `ImageIOTest` fixture (`tests/testing/ImageTests.cpp`; `test_dir_` is created in `SetUp()` and removed in `TearDown()`):
 
 ```cpp
 TEST_F(ImageIOTest, Save_PPM_RoundTrip_PreservesPixelData)
