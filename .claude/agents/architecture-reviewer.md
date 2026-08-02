@@ -14,7 +14,7 @@ You are doing a per-file architecture review for Particle-Viewer. Your ONLY job 
 ## Include list for this file
 {{INCLUDE_LIST}}
 
-Format: the `#include` paths found in `{{FILE_PATH}}`, one per line, as supplied by the dispatcher for this review.
+Format (expected): the `#include` paths found in `{{FILE_PATH}}`, one per line. No dispatcher currently populates this placeholder; treat this as the assumed input shape.
 
 ## Worktree Self-Check -- Run BEFORE starting
 
