@@ -7,6 +7,7 @@ tags: [testing, conventions, mocking, organization]
 related:
   - "../TESTING_STANDARDS.md"
   - "integration-tests.md"
+  - "testing-examples.md"
 ---
 
 # Particle-Viewer Test Conventions
@@ -17,39 +18,26 @@ Project-specific testing patterns, examples, and design principles for Particle-
 
 ## Unit Test Example (Camera)
 
-```cpp
-TEST(CameraTest, MoveForward_DefaultSpeed_IncreasesPosition)
-{
-    // Arrange
-    Camera camera(800, 600);
-    camera.cameraPos = glm::vec3(0.0f, 0.0f, 0.0f);
-    camera.setSpeed(1.0f);
-
-    // Act
-    camera.moveForward();
-
-    // Assert
-    EXPECT_LT(camera.cameraPos.z, 0.0f);
-}
-```
+See [Unit Test: Camera Movement](testing-examples.md#unit-test-camera-movement) in testing-examples.md for the canonical example: `TEST_F(CameraTest, MoveForward_IncreasesPositionAlongFrontVector)`, quoted there from `tests/core/CameraTests.cpp`.
 
 ---
 
 ## Integration Test Example (SettingsIO)
 
+Quoted from the `DataLoadingPipelineTest` fixture in `tests/integration/DataLoadingPipelineTests.cpp` (`posPath`/`statsPath`/`comPath` are fixture members pointing at files written by the fixture's `createTestDataFiles()` helper in `SetUp()`; `NUM_PARTICLES` is a fixture enum constant, 50):
+
 ```cpp
-TEST(DataLoadingPipelineTest, LoadSettings_ValidFile_PopulatesParticles)
+TEST_F(DataLoadingPipelineTest, LoadSettings_ThenReadFrame_PopulatesParticleData)
 {
-    // Arrange
-    SettingsIO settings;
-    std::string test_file = createTestSettingsFile();
+    // Arrange: Create SettingsIO to read the settings file
+    SettingsIO settings(posPath, statsPath, comPath);
+    Particle part;
 
-    // Act
-    bool result = settings.loadSettings(test_file);
+    // Act: Load frame 0 through the pipeline
+    settings.readPosVelFile(0, &part, false);
 
-    // Assert
-    EXPECT_TRUE(result);
-    EXPECT_GT(settings.getParticleCount(), 0u);
+    // Assert: Particle data is populated with correct count
+    EXPECT_EQ(part.n, NUM_PARTICLES);
 }
 ```
 
@@ -71,9 +59,9 @@ File naming: each test file matches its source -- `CameraTests.cpp` tests `camer
 
 1. **Use production classes in tests.** Visual regression tests MUST use `Particle` directly instead of re-implementing particle creation logic in a test helper class. This ensures tests stay in sync with production code.
 
-2. **Group related data into POCOs/structs.** When a test or test helper has many flat member variables, group them into domain-specific structs (e.g., `RenderConfig`, `CameraSetup`). This mirrors the production code pattern.
+2. **Group related data into POCOs (Plain Old C++ Objects -- plain data structs)/structs.** When a test or test helper has many flat member variables, group them into domain-specific structs (e.g., `RenderConfig`, `CameraSetup`). This mirrors the production code pattern.
 
-3. **Clean up GL resources.** Every test that creates GL objects (VAOs, VBOs, FBOs, textures) must clean them up. Check for leaks in `cleanup()` / destructors.
+3. **Clean up GL resources.** Every test that creates GL objects (VAOs [Vertex Array Objects], VBOs [Vertex Buffer Objects], FBOs [Framebuffer Objects], textures) must clean them up. Check for leaks in `cleanup()` / destructors.
 
 4. **Binary file I/O.** Always open binary data files with `"rb"` mode (not `"r"`) for cross-platform correctness.
 
@@ -81,13 +69,13 @@ File naming: each test file matches its source -- `CameraTests.cpp` tests `camer
 
 6. **Visual test resolution.** Use the viewer's default resolution (1280x720) for visual regression tests unless specifically testing other resolutions. Non-default resolutions can cause warping and scaling artifacts.
 
-7. **Camera positioning for visual tests.** Don't blindly copy debug camera coordinates -- debug shows interactive state, not ideal test framing. Extract the viewing **direction** from debug output, then calculate **distance** based on desired viewport coverage: `distance = subject_size / (coverage_% * tan(FOV/2))`. See `docs/visual-regression/camera-positioning-lessons-learned.md`.
+7. **Camera positioning for visual tests.** Don't blindly copy debug camera coordinates -- debug shows interactive state, not ideal test framing. Extract the viewing **direction** from debug output, then calculate **distance** based on desired viewport coverage and the camera's FOV (Field of View): `distance = subject_size / (coverage_% * tan(FOV/2))`. See `docs/visual-regression/camera-positioning-lessons-learned.md`.
 
 8. **Every bug fix requires a regression test.** Write a test that reproduces the bug (fails before the fix). Fix the code. Confirm the test now passes. A bug fixed without a test is a bug scheduled for a return visit.
 
 ---
 
-For project test runner commands, see the `execution` skill.
+For project test runner commands, see [Verification Commands](../VERIFICATION_COMMANDS.md).
 
 ---
 
@@ -102,11 +90,11 @@ Use the **least sophisticated double** that answers your question. Reaching for 
 | **Mock** | Returns values AND verifies call expectations | Yes -- test fails if expected calls are not made | You must assert `glDrawArrays` was called exactly once with specific arguments |
 | **Shunt / SelfShunt** | The test fixture itself implements the interface | Inspected in teardown | Lowest setup overhead when the fixture plays both collaborator and verifier |
 
-**Google Mock mapping:** Stub -> subclass returning constants. Fake -> subclass with setters. Mock -> `MOCK_METHOD` + `EXPECT_CALL` + `Times()`. Shunt -> `TEST_F` fixture inherits from the interface.
+**Project reality:** Particle-Viewer does not use Google Mock -- `tests/CMakeLists.txt` links only `gtest` and `gtest_main`, and a repo-wide grep for `MOCK_METHOD`/`EXPECT_CALL` returns zero hits under `--include="*.cpp" --include="*.hpp"`. Every test double here is hand-rolled. For example, `MockOpenGLContext` (`tests/mocks/MockOpenGLContext.hpp`) is a hand-rolled **Fake**, not a Mock: it subclasses `IOpenGLContext` and returns programmable values via setters (`setTime()`, `setContentScale()`, `setSwapInterval()`), and it exposes call counters (`getSwapCount()`, `getPollCount()`) that a test reads and asserts on manually -- there is no `EXPECT_CALL`/`Times()` machinery verifying calls automatically.
 
-**Key principle:** Mock the *role* (interface), not the concrete object. `MockOpenGLContext` mocks `IOpenGLContext` -- stable across implementation changes.
+**Key principle:** Mock the *role* (interface), not the concrete object. `MockOpenGLContext` implements `IOpenGLContext` -- stable across implementation changes.
 
-**When NOT to use Google Mock:** If the question is "does this run without crashing?", a stub suffices. Only use `EXPECT_CALL` when the interaction itself is the behavior under test.
+**When to add interaction verification:** If the question is "does this run without crashing?", a stub suffices. Only add a counter that a test asserts on (as `MockOpenGLContext` does) when the interaction itself is the behavior under test.
 
 ---
 
@@ -134,7 +122,7 @@ Apply this taxonomy when classifying tests and deciding where they belong:
 
 ## Additional Rationalization Prevention Rows
 
-These supplement the core rows kept in SKILL.md:
+These are project-specific additions to the general set of testing rationalization patterns used across the team's testing practice (not duplicated here):
 
 | Excuse | Reality |
 |--------|---------|
@@ -147,3 +135,11 @@ Additional Red Flags -- STOP:
 - "Tests after achieve the same goals"
 - "Just this once" or "This is different because..."
 - "I need to get the implementation right before I know what to test"
+
+---
+
+## Related
+
+- [Testing Standards](../TESTING_STANDARDS.md) -- Project-wide test guidelines and AAA pattern
+- [Integration Tests Guide](integration-tests.md) -- Overview and table of contents for integration testing
+- [Testing Examples and Patterns](testing-examples.md) -- Worked test examples quoted from real test source, including the canonical Camera example this file points to
