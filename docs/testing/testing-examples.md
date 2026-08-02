@@ -6,6 +6,7 @@ subdomain: examples
 tags: [testing, examples, aaa, mocking]
 related:
   - "../TESTING_STANDARDS.md"
+  - "../testing-standards-aaa.md"
   - "test-conventions.md"
 ---
 
@@ -15,10 +16,9 @@ This reference provides concrete examples of correct and incorrect test patterns
 
 ---
 
-## AAA Pattern -- Critical Rules
+## Arrange-Act-Assert (AAA) Pattern -- Critical Rules
 
-1. **NEVER combine phases.** Do not write `// Arrange & Act` or `// Act & Assert`. Each phase gets its own comment and section.
-   - **Exception:** `// Act & Assert` is acceptable only for `EXPECT_NO_THROW`/`EXPECT_THROW` tests where the action IS the assertion.
+1. **NEVER combine phases.** Do not write `// Arrange & Act` or `// Act & Assert`. Each phase gets its own comment and section, with no exception -- see [testing-standards-aaa.md](../testing-standards-aaa.md) for the canonical rule.
 2. **If no Arrange is needed**, omit `// Arrange` entirely -- start with `// Act`.
 3. **Move expected values to Arrange** as named variables, not inline in Assert.
 4. **One logical concept per test** -- split if testing multiple behaviors.
@@ -29,26 +29,31 @@ This reference provides concrete examples of correct and incorrect test patterns
 
 ### Unit Test: Camera Movement
 
+Quoted from the `CameraTest` fixture in `tests/core/CameraTests.cpp` (`SCREEN_WIDTH`/`SCREEN_HEIGHT` are fixture constants, 800/600):
+
 ```cpp
-TEST(CameraTest, MoveForward_DefaultSpeed_IncreasesPosition)
+TEST_F(CameraTest, MoveForward_IncreasesPositionAlongFrontVector)
 {
     // Arrange
-    Camera camera(800, 600);
-    camera.cameraPos = glm::vec3(0.0f, 0.0f, 0.0f);
+    Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT);
     camera.setSpeed(1.0f);
+    glm::vec3 initialPos = camera.cameraPos;
+    glm::vec3 expectedPos = initialPos + camera.cameraFront * 1.0f;
 
     // Act
     camera.moveForward();
 
     // Assert
-    EXPECT_LT(camera.cameraPos.z, 0.0f);
+    EXPECT_EQ(camera.cameraPos, expectedPos);
 }
 ```
 
 ### Unit Test: Constructor with Named Expected Values
 
+From the `ImageStructTest` suite in `tests/testing/ImageTests.cpp`:
+
 ```cpp
-TEST(ImageTest, Constructor_WithDimensions_SetsWidthAndHeight)
+TEST(ImageStructTest, Constructor_WithDimensions_SetsWidthAndHeight)
 {
     // Arrange
     uint32_t expected_width = 16;
@@ -65,55 +70,60 @@ TEST(ImageTest, Constructor_WithDimensions_SetsWidthAndHeight)
 
 ### Unit Test: No Arrange Needed (Omit It)
 
+From the `ImageTest` suite in `tests/testing/PixelComparatorTests.cpp` (an equivalent test also exists as `ImageStructTest.DefaultConstructor_CreatesEmptyImage` in `tests/testing/ImageTests.cpp`):
+
 ```cpp
 TEST(ImageTest, DefaultConstructor_CreatesEmptyImage)
 {
     // Act
-    Image image;
+    Image img;
 
     // Assert
-    EXPECT_TRUE(image.empty());
+    EXPECT_TRUE(img.empty());
 }
 ```
 
-### Visual Regression: Exact Match
+### Unit Test: PixelComparator Exact Match
+
+From the `PixelComparatorTest` suite in `tests/testing/PixelComparatorTests.cpp`. `createSolidImage()` is a file-local helper (not a shared header) -- see [Visual Regression Test Helpers](#visual-regression-test-helpers) below:
 
 ```cpp
-TEST_F(VisualRegressionTest, ExactMatch_IdenticalSolidImages_Passes)
+TEST(PixelComparatorTest, Compare_IdenticalImages_Matches)
 {
     // Arrange
-    Image baseline = createTestImage(16, 16, 255, 0, 0);
-    Image current = createTestImage(16, 16, 255, 0, 0);
+    PixelComparator comparator;
+    Image img1 = createSolidImage(4, 4, 255, 0, 0, 255);
+    Image img2 = createSolidImage(4, 4, 255, 0, 0, 255);
 
     // Act
-    ComparisonResult result = comparator_.compare(baseline, current, 0.0f, true);
+    ComparisonResult result = comparator.compare(img1, img2, 0.0f);
 
     // Assert
     EXPECT_TRUE(result.matches);
-    EXPECT_TRUE(result.error.empty());
 }
 ```
 
-### Visual Regression: Tolerance Match
+### Unit Test: PixelComparator Tolerance Match
 
 ```cpp
-TEST_F(VisualRegressionTest, TolerantMatch_SlightlyDifferentImages_Passes)
+TEST(PixelComparatorTest, Compare_SmallDiffWithinTolerance_Matches)
 {
     // Arrange
-    Image baseline = createTestImage(16, 16, 128, 128, 128);
-    Image current = createTestImage(16, 16, 129, 127, 128);
-    float tolerance = VisualTestConfig::TOLERANT_THRESHOLD;
+    PixelComparator comparator;
+    Image img1 = createSolidImage(4, 4, 100, 100, 100, 255);
+    Image img2 = createSolidImage(4, 4, 101, 100, 100, 255);
 
-    // Act
-    ComparisonResult result = comparator_.compare(baseline, current, tolerance, false);
+    // Act - tolerance of 1/255 allows +/-1 difference
+    ComparisonResult result = comparator.compare(img1, img2, 1.0f / 255.0f);
 
     // Assert
     EXPECT_TRUE(result.matches);
-    EXPECT_TRUE(result.error.empty());
 }
 ```
 
 ### Visual Regression: Using Production Particle Class
+
+Adapted from `RenderSingleParticle_CenteredView_MatchesBaseline` in `tests/visual-regression/RenderingRegressionTests.cpp` (fixture `RenderingRegressionTest`, a Large/real-OpenGL test per the Test Size Taxonomy in [test-conventions.md](test-conventions.md)):
 
 ```cpp
 TEST_F(RenderingRegressionTest, RenderSingleParticle_CenteredView_MatchesBaseline)
@@ -134,34 +144,35 @@ TEST_F(RenderingRegressionTest, RenderSingleParticle_CenteredView_MatchesBaselin
     ASSERT_TRUE(currentImage.valid());
     Image baseline = Image::load(baselinePath, ImageFormat::PNG);
     PixelComparator comparator;
-    ComparisonResult result = comparator.compare(baseline, currentImage, tolerance, true);
+    ComparisonResult result = comparator.compare(baseline, currentImage, VRTestConfig::PARTICLE_TOLERANCE, true);
     EXPECT_TRUE(result.matches);
 }
 ```
 
 ### Image Save/Load: Round-Trip (RGB preserved, alpha discarded)
 
+Adapted from `Save_PPM_RoundTrip_PreservesPixelData` in the `ImageIOTest` fixture (`tests/testing/ImageTests.cpp`; `test_dir_` is created in `SetUp()` and removed in `TearDown()`):
+
 ```cpp
-TEST(VisualHelperTest, ImageLoad_PPM_RoundTrip_PreservesPixels)
+TEST_F(ImageIOTest, Save_PPM_RoundTrip_PreservesPixelData)
 {
     // Arrange
-    Image original = createTestImage(4, 4, 200, 100, 50);
-    std::string path = "/tmp/visual_test_roundtrip.ppm";
+    Image original(2, 2);
+    original.pixels[0] = 255;
+    original.pixels[1] = 128;
+    original.pixels[2] = 64;
+    original.pixels[3] = 255;
+    std::string path = test_dir_ + "/roundtrip.ppm";
     original.save(path, ImageFormat::PPM);
 
     // Act
     Image loaded = Image::load(path, ImageFormat::PPM);
 
     // Assert
-    EXPECT_TRUE(loaded.valid());
-    EXPECT_EQ(loaded.width, original.width);
-    EXPECT_EQ(loaded.height, original.height);
-    EXPECT_EQ(loaded.pixels[0], 200u); // R preserved
-    EXPECT_EQ(loaded.pixels[1], 100u); // G preserved
-    EXPECT_EQ(loaded.pixels[2], 50u);  // B preserved
-    EXPECT_EQ(loaded.pixels[3], 255u); // A set to 255 (alpha discarded in PPM)
-
-    std::remove(path.c_str());
+    EXPECT_EQ(loaded.pixels[0], 255u);
+    EXPECT_EQ(loaded.pixels[1], 128u);
+    EXPECT_EQ(loaded.pixels[2], 64u);
+    EXPECT_EQ(loaded.pixels[3], 255u); // Alpha restored to 255
 }
 ```
 
@@ -189,14 +200,15 @@ TEST(ImageTest, DefaultConstructor_CreatesEmptyImage)
 
 ```cpp
 // BAD: "Act & Assert" combined
-TEST_F(VisualRegressionTest, ExactMatch_IdenticalImages_Passes)
+TEST(PixelComparatorTest, Compare_IdenticalImages_Matches)
 {
     // Arrange
-    Image baseline = createTestImage(16, 16, 255, 0, 0);
-    Image current = createTestImage(16, 16, 255, 0, 0);
+    PixelComparator comparator;
+    Image img1 = createSolidImage(4, 4, 255, 0, 0, 255);
+    Image img2 = createSolidImage(4, 4, 255, 0, 0, 255);
 
     // Act & Assert  <-- WRONG: Don't combine
-    assertVisualMatch(baseline, current, "test_name");
+    EXPECT_TRUE(comparator.compare(img1, img2, 0.0f).matches);
 }
 ```
 
@@ -393,16 +405,38 @@ class PixelComparator
 };
 ```
 
-### Visual Test Helpers (tests/visual-regression/VisualTestHelpers.hpp)
+### Visual Regression Test Helpers
+
+Shared constants and path-resolution helpers for visual regression (Large, real-OpenGL) tests live in `tests/visual-regression/VRTestCommon.hpp`:
 
 ```cpp
-// Create solid-color RGBA image
-Image createTestImage(uint32_t w, uint32_t h, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
+namespace VRTestConfig
+{
+static const uint32_t RENDER_WIDTH = 1280;
+static const uint32_t RENDER_HEIGHT = 720;
+static const float PARTICLE_TOLERANCE = 2.0f / 255.0f;
+static const float MAX_DIFF_RATIO = 0.0001f;
+static const std::string BASELINES_DIR = "baselines";
+} // namespace VRTestConfig
 
-// Create horizontal gradient (clamped to [0,255])
-Image createGradientImage(uint32_t w, uint32_t h,
-                          uint8_t r1, uint8_t g1, uint8_t b1,
-                          uint8_t r2, uint8_t g2, uint8_t b2);
+std::string getShaderPath(const std::string& shaderName);
+std::string getBaselinePath(const std::string& baselineName);
+```
+
+There is no shared image-construction helper header. Tests that need a solid-color `Image` build one with a small file-local helper -- see `createSolidImage()` in `tests/testing/PixelComparatorTests.cpp` (used only within that file, not shared across test binaries):
+
+```cpp
+static Image createSolidImage(uint32_t width, uint32_t height, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+{
+    Image img(width, height);
+    for (size_t i = 0; i < img.pixels.size(); i += 4) {
+        img.pixels[i] = r;
+        img.pixels[i + 1] = g;
+        img.pixels[i + 2] = b;
+        img.pixels[i + 3] = a;
+    }
+    return img;
+}
 ```
 
 ---
@@ -416,6 +450,7 @@ tests/
 +-- testing/            # Tests for PixelComparator, Image
 +-- visual-regression/  # Visual comparison tests (uses production Particle class)
 |   +-- baselines/      # Baseline images (committed, never modified by tests)
+|   +-- VRTestCommon.hpp        # Shared VRTestConfig constants, getShaderPath/getBaselinePath
 |   +-- RenderingRegressionTests.cpp
 +-- mocks/              # MockOpenGL.hpp/.cpp
 +-- stb_image_write_impl.cpp
@@ -442,7 +477,7 @@ TEST(SuiteName, MethodName_Condition_ExpectedResult)
 
 ---
 
-## PV Naming Examples
+## Particle-Viewer (PV) Naming Examples
 
 Use format: `UnitName_StateUnderTest_ExpectedResult`
 
@@ -482,3 +517,11 @@ Signal: if modifying the test file requires looking at the source file, the test
 ## Agile Alarm Bell
 
 **Agile Alarm Bell:** "Let's refactor without writing tests first" is the most dangerous phrase pair in software. Refactoring without a test suite to hold behavior constant is not refactoring -- it is reckless restructuring. Stop. Write characterization tests first. Then refactor.
+
+---
+
+## Related
+
+- [Testing Standards](../TESTING_STANDARDS.md) -- Project-wide test guidelines and AAA pattern
+- [Test Structure: Arrange-Act-Assert](../testing-standards-aaa.md) -- Canonical AAA rules (this file's AAA section defers to it)
+- [Test Conventions](test-conventions.md) -- Naming, file organization, and test double taxonomy
