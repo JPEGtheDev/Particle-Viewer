@@ -7,6 +7,7 @@ tags: [cross-cutting, testing, aaa, gtest, patterns]
 related:
   - "TESTING_STANDARDS.md"
   - "testing-standards-assertions.md"
+  - "testing/testing-examples.md"
 ---
 
 # Test Structure: Arrange-Act-Assert
@@ -88,3 +89,4 @@ TEST(ImageTest, Constructor_WithDimensions_SetsWidthAndHeight)
 
 - [Testing Standards](TESTING_STANDARDS.md) -- parent ToC stub and overview
 - [testing-standards-assertions.md](testing-standards-assertions.md) -- single assertion principle and test naming
+- [testing/testing-examples.md](testing/testing-examples.md) -- concrete correct/incorrect AAA examples applying this rule

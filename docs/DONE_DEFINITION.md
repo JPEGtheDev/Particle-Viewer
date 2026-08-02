@@ -8,6 +8,7 @@ related:
   - "TESTING_STANDARDS.md"
   - "VERIFICATION_COMMANDS.md"
   - "PROJECT_CONTEXT.md"
+  - "ESTIMATION_EXAMPLES.md"
 ---
 
 # Particle-Viewer Done Definition
@@ -25,3 +26,4 @@ Use stage vocabulary. Never use "Done" for a stage that is not the final stage.
 - [Verification Commands](VERIFICATION_COMMANDS.md) -- the three commands that make up the pre-commit gate
 - [Testing Standards](TESTING_STANDARDS.md) -- testing expectations and patterns
 - [Project Context](PROJECT_CONTEXT.md) -- per-story Definition of Done Checklist (code quality, testing, documentation, and review/merge criteria)
+- [Estimation Examples](ESTIMATION_EXAMPLES.md) -- validated real-world effort estimates for calibrating new estimates against actual outcomes
