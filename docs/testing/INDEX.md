@@ -2,7 +2,7 @@
 title: "Particle-Viewer Testing Docs Index"
 description: "Index of documentation files in docs/testing/ -- integration test guides, visual regression testing, test conventions, and worked examples."
 domain: testing
-subdomain: visual-regression
+subdomain: ""
 tags: [testing, visual-regression, integration-testing, index]
 related:
   - "../INDEX.md"

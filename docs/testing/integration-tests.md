@@ -52,4 +52,4 @@ cmake --build build
 - [Testing Standards](../TESTING_STANDARDS.md) -- Project-wide test guidelines and AAA pattern
 - [Test Patterns](integration-tests-patterns.md) -- How to write and structure integration tests
 - [Mocking & Troubleshooting](integration-tests-mocking.md) -- MockOpenGL and debugging guidance
-- [Test Conventions](test-conventions.md) -- naming, file organization, and test double taxonomy these integration tests follow
+- [Test Conventions](test-conventions.md) -- Naming, file organization, and test double conventions shared across all test types
