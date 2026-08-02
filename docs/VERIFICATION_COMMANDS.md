@@ -22,6 +22,9 @@ cmake --build build
 # Tests
 ./build/tests/ParticleViewerTests
 
+# Run a specific test
+./build/tests/ParticleViewerTests --gtest_filter=TestSuite.TestName
+
 # Format check
 find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format --dry-run -Werror
 
