@@ -3,7 +3,7 @@ title: "Verification Commands"
 description: "Build, test, and format commands to run before every commit in Particle Viewer."
 domain: cross-cutting
 subdomain: ""
-tags: [process, verification, build, testing]
+tags: [cross-cutting, process, verification, build, testing]
 related:
   - "DONE_DEFINITION.md"
   - "DEBUGGING.md"
@@ -13,7 +13,7 @@ related:
 
 ## The Verification Commands
 
-> **Note (Particle-Viewer specific):** The commands below use this project's build system and test runner. Adapt `cmake --build build`, `./build/tests/ParticleViewerTests`, and the `find src tests` glob for your own project.
+> **Note:** These commands use Particle Viewer's build system (CMake) and test runner (`ParticleViewerTests`, built on GoogleTest).
 
 ```bash
 # Build
@@ -32,3 +32,8 @@ find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format --dry-run -We
 find src tests -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i
 cmake --build build && ./build/tests/ParticleViewerTests
 ```
+
+## Related
+
+- [Done Definition](DONE_DEFINITION.md) -- the stage vocabulary that references this gate
+- [Debugging Reference](DEBUGGING.md) -- debug commands for build, test filtering, and CI reproduction
