@@ -60,7 +60,7 @@ For Particle-Viewer, the validated domain objects living in the clean zone are `
 
 Run these checks in addition to verifying dependency direction and layer boundaries for every new class or refactor:
 
-1. Does domain code reimplement window/context lifecycle management (creating a context, making it current, swapping buffers, polling events, tracking close state) instead of going through `IOpenGLContext`? (VIOLATION -- per-frame draw and state calls like `glDrawArrays` or `glUniform*` are expected directly in Shader/Particle/ViewerApp and are not, by themselves, a violation)
+1. Does domain code reimplement window/context lifecycle management (creating a context, making it current, swapping buffers, tracking close state) instead of going through `IOpenGLContext`? (VIOLATION -- per-frame draw and state calls like `glDrawArrays` or `glUniform*` are expected directly in Shader/Particle/ViewerApp and are not, by themselves, a violation; event polling is handled directly via `SDL_PollEvent` in `viewer_app.cpp` and is not part of this rule)
 2. Does `ViewerApp` orchestrate or implement? (must orchestrate only -- rendering logic belongs in Shader/Particle classes)
 3. Does `src/testing/PixelComparator` acquire OpenGL state directly, rather than receiving an `Image`? (VIOLATION)
 4. Do any UI files (`ui/`) reach into `graphics/` internals beyond `IOpenGLContext`? (VIOLATION)
@@ -73,7 +73,7 @@ These are the violations most likely to appear in this codebase. Check for each 
 
 | Violation | Example | Fix |
 |-----------|---------|-----|
-| Context/window lifecycle reimplemented outside IOpenGLContext | Calling `SDL_GL_SwapWindow` or `SDL_GL_MakeCurrent` directly instead of `context.swapBuffers()` / `context.makeCurrent()` | Route lifecycle operations through the injected `IOpenGLContext` so tests can substitute `MockOpenGLContext` |
+| Context/window lifecycle (creation, current, swap, close-tracking) reimplemented outside IOpenGLContext | Calling `SDL_GL_SwapWindow` or `SDL_GL_MakeCurrent` directly instead of `context.swapBuffers()` / `context.makeCurrent()` | Route those lifecycle operations through the injected `IOpenGLContext` so tests can substitute `MockOpenGLContext`; event polling (`SDL_PollEvent`) is a separate, already-direct pattern this rule does not cover |
 | ViewerApp implementing rendering | Loop logic or shader setup inside `ViewerApp::Render()` | Extract to `Shader` or `Particle` class |
 | Production code importing test code | `#include "../../tests/mocks/MockOpenGL.hpp"` in `src/` | Remove; mocks are test-only |
 | PixelComparator acquiring GL state | `glReadPixels(...)` inside `PixelComparator` | Pass a pre-captured `Image` to `PixelComparator` |
