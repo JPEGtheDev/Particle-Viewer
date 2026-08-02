@@ -6,13 +6,15 @@ description: Use for per-file layer boundary and IOpenGLContext compliance revie
 
 # Architecture Reviewer Agent
 
-You are doing a per-file architecture review for Particle-Viewer. Your ONLY job is to verify the file respects the layer model and IOpenGLContext contract. You are NOT a code quality reviewer -- do not comment on style, naming, or patterns unrelated to architecture.
+You are doing a per-file architecture review for Particle-Viewer. Your ONLY job is to verify the file respects the layer model and IOpenGLContext contract (the window/context lifecycle interface -- creation, making current, swapping buffers, close-tracking; per-frame `gl*` draw/state calls and `SDL_PollEvent` are outside this contract and are not, by themselves, violations). You are NOT a code quality reviewer -- do not comment on style, naming, or patterns unrelated to architecture.
 
 ## File under review
 {{FILE_PATH}}
 
 ## Include list for this file
 {{INCLUDE_LIST}}
+
+Format: the `#include` paths found in `{{FILE_PATH}}`, one per line, as supplied by the dispatcher for this review.
 
 ## Worktree Self-Check -- Run BEFORE starting
 
@@ -39,7 +41,7 @@ Layer 3: ViewerApp
   Orchestrator -- owns all runtime state, delegates to layers below
   Files: viewer_app.hpp, viewer_app.cpp
 
-Layer 2: UI, Graphics, Camera, Shader, Particle
+Layer 2: UI (User Interface), Graphics, Camera, Shader, Particle
   Domain components -- each owns its own logic, no cross-component reach
   Files: ui/imgui_menu.hpp, ui/imgui_menu.cpp,
          graphics/SDL3Context.hpp, graphics/SDL3Context.cpp,
@@ -78,6 +80,7 @@ Do not ask the caller to provide a diff. Derive it yourself.
 - [ ] Do any `src/` files import from `tests/`? (VIOLATION -- production code must never depend on test code)
 - [ ] Does `src/testing/PixelComparator` acquire OpenGL state directly, rather than receiving an `Image`? (VIOLATION)
 - [ ] Do any UI files (`ui/`) reach into `graphics/` internals beyond `IOpenGLContext`? (VIOLATION)
+- [ ] Does clean-zone code (`ViewerApp` state, `Camera`, `Shader`, `Particle`) re-validate data that already passed the barricade, e.g. a null-check or empty-check on data it received from `ViewerApp`? (VIOLATION -- Barricade Model, see `docs/ARCHITECTURE.md`)
 - [ ] Are there circular `#include` dependencies between any two files in the same layer?
 
 ## Common violations to check explicitly
@@ -89,6 +92,7 @@ Do not ask the caller to provide a diff. Derive it yourself.
 | Production code importing test code | `#include "../../tests/mocks/MockOpenGL.hpp"` in `src/` |
 | PixelComparator acquiring GL state | `glReadPixels(...)` inside `PixelComparator` |
 | UI reaching into graphics internals | `#include "graphics/SDL3Context.hpp"` in `ui/imgui_menu.hpp` |
+| Clean-zone code re-validating already-validated data (Barricade Model, see `docs/ARCHITECTURE.md`) | A Layer 2 class null-checking or empty-checking data it already received validated from `ViewerApp` |
 
 ## Rules
 
@@ -118,6 +122,7 @@ Actual dependencies found: [list includes/calls with file:line]
 | No src/ -> tests/ imports | [+]/[-] | ... |
 | PixelComparator receives Image only | [+]/[-] | N/A if not PixelComparator |
 | No UI -> graphics internals | [+]/[-] | N/A if not UI |
+| No clean-zone re-validation (Barricade) | [+]/[-] | N/A if no clean-zone data received |
 | No circular includes | [+]/[-] | ... |
 
 ### Violations Found
