@@ -42,8 +42,8 @@ Project-specific guidelines, conventions, and constraints for generating user st
 - **Graphics API:** OpenGL 3.0+
 - **Build System:** CMake
 - **Platform:** Linux (primary), Windows (supported)
-- **Testing:** Transitioning to Google Test
-- **CI/CD:** GitHub Actions (headless with Xvfb/Mesa)
+- **Testing:** Fully on GoogleTest (no legacy test framework remains)
+- **CI/CD (Continuous Integration/Continuous Delivery):** GitHub Actions (headless with Xvfb/Mesa)
 
 ---
 
@@ -58,17 +58,22 @@ src/
 +-- particle.hpp          # Particle data structure (std::vector<glm::vec4>)
 +-- shader.hpp            # Shader loading/compilation
 +-- settingsIO.hpp        # Configuration file loading
-+-- osFile.hpp            # OS-specific file operations
++-- osFile.hpp            # OS (Operating System)-specific file operations
 +-- debugOverlay.hpp      # Camera debug overlay
 +-- Image.hpp/.cpp        # Core RGBA image class
++-- ui/                   # ImGui menu components
++-- graphics/             # SDL3Context, IOpenGLContext abstraction
++-- testing/              # PixelComparator, FramebufferCapture (test utilities, not production)
 +-- glad/                 # OpenGL loader (auto-generated)
 +-- shaders/              # GLSL shader files
 ```
 
+This listing is illustrative anchor points, not an exhaustive inventory -- `src/` has 47 `.hpp`/`.cpp` files as of this writing. See [Layer Architecture](ARCHITECTURE.md) for the full layer-to-file mapping, including the center-of-mass (COM) cache/calculator utilities, the marching-cubes renderer, the threaded executor, gamepad input, and similar helpers not listed above.
+
 ### Architecture Notes
 - **ViewerApp** encapsulates all application state (replaces former `clutter.hpp` globals)
-- State is organized into POCOs: `WindowConfig`, `RenderResources`, `SphereParams`, `RecordingState`, `ShaderPaths`
-- SDL3 events delegate to ViewerApp via the event loop
+- State is organized into POCOs (Plain Old C++ Objects): `WindowConfig`, `RenderResources`, `SphereParams`, `RecordingState`, `ShaderPaths`
+- SDL3 (Simple DirectMedia Layer 3) events delegate to ViewerApp via the event loop
 - `Particle` uses `std::vector<glm::vec4>` for safe memory management
 
 ### Remaining Issues to Address
@@ -132,31 +137,22 @@ Stories involving rendering **must** be compatible with:
 ### Code Quality Standards
 
 Stories MUST reference:
-- **Linting:** Project uses clang-tidy (if configured)
+- **Linting:** Project uses clang-tidy (configured via `.clang-tidy` at repo root)
 - **Formatting:** clang-format with project style
 - **Static Analysis:** Address any new warnings
-- **Memory Safety:** Valgrind clean for C code involving malloc
+- **Memory Safety:** RAII (Resource Acquisition Is Initialization) ownership for GL/SDL3 resources -- no manual `new`/`delete` (see `cpp-safety` skill); no Valgrind job runs in CI, so leak-checking for any code that does use raw allocation is a manual local step
 
 ### Dependencies & Layering
 
-New code MUST move toward this layering approach (target state):
+Particle-Viewer uses a 4-layer inward-dependency model: code in layer N may only depend on layers <= N, never the reverse. See [Layer Architecture](ARCHITECTURE.md) for the full layer-to-file mapping, the Barricade Model (dirty/clean data validation zones), and the narrowed `IOpenGLContext` lifecycle rule. Summary:
 
-```
-+------------------------+
-|   Main Application     | (main.cpp - orchestrator)
-+------------------------+
-|   Input/UI Layer       | (keyboard, mouse, file dialogs, playback controls)
-+------------------------+
-|   Data Layer           | (binary file I/O, particle data, settings, frame management)
-+------------------------+
-|   Rendering Layer      | (shaders, framebuffer, camera, GL buffers, screenshots)
-+------------------------+
-|   Graphics API Layer   | (OpenGL, glad)
-+------------------------+
-```
+- **Layer 4 (outermost):** `main.cpp` -- entry point only, instantiates `ViewerApp`
+- **Layer 3:** `ViewerApp` -- orchestrator, owns runtime state, delegates to layers below
+- **Layer 2:** UI (User Interface), Graphics, Camera, Shader, Particle -- domain components, no cross-component reach
+- **Layer 1 (innermost):** Abstractions and utilities (`IOpenGLContext`, `Image`)
 
 **Key: This is a VIEWER, not a simulator.**
-- Data Layer reads pre-computed positions from binary files
+- Particle data is read from pre-computed binary files, not computed at runtime
 - There is NO physics simulation, NO force calculations, NO N-body computation
 - Frame advancement is playback (like a video player), not simulation stepping
 - Particle positions/velocities come from external simulation tools
@@ -173,7 +169,8 @@ The visual regression testing infrastructure is now in place:
 
 - **Image** (`src/Image.hpp`) -- Core RGBA image class with `save()`/`load()` for PPM and PNG formats
 - **PixelComparator** (`src/testing/PixelComparator.hpp`) -- RGBA image comparison with configurable tolerance
-- **VisualTestHelpers** (`tests/visual-regression/VisualTestHelpers.hpp`) -- Test fixture, EXPECT_VISUAL_MATCH macros, test image helpers
+- **FramebufferCapture** (`src/testing/FramebufferCapture.hpp`) -- captures the bound OpenGL framebuffer into an `Image` for comparison
+- **VRTestCommon** (`tests/visual-regression/VRTestCommon.hpp`) -- shared `VRTestConfig` constants (e.g. `PARTICLE_TOLERANCE`) and baseline/shader path helpers used by the `RenderingRegressionTest` fixture in `tests/visual-regression/RenderingRegressionTests.cpp` -- see [Testing Examples](testing/testing-examples.md#visual-regression-test-helpers)
 - **GitHub Actions Workflow** (`.github/workflows/unit-tests.yml (visual-regression job)`) -- CI with Xvfb, inline image display, PR comments
 
 The `Image` class is the base type for all image operations. Use it for creating, comparing, saving, and loading test images.
@@ -184,7 +181,7 @@ Stories involving visual regression testing MUST:
 
 1. **Use the Image class** as the base type for all image data (defined in `src/Image.hpp`)
 
-2. **Follow AAA Pattern** in tests -- use the `testing` skill for guidelines:
+2. **Follow the AAA (Arrange-Act-Assert) Pattern** in tests -- use the `testing` skill for guidelines:
    - Do not combine Arrange and Act into `// Arrange & Act`
    - Omit `// Arrange` if no setup is needed
    - Put expected values as named variables in Arrange
@@ -201,7 +198,7 @@ Stories involving visual regression testing MUST:
 
 6. **Cross-Platform Compatibility**  
    - Mesa on Linux [+]
-   - (Windows support TBD)
+   - (Windows support not yet determined)
 
 7. **CI Integration**  
    - Artifacts (diff images) uploaded to GitHub Actions
@@ -313,12 +310,12 @@ Each subtask MUST be independently completable and mergeable.
 
 ## Definition of Done Checklist
 
-All Particle-Viewer stories MUST confirm:
+All Particle-Viewer stories MUST confirm the pre-commit gate in [Verification Commands](VERIFICATION_COMMANDS.md) (format check, build, tests -- run in that order) has passed, plus the per-story items below. See [Done Definition](DONE_DEFINITION.md) for the stage vocabulary ("Locally verified" -> "Gate passed" -> "Committed" -> "Done") this checklist maps onto; diff review is a separate manual step before committing, not part of the automated gate.
 
 ### Code Quality
-- [ ] Code compiles with no warnings
-- [ ] Passes `clang-tidy` (or equivalent linter)
-- [ ] Follows project code style (clang-format configured)
+- [ ] Code compiles with no warnings (`cmake --build build`)
+- [ ] Passes `clang-tidy` (configured via `.clang-tidy` at repo root)
+- [ ] Formatted with `clang-format` (project style)
 - [ ] No dead code left behind
 
 ### Testing
@@ -346,7 +343,7 @@ All Particle-Viewer stories MUST confirm:
 
 ## Quick Reference: Story Size Estimates
 
-For **Particle-Viewer** stories, use these as rough guides:
+The durations below are a rough wall-clock guide only, distinct from the tracker's actual estimation unit. The Particle-Viewer issue tracker sizes stories by coding-agent request count, not hours/days -- see [Estimation Examples](ESTIMATION_EXAMPLES.md) for validated T-shirt-size-to-request-count figures from completed stories.
 
 ### Small (S) - 3-5 hours
 - Extract single function into class method
@@ -381,10 +378,10 @@ For **Particle-Viewer** stories, use these as rough guides:
 
 ### In Acceptance Criteria
 - Include metrics: "<=16ms per capture" vs "fast"
-- List affected files: `src/FramebufferCapture.hpp` (or target-state: `src/graphics/framebuffer_capture.hpp`) 
+- List affected files: `src/testing/FramebufferCapture.hpp` (existing) or, for a new component, a target-state path such as `src/graphics/some_new_component.hpp`
 - Call out edge cases: "Handles framebuffer size changes mid-capture"
 
 ### In Definition of Done
-- Explicit testing requirements: "Valgrind reports zero leaks"
+- Explicit testing requirements: "No new GL/SDL3 resource leaks (RAII-verified in review; Valgrind run manually if needed, not part of CI)"
 - Explicit CI requirements: "Pass on Mesa + Xvfb"
 - Explicit review requirements: "Approved by lead graphics developer"
