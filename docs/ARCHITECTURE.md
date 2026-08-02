@@ -6,6 +6,7 @@ subdomain: layers
 tags: [architecture, layers, dependencies, review]
 related:
   - "CODING_STANDARDS.md"
+  - "PROJECT_CONTEXT.md"
 ---
 
 # Particle-Viewer Layer Architecture
@@ -55,6 +56,8 @@ Within this layer model, data also has a validation state: a **dirty zone**, whe
 Data starts out dirty when it comes from file I/O, user input, or any other external source. It becomes clean only after an input handler has parsed and validated it -- that parsing and validation is the barricade itself. Once data is past the barricade, clean-zone code should not re-validate it: a Layer 2 class that null-checks or empty-checks data it received from `ViewerApp` is redoing work the barricade already did, and that redundant check is itself a sign the barricade was skipped or misplaced.
 
 For Particle-Viewer, the validated domain objects living in the clean zone are `ViewerApp` state, `Camera`, `Shader`, and `Particle`.
+
+---
 
 ## Additional Gate Items (Particle-Viewer Specific)
 
