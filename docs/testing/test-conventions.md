@@ -118,7 +118,7 @@ Within a file, order tests: basic -> complex, common -> edge cases.
 
 ---
 
-## Test Size Taxonomy (SE@G Model)
+## Test Size Taxonomy (Software Engineering at Google Model)
 
 Apply this taxonomy when classifying tests and deciding where they belong:
 
