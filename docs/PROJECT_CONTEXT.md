@@ -3,10 +3,14 @@ title: "Project Context"
 description: "What Particle Viewer is and is not: scope, architecture overview, component inventory, tech stack, and refactor priorities."
 domain: cross-cutting
 subdomain: ""
-tags: [context, scope, architecture, planning]
+tags: [cross-cutting, context, scope, architecture, planning]
 related:
   - "ARCHITECTURE.md"
   - "CODING_STANDARDS.md"
+  - "ESTIMATION_EXAMPLES.md"
+  - "PROJECT_SCOPE.md"
+  - "DONE_DEFINITION.md"
+  - "VERIFICATION_COMMANDS.md"
 ---
 
 # Particle-Viewer Context
@@ -385,3 +389,14 @@ The durations below are a rough wall-clock guide only, distinct from the tracker
 - Explicit testing requirements: "No new GL/SDL3 resource leaks (RAII-verified in review; Valgrind run manually if needed, not part of CI)"
 - Explicit CI requirements: "Pass on Mesa + Xvfb"
 - Explicit review requirements: "Approved by lead graphics developer"
+
+---
+
+## Related
+
+- [Layer Architecture](ARCHITECTURE.md) -- the 4-layer inward-dependency model and file-to-layer mapping this doc's architecture overview summarizes
+- [Coding Standards](CODING_STANDARDS.md) -- C++ formatting, naming, organization, and tooling rules referenced throughout the story guidelines
+- [Estimation Examples](ESTIMATION_EXAMPLES.md) -- validated T-shirt-size-to-request-count figures backing the story size estimates in this doc
+- [Project Scope Gate](PROJECT_SCOPE.md) -- the scope gate (viewer vs. simulator) and project-context loading guide this doc's "what it is/is not" section restates
+- [Definition of Done Stages](DONE_DEFINITION.md) -- the stage vocabulary this doc's Definition of Done Checklist maps onto
+- [Verification Commands](VERIFICATION_COMMANDS.md) -- the pre-commit gate commands this doc's Definition of Done Checklist requires
