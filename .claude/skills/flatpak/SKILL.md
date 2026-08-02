@@ -23,7 +23,7 @@ A workaround that fires outside the Flatpak sandbox forces software rendering on
 
 ## BEFORE PROCEEDING
 
-Before modifying the Flatpak manifest, SDL3 window creation code, or OpenGL (GL) context initialization:
+Before modifying the Flatpak manifest, SDL3 (Simple DirectMedia Layer 3) window creation code, or OpenGL (GL) context initialization:
 
 1. Is this code running inside Flatpak? Check `/.flatpak-info` -- gate every workaround on this.
 2. Is SDL3 built as a **separate** manifest module (not via FetchContent inside the app module)?
@@ -48,7 +48,7 @@ Before modifying the Flatpak manifest, SDL3 window creation code, or OpenGL (GL)
 
 ### 2. SDL3 as a Separate Flatpak Module
 
-When SDL3 is built via CMake `FetchContent` inside a `flatpak-builder` module, the Freedesktop SDK `pkg-config` paths are **not** inherited by the sub-build. This causes `sdl3_config.cmake` to report `SDL_X11: OFF` and `SDL_WAYLAND: OFF` -- no video driver available at runtime.
+When SDL3 is built via CMake `FetchContent` inside a `flatpak-builder` module, the Freedesktop SDK (Software Development Kit) `pkg-config` paths are **not** inherited by the sub-build. This causes `sdl3_config.cmake` to report `SDL_X11: OFF` and `SDL_WAYLAND: OFF` -- no video driver available at runtime.
 
 **Fix:** Build SDL3 as a separate module in the Flatpak manifest, before the app module:
 
@@ -69,7 +69,7 @@ In `CMakeLists.txt`, call `find_package(SDL3 QUIET)` first so the Flatpak-built 
 
 **Symptom:** `SDL_CreateWindow failed: Invalid window driver data` inside Flatpak on NVIDIA hardware.
 
-**Root cause:** Flatpak GL extensions are versioned to the exact driver patch. If the installed extension doesn't match the running driver, only Mesa's `GL.default` extension mounts. Mesa's `libGLX_mesa.so` tries to negotiate with NVIDIA's X server GLX extension, which rejects the connection.
+**Root cause:** Flatpak GL extensions are versioned to the exact driver patch. If the installed extension doesn't match the running driver, only Mesa's `GL.default` extension mounts. Mesa's `libGLX_mesa.so` tries to negotiate with NVIDIA's X server's GLX (OpenGL Extension to the X Window System), which rejects the connection.
 
 **Fix:** Set all three env vars before the first `SDL_Init`:
 
@@ -87,9 +87,7 @@ Why all three:
 **Detection heuristic** (requires `--device=all` finish-arg in manifest):
 
 ```cpp
-static bool isRunningInFlatpak() {
-    return access("/.flatpak-info", F_OK) == 0;
-}
+// isRunningInFlatpak() is defined in Core Rule 5 below.
 
 // Gate: only apply when inside Flatpak AND nvidia device present AND GL extension NOT mounted
 const bool nvidia_dev = access("/dev/nvidia0", F_OK) == 0;
