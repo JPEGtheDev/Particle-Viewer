@@ -72,6 +72,10 @@ Catalog of every documentation file directly under `docs/`. Integration-test and
 | `ESTIMATION_EXAMPLES.md` | Validated real-world effort estimates from completed stories, for calibrating new estimates against actual outcomes. |
 | `VERIFICATION_COMMANDS.md` | Build, test, and format commands to run before every commit. |
 | `DEBUGGING.md` | Debug commands for build, test filtering, visual regression diffs, and CI reproduction. |
+| `DEVELOPMENT_WORKFLOW.md` | Feature-addition, feature-removal, and bug-fix workflow checklists for Particle-Viewer. |
+| `STORY_EXAMPLES.md` | Worked story-writing examples -- Given/When/Then and metric-based acceptance criteria, a refactoring technical-notes template, and a dependency-ordered subtask breakdown. |
+| `lessons-learned.md` | Particle-Viewer-specific war stories on OpenGL, SDL3, GLFW, ImGui, and CMake pitfalls, preserved verbatim from the harness's self-evaluation lessons file. |
+| `INFRASTRUCTURE_REVIEW.md` | Concrete CMake build-reproducibility and Flatpak packaging checklists instantiating the infrastructure-review skill. |
 
 ---
 
