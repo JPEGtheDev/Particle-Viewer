@@ -62,7 +62,7 @@ Particle-Viewer is a C++ OpenGL-based viewer for N-Body simulations -- viewing 3
 
 ## Skills Directory
 
-Skills are provided by the **`jpegthedev/story-to-ship`** plugin marketplace. Install: `/plugin marketplace add jpegthedev/story-to-ship` then `/plugin install story-to-ship@story-to-ship`. Installed skills land in `.claude/skills/`; agents in `.claude/agents/`.
+Most skills are provided by the **`jpegthedev/story-to-ship`** plugin marketplace. Install: `/plugin marketplace add jpegthedev/story-to-ship` then `/plugin install story-to-ship@story-to-ship`. Installed skills land in `.claude/skills/`; agents in `.claude/agents/`. This repo also commits its own project-specific skills (`build`, `flatpak`) and agent templates (`architecture-reviewer.md`, `infrastructure-reviewer.md`) at those same paths, so plugin-installed and repo-committed sources coexist there.
 
 Each skill owns one domain. Read the skill before working in that domain. **Never duplicate skill content in this file.**
 
@@ -144,7 +144,7 @@ Skills are organized into **DDD bounded contexts**. Sub-domain skills (e.g., `vi
 
 ### Agent Prompt Templates
 
-Reusable agent prompts live in `.claude/agents/`. Use these when dispatching subagents via the `task` tool:
+Reusable agent prompts live in `.claude/agents/`. `architecture-reviewer.md` and `infrastructure-reviewer.md` are committed in this repo; the rest are plugin-installed. Use these when dispatching subagents via the `task` tool:
 
 | Template | Use when |
 |----------|----------|
@@ -204,8 +204,10 @@ tests/
 
 docs/                     # Human-readable guides and standards
 .claude/settings.json     # Plugin declaration: jpegthedev/story-to-ship (extraKnownMarketplaces + enabledPlugins)
-                          # .claude/skills/, .claude/agents/, .claude/hooks/ are NOT in the repo --
-                          # they are installed at session start by the story-to-ship plugin
+                          # .claude/hooks/ and most skills/agents are installed at session start
+                          # by the story-to-ship plugin, not committed here. .claude/skills/build/,
+                          # .claude/skills/flatpak/, and the architecture-reviewer.md /
+                          # infrastructure-reviewer.md agent templates ARE committed in this repo
 scratch/                  # Session workspace for exploratory/intermediate files
                           # Use for: large text dumps, intermediate analysis, theory-testing artifacts
                           # DO NOT commit scratch/ contents -- it is .gitignored
